@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tennis String Advisor - Expert Setup Recommendations</title>
+    <meta name="description" content="Find the perfect racquet and string combination for your playing style. Expert analysis and personalized setup recommendations for tennis players.">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Custom CSS for Tennis Theme -->
+    <style>
+        .bg-tennis-gradient { background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); }
+        .bg-premium-gradient { background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); }
+        .tennis-shadow { box-shadow: 0 4px 14px 0 rgba(34, 197, 94, 0.25); }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(-10px); }
+            50% { transform: translateY(0); }
+        }
+        
+        .animate-fade-in { animation: fadeIn 0.6s ease-out; }
+        .animate-bounce-light { animation: bounce 3s infinite ease-in-out; }
+        
+        .btn-tennis {
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            color: white;
+            font-weight: 600;
+            padding: 12px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 14px 0 rgba(34, 197, 94, 0.25);
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn-tennis:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px 0 rgba(34, 197, 94, 0.35);
+        }
+        
+        .setup-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s;
+        }
+        
+        .setup-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px rgba(34, 197, 94, 0.15);
+            border-color: rgba(34, 197, 94, 0.3);
+        }
+        
+        .hero-bg {
+            background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 50%, #fefce8 100%);
+        }
+        
+        .compatibility-meter {
+            background: linear-gradient(90deg, #ef4444 0%, #f59e0b 30%, #22c55e 60%, #16a34a 100%);
+            height: 8px;
+            border-radius: 4px;
+        }
+        
+        .compatibility-indicator {
+            width: 4px;
+            height: 12px;
+            background: #1f2937;
+            border-radius: 2px;
+            margin-top: -2px;
+            position: relative;
+        }
+    </style>
+</head>
+<body class="font-sans antialiased bg-white">
+    <!-- Hero Section -->
+    <section class="relative overflow-hidden hero-bg">
+        <div class="absolute inset-0">
+            <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-green-200/20 rounded-full blur-3xl opacity-70"></div>
+            <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-yellow-200/20 rounded-full blur-3xl opacity-70"></div>
+        </div>
+
+        <div class="relative container mx-auto px-6 py-20">
+            <div class="grid lg:grid-cols-2 gap-12 items-center">
+                <!-- Content -->
+                <div class="space-y-8 animate-fade-in">
+                    <!-- Advisory Badge -->
+                    <div class="inline-flex items-center space-x-2 bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                        </svg>
+                        <span>Expert Setup Analysis</span>
+                    </div>
+
+                    <!-- Main Heading -->
+                    <div class="space-y-4">
+                        <h1 class="text-5xl lg:text-6xl font-bold text-gray-900">
+                            Find Your Perfect
+                            <span class="bg-tennis-gradient bg-clip-text text-transparent">Racquet & String</span>
+                            Setup
+                        </h1>
+                        <p class="text-xl text-gray-600 max-w-2xl">
+                            Get personalized recommendations for the ideal racquet and string combination based on your playing style, level, and preferences.
+                        </p>
+                    </div>
+
+                    <!-- Quick Setup Finder -->
+                    <div class="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-gray-200 shadow-sm">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Quick Setup Finder</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                            <select class="px-4 py-3 border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-green-500">
+                                <option>Your Playing Level</option>
+                                <option>Beginner (1-2 years)</option>
+                                <option>Intermediate (3-5 years)</option>
+                                <option>Advanced (5+ years)</option>
+                                <option>Tournament Player</option>
+                            </select>
+                            <select class="px-4 py-3 border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-green-500">
+                                <option>Playing Style</option>
+                                <option>Aggressive Baseliner</option>
+                                <option>All-Court Player</option>
+                                <option>Serve & Volley</option>
+                                <option>Defensive Counter-Puncher</option>
+                            </select>
+                        </div>
+                        <button class="btn-tennis w-full">
+                            Find My Perfect Setup
+                        </button>
+                    </div>
+
+                    <!-- Stats -->
+                    <div class="grid grid-cols-3 gap-6 pt-8 border-t border-gray-200">
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-gray-900">500+</div>
+                            <div class="text-sm text-gray-600">Racquet Models</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-gray-900">200+</div>
+                            <div class="text-sm text-gray-600">String Types</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-gray-900">10K+</div>
+                            <div class="text-sm text-gray-600">Setup Combinations</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Visual Content -->
+                <div class="relative animate-fade-in" style="animation-delay: 0.3s;">
+                    <div class="relative aspect-square">
+                        <div class="absolute inset-0 bg-tennis-gradient rounded-3xl tennis-shadow">
+                            <div class="absolute inset-8 glass-effect rounded-2xl">
+                                <div class="flex items-center justify-center h-full">
+                                    <div class="text-center text-white space-y-4">
+                                        <div class="w-24 h-24 mx-auto bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                                            <svg class="w-12 h-12" fill="currentColor" viewBox="0 0 20 20">
+                                                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
+                                            </svg>
+                                        </div>
+                                        <h3 class="text-2xl font-bold">Setup Analysis</h3>
+                                        <p class="text-white/90 max-w-xs">
+                                            Advanced algorithms analyze compatibility between racquets and strings
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Floating Elements -->
+                        <div class="absolute -top-4 -left-4 w-20 h-20 bg-yellow-400 rounded-full shadow-lg flex items-center justify-center animate-bounce-light">
+                            <span class="text-white font-bold text-lg">🎾</span>
+                        </div>
+                        <div class="absolute -bottom-4 -right-4 w-16 h-16 bg-white shadow-lg rounded-full flex items-center justify-center animate-bounce-light" style="animation-delay: 1s;">
+                            <span class="text-green-600 font-bold">🎯</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Setup Recommendations -->
+    <section class="py-20 bg-gray-50">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-12">
+                <div class="inline-flex items-center space-x-2 bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium mb-4">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                    </svg>
+                    <span>Top Recommendations</span>
+                </div>
+                <h2 class="text-4xl font-bold text-gray-900 mb-4">Popular Setup Combinations</h2>
+                <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+                    Discover proven racquet and string combinations recommended by experts and used by players worldwide
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Setup 1 - Power Setup -->
+                <div class="setup-card">
+                    <div class="mb-6">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded">POWER SETUP</span>
+                            <div class="text-right">
+                                <div class="text-sm text-gray-500">Compatibility</div>
+                                <div class="text-lg font-bold text-green-600">95%</div>
+                            </div>
+                        </div>
+                        <div class="compatibility-meter">
+                            <div class="compatibility-indicator" style="margin-left: 85%;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <!-- Racquet -->
+                        <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                            <div class="w-12 h-12 bg-blue-200 rounded-lg flex items-center justify-center">
+                                <span class="text-blue-700 font-bold">🎾</span>
+                            </div>
+                            <div>
+                                <div class="font-semibold text-gray-900">Babolat Pure Drive</div>
+                                <div class="text-sm text-gray-600">300g • 100 sq in • 16x19</div>
+                            </div>
+                        </div>
+                        
+                        <!-- String -->
+                        <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                            <div class="w-12 h-12 bg-purple-200 rounded-lg flex items-center justify-center">
+                                <span class="text-purple-700 font-bold">🧵</span>
+                            </div>
+                            <div>
+                                <div class="font-semibold text-gray-900">Wilson NXT Power</div>
+                                <div class="text-sm text-gray-600">Multifilament • 16 gauge • 55-65 lbs</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Setup Analysis -->
+                        <div class="bg-green-50 rounded-lg p-4 border border-green-200">
+                            <h4 class="font-semibold text-green-900 mb-2">Why This Setup Works</h4>
+                            <p class="text-sm text-green-800">
+                                Perfect for aggressive baseliners seeking maximum power. The Pure Drive's stiff frame combined with multifilament strings delivers explosive shots with comfort.
+                            </p>
+                            <div class="mt-3 flex flex-wrap gap-2">
+                                <span class="px-2 py-1 bg-green-200 text-green-800 text-xs rounded">High Power</span>
+                                <span class="px-2 py-1 bg-green-200 text-green-800 text-xs rounded">Good Comfort</span>
+                                <span class="px-2 py-1 bg-green-200 text-green-800 text-xs rounded">Spin Friendly</span>
+                            </div>
+                        </div>
+                        
+                        <button class="w-full py-2 px-4 bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium rounded-lg transition-colors">
+                            View Full Analysis
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Setup 2 - Control Setup -->
+                <div class="setup-card">
+                    <div class="mb-6">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded">CONTROL SETUP</span>
+                            <div class="text-right">
+                                <div class="text-sm text-gray-500">Compatibility</div>
+                                <div class="text-lg font-bold text-green-600">92%</div>
+                            </div>
+                        </div>
+                        <div class="compatibility-meter">
+                            <div class="compatibility-indicator" style="margin-left: 82%;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <!-- Racquet -->
+                        <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                            <div class="w-12 h-12 bg-red-200 rounded-lg flex items-center justify-center">
+                                <span class="text-red-700 font-bold">🎾</span>
+                            </div>
+                            <div>
+                                <div class="font-semibold text-gray-900">Wilson Pro Staff RF97</div>
+                                <div class="text-sm text-gray-600">340g • 97 sq in • 16x19</div>
+                            </div>
+                        </div>
+                        
+                        <!-- String -->
+                        <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                            <div class="w-12 h-12 bg-orange-200 rounded-lg flex items-center justify-center">
+                                <span class="text-orange-700 font-bold">🧵</span>
+                            </div>
+                            <div>
+                                <div class="font-semibold text-gray-900">Luxilon ALU Power</div>
+                                <div class="text-sm text-gray-600">Polyester • 16L gauge • 50-58 lbs</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Setup Analysis -->
+                        <div class="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                            <h4 class="font-semibold text-blue-900 mb-2">Why This Setup Works</h4>
+                            <p class="text-sm text-blue-800">
+                                Ideal for advanced players prioritizing precision and control. Heavy racquet with polyester strings offers unmatched ball control and spin potential.
+                            </p>
+                            <div class="mt-3 flex flex-wrap gap-2">
+                                <span class="px-2 py-1 bg-blue-200 text-blue-800 text-xs rounded">Max Control</span>
+                                <span class="px-2 py-1 bg-blue-200 text-blue-800 text-xs rounded">High Spin</span>
+                                <span class="px-2 py-1 bg-blue-200 text-blue-800 text-xs rounded">Durability</span>
+                            </div>
+                        </div>
+                        
+                        <button class="w-full py-2 px-4 bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium rounded-lg transition-colors">
+                            View Full Analysis
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Setup 3 - Comfort Setup -->
+                <div class="setup-card">
+                    <div class="mb-6">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">COMFORT SETUP</span>
+                            <div class="text-right">
+                                <div class="text-sm text-gray-500">Compatibility</div>
+                                <div class="text-lg font-bold text-green-600">89%</div>
+                            </div>
+                        </div>
+                        <div class="compatibility-meter">
+                            <div class="compatibility-indicator" style="margin-left: 79%;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <!-- Racquet -->
+                        <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                            <div class="w-12 h-12 bg-green-200 rounded-lg flex items-center justify-center">
+                                <span class="text-green-700 font-bold">🎾</span>
+                            </div>
+                            <div>
+                                <div class="font-semibold text-gray-900">Wilson Clash 100</div>
+                                <div class="text-sm text-gray-600">295g • 100 sq in • 16x19</div>
+                            </div>
+                        </div>
+                        
+                        <!-- String -->
+                        <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                            <div class="w-12 h-12 bg-teal-200 rounded-lg flex items-center justify-center">
+                                <span class="text-teal-700 font-bold">🧵</span>
+                            </div>
+                            <div>
+                                <div class="font-semibold text-gray-900">Tecnifibre NRG2</div>
+                                <div class="text-sm text-gray-600">Multifilament • 16 gauge • 52-62 lbs</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Setup Analysis -->
+                        <div class="bg-green-50 rounded-lg p-4 border border-green-200">
+                            <h4 class="font-semibold text-green-900 mb-2">Why This Setup Works</h4>
+                            <p class="text-sm text-green-800">
+                                Perfect for players with arm issues or those seeking maximum comfort. Flexible frame with premium multifilament reduces vibration and joint stress.
+                            </p>
+                            <div class="mt-3 flex flex-wrap gap-2">
+                                <span class="px-2 py-1 bg-green-200 text-green-800 text-xs rounded">Max Comfort</span>
+                                <span class="px-2 py-1 bg-green-200 text-green-800 text-xs rounded">Arm Friendly</span>
+                                <span class="px-2 py-1 bg-green-200 text-green-800 text-xs rounded">Good Feel</span>
+                            </div>
+                        </div>
+                        
+                        <button class="w-full py-2 px-4 bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium rounded-lg transition-colors">
+                            View Full Analysis
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-12">
+                <button class="btn-tennis">Explore All Setup Combinations</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- How Setup Analysis Works -->
+    <section class="py-20">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-900 mb-4">How Our Setup Analysis Works</h2>
+                <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+                    Our advanced algorithm considers multiple factors to find the perfect racquet and string combination
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2">Player Profile</h3>
+                    <p class="text-gray-600 text-sm">
+                        Analyze your playing style, level, physical attributes, and preferences
+                    </p>
+                </div>
+
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-green-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2">Technical Specs</h3>
+                    <p class="text-gray-600 text-sm">
+                        Compare racquet specifications with string characteristics for optimal compatibility
+                    </p>
+                </div>
+
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2">Performance Match</h3>
+                    <p class="text-gray-600 text-sm">
+                        Calculate how well the combination matches your desired performance characteristics
+                    </p>
+                </div>
+
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2">Expert Validation</h3>
+                    <p class="text-gray-600 text-sm">
+                        Recommendations validated by professional stringers and tennis coaches
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer Notice -->
+    <div class="bg-gray-900 text-white py-8">
+        <div class="container mx-auto px-6 text-center">
+            <h3 class="text-2xl font-bold mb-4">🎾 Tennis String Advisor - Modernized</h3>
+            <p class="text-gray-300 mb-4">
+                Expert setup recommendations to optimize your tennis performance. Find the perfect racquet and string combination.
+            </p>
+            <div class="grid md:grid-cols-3 gap-4 text-sm">
+                <div class="bg-gray-800 rounded-lg p-4">
+                    <div class="font-semibold text-green-400 mb-2">🎯 Setup Analysis</div>
+                    <div>Advanced compatibility matching between racquets and strings</div>
+                </div>
+                <div class="bg-gray-800 rounded-lg p-4">
+                    <div class="font-semibold text-blue-400 mb-2">📊 Performance Data</div>
+                    <div>Comprehensive database of equipment specifications and reviews</div>
+                </div>
+                <div class="bg-gray-800 rounded-lg p-4">
+                    <div class="font-semibold text-purple-400 mb-2">👨‍🔬 Expert Insights</div>
+                    <div>Recommendations from professional stringers and coaches</div>
+                </div>
+            </div>
+            <p class="text-gray-400 mt-4 text-sm">
+                Mission: Help tennis players optimize their equipment setup for better performance and enjoyment
+            </p>
+        </div>
+    </div>
+</body>
+</html>
