@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import { Hero } from '@/components/sections/hero';
+import { Configurator } from '@/components/sections/configurator';
 import { FeaturedProducts } from '@/components/sections/featured-products';
 import { HowItWorks } from '@/components/sections/how-it-works';
 import { PremiumFeatures } from '@/components/sections/premium-features';
@@ -28,6 +29,9 @@ export default function HomePage() {
     <main className="flex min-h-screen flex-col">
       {/* Hero Section */}
       <Hero />
+
+      {/* Configurator with Rating System */}
+      <Configurator />
 
       {/* How It Works Section */}
       <HowItWorks />
