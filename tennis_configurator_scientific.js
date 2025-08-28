@@ -279,7 +279,7 @@ function getTensionFactor(tensionKg) {
     return 1 + (tensionKg - referenceTension) * 0.015;
 }
 
-// Fonction de normalisation des noms
+// Fonction de normalisation des noms (définie globalement)
 function normalizeNameForValue(name) {
     return name.toLowerCase()
         .replace(/[^a-z0-9\s]/g, '') // Supprime tous les caractères spéciaux
@@ -687,34 +687,26 @@ const HTML_CONTENT = `<!DOCTYPE html>
         
         // Find data functions
         function findRacquet(value) {
-            console.log('Debug findRacquet - Searching for:', value);
             for (const [brand, racquets] of Object.entries(racquetsDB)) {
                 for (const racquet of racquets) {
                     const racquetValue = brand + '-' + normalizeNameForValue(racquet.name);
-                    console.log('Debug findRacquet - Comparing with:', racquetValue, 'from', racquet.name);
                     if (racquetValue === value) {
-                        console.log('Debug findRacquet - FOUND MATCH!', racquet);
                         return { ...racquet, brand };
                     }
                 }
             }
-            console.log('Debug findRacquet - NO MATCH FOUND for:', value);
             return null;
         }
         
         function findString(value) {
-            console.log('Debug findString - Searching for:', value);
             for (const [category, strings] of Object.entries(stringsDB)) {
                 for (const string of strings) {
                     const stringValue = category + '-' + normalizeNameForValue(string.name);
-                    console.log('Debug findString - Comparing with:', stringValue, 'from', string.name);
                     if (stringValue === value) {
-                        console.log('Debug findString - FOUND MATCH!', string);
                         return { ...string, category };
                     }
                 }
             }
-            console.log('Debug findString - NO MATCH FOUND for:', value);
             return null;
         }
         
@@ -760,10 +752,8 @@ const HTML_CONTENT = `<!DOCTYPE html>
         // Racquet selection
         racquetSelect.addEventListener('change', function() {
             const value = this.value;
-            console.log('DEBUG RACQUET CHANGE EVENT - value:', value);
             if (value) {
                 currentRacquet = findRacquet(value);
-                console.log('DEBUG RACQUET - findRacquet result:', currentRacquet);
                 if (currentRacquet) {
                     const info = document.getElementById('racquet-info');
                     info.innerHTML = '<strong>' + currentRacquet.brand.toUpperCase() + '</strong> - ' + 
@@ -777,16 +767,13 @@ const HTML_CONTENT = `<!DOCTYPE html>
                 document.getElementById('racquet-info').style.display = 'none';
                 rcsAnalysis.style.display = 'none';
             }
-            console.log('DEBUG RACQUET - currentRacquet after change:', currentRacquet);
         });
         
         // String selection
         mainStringSelect.addEventListener('change', function() {
             const value = this.value;
-            console.log('DEBUG STRING CHANGE EVENT - value:', value);
             if (value) {
                 currentString = findString(value);
-                console.log('DEBUG STRING - findString result:', currentString);
                 if (currentString) {
                     const info = document.getElementById('string-info');
                     info.innerHTML = '<strong>' + currentString.name + '</strong> (' + currentString.type + ') | ' +
@@ -798,7 +785,6 @@ const HTML_CONTENT = `<!DOCTYPE html>
                 currentString = null;
                 document.getElementById('string-info').style.display = 'none';
             }
-            console.log('DEBUG STRING - currentString after change:', currentString);
         });
         
         // Tension updates
@@ -833,34 +819,8 @@ const HTML_CONTENT = `<!DOCTYPE html>
         
         // Calculate RCS button
         document.getElementById('calculate-rcs-btn').addEventListener('click', function() {
-            console.log('Debug - currentRacquet:', currentRacquet);
-            console.log('Debug - currentString:', currentString);
-            
-            // Debug des sélecteurs
-            const racquetValue = document.getElementById('racquet-select').value;
-            const stringValue = document.getElementById('main-string').value;
-            console.log('Debug - racquetValue from select:', racquetValue);
-            console.log('Debug - stringValue from select:', stringValue);
-            
-            // Tentative de recherche manuelle pour debug
-            if (racquetValue && !currentRacquet) {
-                console.log('Debug - Attempting to find racquet manually:', racquetValue);
-                const foundRacquet = findRacquet(racquetValue);
-                console.log('Debug - Manual racquet search result:', foundRacquet);
-            }
-            
-            if (stringValue && !currentString) {
-                console.log('Debug - Attempting to find string manually:', stringValue);
-                const foundString = findString(stringValue);
-                console.log('Debug - Manual string search result:', foundString);
-            }
-            
             if (!currentRacquet || !currentString) {
-                alert('Veuillez sélectionner une raquette et un cordage pour calculer la rigidité composite.\\n\\nDébug détaillé:\\n' + 
-                      'Raquette sélectée: ' + (racquetValue || 'AUCUNE') + '\\n' +
-                      'Cordage sélectionné: ' + (stringValue || 'AUCUN') + '\\n' +
-                      'currentRacquet: ' + (currentRacquet ? 'OK' : 'MANQUANT') + '\\n' +
-                      'currentString: ' + (currentString ? 'OK' : 'MANQUANT'));
+                alert('Veuillez sélectionner une raquette et un cordage pour calculer la rigidité composite.');
                 return;
             }
             
