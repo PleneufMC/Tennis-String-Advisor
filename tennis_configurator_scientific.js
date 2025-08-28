@@ -106,8 +106,8 @@ function getGaugeFactor(gauge) {
 
 // Facteur tension (FT)
 function getTensionFactor(tensionKg) {
-    const referencetension = 23; // Standard moderne
-    return 1 + (tensionKg - referenceTimeout) * 0.015;
+    const referenceTension = 23; // Standard moderne
+    return 1 + (tensionKg - referenceTension) * 0.015;
 }
 
 // Calcul RCS principal
