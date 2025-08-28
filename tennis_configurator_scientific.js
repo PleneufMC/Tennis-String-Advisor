@@ -275,8 +275,8 @@ const STRINGS_DATABASE = {
 
 // Correction de la fonction getTensionFactor
 function getTensionFactor(tensionKg) {
-    const referenceTimeout = 23; // Correction du nom de variable
-    return 1 + (tensionKg - referenceTimeout) * 0.015;
+    const referenceTension = 23; // Standard moderne
+    return 1 + (tensionKg - referenceTension) * 0.015;
 }
 
 // Génération HTML pour raquettes
@@ -637,8 +637,8 @@ const HTML_CONTENT = `<!DOCTYPE html>
 
         // Facteur tension
         function getTensionFactor(tensionKg) {
-            const referenceTimeout = 23;
-            return 1 + (tensionKg - referenceTimeout) * 0.015;
+            const referenceTension = 23; // Standard moderne
+            return 1 + (tensionKg - referenceTension) * 0.015;
         }
 
         // Calcul RC
