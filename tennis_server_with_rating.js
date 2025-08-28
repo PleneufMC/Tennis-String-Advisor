@@ -513,7 +513,7 @@ const HTML_CONTENT = `<!DOCTYPE html>
 // Handle HTTP requests
 const server = http.createServer((req, res) => {
     const parsedUrl = url.parse(req.url, true);
-    console.log(\`\${new Date().toISOString()} - \${req.method} \${req.url}\`);
+    console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
     
     // API endpoints for future enhancements
     if (parsedUrl.pathname === '/api/configurations' && req.method === 'GET') {
@@ -552,13 +552,13 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, () => {
-    console.log(\`🎾 Tennis String Advisor with Rating System`);
-    console.log(\`🚀 Server running at http://localhost:\${PORT}\`);
-    console.log(\`📊 Features:`);
-    console.log(\`   - Save configurations with custom names`);
-    console.log(\`   - Rate configurations with 1-5 stars`);
-    console.log(\`   - View and manage saved configurations`);
-    console.log(\`   - Load previously saved configurations`);
-    console.log(\`   - Support for hybrid string setups`);
-    console.log(\`   - Persistent storage using localStorage`);
+    console.log(`🎾 Tennis String Advisor with Rating System`);
+    console.log(`🚀 Server running at http://localhost:${PORT}`);
+    console.log(`📊 Features:`);
+    console.log(`   - Save configurations with custom names`);
+    console.log(`   - Rate configurations with 1-5 stars`);
+    console.log(`   - View and manage saved configurations`);
+    console.log(`   - Load previously saved configurations`);
+    console.log(`   - Support for hybrid string setups`);
+    console.log(`   - Persistent storage using localStorage`);
 });
