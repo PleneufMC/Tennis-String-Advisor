@@ -319,7 +319,7 @@ function generateStringOptions() {
     Object.entries(STRINGS_DATABASE).forEach(([category, strings]) => {
         html += `<optgroup label="${categoryLabels[category]}">`;
         strings.forEach(string => {
-            const value = `${string.name.toLowerCase().replace(/\\s+/g, '-')}`;
+            const value = `${category}-${string.name.toLowerCase().replace(/\\s+/g, '-')}`;
             html += `<option value="${value}">${string.name} (${string.type}, ${string.price})</option>`;
         });
         html += '</optgroup>';
@@ -693,7 +693,7 @@ const HTML_CONTENT = `<!DOCTYPE html>
         function findString(value) {
             for (const [category, strings] of Object.entries(stringsDB)) {
                 for (const string of strings) {
-                    const stringValue = string.name.toLowerCase().replace(/\\s+/g, '-');
+                    const stringValue = category + '-' + string.name.toLowerCase().replace(/\\s+/g, '-');
                     if (stringValue === value) {
                         return { ...string, category };
                     }
@@ -811,8 +811,11 @@ const HTML_CONTENT = `<!DOCTYPE html>
         
         // Calculate RCS button
         document.getElementById('calculate-rcs-btn').addEventListener('click', function() {
+            console.log('Debug - currentRacquet:', currentRacquet);
+            console.log('Debug - currentString:', currentString);
+            
             if (!currentRacquet || !currentString) {
-                alert('Veuillez sélectionner une raquette et un cordage pour calculer la rigidité composite.');
+                alert('Veuillez sélectionner une raquette et un cordage pour calculer la rigidité composite.\\n\\nDébug: Raquette=' + (currentRacquet ? 'OK' : 'MANQUANT') + ', Cordage=' + (currentString ? 'OK' : 'MANQUANT'));
                 return;
             }
             
