@@ -2,10 +2,6 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { loadStripe } from '@stripe/stripe-js';
-
-// Initialize Stripe (vous devrez remplacer avec votre clé publique)
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || 'pk_test_placeholder');
 
 export default function PricingPage() {
   const [loading, setLoading] = useState<string | null>(null);
@@ -52,46 +48,25 @@ export default function PricingPage() {
       buttonText: 'Essai gratuit 7 jours',
       buttonStyle: 'primary',
       popular: true,
-      stripePriceId: {
-        monthly: 'price_monthly_placeholder',
-        yearly: 'price_yearly_placeholder'
+      stripeLinks: {
+        monthly: 'https://buy.stripe.com/4gMcN56mL5wS3l44XO8Vi01',
+        yearly: 'https://buy.stripe.com/9B600jeThbVgcVEfCs8Vi02'
       }
     }
   ];
 
   const handleCheckout = async (plan: any) => {
-    if (!plan.stripePriceId) return;
+    if (!plan.stripeLinks) return;
     
     setLoading(plan.id);
     
-    try {
-      const response = await fetch('/api/checkout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          priceId: plan.stripePriceId[billingPeriod],
-          planName: plan.name,
-        }),
-      });
-
-      const { sessionId } = await response.json();
-      
-      const stripe = await stripePromise;
-      if (stripe) {
-        const { error } = await stripe.redirectToCheckout({ sessionId });
-        if (error) {
-          console.error('Stripe error:', error);
-          alert('Une erreur est survenue. Veuillez réessayer.');
-        }
-      }
-    } catch (error) {
-      console.error('Checkout error:', error);
-      alert('Une erreur est survenue. Veuillez réessayer.');
-    } finally {
-      setLoading(null);
-    }
+    // Redirection directe vers les liens de paiement Stripe
+    const checkoutUrl = plan.stripeLinks[billingPeriod];
+    
+    // Ajouter un petit délai pour l'animation
+    setTimeout(() => {
+      window.location.href = checkoutUrl;
+    }, 300);
   };
 
   return (
