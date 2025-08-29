@@ -1054,20 +1054,26 @@ export default function ConfiguratorPage() {
               <li>✓ Export PDF de vos données</li>
               <li>✓ Rappels de reordage</li>
             </ul>
-            <button style={{
-              width: '100%',
-              padding: '0.75rem',
-              backgroundColor: '#fbbf24',
-              color: '#78350f',
-              fontWeight: 'bold',
-              borderRadius: '8px',
-              border: 'none',
-              cursor: 'pointer',
-              transition: 'background-color 0.2s',
-              fontSize: '1rem'
-            }}>
+            <Link 
+              href="/pricing"
+              style={{
+                display: 'block',
+                width: '100%',
+                padding: '0.75rem',
+                backgroundColor: '#fbbf24',
+                color: '#78350f',
+                fontWeight: 'bold',
+                borderRadius: '8px',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'background-color 0.2s',
+                fontSize: '1rem',
+                textAlign: 'center',
+                textDecoration: 'none'
+              }}
+            >
               Débloquer le Journal Premium
-            </button>
+            </Link>
           </div>
 
           {/* Configuration Preview */}

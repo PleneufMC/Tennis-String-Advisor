@@ -155,7 +155,49 @@ export default function HomePage() {
                 e.currentTarget.style.boxShadow = '0 10px 25px rgba(0,0,0,0.3)';
               }}
             >
-              📊 Statistiques & Top Produits
+              📊 Statistiques
+            </Link>
+            <Link
+              href="/pricing"
+              style={{
+                padding: '1rem 2rem',
+                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                color: 'white',
+                fontWeight: 'bold',
+                borderRadius: '9999px',
+                textDecoration: 'none',
+                fontSize: '1.125rem',
+                boxShadow: '0 10px 25px rgba(0,0,0,0.3)',
+                transition: 'all 0.3s ease',
+                display: 'inline-block',
+                border: '2px solid rgba(255, 255, 255, 0.3)',
+                backdropFilter: 'blur(10px)',
+                position: 'relative'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px) scale(1.05)';
+                e.currentTarget.style.boxShadow = '0 15px 35px rgba(0,0,0,0.4)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                e.currentTarget.style.boxShadow = '0 10px 25px rgba(0,0,0,0.3)';
+              }}
+            >
+              ⭐ Passer Premium
+              <span style={{
+                position: 'absolute',
+                top: '-0.5rem',
+                right: '-0.5rem',
+                backgroundColor: '#ef4444',
+                color: 'white',
+                fontSize: '0.625rem',
+                padding: '0.25rem 0.5rem',
+                borderRadius: '9999px',
+                fontWeight: 'bold',
+                animation: 'pulse 2s infinite'
+              }}>
+                -17%
+              </span>
             </Link>
           </div>
         </div>
