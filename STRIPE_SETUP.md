@@ -14,26 +14,23 @@
 ### 3. Créer les produits et prix
 Dans le Dashboard Stripe :
 
-#### Plan Premium Mensuel
+#### Créer le produit Premium
 1. Allez dans **Products** → **Add product**
-2. Nom : "Tennis String Advisor Premium - Mensuel"
-3. Prix : 9.99 EUR / mois
+2. Nom : "Tennis String Advisor Premium"
+3. Description : "Accès complet à toutes les fonctionnalités premium"
+
+#### Plan Premium Mensuel
+1. Dans le produit créé, cliquez sur **Add price**
+2. Prix : **4.99 EUR** / mois
+3. Recurring : Monthly
 4. Copiez l'ID du prix (commence par `price_`)
 
 #### Plan Premium Annuel
-1. Créez un nouveau prix pour le même produit
-2. Prix : 99 EUR / an
-3. Copiez l'ID du prix
-
-#### Plan Pro Mensuel
-1. Créez un nouveau produit "Tennis String Advisor Pro - Mensuel"
-2. Prix : 19.99 EUR / mois
-3. Copiez l'ID du prix
-
-#### Plan Pro Annuel
-1. Créez un nouveau prix pour le produit Pro
-2. Prix : 199 EUR / an
-3. Copiez l'ID du prix
+1. Dans le même produit, cliquez sur **Add another price**
+2. Prix : **49.90 EUR** / an
+3. Recurring : Yearly
+4. Copiez l'ID du prix
+5. Note : Cela représente 2 mois gratuits (10 mois payés = 12 mois d'accès)
 
 ### 4. Configurer les variables d'environnement
 

@@ -188,7 +188,7 @@ export default function HomePage() {
                 position: 'absolute',
                 top: '-0.5rem',
                 right: '-0.5rem',
-                backgroundColor: '#ef4444',
+                backgroundColor: '#10b981',
                 color: 'white',
                 fontSize: '0.625rem',
                 padding: '0.25rem 0.5rem',
@@ -196,7 +196,7 @@ export default function HomePage() {
                 fontWeight: 'bold',
                 animation: 'pulse 2s infinite'
               }}>
-                -17%
+                4.99€/mois
               </span>
             </Link>
           </div>

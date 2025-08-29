@@ -19,10 +19,13 @@ export default function PricingPage() {
       features: [
         '✅ Configurateur de base',
         '✅ 3 configurations sauvegardées',
-        '✅ Recommandations RCS basiques',
-        '❌ Journal de cordage complet',
-        '❌ Statistiques avancées',
+        '✅ Calcul RCS simple',
+        '✅ Base de données complète',
+        '❌ Configurations illimitées',
+        '❌ Journal de cordage premium',
+        '❌ Historique détaillé',
         '❌ Export PDF',
+        '❌ Statistiques avancées',
         '❌ Support prioritaire'
       ],
       buttonText: 'Version actuelle',
@@ -32,40 +35,27 @@ export default function PricingPage() {
     {
       id: 'premium',
       name: 'Premium',
-      price: { monthly: 9.99, yearly: 99 },
+      price: { monthly: 4.99, yearly: 49.90 },
+      savings: '2 mois gratuits',
       features: [
-        '✅ Configurateur complet',
+        '✅ Tout du plan gratuit',
         '✅ Configurations illimitées',
-        '✅ Recommandations RCS avancées',
         '✅ Journal de cordage complet',
+        '✅ Historique permanent',
+        '✅ Analyse RCS avancée',
+        '✅ Recommandations personnalisées',
+        '✅ Export PDF professionnel',
         '✅ Statistiques détaillées',
-        '✅ Export PDF des configurations',
+        '✅ Rappels de recondage',
         '✅ Support email prioritaire'
       ],
-      buttonText: 'Commencer l\'essai gratuit',
+      buttonText: 'Essai gratuit 7 jours',
       buttonStyle: 'primary',
       popular: true,
       stripePriceId: {
         monthly: 'price_monthly_placeholder',
         yearly: 'price_yearly_placeholder'
       }
-    },
-    {
-      id: 'pro',
-      name: 'Pro',
-      price: { monthly: 19.99, yearly: 199 },
-      features: [
-        '✅ Tout du plan Premium',
-        '✅ API Access',
-        '✅ Données personnalisées',
-        '✅ Analyse IA avancée',
-        '✅ Rapports personnalisés',
-        '✅ Support téléphonique',
-        '✅ Formation personnalisée'
-      ],
-      buttonText: 'Contacter les ventes',
-      buttonStyle: 'enterprise',
-      popular: false
     }
   ];
 
@@ -194,15 +184,16 @@ export default function PricingPage() {
             <span style={{
               position: 'absolute',
               top: '-0.5rem',
-              right: '-0.5rem',
-              backgroundColor: '#ef4444',
+              right: '-1rem',
+              backgroundColor: '#10b981',
               color: 'white',
               fontSize: '0.625rem',
-              padding: '0.125rem 0.375rem',
+              padding: '0.125rem 0.5rem',
               borderRadius: '9999px',
-              fontWeight: 'bold'
+              fontWeight: 'bold',
+              whiteSpace: 'nowrap'
             }}>
-              -17%
+              2 MOIS GRATUITS
             </span>
           </button>
         </div>
@@ -226,12 +217,12 @@ export default function PricingPage() {
 
       {/* Pricing Cards */}
       <div style={{
-        maxWidth: '1200px',
+        maxWidth: '900px',
         margin: '0 auto',
         padding: '0 1rem 3rem',
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-        gap: '1.5rem',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
+        gap: '2rem',
         position: 'relative',
         zIndex: 1
       }}>
@@ -291,6 +282,16 @@ export default function PricingPage() {
               }}>
                 /{billingPeriod === 'monthly' ? 'mois' : 'an'}
               </span>
+              {billingPeriod === 'yearly' && plan.savings && (
+                <div style={{
+                  marginTop: '0.5rem',
+                  fontSize: '0.875rem',
+                  color: '#10b981',
+                  fontWeight: '500'
+                }}>
+                  💰 Économisez €{((plan.price.monthly * 12) - plan.price.yearly).toFixed(2)} ({plan.savings})
+                </div>
+              )}
             </div>
             
             <ul style={{
@@ -349,6 +350,67 @@ export default function PricingPage() {
         ))}
       </div>
       
+      {/* Comparison Table */}
+      <div style={{
+        maxWidth: '900px',
+        margin: '2rem auto',
+        padding: '0 1rem',
+        position: 'relative',
+        zIndex: 1
+      }}>
+        <div style={{
+          backgroundColor: 'white',
+          borderRadius: '16px',
+          padding: '2rem',
+          boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)'
+        }}>
+          <h2 style={{
+            fontSize: '1.5rem',
+            fontWeight: 'bold',
+            marginBottom: '1.5rem',
+            textAlign: 'center',
+            color: '#1f2937'
+          }}>
+            Pourquoi passer Premium ?
+          </h2>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            gap: '1.5rem',
+            textAlign: 'center'
+          }}>
+            <div>
+              <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>♾️</div>
+              <div style={{ fontWeight: 'bold', color: '#1f2937' }}>Illimité</div>
+              <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>
+                Sauvegardez toutes vos configurations
+              </div>
+            </div>
+            <div>
+              <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>📊</div>
+              <div style={{ fontWeight: 'bold', color: '#1f2937' }}>Statistiques</div>
+              <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>
+                Analysez vos performances
+              </div>
+            </div>
+            <div>
+              <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>📄</div>
+              <div style={{ fontWeight: 'bold', color: '#1f2937' }}>Export PDF</div>
+              <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>
+                Imprimez vos configurations
+              </div>
+            </div>
+            <div>
+              <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>🎯</div>
+              <div style={{ fontWeight: 'bold', color: '#1f2937' }}>RCS Avancé</div>
+              <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>
+                Recommandations personnalisées
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Trust Badges */}
       <div style={{
         maxWidth: '1200px',
