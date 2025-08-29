@@ -23,7 +23,8 @@
     "db:seed": "node scripts/seed-database.js",
     "test": "vitest",
     "test:e2e": "playwright test",
-    "analyze": "cross-env ANALYZE=true next build"
+    "analyze": "cross-env ANALYZE=true next build",
+    "export": "next export"
   },
   "dependencies": {
     "@netlify/plugin-nextjs": "^5.7.2",
