@@ -808,7 +808,7 @@ export default function ConfiguratorPage() {
             )}
           </div>
 
-          {/* Évaluer votre expérience */}
+          {/* Evaluer votre experience */}
           <div style={{ marginBottom: '1.5rem' }}>
             <div style={{
               padding: '0.75rem',
@@ -819,7 +819,7 @@ export default function ConfiguratorPage() {
               alignItems: 'center'
             }}>
               <span style={{ marginRight: '0.5rem' }}>⭐</span>
-              <span style={{ fontWeight: '500', color: '#92400e' }}>Évaluer votre expérience</span>
+              <span style={{ fontWeight: '500', color: '#92400e' }}>Evaluer votre experience</span>
             </div>
             <div style={{ padding: '0.75rem' }}>
               <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -1129,7 +1129,7 @@ export default function ConfiguratorPage() {
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: '#3730a3' }}>Tennis Elbow:</span>
-                <span style={{ fontWeight: '500', color: '#dc2626' }}>Éviter RCS > 30</span>
+                <span style={{ fontWeight: '500', color: '#dc2626' }}>Eviter RCS {'>'} 30</span>
               </div>
             </div>
           </div>
