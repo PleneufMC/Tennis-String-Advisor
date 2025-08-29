@@ -561,15 +561,58 @@ export function filterStrings(
 }
 
 // Fonction pour calculer le RCS (Recommandation Confort Score)
-export function calculateRCS(stiffness: number, tension: number): number {
-  // Formule basée sur la rigidité et la tension
-  // Plus la rigidité est élevée et la tension haute, plus le RCS est élevé (moins confortable)
-  const baseRCS = (stiffness / 10) * (tension / 20);
+export function calculateRCS(racquetStiffness: number, stringStiffness: number, tension: number): number {
+  // Formule RCS complète incluant raquette, cordage et tension
+  // Plus les valeurs sont élevées, plus le RCS est élevé (moins confortable)
+  const racquetFactor = racquetStiffness / 70; // Normalise autour de RA 70
+  const stringFactor = stringStiffness / 220; // Normalise autour de 220 lb/in
+  const tensionFactor = tension / 24; // Normalise autour de 24 kg
+  
+  const baseRCS = (racquetFactor * 0.4 + stringFactor * 0.4 + tensionFactor * 0.2) * 30;
   return Math.round(baseRCS);
 }
 
-// Fonction pour obtenir une recommandation basée sur le profil joueur
-export function getStringRecommendation(profile: {
+// Fonction simple pour obtenir une recommandation basée sur le RCS
+export function getStringRecommendation(rcs: number): {
+  level: string;
+  description: string;
+  suggestion: string;
+} {
+  if (rcs < 20) {
+    return {
+      level: 'Très Confortable',
+      description: 'Configuration très souple, excellente pour le confort du bras',
+      suggestion: 'Idéal pour les joueurs avec sensibilité du bras ou recherchant le maximum de confort'
+    };
+  } else if (rcs < 25) {
+    return {
+      level: 'Confortable',
+      description: 'Bon équilibre entre confort et performance',
+      suggestion: 'Convient à la majorité des joueurs récréatifs et intermédiaires'
+    };
+  } else if (rcs < 30) {
+    return {
+      level: 'Standard',
+      description: 'Configuration équilibrée avec bon contrôle',
+      suggestion: 'Approprié pour les joueurs avancés sans problème de bras'
+    };
+  } else if (rcs < 35) {
+    return {
+      level: 'Ferme',
+      description: 'Configuration rigide favorisant le contrôle',
+      suggestion: 'Pour les joueurs expérimentés avec une technique solide'
+    };
+  } else {
+    return {
+      level: 'Très Ferme',
+      description: 'Configuration très rigide, contrôle maximal',
+      suggestion: 'Attention: risque élevé de tennis elbow, réservé aux professionnels'
+    };
+  }
+}
+
+// Fonction complète pour obtenir une recommandation basée sur le profil joueur
+export function getStringRecommendationByProfile(profile: {
   level: 'beginner' | 'intermediate' | 'advanced' | 'pro';
   style: 'baseline' | 'all-court' | 'serve-volley' | 'defensive';
   priority: 'control' | 'power' | 'comfort' | 'spin' | 'durability';

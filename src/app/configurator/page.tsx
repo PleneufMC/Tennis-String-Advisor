@@ -89,11 +89,12 @@ export default function ConfiguratorPage() {
 
     const avgRCS = selectedCrossString ? (mainRCS + crossRCS) / 2 : mainRCS;
     const recommendation = getStringRecommendation(avgRCS);
-    const compatibility = calculateCompatibility(
-      selectedRacquet.stiffness || 65,
+    const compatibilityResult = calculateCompatibility(
+      selectedRacquet,
       selectedMainString.stiffness,
       avgTension
     );
+    const compatibility = compatibilityResult.score;
 
     return {
       mainRCS,
