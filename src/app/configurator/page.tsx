@@ -71,11 +71,29 @@ export default function ConfiguratorPage() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #1e5128 0%, #2d7a3d 50%, #4a9b5f 100%)',
+      backgroundImage: 'url("/images/tennis-court-bg.jpg")',
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat',
+      backgroundAttachment: 'fixed',
+      position: 'relative',
       fontFamily: 'Inter, system-ui, sans-serif'
     }}>
+      {/* Dark overlay */}
+      <div style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: 'linear-gradient(135deg, rgba(30, 81, 40, 0.85) 0%, rgba(45, 122, 61, 0.8) 50%, rgba(74, 155, 95, 0.75) 100%)',
+        zIndex: 0
+      }} />
+      
       {/* Header */}
-      <div style={{ 
+      <div style={{
+        position: 'relative',
+        zIndex: 1, 
         textAlign: 'center', 
         padding: '2rem 1rem',
         color: 'white' 
@@ -84,18 +102,19 @@ export default function ConfiguratorPage() {
           fontSize: '2.5rem', 
           fontWeight: 'bold', 
           marginBottom: '0.5rem',
-          textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
+          textShadow: '3px 3px 6px rgba(0,0,0,0.5)'
         }}>
           Tennis String Advisor Premium
         </h1>
-        <p style={{ color: '#c8e6c9', fontSize: '1.1rem' }}>
+        <p style={{ color: '#ffffff', fontSize: '1.1rem', textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}>
           Système avancé avec journal de cordage professionnel
         </p>
         <Link href="/" style={{
           display: 'inline-block',
           marginTop: '1rem',
           padding: '0.5rem 1.5rem',
-          backgroundColor: '#4a9b5f',
+          backgroundColor: 'rgba(74, 155, 95, 0.9)',
+          backdropFilter: 'blur(10px)',
           color: 'white',
           borderRadius: '9999px',
           fontSize: '0.875rem',
@@ -113,13 +132,15 @@ export default function ConfiguratorPage() {
         padding: '0 1rem 3rem',
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(500px, 1fr))',
-        gap: '1.5rem'
+        gap: '1.5rem',
+        position: 'relative',
+        zIndex: 1
       }}>
         {/* Left Column - Configuration */}
         <div style={{
           backgroundColor: 'white',
           borderRadius: '16px',
-          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+          boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)',
           padding: '1.5rem'
         }}>
           <h2 style={{
@@ -439,7 +460,7 @@ export default function ConfiguratorPage() {
         <div style={{
           backgroundColor: 'white',
           borderRadius: '16px',
-          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+          boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)',
           padding: '1.5rem'
         }}>
           <h2 style={{
