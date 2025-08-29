@@ -115,7 +115,7 @@ export const ConfigurationStorage = {
     }, {} as Record<string, number>);
     
     const favoriteRacquet = Object.entries(racquetCounts)
-      .sort(([,a], [,b]) => b - a)[0]?.[0] || null;
+      .sort(([,a], [,b]) => (b as number) - (a as number))[0]?.[0] || null;
     
     // Find most used string
     const stringCounts = configs.reduce((acc, c) => {
@@ -124,7 +124,7 @@ export const ConfigurationStorage = {
     }, {} as Record<string, number>);
     
     const favoriteString = Object.entries(stringCounts)
-      .sort(([,a], [,b]) => b - a)[0]?.[0] || null;
+      .sort(([,a], [,b]) => (b as number) - (a as number))[0]?.[0] || null;
 
     return {
       total: configs.length,
