@@ -65,13 +65,11 @@ export default function HomePage() {
           </p>
           <div style={{ 
             display: 'flex', 
-            flexDirection: 'column',
+            flexDirection: 'row',
+            flexWrap: 'wrap',
             gap: '1rem',
             alignItems: 'center',
-            '@media (min-width: 640px)': {
-              flexDirection: 'row',
-              justifyContent: 'center'
-            }
+            justifyContent: 'center'
           }}>
             <Link
               href="/configurator"
