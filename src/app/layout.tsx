@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import { Inter, JetBrains_Mono } from 'next/font/google';
-import { Providers } from '@/components/providers/providers';
 import { Analytics } from '@/components/analytics/analytics';
 import './globals.css';
 
@@ -148,21 +147,11 @@ export default function RootLayout({
         />
       </head>
       <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}>
-        <Providers>
-          {/* Skip to main content for accessibility */}
-          <a
-            href="#main-content"
-            className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-primary text-primary-foreground px-4 py-2 rounded-md z-50"
-          >
-            Skip to main content
-          </a>
-
-          <div className="relative flex min-h-screen flex-col">
-            <div className="flex-1" id="main-content">
-              {children}
-            </div>
+        <div className="relative flex min-h-screen flex-col">
+          <div className="flex-1" id="main-content">
+            {children}
           </div>
-        </Providers>
+        </div>
 
         {/* Analytics - only in production */}
         {process.env.NODE_ENV === 'production' && process.env.NEXT_PUBLIC_GA_ID && (
