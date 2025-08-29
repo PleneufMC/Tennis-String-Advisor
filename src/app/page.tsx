@@ -2,6 +2,8 @@
 
 import Link from 'next/link';
 import { useEffect } from 'react';
+import { racquetsDatabase } from '@/data/racquets-database';
+import { stringsDatabase } from '@/data/strings-database';
 
 export default function HomePage() {
   useEffect(() => {
@@ -128,6 +130,35 @@ export default function HomePage() {
             >
               📚 Version Gratuite
             </Link>
+            <Link
+              href="/statistics"
+              style={{
+                padding: '1rem 2rem',
+                backgroundColor: 'rgba(251, 191, 36, 0.9)',
+                color: 'white',
+                fontWeight: 'bold',
+                borderRadius: '9999px',
+                textDecoration: 'none',
+                fontSize: '1.125rem',
+                boxShadow: '0 10px 25px rgba(0,0,0,0.3)',
+                transition: 'all 0.3s ease',
+                display: 'inline-block',
+                border: '2px solid rgba(255, 255, 255, 0.3)',
+                backdropFilter: 'blur(10px)'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(251, 211, 66, 0.95)';
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 15px 35px rgba(0,0,0,0.4)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(251, 191, 36, 0.9)';
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 10px 25px rgba(0,0,0,0.3)';
+              }}
+            >
+              📊 Statistiques & Top Produits
+            </Link>
           </div>
         </div>
 
@@ -213,6 +244,32 @@ export default function HomePage() {
               opacity: 0.95
             }}>
               Historique complet de vos configurations
+            </p>
+          </div>
+          <div style={{
+            background: 'rgba(255, 255, 255, 0.15)',
+            backdropFilter: 'blur(20px)',
+            borderRadius: '12px',
+            padding: '1.5rem',
+            color: 'white',
+            border: '1px solid rgba(255, 255, 255, 0.3)',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)'
+          }}>
+            <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>🎯</div>
+            <h3 style={{ 
+              fontSize: '1.25rem', 
+              fontWeight: 'bold', 
+              marginBottom: '0.5rem',
+              textShadow: '1px 1px 2px rgba(0,0,0,0.3)'
+            }}>
+              Base de données complète
+            </h3>
+            <p style={{ 
+              color: '#ffffff', 
+              fontSize: '0.95rem',
+              opacity: 0.95
+            }}>
+              {racquetsDatabase.length} raquettes et {stringsDatabase.length} cordages disponibles
             </p>
           </div>
         </div>
