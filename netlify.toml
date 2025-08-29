@@ -1,0 +1,25 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+[build.environment]
+  NEXT_USE_NETLIFY_EDGE = "true"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+  conditions = {Role = ["admin"]}
+  force = false
+
+[context.production.environment]
+  NEXT_PUBLIC_API_URL = "https://tennis-string-advisor.netlify.app"
+
+[context.deploy-preview.environment]
+  NEXT_PUBLIC_API_URL = "https://deploy-preview.netlify.app"
+
+[context.branch-deploy.environment]
+  NEXT_PUBLIC_API_URL = "https://branch.netlify.app"
