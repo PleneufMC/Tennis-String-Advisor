@@ -120,7 +120,6 @@ const nextConfig = {
 
   // Experimental features for better performance
   experimental: {
-    serverActions: true,
     serverComponentsExternalPackages: ['@prisma/client'],
     optimizeCss: true,
     scrollRestoration: true,
