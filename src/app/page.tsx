@@ -1,64 +1,171 @@
-import Link from 'next/link';
-import { Metadata } from 'next';
+'use client';
 
-export const metadata: Metadata = {
-  title: 'Tennis String Advisor - Expert Racquet & String Recommendations',
-  description: 'Get personalized tennis racquet and string recommendations from our expert system. Compare specifications, read reviews, and find the perfect equipment for your playing style.',
-};
+import Link from 'next/link';
+import { useEffect } from 'react';
 
 export default function HomePage() {
+  useEffect(() => {
+    // Force styles to apply
+    document.body.style.margin = '0';
+    document.body.style.padding = '0';
+  }, []);
+
   return (
-    <main className="min-h-screen bg-gradient-to-br from-green-800 via-green-700 to-green-600 flex items-center justify-center px-4">
-      <div className="max-w-4xl w-full">
-        <div className="text-center text-white mb-12">
-          <h1 className="text-5xl md:text-6xl font-bold mb-4">
+    <main 
+      style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #1e5128 0%, #2d7a3d 50%, #4a9b5f 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '1rem',
+        fontFamily: 'Inter, system-ui, sans-serif'
+      }}
+    >
+      <div style={{ maxWidth: '1024px', width: '100%' }}>
+        <div style={{ textAlign: 'center', color: 'white', marginBottom: '3rem' }}>
+          <h1 style={{ 
+            fontSize: 'clamp(2.5rem, 5vw, 4rem)', 
+            fontWeight: 'bold', 
+            marginBottom: '1rem',
+            textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
+          }}>
             Tennis String Advisor
           </h1>
-          <p className="text-xl md:text-2xl text-green-100 mb-8">
+          <p style={{ 
+            fontSize: 'clamp(1.1rem, 2vw, 1.5rem)', 
+            color: '#c8e6c9',
+            marginBottom: '2rem' 
+          }}>
             Système avancé avec journal de cordage professionnel
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div style={{ 
+            display: 'flex', 
+            flexDirection: 'column',
+            gap: '1rem',
+            alignItems: 'center',
+            '@media (min-width: 640px)': {
+              flexDirection: 'row',
+              justifyContent: 'center'
+            }
+          }}>
             <Link
               href="/configurator"
-              className="px-8 py-4 bg-white text-green-700 font-bold rounded-full hover:bg-green-50 transition-colors text-lg shadow-xl"
+              style={{
+                padding: '1rem 2rem',
+                backgroundColor: 'white',
+                color: '#2d7a3d',
+                fontWeight: 'bold',
+                borderRadius: '9999px',
+                textDecoration: 'none',
+                fontSize: '1.125rem',
+                boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
+                transition: 'all 0.3s ease',
+                display: 'inline-block',
+                border: '2px solid transparent'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#f0f9ff';
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 15px 35px rgba(0,0,0,0.3)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'white';
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 10px 25px rgba(0,0,0,0.2)';
+              }}
             >
               🎾 Accéder au Configurateur Premium
             </Link>
             <Link
               href="/configurator"
-              className="px-8 py-4 bg-green-600 text-white font-bold rounded-full hover:bg-green-500 transition-colors text-lg shadow-xl"
+              style={{
+                padding: '1rem 2rem',
+                backgroundColor: '#4a9b5f',
+                color: 'white',
+                fontWeight: 'bold',
+                borderRadius: '9999px',
+                textDecoration: 'none',
+                fontSize: '1.125rem',
+                boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
+                transition: 'all 0.3s ease',
+                display: 'inline-block',
+                border: '2px solid transparent'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#5faf73';
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 15px 35px rgba(0,0,0,0.3)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#4a9b5f';
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 10px 25px rgba(0,0,0,0.2)';
+              }}
             >
               📚 Version Gratuite
             </Link>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16">
-          <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 text-white">
-            <div className="text-3xl mb-3">⚙️</div>
-            <h3 className="text-xl font-bold mb-2">Configuration Avancée</h3>
-            <p className="text-green-100">
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+          gap: '1.5rem',
+          marginTop: '4rem'
+        }}>
+          <div style={{
+            background: 'rgba(255, 255, 255, 0.1)',
+            backdropFilter: 'blur(10px)',
+            borderRadius: '12px',
+            padding: '1.5rem',
+            color: 'white',
+            border: '1px solid rgba(255, 255, 255, 0.2)'
+          }}>
+            <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>⚙️</div>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
+              Configuration Avancée
+            </h3>
+            <p style={{ color: '#c8e6c9', fontSize: '0.95rem' }}>
               Paramètres détaillés pour optimiser votre cordage
             </p>
           </div>
-          <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 text-white">
-            <div className="text-3xl mb-3">📊</div>
-            <h3 className="text-xl font-bold mb-2">Analyse RCS</h3>
-            <p className="text-green-100">
+          <div style={{
+            background: 'rgba(255, 255, 255, 0.1)',
+            backdropFilter: 'blur(10px)',
+            borderRadius: '12px',
+            padding: '1.5rem',
+            color: 'white',
+            border: '1px solid rgba(255, 255, 255, 0.2)'
+          }}>
+            <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>📊</div>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
+              Analyse RCS
+            </h3>
+            <p style={{ color: '#c8e6c9', fontSize: '0.95rem' }}>
               Système de recommandations basé sur le confort
             </p>
           </div>
-          <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 text-white">
-            <div className="text-3xl mb-3">📚</div>
-            <h3 className="text-xl font-bold mb-2">Journal Premium</h3>
-            <p className="text-green-100">
+          <div style={{
+            background: 'rgba(255, 255, 255, 0.1)',
+            backdropFilter: 'blur(10px)',
+            borderRadius: '12px',
+            padding: '1.5rem',
+            color: 'white',
+            border: '1px solid rgba(255, 255, 255, 0.2)'
+          }}>
+            <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>📚</div>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
+              Journal Premium
+            </h3>
+            <p style={{ color: '#c8e6c9', fontSize: '0.95rem' }}>
               Historique complet de vos configurations
             </p>
           </div>
         </div>
 
-        <div className="mt-16 text-center">
-          <p className="text-white/80 text-sm">
+        <div style={{ marginTop: '4rem', textAlign: 'center' }}>
+          <p style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '0.875rem' }}>
             © 2025 Tennis String Advisor - Développé pour les passionnés de tennis
           </p>
         </div>
