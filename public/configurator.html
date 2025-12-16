@@ -519,6 +519,10 @@
     let configurationCount = 0;
     const FREE_CONFIGURATIONS = 1;
     const LOCAL_STORAGE_KEY = 'configurator_free_used';
+    
+    // Database cache
+    let racquetsDB = [];
+    let stringsDB = [];
 
     // State
     const selections = {
@@ -680,8 +684,125 @@
       }
     }
 
+    // Load racquets and strings from database
+    async function loadCatalogData() {
+      try {
+        // Load racquets
+        const { data: racquets, error: rError } = await supabase
+          .from('racquets')
+          .select('*')
+          .order('brand', { ascending: true });
+        
+        if (racquets) {
+          racquetsDB = racquets;
+          console.log(`Loaded ${racquetsDB.length} racquets from database`);
+        }
+        
+        // Load strings
+        const { data: strings, error: sError } = await supabase
+          .from('strings')
+          .select('*')
+          .order('brand', { ascending: true });
+        
+        if (strings) {
+          stringsDB = strings;
+          console.log(`Loaded ${stringsDB.length} strings from database`);
+        }
+      } catch (error) {
+        console.error('Error loading catalog:', error);
+      }
+    }
+
     // Initialize on load
     checkUserStatus();
+    loadCatalogData();
+
+    // Smart racquet picker based on criteria
+    function pickBestRacquet(criteria) {
+      if (racquetsDB.length === 0) {
+        // Fallback to hardcoded if DB not loaded
+        return null;
+      }
+      
+      let candidates = [...racquetsDB];
+      
+      // Filter by player level
+      if (criteria.level) {
+        candidates = candidates.filter(r => {
+          const levels = r.player_level || [];
+          return levels.some(l => l.toLowerCase() === criteria.level.toLowerCase());
+        });
+      }
+      
+      // Filter by category
+      if (criteria.category) {
+        candidates = candidates.filter(r => {
+          const cat = (r.category || '').toLowerCase();
+          return criteria.category.some(c => cat.includes(c.toLowerCase()));
+        });
+      }
+      
+      // Filter by stiffness range (comfort requirement)
+      if (criteria.maxStiffness) {
+        candidates = candidates.filter(r => 
+          r.stiffness && r.stiffness <= criteria.maxStiffness
+        );
+      }
+      
+      if (criteria.minStiffness) {
+        candidates = candidates.filter(r => 
+          r.stiffness && r.stiffness >= criteria.minStiffness
+        );
+      }
+      
+      // Sort by preference
+      if (criteria.preferLightweight) {
+        candidates.sort((a, b) => (a.weight || 300) - (b.weight || 300));
+      }
+      
+      if (criteria.preferComfort) {
+        candidates.sort((a, b) => (a.stiffness || 70) - (b.stiffness || 70));
+      }
+      
+      // Pick one randomly from top 3 to add variety
+      const topCandidates = candidates.slice(0, Math.min(3, candidates.length));
+      return topCandidates[Math.floor(Math.random() * topCandidates.length)] || candidates[0];
+    }
+
+    // Smart string picker
+    function pickBestString(criteria) {
+      if (stringsDB.length === 0) {
+        return null;
+      }
+      
+      let candidates = [...stringsDB];
+      
+      // Filter by type
+      if (criteria.types) {
+        candidates = candidates.filter(s => {
+          const type = (s.type || '').toLowerCase();
+          return criteria.types.some(t => type.includes(t.toLowerCase()));
+        });
+      }
+      
+      // Sort by comfort if needed
+      if (criteria.preferComfort) {
+        candidates.sort((a, b) => (b.comfort || 5) - (a.comfort || 5));
+      }
+      
+      // Sort by spin if needed
+      if (criteria.preferSpin) {
+        candidates.sort((a, b) => (b.spin || 5) - (a.spin || 5));
+      }
+      
+      // Sort by control if needed
+      if (criteria.preferControl) {
+        candidates.sort((a, b) => (b.control || 5) - (a.control || 5));
+      }
+      
+      const topCandidates = candidates.slice(0, Math.min(3, candidates.length));
+      return topCandidates[Math.floor(Math.random() * topCandidates.length)] || candidates[0];
+    }
 
     // Generate result
     function generateResult() {
@@ -690,49 +811,308 @@
         showPaywall();
         return;
       }
-      // Determine recommendations based on selections
+      
+      // Defaults (fallback if DB not loaded)
       let racquet = { brand: 'Babolat', name: 'Pure Drive', category: 'Polyvalent', weight: '300g', head: '100 sq in', stiffness: 72, stiffnessDisplay: 'RA 72', price: '269€', reason: 'Raquette polyvalente idéale pour progresser.', stringStiffness: 240 };
       let string = { brand: 'Babolat', name: 'RPM Blast', type: 'Polyester', spin: '10/10', control: '8/10', comfort: '5/10', price: '18€', reason: 'Excellent pour générer du spin.', stiffness: 240 };
       let tension = { value: '23-25 kg', numValue: 24, reason: 'Tension moyenne pour équilibre puissance/contrôle.' };
       let rcsProfile = null;
+      
+      let racquetCriteria = {};
+      let stringCriteria = {};
 
       // PRIORITY 1: Adjust for LEVEL (débutant needs confort!)
       if (selections.level === 'debutant') {
-        racquet = { brand: 'Wilson', name: 'Clash 100', category: 'Confort', weight: '295g', head: '100 sq in', stiffness: 55, stiffnessDisplay: 'RA 55', price: '249€', reason: 'Raquette très flexible et confortable, idéale pour débuter sans forcer.' };
-        string = { brand: 'Tecnifibre', name: 'NRG2', type: 'Multifilament', spin: '6/10', control: '7/10', comfort: '10/10', price: '16€', reason: 'Multifilament doux qui protège le bras et offre de la puissance.', stiffness: 145 };
+        racquetCriteria = {
+          level: 'Beginner',
+          category: ['Light', 'Tweener'],
+          maxStiffness: 66,
+          preferComfort: true,
+          preferLightweight: true
+        };
+        stringCriteria = {
+          types: ['Multifilament', 'Natural Gut'],
+          preferComfort: true
+        };
         tension = { value: '20-22 kg', numValue: 21, reason: 'Tension basse pour maximiser le confort et la puissance.' };
         rcsProfile = 'debutant';
+        
+        const dbRacquet = pickBestRacquet(racquetCriteria);
+        const dbString = pickBestString(stringCriteria);
+        
+        if (dbRacquet) {
+          racquet = {
+            brand: dbRacquet.brand,
+            name: dbRacquet.model,
+            category: dbRacquet.category || 'Confort',
+            weight: `${dbRacquet.weight}g`,
+            head: `${dbRacquet.head_size} sq in`,
+            stiffness: dbRacquet.stiffness || 55,
+            stiffnessDisplay: `RA ${dbRacquet.stiffness || 55}`,
+            price: `${dbRacquet.price_eur}€`,
+            reason: 'Raquette flexible et confortable, idéale pour débuter sans forcer.'
+          };
+        } else {
+          // Fallback
+          racquet = { brand: 'Wilson', name: 'Clash 100', category: 'Confort', weight: '295g', head: '100 sq in', stiffness: 55, stiffnessDisplay: 'RA 55', price: '249€', reason: 'Raquette très flexible et confortable, idéale pour débuter sans forcer.' };
+        }
+        
+        if (dbString) {
+          string = {
+            brand: dbString.brand,
+            name: dbString.model,
+            type: dbString.type,
+            spin: `${dbString.spin || 6}/10`,
+            control: `${dbString.control || 7}/10`,
+            comfort: `${dbString.comfort || 9}/10`,
+            price: `${dbString.price_eur}€`,
+            reason: 'Cordage doux qui protège le bras et offre de la puissance.',
+            stiffness: dbString.stiffness || 150
+          };
+        } else {
+          string = { brand: 'Tecnifibre', name: 'NRG2', type: 'Multifilament', spin: '6/10', control: '7/10', comfort: '10/10', price: '16€', reason: 'Multifilament doux qui protège le bras et offre de la puissance.', stiffness: 145 };
+        }
       } else if (selections.level === 'intermediaire') {
-        racquet = { brand: 'Head', name: 'Speed MP', category: 'Polyvalent', weight: '300g', head: '100 sq in', stiffness: 62, stiffnessDisplay: 'RA 62', price: '259€', reason: 'Raquette équilibrée pour joueur en progression.' };
-        string = { brand: 'Wilson', name: 'NXT', type: 'Multifilament', spin: '6/10', control: '7/10', comfort: '9/10', price: '22€', reason: 'Multifilament confortable avec bon retour d\'énergie.', stiffness: 155 };
+        racquetCriteria = {
+          level: 'Intermediate',
+          category: ['Tweener', 'Modern Player'],
+          maxStiffness: 67,
+          minStiffness: 60
+        };
+        stringCriteria = {
+          types: ['Multifilament', 'Hybrid'],
+          preferComfort: true
+        };
         tension = { value: '22-24 kg', numValue: 23, reason: 'Tension modérée pour confort et contrôle.' };
         rcsProfile = 'club';
+        
+        const dbRacquet = pickBestRacquet(racquetCriteria);
+        const dbString = pickBestString(stringCriteria);
+        
+        if (dbRacquet) {
+          racquet = {
+            brand: dbRacquet.brand,
+            name: dbRacquet.model,
+            category: dbRacquet.category || 'Polyvalent',
+            weight: `${dbRacquet.weight}g`,
+            head: `${dbRacquet.head_size} sq in`,
+            stiffness: dbRacquet.stiffness || 62,
+            stiffnessDisplay: `RA ${dbRacquet.stiffness || 62}`,
+            price: `${dbRacquet.price_eur}€`,
+            reason: 'Raquette équilibrée pour joueur en progression.'
+          };
+        } else {
+          racquet = { brand: 'Head', name: 'Speed MP', category: 'Polyvalent', weight: '300g', head: '100 sq in', stiffness: 62, stiffnessDisplay: 'RA 62', price: '259€', reason: 'Raquette équilibrée pour joueur en progression.' };
+        }
+        
+        if (dbString) {
+          string = {
+            brand: dbString.brand,
+            name: dbString.model,
+            type: dbString.type,
+            spin: `${dbString.spin || 7}/10`,
+            control: `${dbString.control || 7}/10`,
+            comfort: `${dbString.comfort || 8}/10`,
+            price: `${dbString.price_eur}€`,
+            reason: 'Cordage confortable avec bon retour d\'énergie.',
+            stiffness: dbString.stiffness || 160
+          };
+        } else {
+          string = { brand: 'Wilson', name: 'NXT', type: 'Multifilament', spin: '6/10', control: '7/10', comfort: '9/10', price: '22€', reason: 'Multifilament confortable avec bon retour d\'énergie.', stiffness: 155 };
+        }
       }
 
       // PRIORITY 2: Adjust for physical issues (OVERRIDES level for safety)
       if (selections.physical === 'bras' || selections.physical === 'epaule') {
-        racquet = { brand: 'Yonex', name: 'EZONE 100', category: 'Confort', weight: '300g', head: '100 sq in', stiffness: 62, stiffnessDisplay: 'RA 62', price: '249€', reason: 'Raquette très confortable, absorbe bien les vibrations.' };
-        string = { brand: 'Wilson', name: 'NXT', type: 'Multifilament', spin: '6/10', control: '7/10', comfort: '10/10', price: '22€', reason: 'Multifilament ultra-confortable, excellent pour protéger le bras.', stiffness: 155 };
+        racquetCriteria = {
+          level: selections.level === 'debutant' ? 'Beginner' : 'Intermediate',
+          category: ['Tweener', 'Light'],
+          maxStiffness: 64,
+          preferComfort: true
+        };
+        stringCriteria = {
+          types: ['Multifilament', 'Natural Gut'],
+          preferComfort: true
+        };
         tension = { value: '21-23 kg', numValue: 22, reason: 'Tension basse pour plus de confort et moins de vibrations.' };
         rcsProfile = 'tennis_elbow';
+        
+        const dbRacquet = pickBestRacquet(racquetCriteria);
+        const dbString = pickBestString(stringCriteria);
+        
+        if (dbRacquet) {
+          racquet = {
+            brand: dbRacquet.brand,
+            name: dbRacquet.model,
+            category: dbRacquet.category || 'Confort',
+            weight: `${dbRacquet.weight}g`,
+            head: `${dbRacquet.head_size} sq in`,
+            stiffness: dbRacquet.stiffness || 62,
+            stiffnessDisplay: `RA ${dbRacquet.stiffness || 62}`,
+            price: `${dbRacquet.price_eur}€`,
+            reason: 'Raquette confortable qui absorbe bien les vibrations.'
+          };
+        } else {
+          racquet = { brand: 'Yonex', name: 'EZONE 100', category: 'Confort', weight: '300g', head: '100 sq in', stiffness: 62, stiffnessDisplay: 'RA 62', price: '249€', reason: 'Raquette très confortable, absorbe bien les vibrations.' };
+        }
+        
+        if (dbString) {
+          string = {
+            brand: dbString.brand,
+            name: dbString.model,
+            type: dbString.type,
+            spin: `${dbString.spin || 6}/10`,
+            control: `${dbString.control || 7}/10`,
+            comfort: `${dbString.comfort || 10}/10`,
+            price: `${dbString.price_eur}€`,
+            reason: 'Cordage ultra-confortable, excellent pour protéger le bras.',
+            stiffness: dbString.stiffness || 155
+          };
+        } else {
+          string = { brand: 'Wilson', name: 'NXT', type: 'Multifilament', spin: '6/10', control: '7/10', comfort: '10/10', price: '22€', reason: 'Multifilament ultra-confortable, excellent pour protéger le bras.', stiffness: 155 };
+        }
       }
       // PRIORITY 3: Customize based on style (ONLY for advanced/competition players)
       else if (selections.level === 'avance' || selections.level === 'competition') {
         if (selections.style === 'puissance') {
-          racquet = { brand: 'Babolat', name: 'Pure Drive', category: 'Puissance', weight: '300g', head: '100 sq in', stiffness: 72, stiffnessDisplay: 'RA 72', price: '269€', reason: 'Raquette puissante avec excellent retour d\'énergie.' };
-          string = { brand: 'Luxilon', name: 'ALU Power', type: 'Polyester', spin: '8/10', control: '9/10', comfort: '6/10', price: '19€', reason: 'Contrôle optimal pour canaliser votre puissance.', stiffness: 230 };
+          racquetCriteria = {
+            level: selections.level === 'avance' ? 'Advanced' : 'Pro',
+            category: ['Power', 'Modern Player'],
+            minStiffness: 66
+          };
+          stringCriteria = {
+            types: ['Polyester', 'Co-Polyester'],
+            preferControl: true
+          };
           tension = { value: '24-26 kg', numValue: 25, reason: 'Tension plus haute pour plus de contrôle.' };
           rcsProfile = 'competiteur';
+          
+          const dbRacquet = pickBestRacquet(racquetCriteria);
+          const dbString = pickBestString(stringCriteria);
+          
+          if (dbRacquet) {
+            racquet = {
+              brand: dbRacquet.brand,
+              name: dbRacquet.model,
+              category: dbRacquet.category || 'Puissance',
+              weight: `${dbRacquet.weight}g`,
+              head: `${dbRacquet.head_size} sq in`,
+              stiffness: dbRacquet.stiffness || 70,
+              stiffnessDisplay: `RA ${dbRacquet.stiffness || 70}`,
+              price: `${dbRacquet.price_eur}€`,
+              reason: 'Raquette puissante avec excellent retour d\'énergie.'
+            };
+          } else {
+            racquet = { brand: 'Babolat', name: 'Pure Drive', category: 'Puissance', weight: '300g', head: '100 sq in', stiffness: 72, stiffnessDisplay: 'RA 72', price: '269€', reason: 'Raquette puissante avec excellent retour d\'énergie.' };
+          }
+          
+          if (dbString) {
+            string = {
+              brand: dbString.brand,
+              name: dbString.model,
+              type: dbString.type,
+              spin: `${dbString.spin || 8}/10`,
+              control: `${dbString.control || 9}/10`,
+              comfort: `${dbString.comfort || 6}/10`,
+              price: `${dbString.price_eur}€`,
+              reason: 'Contrôle optimal pour canaliser votre puissance.',
+              stiffness: dbString.stiffness || 230
+            };
+          } else {
+            string = { brand: 'Luxilon', name: 'ALU Power', type: 'Polyester', spin: '8/10', control: '9/10', comfort: '6/10', price: '19€', reason: 'Contrôle optimal pour canaliser votre puissance.', stiffness: 230 };
+          }
         } else if (selections.style === 'controle') {
-          racquet = { brand: 'Wilson', name: 'Pro Staff 97', category: 'Contrôle', weight: '315g', head: '97 sq in', stiffness: 63, stiffnessDisplay: 'RA 63', price: '299€', reason: 'Raquette de contrôle ultime, utilisée par Federer.' };
-          string = { brand: 'Head', name: 'Hawk', type: 'Polyester', spin: '7/10', control: '9/10', comfort: '5/10', price: '12€', reason: 'Précision et durabilité excellentes.', stiffness: 215 };
+          racquetCriteria = {
+            level: selections.level === 'avance' ? 'Advanced' : 'Pro',
+            category: ['Control', 'Classic Player']
+          };
+          stringCriteria = {
+            types: ['Polyester'],
+            preferControl: true
+          };
           tension = { value: '25-27 kg', numValue: 26, reason: 'Tension haute pour maximiser le contrôle.' };
           rcsProfile = 'confirme';
+          
+          const dbRacquet = pickBestRacquet(racquetCriteria);
+          const dbString = pickBestString(stringCriteria);
+          
+          if (dbRacquet) {
+            racquet = {
+              brand: dbRacquet.brand,
+              name: dbRacquet.model,
+              category: dbRacquet.category || 'Contrôle',
+              weight: `${dbRacquet.weight}g`,
+              head: `${dbRacquet.head_size} sq in`,
+              stiffness: dbRacquet.stiffness || 63,
+              stiffnessDisplay: `RA ${dbRacquet.stiffness || 63}`,
+              price: `${dbRacquet.price_eur}€`,
+              reason: 'Raquette de contrôle pour précision maximale.'
+            };
+          } else {
+            racquet = { brand: 'Wilson', name: 'Pro Staff 97', category: 'Contrôle', weight: '315g', head: '97 sq in', stiffness: 63, stiffnessDisplay: 'RA 63', price: '299€', reason: 'Raquette de contrôle ultime, utilisée par Federer.' };
+          }
+          
+          if (dbString) {
+            string = {
+              brand: dbString.brand,
+              name: dbString.model,
+              type: dbString.type,
+              spin: `${dbString.spin || 7}/10`,
+              control: `${dbString.control || 9}/10`,
+              comfort: `${dbString.comfort || 5}/10`,
+              price: `${dbString.price_eur}€`,
+              reason: 'Précision et durabilité excellentes.',
+              stiffness: dbString.stiffness || 220
+            };
+          } else {
+            string = { brand: 'Head', name: 'Hawk', type: 'Polyester', spin: '7/10', control: '9/10', comfort: '5/10', price: '12€', reason: 'Précision et durabilité excellentes.', stiffness: 215 };
+          }
         } else if (selections.style === 'spin') {
-          racquet = { brand: 'Babolat', name: 'Pure Aero', category: 'Spin', weight: '300g', head: '100 sq in', stiffness: 67, stiffnessDisplay: 'RA 67', price: '279€', reason: 'La raquette de Nadal et Alcaraz, roi du spin.' };
-          string = { brand: 'Babolat', name: 'RPM Blast', type: 'Polyester', spin: '10/10', control: '8/10', comfort: '5/10', price: '18€', reason: 'Le cordage de Nadal pour un spin maximum.', stiffness: 240 };
+          racquetCriteria = {
+            level: selections.level === 'avance' ? 'Advanced' : 'Pro',
+            category: ['Modern Player', 'Spin']
+          };
+          stringCriteria = {
+            types: ['Polyester', 'Co-Polyester'],
+            preferSpin: true
+          };
           tension = { value: '23-25 kg', numValue: 24, reason: 'Tension moyenne pour maximiser l\'accroche.' };
           rcsProfile = 'club';
+          
+          const dbRacquet = pickBestRacquet(racquetCriteria);
+          const dbString = pickBestString(stringCriteria);
+          
+          if (dbRacquet) {
+            racquet = {
+              brand: dbRacquet.brand,
+              name: dbRacquet.model,
+              category: dbRacquet.category || 'Spin',
+              weight: `${dbRacquet.weight}g`,
+              head: `${dbRacquet.head_size} sq in`,
+              stiffness: dbRacquet.stiffness || 67,
+              stiffnessDisplay: `RA ${dbRacquet.stiffness || 67}`,
+              price: `${dbRacquet.price_eur}€`,
+              reason: 'Raquette optimisée pour générer un maximum de spin.'
+            };
+          } else {
+            racquet = { brand: 'Babolat', name: 'Pure Aero', category: 'Spin', weight: '300g', head: '100 sq in', stiffness: 67, stiffnessDisplay: 'RA 67', price: '279€', reason: 'La raquette de Nadal et Alcaraz, roi du spin.' };
+          }
+          
+          if (dbString) {
+            string = {
+              brand: dbString.brand,
+              name: dbString.model,
+              type: dbString.type,
+              spin: `${dbString.spin || 10}/10`,
+              control: `${dbString.control || 8}/10`,
+              comfort: `${dbString.comfort || 5}/10`,
+              price: `${dbString.price_eur}€`,
+              reason: 'Cordage pour un spin maximum.',
+              stiffness: dbString.stiffness || 240
+            };
+          } else {
+            string = { brand: 'Babolat', name: 'RPM Blast', type: 'Polyester', spin: '10/10', control: '8/10', comfort: '5/10', price: '18€', reason: 'Le cordage de Nadal pour un spin maximum.', stiffness: 240 };
+          }
         }
       }
 
