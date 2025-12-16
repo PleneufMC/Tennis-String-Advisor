@@ -515,35 +515,44 @@
       let tension = { value: '23-25 kg', numValue: 24, reason: 'Tension moyenne pour équilibre puissance/contrôle.' };
       let rcsProfile = null;
 
-      // Customize based on style
-      if (selections.style === 'puissance') {
-        racquet = { brand: 'Babolat', name: 'Pure Drive', category: 'Puissance', weight: '300g', head: '100 sq in', stiffness: 72, stiffnessDisplay: 'RA 72', price: '269€', reason: 'Raquette puissante avec excellent retour d\'énergie.' };
-        string = { brand: 'Luxilon', name: 'ALU Power', type: 'Polyester', spin: '8/10', control: '9/10', comfort: '6/10', price: '19€', reason: 'Contrôle optimal pour canaliser votre puissance.', stiffness: 230 };
-        tension = { value: '24-26 kg', numValue: 25, reason: 'Tension plus haute pour plus de contrôle.' };
-        rcsProfile = 'competiteur';
-      } else if (selections.style === 'controle') {
-        racquet = { brand: 'Wilson', name: 'Pro Staff 97', category: 'Contrôle', weight: '315g', head: '97 sq in', stiffness: 63, stiffnessDisplay: 'RA 63', price: '299€', reason: 'Raquette de contrôle ultime, utilisée par Federer.' };
-        string = { brand: 'Head', name: 'Hawk', type: 'Polyester', spin: '7/10', control: '9/10', comfort: '5/10', price: '12€', reason: 'Précision et durabilité excellentes.', stiffness: 215 };
-        tension = { value: '25-27 kg', numValue: 26, reason: 'Tension haute pour maximiser le contrôle.' };
-        rcsProfile = 'confirme';
-      } else if (selections.style === 'spin') {
-        racquet = { brand: 'Babolat', name: 'Pure Aero', category: 'Spin', weight: '300g', head: '100 sq in', stiffness: 67, stiffnessDisplay: 'RA 67', price: '279€', reason: 'La raquette de Nadal et Alcaraz, roi du spin.' };
-        string = { brand: 'Babolat', name: 'RPM Blast', type: 'Polyester', spin: '10/10', control: '8/10', comfort: '5/10', price: '18€', reason: 'Le cordage de Nadal pour un spin maximum.', stiffness: 240 };
-        tension = { value: '23-25 kg', numValue: 24, reason: 'Tension moyenne pour maximiser l\'accroche.' };
-        rcsProfile = 'club';
-      } else {
-        racquet.stiffness = 72;
-        string.stiffness = 240;
-        tension.numValue = 24;
+      // PRIORITY 1: Adjust for LEVEL (débutant needs confort!)
+      if (selections.level === 'debutant') {
+        racquet = { brand: 'Wilson', name: 'Clash 100', category: 'Confort', weight: '295g', head: '100 sq in', stiffness: 55, stiffnessDisplay: 'RA 55', price: '249€', reason: 'Raquette très flexible et confortable, idéale pour débuter sans forcer.' };
+        string = { brand: 'Tecnifibre', name: 'NRG2', type: 'Multifilament', spin: '6/10', control: '7/10', comfort: '10/10', price: '16€', reason: 'Multifilament doux qui protège le bras et offre de la puissance.', stiffness: 145 };
+        tension = { value: '20-22 kg', numValue: 21, reason: 'Tension basse pour maximiser le confort et la puissance.' };
+        rcsProfile = 'debutant';
+      } else if (selections.level === 'intermediaire') {
+        racquet = { brand: 'Head', name: 'Speed MP', category: 'Polyvalent', weight: '300g', head: '100 sq in', stiffness: 62, stiffnessDisplay: 'RA 62', price: '259€', reason: 'Raquette équilibrée pour joueur en progression.' };
+        string = { brand: 'Wilson', name: 'NXT', type: 'Multifilament', spin: '6/10', control: '7/10', comfort: '9/10', price: '22€', reason: 'Multifilament confortable avec bon retour d\'énergie.', stiffness: 155 };
+        tension = { value: '22-24 kg', numValue: 23, reason: 'Tension modérée pour confort et contrôle.' };
         rcsProfile = 'club';
       }
 
-      // Adjust for physical issues
+      // PRIORITY 2: Adjust for physical issues (OVERRIDES level for safety)
       if (selections.physical === 'bras' || selections.physical === 'epaule') {
-        racquet = { brand: 'Yonex', name: 'EZONE 100', category: 'Confort', weight: '300g', head: '100 sq in', stiffness: 66, stiffnessDisplay: 'RA 66', price: '249€', reason: 'Raquette très confortable, absorbe bien les vibrations.' };
+        racquet = { brand: 'Yonex', name: 'EZONE 100', category: 'Confort', weight: '300g', head: '100 sq in', stiffness: 62, stiffnessDisplay: 'RA 62', price: '249€', reason: 'Raquette très confortable, absorbe bien les vibrations.' };
         string = { brand: 'Wilson', name: 'NXT', type: 'Multifilament', spin: '6/10', control: '7/10', comfort: '10/10', price: '22€', reason: 'Multifilament ultra-confortable, excellent pour protéger le bras.', stiffness: 155 };
         tension = { value: '21-23 kg', numValue: 22, reason: 'Tension basse pour plus de confort et moins de vibrations.' };
         rcsProfile = 'tennis_elbow';
+      }
+      // PRIORITY 3: Customize based on style (ONLY for advanced/competition players)
+      else if (selections.level === 'avance' || selections.level === 'competition') {
+        if (selections.style === 'puissance') {
+          racquet = { brand: 'Babolat', name: 'Pure Drive', category: 'Puissance', weight: '300g', head: '100 sq in', stiffness: 72, stiffnessDisplay: 'RA 72', price: '269€', reason: 'Raquette puissante avec excellent retour d\'énergie.' };
+          string = { brand: 'Luxilon', name: 'ALU Power', type: 'Polyester', spin: '8/10', control: '9/10', comfort: '6/10', price: '19€', reason: 'Contrôle optimal pour canaliser votre puissance.', stiffness: 230 };
+          tension = { value: '24-26 kg', numValue: 25, reason: 'Tension plus haute pour plus de contrôle.' };
+          rcsProfile = 'competiteur';
+        } else if (selections.style === 'controle') {
+          racquet = { brand: 'Wilson', name: 'Pro Staff 97', category: 'Contrôle', weight: '315g', head: '97 sq in', stiffness: 63, stiffnessDisplay: 'RA 63', price: '299€', reason: 'Raquette de contrôle ultime, utilisée par Federer.' };
+          string = { brand: 'Head', name: 'Hawk', type: 'Polyester', spin: '7/10', control: '9/10', comfort: '5/10', price: '12€', reason: 'Précision et durabilité excellentes.', stiffness: 215 };
+          tension = { value: '25-27 kg', numValue: 26, reason: 'Tension haute pour maximiser le contrôle.' };
+          rcsProfile = 'confirme';
+        } else if (selections.style === 'spin') {
+          racquet = { brand: 'Babolat', name: 'Pure Aero', category: 'Spin', weight: '300g', head: '100 sq in', stiffness: 67, stiffnessDisplay: 'RA 67', price: '279€', reason: 'La raquette de Nadal et Alcaraz, roi du spin.' };
+          string = { brand: 'Babolat', name: 'RPM Blast', type: 'Polyester', spin: '10/10', control: '8/10', comfort: '5/10', price: '18€', reason: 'Le cordage de Nadal pour un spin maximum.', stiffness: 240 };
+          tension = { value: '23-25 kg', numValue: 24, reason: 'Tension moyenne pour maximiser l\'accroche.' };
+          rcsProfile = 'club';
+        }
       }
 
       // Update UI - Racquet
