@@ -1,29 +1,38 @@
 [build]
-  command = "npm run build"
-  publish = ".next"
+  command = "echo 'Deploying static files'"
+  publish = "public"
 
-[[plugins]]
-  package = "@netlify/plugin-nextjs"
-
-[functions]
-  directory = "netlify/functions"
-  node_bundler = "esbuild"
-
-[build.environment]
-  NEXT_USE_NETLIFY_EDGE = "true"
-
+# SPA fallback for client-side routing
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
-  conditions = {Role = ["admin"]}
-  force = false
 
-[context.production.environment]
-  NEXT_PUBLIC_API_URL = "https://tennis-string-advisor.netlify.app"
+# Headers for security and performance
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
 
-[context.deploy-preview.environment]
-  NEXT_PUBLIC_API_URL = "https://deploy-preview.netlify.app"
+[[headers]]
+  for = "*.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
 
-[context.branch-deploy.environment]
-  NEXT_PUBLIC_API_URL = "https://branch.netlify.app"
+[[headers]]
+  for = "*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/images/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"

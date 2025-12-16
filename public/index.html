@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tennis String Advisor - Expert en Cordages et Raquettes</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            tennis: { 500: '#22c55e', 600: '#16a34a', 700: '#15803d' }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .hero-bg { background: linear-gradient(135deg, rgba(34, 197, 94, 0.95) 0%, rgba(22, 163, 74, 0.9) 100%); }
+    [x-cloak] { display: none !important; }
+  </style>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body class="bg-gray-50 font-sans antialiased">
+  <!-- Header -->
+  <header class="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+    <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex h-16 items-center justify-between">
+        <a href="index.html" class="flex items-center space-x-2">
+          <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-green-700 rounded-xl flex items-center justify-center">
+            <span class="text-white text-xl">🎾</span>
+          </div>
+          <span class="text-lg font-bold text-gray-900">Tennis String <span class="text-green-600">Advisor</span></span>
+        </a>
+        <div class="hidden md:flex items-center gap-1">
+          <a href="index.html" class="px-4 py-2 text-sm font-medium rounded-lg bg-green-100 text-green-700">Accueil</a>
+          <a href="configurator.html" class="px-4 py-2 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-100">Configurateur</a>
+          <a href="racquets.html" class="px-4 py-2 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-100">Raquettes</a>
+          <a href="strings.html" class="px-4 py-2 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-100">Cordages</a>
+          <a href="compare.html" class="px-4 py-2 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-100">Comparateur</a>
+          <a href="blog/" class="px-4 py-2 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-100">📚 Blog</a>
+          <a href="rcs-calculator.html" class="px-4 py-2 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-100">🩺 RCS</a>
+        </div>
+        <div class="hidden md:flex items-center gap-3">
+          <a href="/auth.html" id="authLink" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-green-600 hover:bg-green-50 rounded-lg transition">
+            👤 Mon Compte
+          </a>
+          <a href="premium.html" class="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-amber-700 bg-amber-100 rounded-lg hover:bg-amber-200">
+            ✨ Premium
+          </a>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero-bg min-h-[80vh] flex items-center">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <div class="grid lg:grid-cols-2 gap-12 items-center">
+        <div class="space-y-8">
+          <div class="inline-flex items-center gap-2 bg-white/20 backdrop-blur px-4 py-2 rounded-full">
+            <span class="text-yellow-300">✨</span>
+            <span class="text-white font-semibold">Configurateur Expert 2025</span>
+          </div>
+          
+          <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight">
+            Trouvez le Setup
+            <span class="block text-yellow-300 mt-2">Parfait</span>
+            <span class="block text-white/90 text-3xl md:text-4xl mt-2">Raquette & Cordage</span>
+          </h1>
+          
+          <p class="text-lg text-white/90 max-w-xl">
+            Configurez votre équipement idéal grâce à notre base de données de 
+            <strong>104 raquettes</strong> et <strong>165 cordages</strong>. 
+            Recommandations personnalisées selon votre style de jeu.
+          </p>
+          
+          <div class="flex flex-col sm:flex-row gap-4">
+            <a href="configurator.html" class="inline-flex items-center justify-center px-8 py-4 bg-white text-green-700 font-bold rounded-xl hover:bg-gray-100 transition shadow-lg">
+              ⚙️ Configurer Mon Setup
+            </a>
+            <a href="racquets.html" class="inline-flex items-center justify-center px-8 py-4 border-2 border-white/30 text-white font-bold rounded-xl hover:bg-white/10 transition">
+              🔍 Explorer le Catalogue
+            </a>
+          </div>
+          
+          <div class="grid grid-cols-3 gap-4 pt-6">
+            <div class="text-center bg-white/10 backdrop-blur rounded-xl p-4">
+              <div class="text-2xl md:text-3xl font-bold text-white">104</div>
+              <div class="text-sm text-white/80">Raquettes</div>
+            </div>
+            <div class="text-center bg-white/10 backdrop-blur rounded-xl p-4">
+              <div class="text-2xl md:text-3xl font-bold text-white">165</div>
+              <div class="text-sm text-white/80">Cordages</div>
+            </div>
+            <div class="text-center bg-white/10 backdrop-blur rounded-xl p-4">
+              <div class="text-2xl md:text-3xl font-bold text-white">∞</div>
+              <div class="text-sm text-white/80">Configurations</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="hidden lg:block">
+          <div class="bg-white rounded-3xl p-8 shadow-2xl">
+            <h2 class="text-2xl font-bold text-gray-900 flex items-center gap-3 mb-6">
+              ✅ Fonctionnalités Clés
+            </h2>
+            <ul class="space-y-4">
+              <li class="flex items-center gap-3 text-gray-700"><span class="text-green-500">✓</span> Base de données complète avec indices RA</li>
+              <li class="flex items-center gap-3 text-gray-700"><span class="text-green-500">✓</span> Top 50 cordages 2025 avec analyses</li>
+              <li class="flex items-center gap-3 text-gray-700"><span class="text-green-500">✓</span> Configuration hybride avancée</li>
+              <li class="flex items-center gap-3 text-gray-700"><span class="text-green-500">✓</span> Recommandations personnalisées</li>
+              <li class="flex items-center gap-3 text-gray-700"><span class="text-green-500">✓</span> Analyse de compatibilité raquette/cordage</li>
+              <li class="flex items-center gap-3 text-gray-700"><span class="text-green-500">✓</span> Comparateur multi-critères</li>
+            </ul>
+            <a href="configurator.html" class="block w-full mt-6 px-6 py-4 bg-gradient-to-r from-green-600 to-green-700 text-white font-bold rounded-xl text-center hover:from-green-700 hover:to-green-800 transition">
+              Commencer Maintenant →
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="py-16 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl md:text-4xl font-bold text-gray-900">Tout pour Votre Équipement Tennis</h2>
+        <p class="mt-4 text-lg text-gray-600">Des outils professionnels pour trouver l'équipement parfait</p>
+      </div>
+      
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <a href="configurator.html" class="group bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl hover:border-green-100 transition relative">
+          <span class="absolute top-4 right-4 bg-amber-100 text-amber-800 text-xs font-bold px-2 py-1 rounded-full">Populaire</span>
+          <div class="flex items-start gap-4">
+            <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center text-2xl group-hover:bg-green-600 transition">⚙️</div>
+            <div>
+              <h3 class="text-lg font-bold text-gray-900 group-hover:text-green-700">Configurateur Expert</h3>
+              <p class="mt-1 text-gray-600 text-sm">Créez votre setup idéal en combinant raquette, cordage et tension.</p>
+            </div>
+          </div>
+        </a>
+        
+        <a href="racquets.html" class="group bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl hover:border-green-100 transition">
+          <div class="flex items-start gap-4">
+            <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center text-2xl group-hover:bg-green-600 transition">🎾</div>
+            <div>
+              <h3 class="text-lg font-bold text-gray-900 group-hover:text-green-700">Catalogue Raquettes</h3>
+              <p class="mt-1 text-gray-600 text-sm">104 raquettes avec spécifications complètes : poids, RA, équilibre.</p>
+            </div>
+          </div>
+        </a>
+        
+        <a href="strings.html" class="group bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl hover:border-green-100 transition">
+          <div class="flex items-start gap-4">
+            <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center text-2xl group-hover:bg-green-600 transition">🧵</div>
+            <div>
+              <h3 class="text-lg font-bold text-gray-900 group-hover:text-green-700">Catalogue Cordages</h3>
+              <p class="mt-1 text-gray-600 text-sm">165 cordages 2025 : polyester, multifilament, boyau naturel.</p>
+            </div>
+          </div>
+        </a>
+        
+        <a href="compare.html" class="group bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl hover:border-green-100 transition">
+          <div class="flex items-start gap-4">
+            <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center text-2xl group-hover:bg-green-600 transition">📊</div>
+            <div>
+              <h3 class="text-lg font-bold text-gray-900 group-hover:text-green-700">Comparateur</h3>
+              <p class="mt-1 text-gray-600 text-sm">Comparez jusqu'à 4 produits côte à côte.</p>
+            </div>
+          </div>
+        </a>
+        
+        <a href="rcs-calculator.html" class="group bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl hover:border-green-100 transition relative">
+          <span class="absolute top-4 right-4 bg-green-100 text-green-800 text-xs font-bold px-2 py-1 rounded-full">Santé</span>
+          <div class="flex items-start gap-4">
+            <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center text-2xl group-hover:bg-green-600 transition">🩺</div>
+            <div>
+              <h3 class="text-lg font-bold text-gray-900 group-hover:text-green-700">Calculateur RCS</h3>
+              <p class="mt-1 text-gray-600 text-sm">Évaluez la sollicitation articulaire de votre setup.</p>
+            </div>
+          </div>
+        </a>
+        
+        <a href="premium.html" class="group bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl hover:border-green-100 transition relative">
+          <span class="absolute top-4 right-4 bg-amber-100 text-amber-800 text-xs font-bold px-2 py-1 rounded-full">Nouveau</span>
+          <div class="flex items-start gap-4">
+            <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center text-2xl group-hover:bg-green-600 transition">✨</div>
+            <div>
+              <h3 class="text-lg font-bold text-gray-900 group-hover:text-green-700">Recommandations IA</h3>
+              <p class="mt-1 text-gray-600 text-sm">Suggestions personnalisées basées sur votre style de jeu.</p>
+            </div>
+          </div>
+        </a>
+        
+        <a href="guides.html" class="group bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl hover:border-green-100 transition">
+          <div class="flex items-start gap-4">
+            <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center text-2xl group-hover:bg-green-600 transition">📚</div>
+            <div>
+              <h3 class="text-lg font-bold text-gray-900 group-hover:text-green-700">Guides & Conseils</h3>
+              <p class="mt-1 text-gray-600 text-sm">Articles experts sur le choix du cordage et la tension idéale.</p>
+            </div>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Brands -->
+  <section class="py-12 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-8">
+        <h2 class="text-2xl font-bold text-gray-900">Marques Disponibles</h2>
+      </div>
+      <div class="flex flex-wrap justify-center items-center gap-8 md:gap-12">
+        <span class="text-xl font-bold text-gray-400 hover:text-green-600 transition cursor-pointer">Babolat</span>
+        <span class="text-xl font-bold text-gray-400 hover:text-green-600 transition cursor-pointer">Wilson</span>
+        <span class="text-xl font-bold text-gray-400 hover:text-green-600 transition cursor-pointer">Head</span>
+        <span class="text-xl font-bold text-gray-400 hover:text-green-600 transition cursor-pointer">Yonex</span>
+        <span class="text-xl font-bold text-gray-400 hover:text-green-600 transition cursor-pointer">Tecnifibre</span>
+        <span class="text-xl font-bold text-gray-400 hover:text-green-600 transition cursor-pointer">Luxilon</span>
+        <span class="text-xl font-bold text-gray-400 hover:text-green-600 transition cursor-pointer">Solinco</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="py-16 bg-gradient-to-r from-green-600 to-green-700">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Prêt à Optimiser Votre Jeu ?</h2>
+      <p class="text-lg text-white/90 mb-8 max-w-2xl mx-auto">Rejoignez des milliers de joueurs qui ont trouvé leur setup parfait.</p>
+      <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <a href="configurator.html" class="px-8 py-4 bg-white text-green-700 font-bold rounded-xl hover:bg-gray-100 transition shadow-lg">Configurer Mon Setup →</a>
+        <a href="premium.html" class="px-8 py-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-xl hover:from-amber-600 hover:to-orange-600 transition">✨ Découvrir Premium</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-gray-900 text-white py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid md:grid-cols-4 gap-8">
+        <div>
+          <div class="flex items-center space-x-2 mb-4">
+            <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-green-700 rounded-xl flex items-center justify-center">
+              <span class="text-white text-xl">🎾</span>
+            </div>
+            <span class="text-lg font-bold">Tennis String <span class="text-green-400">Advisor</span></span>
+          </div>
+          <p class="text-gray-400 text-sm">Votre expert en cordages et raquettes de tennis.</p>
+        </div>
+        <div>
+          <h3 class="font-semibold mb-4">Produits</h3>
+          <ul class="space-y-2 text-gray-400 text-sm">
+            <li><a href="configurator.html" class="hover:text-white">Configurateur</a></li>
+            <li><a href="racquets.html" class="hover:text-white">Raquettes</a></li>
+            <li><a href="strings.html" class="hover:text-white">Cordages</a></li>
+            <li><a href="compare.html" class="hover:text-white">Comparateur</a></li>
+            <li><a href="rcs-calculator.html" class="hover:text-white">Calculateur RCS</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="font-semibold mb-4">Ressources</h3>
+          <ul class="space-y-2 text-gray-400 text-sm">
+            <li><a href="guides.html" class="hover:text-white">Guides</a></li>
+            <li><a href="faq.html" class="hover:text-white">FAQ</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="font-semibold mb-4">Légal</h3>
+          <ul class="space-y-2 text-gray-400 text-sm">
+            <li><a href="#" class="hover:text-white">Confidentialité</a></li>
+            <li><a href="#" class="hover:text-white">CGU</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-500 text-sm">
+        © 2025 Tennis String Advisor. Une marque de Pleneuf Trading LLC. Tous droits réservés.
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // Check auth state for nav
+    async function checkAuthForNav() {
+      const SUPABASE_URL = 'https://yhhdkllbaxuhwrfpsmev.supabase.co';
+      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InloaGRrbGxiYXh1aHdyZnBzbWV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU3NjI0MDEsImV4cCI6MjA4MTMzODQwMX0.2aC_gYZf0xxz6MXi5zcaCH2S64RBaQvXU7a5qiuD0_k';
+      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      
+      const { data: { session } } = await supabase.auth.getSession();
+      const authLink = document.getElementById('authLink');
+      if (authLink) {
+        if (session) {
+          authLink.href = '/account.html';
+          authLink.innerHTML = '👤 Mon Compte';
+        } else {
+          authLink.href = '/auth.html';
+          authLink.innerHTML = '👤 Connexion';
+        }
+      }
+    }
+    checkAuthForNav();
+  </script>
+</body>
+</html>

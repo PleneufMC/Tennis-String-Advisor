@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catalogue des Cordages - Tennis String Advisor</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            tennis: { green: '#16a34a', dark: '#0d1117', light: '#f0fdf4' }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .card-hover:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0,0,0,0.15); }
+    .card-hover { transition: all 0.3s ease; }
+    .rating-bar { height: 6px; border-radius: 3px; background: #e5e7eb; }
+    .rating-fill { height: 100%; border-radius: 3px; }
+    .skeleton { background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <!-- Header -->
+  <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 py-4">
+      <div class="flex items-center justify-between">
+        <a href="/" class="flex items-center gap-2">
+          <span class="text-2xl">🎾</span>
+          <span class="font-bold text-xl text-gray-900">Tennis String Advisor</span>
+        </a>
+        <nav class="hidden md:flex items-center gap-6">
+          <a href="/" class="text-gray-600 hover:text-green-600 transition">Accueil</a>
+          <a href="/configurator.html" class="text-gray-600 hover:text-green-600 transition">Configurateur</a>
+          <a href="/racquets.html" class="text-gray-600 hover:text-green-600 transition">Raquettes</a>
+          <a href="/strings.html" class="text-green-600 font-semibold">Cordages</a>
+          <a href="/compare.html" class="text-gray-600 hover:text-green-600 transition">Comparateur</a>
+          <a href="/rcs-calculator.html" class="text-gray-600 hover:text-green-600 transition">🩺 RCS</a>
+        </nav>
+        <a href="/auth.html" id="authLink" class="hidden md:flex items-center gap-2 px-4 py-2 text-sm font-medium text-green-600 hover:bg-green-50 rounded-lg transition">
+          👤 Mon Compte
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto px-4 py-8">
+    <!-- Page Header -->
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold text-gray-900 mb-2">Catalogue des Cordages</h1>
+      <p class="text-gray-600" id="stringCount">Chargement...</p>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Recherche</label>
+          <input type="text" id="searchFilter" placeholder="Rechercher..." class="w-full rounded-lg border-gray-300 border p-2.5 focus:ring-green-500 focus:border-green-500">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Marque</label>
+          <select id="brandFilter" class="w-full rounded-lg border-gray-300 border p-2.5 focus:ring-green-500 focus:border-green-500">
+            <option value="">Toutes les marques</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Type</label>
+          <select id="typeFilter" class="w-full rounded-lg border-gray-300 border p-2.5 focus:ring-green-500 focus:border-green-500">
+            <option value="">Tous les types</option>
+            <option value="Polyester">Polyester</option>
+            <option value="Multifilament">Multifilament</option>
+            <option value="Natural Gut">Boyau naturel</option>
+            <option value="Synthetic">Synthétique</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Confort min</label>
+          <select id="comfortFilter" class="w-full rounded-lg border-gray-300 border p-2.5 focus:ring-green-500 focus:border-green-500">
+            <option value="">Tous</option>
+            <option value="8">8+ (Confortable)</option>
+            <option value="9">9+ (Très confortable)</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Prix max</label>
+          <select id="priceFilter" class="w-full rounded-lg border-gray-300 border p-2.5 focus:ring-green-500 focus:border-green-500">
+            <option value="">Tous les prix</option>
+            <option value="15">Moins de 15€</option>
+            <option value="20">Moins de 20€</option>
+            <option value="30">Moins de 30€</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loadingState" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="bg-white rounded-xl p-6 h-80 skeleton"></div>
+      <div class="bg-white rounded-xl p-6 h-80 skeleton"></div>
+      <div class="bg-white rounded-xl p-6 h-80 skeleton"></div>
+      <div class="bg-white rounded-xl p-6 h-80 skeleton"></div>
+      <div class="bg-white rounded-xl p-6 h-80 skeleton"></div>
+      <div class="bg-white rounded-xl p-6 h-80 skeleton"></div>
+    </div>
+
+    <!-- Strings Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 hidden" id="stringsGrid"></div>
+
+    <!-- No Results -->
+    <div id="noResults" class="hidden text-center py-12">
+      <p class="text-gray-500 text-lg">Aucun cordage ne correspond à vos critères.</p>
+      <button onclick="resetFilters()" class="mt-4 text-green-600 hover:underline">Réinitialiser les filtres</button>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-gray-900 text-white mt-16">
+    <div class="max-w-7xl mx-auto px-4 py-12">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div>
+          <div class="flex items-center gap-2 mb-4">
+            <span class="text-2xl">🎾</span>
+            <span class="font-bold text-xl">Tennis String Advisor</span>
+          </div>
+          <p class="text-gray-400 text-sm">Expert en cordages et raquettes de tennis depuis 2024.</p>
+        </div>
+        <div>
+          <h4 class="font-semibold mb-4">Navigation</h4>
+          <ul class="space-y-2 text-gray-400 text-sm">
+            <li><a href="/" class="hover:text-white transition">Accueil</a></li>
+            <li><a href="/racquets.html" class="hover:text-white transition">Raquettes</a></li>
+            <li><a href="/strings.html" class="hover:text-white transition">Cordages</a></li>
+            <li><a href="/compare.html" class="hover:text-white transition">Comparateur</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-semibold mb-4">Outils</h4>
+          <ul class="space-y-2 text-gray-400 text-sm">
+            <li><a href="/configurator.html" class="hover:text-white transition">Configurateur</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-semibold mb-4">Contact</h4>
+          <p class="text-gray-400 text-sm">contact@tennisstringadvisor.com</p>
+        </div>
+      </div>
+      <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400 text-sm">
+        <p>© 2025 Tennis String Advisor. Une marque de Pleneuf Trading LLC. Tous droits réservés.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Supabase configuration
+    const SUPABASE_URL = 'https://yhhdkllbaxuhwrfpsmev.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InloaGRrbGxiYXh1aHdyZnBzbWV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU3NjI0MDEsImV4cCI6MjA4MTMzODQwMX0.2aC_gYZf0xxz6MXi5zcaCH2S64RBaQvXU7a5qiuD0_k';
+    
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+    let allStrings = [];
+    let filteredStrings = [];
+    
+    // Brand colors
+    const brandColors = {
+      'Luxilon': 'from-gray-600 to-gray-700',
+      'Babolat': 'from-yellow-500 to-yellow-600',
+      'Solinco': 'from-green-500 to-green-600',
+      'Wilson': 'from-red-500 to-red-600',
+      'Head': 'from-orange-500 to-orange-600',
+      'Tecnifibre': 'from-cyan-500 to-cyan-600',
+      'Yonex': 'from-blue-500 to-blue-600',
+      'Kirschbaum': 'from-gray-500 to-gray-600',
+      'Signum Pro': 'from-orange-400 to-orange-500',
+      'Isospeed': 'from-amber-400 to-amber-500',
+      'Weiss Cannon': 'from-slate-500 to-slate-600',
+      'MSV': 'from-indigo-500 to-indigo-600',
+      'Prince': 'from-purple-500 to-purple-600'
+    };
+    
+    const brandTextColors = {
+      'Luxilon': 'text-gray-600',
+      'Babolat': 'text-yellow-600',
+      'Solinco': 'text-green-600',
+      'Wilson': 'text-red-600',
+      'Head': 'text-orange-600',
+      'Tecnifibre': 'text-cyan-600',
+      'Yonex': 'text-blue-600',
+      'Kirschbaum': 'text-gray-600',
+      'Signum Pro': 'text-orange-600',
+      'Isospeed': 'text-amber-600',
+      'Weiss Cannon': 'text-slate-600',
+      'MSV': 'text-indigo-600',
+      'Prince': 'text-purple-600'
+    };
+    
+    const typeColors = {
+      'Polyester': 'bg-purple-100 text-purple-800',
+      'Multifilament': 'bg-blue-100 text-blue-800',
+      'Natural Gut': 'bg-amber-100 text-amber-800',
+      'Synthetic': 'bg-gray-100 text-gray-800'
+    };
+    
+    // Get color for rating
+    function getRatingColor(value) {
+      if (value >= 9) return 'bg-green-500';
+      if (value >= 7) return 'bg-yellow-500';
+      if (value >= 5) return 'bg-orange-500';
+      return 'bg-red-500';
+    }
+    
+    // Fetch strings from Supabase
+    async function fetchStrings() {
+      try {
+        const { data, error } = await supabase
+          .from('strings')
+          .select('*')
+          .order('brand', { ascending: true });
+        
+        if (error) throw error;
+        
+        allStrings = data;
+        filteredStrings = data;
+        
+        // Populate brand filter
+        const brands = [...new Set(data.map(s => s.brand))].sort();
+        const brandSelect = document.getElementById('brandFilter');
+        brands.forEach(brand => {
+          const option = document.createElement('option');
+          option.value = brand;
+          option.textContent = brand;
+          brandSelect.appendChild(option);
+        });
+        
+        // Update count and render
+        document.getElementById('stringCount').textContent = `${data.length} cordages de ${brands.length} marques différentes`;
+        renderStrings();
+        
+      } catch (error) {
+        console.error('Error fetching strings:', error);
+        document.getElementById('loadingState').innerHTML = '<p class="col-span-3 text-center text-red-500">Erreur de chargement des données</p>';
+      }
+    }
+    
+    // Render strings
+    function renderStrings() {
+      const grid = document.getElementById('stringsGrid');
+      const loading = document.getElementById('loadingState');
+      const noResults = document.getElementById('noResults');
+      
+      loading.classList.add('hidden');
+      
+      if (filteredStrings.length === 0) {
+        grid.classList.add('hidden');
+        noResults.classList.remove('hidden');
+        return;
+      }
+      
+      noResults.classList.add('hidden');
+      grid.classList.remove('hidden');
+      
+      grid.innerHTML = filteredStrings.map(string => `
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden card-hover">
+          <div class="bg-gradient-to-r ${brandColors[string.brand] || 'from-gray-400 to-gray-500'} h-2"></div>
+          <div class="p-6">
+            <div class="flex items-start justify-between mb-4">
+              <div>
+                <span class="text-sm ${brandTextColors[string.brand] || 'text-gray-600'} font-medium">${string.brand}</span>
+                <h3 class="text-lg font-bold text-gray-900">${string.model}</h3>
+              </div>
+              <span class="${typeColors[string.type] || 'bg-gray-100 text-gray-800'} text-xs font-medium px-2.5 py-1 rounded">${string.type}</span>
+            </div>
+            
+            <div class="space-y-3 mb-4">
+              <div>
+                <div class="flex justify-between text-sm mb-1">
+                  <span class="text-gray-500">Spin</span>
+                  <span class="font-medium">${string.spin}/10</span>
+                </div>
+                <div class="rating-bar"><div class="rating-fill ${getRatingColor(string.spin)}" style="width: ${string.spin * 10}%"></div></div>
+              </div>
+              <div>
+                <div class="flex justify-between text-sm mb-1">
+                  <span class="text-gray-500">Contrôle</span>
+                  <span class="font-medium">${string.control}/10</span>
+                </div>
+                <div class="rating-bar"><div class="rating-fill ${getRatingColor(string.control)}" style="width: ${string.control * 10}%"></div></div>
+              </div>
+              <div>
+                <div class="flex justify-between text-sm mb-1">
+                  <span class="text-gray-500">Confort</span>
+                  <span class="font-medium">${string.comfort}/10</span>
+                </div>
+                <div class="rating-bar"><div class="rating-fill ${getRatingColor(string.comfort)}" style="width: ${string.comfort * 10}%"></div></div>
+              </div>
+              <div>
+                <div class="flex justify-between text-sm mb-1">
+                  <span class="text-gray-500">Durabilité</span>
+                  <span class="font-medium">${string.durability}/10</span>
+                </div>
+                <div class="rating-bar"><div class="rating-fill ${getRatingColor(string.durability)}" style="width: ${string.durability * 10}%"></div></div>
+              </div>
+            </div>
+
+            ${string.pro_usage ? `
+            <div class="flex flex-wrap items-center gap-2 mb-4">
+              <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">${string.pro_usage}</span>
+            </div>
+            ` : ''}
+
+            <div class="text-sm text-gray-600 mb-4">
+              Gauges: ${string.gauges ? string.gauges.join(', ') : 'N/A'}mm
+            </div>
+            
+            <div class="flex items-center justify-between pt-4 border-t">
+              <span class="text-2xl font-bold text-green-600">${string.price_eur}€</span>
+              <div class="flex items-center gap-2">
+                <button onclick="showAffiliate('${string.brand}', '${string.model}')" class="bg-amber-500 text-white px-3 py-2 rounded-lg hover:bg-amber-600 transition text-sm" title="Acheter">
+                  🛒
+                </button>
+                <a href="/rcs-calculator.html?cordage=${string.stiffness}" class="bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 transition text-sm" title="Calculateur RCS">
+                  🩺
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    // Filter strings
+    function filterStrings() {
+      const search = document.getElementById('searchFilter').value.toLowerCase();
+      const brand = document.getElementById('brandFilter').value;
+      const type = document.getElementById('typeFilter').value;
+      const minComfort = document.getElementById('comfortFilter').value;
+      const maxPrice = document.getElementById('priceFilter').value;
+      
+      filteredStrings = allStrings.filter(string => {
+        if (search && !`${string.brand} ${string.model}`.toLowerCase().includes(search)) return false;
+        if (brand && string.brand !== brand) return false;
+        if (type && string.type !== type) return false;
+        if (minComfort && string.comfort < parseFloat(minComfort)) return false;
+        if (maxPrice && string.price_eur > parseInt(maxPrice)) return false;
+        return true;
+      });
+      
+      renderStrings();
+    }
+    
+    function resetFilters() {
+      document.getElementById('searchFilter').value = '';
+      document.getElementById('brandFilter').value = '';
+      document.getElementById('typeFilter').value = '';
+      document.getElementById('comfortFilter').value = '';
+      document.getElementById('priceFilter').value = '';
+      filteredStrings = allStrings;
+      renderStrings();
+    }
+    
+    // Event listeners
+    document.getElementById('searchFilter').addEventListener('input', filterStrings);
+    document.getElementById('brandFilter').addEventListener('change', filterStrings);
+    document.getElementById('typeFilter').addEventListener('change', filterStrings);
+    document.getElementById('comfortFilter').addEventListener('change', filterStrings);
+    document.getElementById('priceFilter').addEventListener('change', filterStrings);
+    
+    // Affiliate Links Configuration
+    const AFFILIATE_CONFIG = {
+      tennisWarehouse: {
+        name: 'Tennis Warehouse',
+        logo: '🏬',
+        url: 'https://www.tennis-warehouse.com/searchresults.html?searchtext=',
+        tag: '&from=tsa'
+      },
+      tennisPoint: {
+        name: 'Tennis-Point',
+        logo: '🎾',
+        url: 'https://www.tennis-point.fr/search/?query=',
+        tag: '&utm_source=tennisstring'
+      },
+      decathlon: {
+        name: 'Decathlon',
+        logo: '🏪',
+        url: 'https://www.decathlon.fr/search?Ntt=',
+        tag: '&mc=affiliate_tsa'
+      }
+    };
+
+    // Show affiliate modal
+    function showAffiliate(brand, model) {
+      const productName = `${brand} ${model}`.trim();
+      const searchQuery = encodeURIComponent(productName);
+      
+      const affiliateHtml = Object.entries(AFFILIATE_CONFIG).map(([key, config]) => `
+        <a href="${config.url}${searchQuery}${config.tag}" target="_blank" rel="noopener noreferrer"
+          class="flex items-center gap-4 p-4 border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-green-500 transition">
+          <div class="text-2xl">${config.logo}</div>
+          <div class="flex-1">
+            <div class="font-semibold text-gray-900">${config.name}</div>
+            <div class="text-sm text-gray-500">Rechercher "${productName}"</div>
+          </div>
+          <span class="text-green-600">→</span>
+        </a>
+      `).join('');
+      
+      // Create modal dynamically
+      const existingModal = document.getElementById('affiliateModal');
+      if (existingModal) existingModal.remove();
+      
+      const modal = document.createElement('div');
+      modal.id = 'affiliateModal';
+      modal.className = 'fixed inset-0 z-50 flex items-center justify-center';
+      modal.style.background = 'rgba(0,0,0,0.5)';
+      modal.style.backdropFilter = 'blur(4px)';
+      modal.innerHTML = `
+        <div class="bg-white rounded-2xl w-full max-w-lg mx-4 overflow-hidden shadow-2xl">
+          <div class="bg-gradient-to-r from-green-600 to-green-500 px-6 py-4 text-white">
+            <h2 class="text-xl font-bold">🛒 Où acheter ?</h2>
+            <p class="text-green-100 text-sm mt-1">${productName}</p>
+          </div>
+          <div class="p-6 space-y-3">${affiliateHtml}</div>
+          <div class="px-6 pb-6">
+            <button onclick="closeAffiliateModal()" class="w-full py-3 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition">
+              Fermer
+            </button>
+          </div>
+        </div>
+      `;
+      
+      modal.addEventListener('click', (e) => { if (e.target === modal) closeAffiliateModal(); });
+      document.body.appendChild(modal);
+    }
+
+    function closeAffiliateModal() {
+      const modal = document.getElementById('affiliateModal');
+      if (modal) modal.remove();
+    }
+
+    // Check auth state for nav
+    async function checkAuthForNav() {
+      const { data: { session } } = await supabase.auth.getSession();
+      const authLink = document.getElementById('authLink');
+      if (session) {
+        authLink.href = '/account.html';
+        authLink.innerHTML = '👤 Mon Compte';
+      } else {
+        authLink.href = '/auth.html';
+        authLink.innerHTML = '👤 Connexion';
+      }
+    }
+
+    // Initialize
+    fetchStrings();
+    checkAuthForNav();
+  </script>
+</body>
+</html>
