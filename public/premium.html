@@ -7,6 +7,7 @@
   <meta name="description" content="Passez Premium et accédez à toutes les fonctionnalités : setups illimités, alertes prix, export PDF et plus encore.">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://js.stripe.com/v3/"></script>
   <script>
     tailwind.config = {
       theme: {
@@ -519,28 +520,34 @@
     
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Pricing configuration
+    // Stripe configuration
+    const STRIPE_PUBLISHABLE_KEY = 'pk_live_VOTRE_CLE_PUBLIQUE'; // TODO: Remplacer par votre clé publique Stripe
+    
+    // Pricing configuration with real Stripe Price IDs
     const PLANS = {
       monthly: {
         name: 'Premium Mensuel',
         price: '2,99€',
         priceValue: 2.99,
         note: 'Renouvellement mensuel, sans engagement',
-        stripePrice: 'price_monthly_xxx' // Replace with actual Stripe price ID
+        stripePrice: 'price_1Sf3qpIkmQ7vFcvcYHBFjCf2',
+        mode: 'subscription'
       },
       annual: {
         name: 'Premium Annuel',
         price: '24,99€',
         priceValue: 24.99,
         note: 'Paiement annuel, économisez 30%',
-        stripePrice: 'price_annual_xxx' // Replace with actual Stripe price ID
+        stripePrice: 'price_1Sf3vFIkmQ7vFcvc1QPO5kaQ',
+        mode: 'subscription'
       },
       lifetime: {
         name: 'Lifetime (Offre de lancement)',
         price: '19,99€',
         priceValue: 19.99,
         note: 'Paiement unique, accès à vie',
-        stripePrice: 'price_lifetime_xxx' // Replace with actual Stripe price ID
+        stripePrice: 'price_1Sf3w1IkmQ7vFcvcQ63qylGG',
+        mode: 'payment'
       }
     };
 
@@ -657,7 +664,7 @@
       selectedPlan = null;
     }
 
-    // Process payment (placeholder - integrate with Stripe)
+    // Process payment with Stripe Checkout
     async function processPayment() {
       if (!currentUser || !selectedPlan) return;
 
@@ -667,39 +674,75 @@
       document.getElementById('payButton').disabled = true;
 
       try {
-        // TODO: Replace with actual Stripe checkout
-        // const { data, error } = await supabase.functions.invoke('create-checkout', {
-        //   body: { priceId: plan.stripePrice, userId: currentUser.id }
-        // });
+        // Option 1: Utiliser Stripe Checkout (côté client - simple)
+        // Nécessite de configurer la clé publique Stripe
         
-        // For demo: simulate success
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        
-        // If lifetime, decrement count
-        if (selectedPlan === 'lifetime') {
-          lifetimeRemaining = Math.max(0, lifetimeRemaining - 1);
-          localStorage.setItem('tsa_lifetime_remaining', lifetimeRemaining.toString());
-          updateLifetimeDisplay();
+        if (STRIPE_PUBLISHABLE_KEY && STRIPE_PUBLISHABLE_KEY !== 'pk_live_VOTRE_CLE_PUBLIQUE') {
+          const stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
+          
+          // Rediriger vers Stripe Checkout
+          const { error } = await stripe.redirectToCheckout({
+            lineItems: [{ price: plan.stripePrice, quantity: 1 }],
+            mode: plan.mode,
+            successUrl: window.location.origin + '/account.html?payment=success&plan=' + selectedPlan,
+            cancelUrl: window.location.origin + '/premium.html?payment=cancelled',
+            customerEmail: currentUser.email,
+            clientReferenceId: currentUser.id
+          });
+          
+          if (error) {
+            throw error;
+          }
+        } else {
+          // Option 2: Appel à une fonction Supabase Edge Function
+          // Décommentez et configurez si vous utilisez les Edge Functions
+          /*
+          const { data, error } = await supabase.functions.invoke('create-checkout-session', {
+            body: { 
+              priceId: plan.stripePrice, 
+              userId: currentUser.id,
+              userEmail: currentUser.email,
+              planType: selectedPlan,
+              mode: plan.mode,
+              successUrl: window.location.origin + '/account.html?payment=success&plan=' + selectedPlan,
+              cancelUrl: window.location.origin + '/premium.html?payment=cancelled'
+            }
+          });
+          
+          if (error) throw error;
+          
+          if (data.url) {
+            window.location.href = data.url;
+          }
+          */
+          
+          // Mode démo temporaire - afficher instructions
+          alert(`💡 Configuration Stripe requise !\n\nPour activer les paiements :\n\n1. Récupérez votre clé publique Stripe (pk_live_xxx ou pk_test_xxx)\n2. Remplacez 'pk_live_VOTRE_CLE_PUBLIQUE' dans le code\n3. Configurez les webhooks Stripe\n\nPrice ID sélectionné : ${plan.stripePrice}`);
         }
-
-        // Set premium flag (demo)
-        localStorage.setItem('tsa_premium_demo', 'true');
-
-        // Success
-        alert('🎉 Paiement réussi ! Bienvenue dans Premium !');
-        closeCheckoutModal();
-        
-        // Redirect to account
-        window.location.href = '/account.html';
 
       } catch (error) {
         console.error('Payment error:', error);
-        alert('Erreur lors du paiement. Veuillez réessayer.');
+        alert('Erreur lors du paiement : ' + (error.message || 'Veuillez réessayer.'));
       } finally {
         document.getElementById('paySpinner').classList.add('hidden');
         document.getElementById('payButton').disabled = false;
       }
     }
+    
+    // Check for payment success/cancel on page load
+    function checkPaymentStatus() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const payment = urlParams.get('payment');
+      
+      if (payment === 'cancelled') {
+        // Show cancelled message
+        alert('Paiement annulé. Vous pouvez réessayer quand vous voulez.');
+        // Clean URL
+        window.history.replaceState({}, document.title, '/premium.html');
+      }
+    }
+    
+    checkPaymentStatus();
 
     // Join waitlist
     function joinWaitlist() {
