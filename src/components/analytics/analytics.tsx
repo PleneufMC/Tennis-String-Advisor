@@ -62,11 +62,11 @@ export const trackSearch = (searchTerm: string) => {
   trackEvent('search', 'engagement', searchTerm);
 };
 
-export const trackProductView = (productId: string, productName: string) => {
+export const trackProductView = (_productId: string, productName: string) => {
   trackEvent('view_item', 'ecommerce', productName, undefined);
 };
 
-export const trackAddToCart = (productId: string, productName: string, value: number) => {
+export const trackAddToCart = (_productId: string, productName: string, value: number) => {
   trackEvent('add_to_cart', 'ecommerce', productName, value);
 };
 

@@ -2,8 +2,8 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
-import { stringsDatabase, TennisString, filterStrings, calculateRCS, getStringRecommendation } from '@/data/strings-database';
-import { racquetsDatabase, TennisRacquet, filterRacquets, getRacquetRecommendation, calculateCompatibility } from '@/data/racquets-database';
+import { stringsDatabase, calculateRCS, getStringRecommendation } from '@/data/strings-database';
+import { racquetsDatabase, calculateCompatibility } from '@/data/racquets-database';
 import { ConfigurationStorage, SavedConfiguration } from '@/lib/storage';
 
 export default function ConfiguratorPage() {
@@ -179,7 +179,7 @@ export default function ConfiguratorPage() {
       return;
     }
 
-    const saved = ConfigurationStorage.save({
+    ConfigurationStorage.save({
       name: formData.configName,
       racquetId: formData.racquet,
       mainStringId: formData.mainString,

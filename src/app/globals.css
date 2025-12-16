@@ -1,23 +1,51 @@
-@import 'tailwindcss/base';
-@import 'tailwindcss/components';
-@import 'tailwindcss/utilities';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 @layer base {
   :root {
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
-    --primary: 142 76% 36%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 142.1 76.2% 36.3%;
     --primary-foreground: 355.7 100% 97.3%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 142 76% 36%;
+    --ring: 142.1 76.2% 36.3%;
     --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 142.1 70.6% 45.3%;
+    --primary-foreground: 144.9 80.4% 10%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 142.1 76.2% 36.3%;
   }
 }
 
@@ -25,69 +53,216 @@
   * {
     @apply border-border;
   }
+  
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Focus styles for accessibility */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
   }
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
-}
-
-::-webkit-scrollbar-track {
-  @apply bg-gray-100;
-}
-
-::-webkit-scrollbar-thumb {
-  @apply bg-gray-400 rounded-full;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  @apply bg-gray-500;
-}
-
-/* Range input custom styles */
-input[type="range"] {
-  -webkit-appearance: none;
-  appearance: none;
-  background: transparent;
-  cursor: pointer;
-}
-
-input[type="range"]::-webkit-slider-track {
-  @apply bg-gray-200 h-2 rounded-lg;
-}
-
-input[type="range"]::-moz-range-track {
-  @apply bg-gray-200 h-2 rounded-lg;
-}
-
-input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  @apply bg-green-600 w-5 h-5 rounded-full border-2 border-white shadow-md;
-  margin-top: -6px;
-}
-
-input[type="range"]::-moz-range-thumb {
-  @apply bg-green-600 w-5 h-5 rounded-full border-2 border-white shadow-md;
-  border: 2px solid white;
-}
-
-/* Animations */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
+@layer components {
+  /* Tennis-themed hero background */
+  .hero-tennis {
+    @apply relative overflow-hidden;
+    background-image: 
+      linear-gradient(135deg, rgba(34, 197, 94, 0.9) 0%, rgba(22, 163, 74, 0.85) 50%, rgba(34, 197, 94, 0.9) 100%),
+      url('https://images.unsplash.com/photo-1622279457486-62dcc4a431d6?q=80&w=2000&auto=format&fit=crop');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+
+  @media (max-width: 768px) {
+    .hero-tennis {
+      background-attachment: scroll;
+    }
+  }
+
+  /* Glass morphism effect */
+  .glass {
+    @apply bg-white/10 backdrop-blur-xl border border-white/20;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+  }
+
+  .glass-white {
+    @apply bg-white/95 backdrop-blur-md border border-white/50;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+  }
+
+  /* Tennis button styles */
+  .btn-tennis {
+    @apply inline-flex items-center justify-center rounded-xl px-6 py-3;
+    @apply bg-gradient-to-r from-green-600 to-green-700;
+    @apply text-white font-semibold;
+    @apply hover:from-green-700 hover:to-green-800;
+    @apply transform hover:-translate-y-0.5 hover:shadow-lg;
+    @apply transition-all duration-200;
+    @apply focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2;
+  }
+
+  .btn-tennis-outline {
+    @apply inline-flex items-center justify-center rounded-xl px-6 py-3;
+    @apply border-2 border-green-600 text-green-700 font-semibold;
+    @apply hover:bg-green-50;
+    @apply transform hover:-translate-y-0.5;
+    @apply transition-all duration-200;
+    @apply focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2;
+  }
+
+  .btn-premium {
+    @apply inline-flex items-center justify-center rounded-xl px-6 py-3;
+    @apply bg-gradient-to-r from-amber-500 to-orange-500;
+    @apply text-white font-semibold;
+    @apply hover:from-amber-600 hover:to-orange-600;
+    @apply transform hover:-translate-y-0.5 hover:shadow-lg;
+    @apply transition-all duration-200;
+    @apply focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2;
+  }
+
+  /* Card styles */
+  .card-tennis {
+    @apply bg-white rounded-2xl p-6 shadow-lg;
+    @apply border border-gray-100;
+    @apply hover:shadow-xl hover:border-green-100;
+    @apply transition-all duration-300;
+  }
+
+  /* Input styles */
+  .input-tennis {
+    @apply w-full px-4 py-3 rounded-xl;
+    @apply border-2 border-gray-200 bg-white;
+    @apply text-gray-900 placeholder:text-gray-400;
+    @apply focus:border-green-500 focus:ring-4 focus:ring-green-500/20;
+    @apply transition-all duration-200;
+  }
+
+  .select-tennis {
+    @apply w-full px-4 py-3 rounded-xl;
+    @apply border-2 border-gray-200 bg-white;
+    @apply text-gray-900;
+    @apply focus:border-green-500 focus:ring-4 focus:ring-green-500/20;
+    @apply transition-all duration-200;
+    @apply cursor-pointer;
+  }
+
+  /* Badge styles */
+  .badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium;
+  }
+
+  .badge-green {
+    @apply badge bg-green-100 text-green-800;
+  }
+
+  .badge-amber {
+    @apply badge bg-amber-100 text-amber-800;
+  }
+
+  .badge-blue {
+    @apply badge bg-blue-100 text-blue-800;
+  }
+
+  .badge-purple {
+    @apply badge bg-purple-100 text-purple-800;
+  }
+
+  /* Rating stars */
+  .rating {
+    @apply flex items-center gap-0.5;
+  }
+
+  .rating-star {
+    @apply w-5 h-5 text-amber-400 fill-current;
+  }
+
+  .rating-star-empty {
+    @apply w-5 h-5 text-gray-300;
+  }
+
+  /* Loading skeleton */
+  .skeleton {
+    @apply animate-pulse bg-gray-200 rounded;
+  }
+
+  /* Section spacing */
+  .section {
+    @apply py-16 md:py-24;
+  }
+
+  .section-sm {
+    @apply py-12 md:py-16;
+  }
+
+  /* Container */
+  .container-tennis {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
   }
 }
 
-.animate-fadeIn {
-  animation: fadeIn 0.3s ease-out;
+@layer utilities {
+  /* Text utilities */
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-green-600 to-green-800;
+  }
+
+  .text-gradient-premium {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-amber-500 to-orange-500;
+  }
+
+  /* Shadow utilities */
+  .shadow-tennis {
+    box-shadow: 0 4px 14px 0 rgba(34, 197, 94, 0.25);
+  }
+
+  .shadow-premium {
+    box-shadow: 0 4px 14px 0 rgba(251, 191, 36, 0.25);
+  }
+
+  /* Animation utilities */
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.3s ease-out;
+  }
+
+  @keyframes fadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+
+  @keyframes slideUp {
+    0% { transform: translateY(10px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+  }
+
+  /* Hide scrollbar but allow scrolling */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Aspect ratio for images */
+  .aspect-tennis-card {
+    aspect-ratio: 3/4;
+  }
 }

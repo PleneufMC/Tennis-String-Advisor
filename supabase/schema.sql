@@ -28,6 +28,9 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   premium_expires_at TIMESTAMPTZ,
   stripe_customer_id TEXT,
   stripe_subscription_id TEXT,
+  -- Usage tracking
+  configurator_uses INTEGER DEFAULT 0,
+  rcs_calculations_used INTEGER DEFAULT 0,
   -- Metadata
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()

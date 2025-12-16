@@ -7,6 +7,10 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/js/rcs-calculator.js"></script>
+  <style>
+    .animate-fade-in { animation: fadeIn 0.3s ease-in; }
+    @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+  </style>
   <script>
     tailwind.config = {
       theme: {
@@ -31,6 +35,59 @@
   <script src="/js/analytics.js"></script>
 </head>
 <body class="bg-gray-50 min-h-screen">
+  <!-- Premium Paywall Modal -->
+  <div id="configuratorPaywall" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden animate-fade-in">
+      <div class="bg-gradient-to-r from-amber-500 to-orange-500 p-6 text-white text-center">
+        <span class="text-5xl block mb-3">🔒</span>
+        <h2 class="text-2xl font-bold">Essai Gratuit Utilisé</h2>
+        <p class="text-white/90 mt-2">Vous avez utilisé votre configuration gratuite</p>
+      </div>
+      <div class="p-6">
+        <div class="bg-green-50 border border-green-200 rounded-xl p-4 mb-6">
+          <h3 class="font-semibold text-green-800 flex items-center gap-2">
+            <span>✨</span> Passez Premium pour continuer
+          </h3>
+          <ul class="mt-3 space-y-2 text-sm text-green-700">
+            <li class="flex items-center gap-2"><span>✓</span> Configurations illimitées</li>
+            <li class="flex items-center gap-2"><span>✓</span> Calculs RCS illimités</li>
+            <li class="flex items-center gap-2"><span>✓</span> Sauvegarde de vos setups</li>
+            <li class="flex items-center gap-2"><span>✓</span> Journal de cordage</li>
+            <li class="flex items-center gap-2"><span>✓</span> Alertes prix</li>
+            <li class="flex items-center gap-2"><span>✓</span> Export PDF</li>
+          </ul>
+        </div>
+        <div class="text-center mb-4">
+          <span class="text-3xl font-bold text-gray-900">2,99€</span>
+          <span class="text-gray-600">/mois</span>
+          <p class="text-sm text-gray-500 mt-1">ou 24,99€/an (2 mois offerts)</p>
+        </div>
+        <div class="space-y-3">
+          <a href="/premium.html" class="block w-full py-3 px-6 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-xl text-center hover:from-amber-600 hover:to-orange-600 transition shadow-lg">
+            ✨ Devenir Premium
+          </a>
+          <a href="/auth.html" id="paywallAuthLink" class="block w-full py-3 px-6 border-2 border-gray-300 text-gray-700 font-medium rounded-xl text-center hover:bg-gray-50 transition">
+            Créer un compte gratuit
+          </a>
+        </div>
+        <p class="text-xs text-gray-500 text-center mt-4">
+          Le compte gratuit inclut 1 configuration. Premium = illimité.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Free Trial Banner -->
+  <div id="freeTrialBanner" class="hidden bg-gradient-to-r from-green-500 to-green-600 text-white py-3 px-4 text-center">
+    <span class="font-medium">🎁 Essai gratuit : <span id="remainingConfigurations">1</span> configuration restante</span>
+    <span class="mx-2">|</span>
+    <a href="/premium.html" class="underline font-semibold hover:text-green-100">Passer Premium pour illimité →</a>
+  </div>
+
+  <!-- Premium Banner -->
+  <div id="premiumBanner" class="hidden bg-gradient-to-r from-amber-500 to-orange-500 text-white py-2 px-4 text-center">
+    <span class="font-medium">✨ Membre Premium - Configurations illimitées</span>
+  </div>
   <!-- Header -->
   <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4 py-4">
@@ -449,6 +506,20 @@
   </footer>
 
   <script>
+    // Supabase config
+    const SUPABASE_URL = 'https://yhhdkllbaxuhwrfpsmev.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InloaGRrbGxiYXh1aHdyZnBzbWV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU3NjI0MDEsImV4cCI6MjA4MTMzODQwMX0.2aC_gYZf0xxz6MXi5zcaCH2S64RBaQvXU7a5qiuD0_k';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Configuration usage tracking
+    let currentUser = null;
+    let userProfile = null;
+    let hasUsedFreeConfiguration = false;
+    let isPremium = false;
+    let configurationCount = 0;
+    const FREE_CONFIGURATIONS = 1;
+    const LOCAL_STORAGE_KEY = 'configurator_free_used';
+
     // State
     const selections = {
       level: null,
@@ -510,8 +581,115 @@
       }
     }
 
+    // Check if user can configure
+    function canConfigure() {
+      if (isPremium) return true;
+      
+      if (currentUser) {
+        return configurationCount < FREE_CONFIGURATIONS;
+      } else {
+        return !hasUsedFreeConfiguration;
+      }
+    }
+
+    // Show paywall
+    function showPaywall() {
+      const paywall = document.getElementById('configuratorPaywall');
+      paywall.classList.remove('hidden');
+      paywall.classList.add('flex');
+      document.body.style.overflow = 'hidden';
+    }
+
+    // Record configuration usage
+    async function recordConfigurationUsage() {
+      if (isPremium) return;
+      
+      if (currentUser) {
+        configurationCount++;
+        await supabase
+          .from('profiles')
+          .update({ configurator_uses: configurationCount })
+          .eq('id', currentUser.id);
+        
+        hasUsedFreeConfiguration = configurationCount >= FREE_CONFIGURATIONS;
+      } else {
+        localStorage.setItem(LOCAL_STORAGE_KEY, 'true');
+        hasUsedFreeConfiguration = true;
+      }
+      
+      updateUsageBanners();
+    }
+
+    // Update banners
+    function updateUsageBanners() {
+      const freeTrialBanner = document.getElementById('freeTrialBanner');
+      const premiumBanner = document.getElementById('premiumBanner');
+      const remainingEl = document.getElementById('remainingConfigurations');
+      
+      if (isPremium) {
+        freeTrialBanner.classList.add('hidden');
+        premiumBanner.classList.remove('hidden');
+      } else {
+        premiumBanner.classList.add('hidden');
+        const remaining = Math.max(0, FREE_CONFIGURATIONS - (currentUser ? configurationCount : (hasUsedFreeConfiguration ? 1 : 0)));
+        remainingEl.textContent = remaining;
+        
+        if (remaining === 0) {
+          freeTrialBanner.innerHTML = `
+            <span class="font-medium">🔒 Essai gratuit terminé</span>
+            <span class="mx-2">|</span>
+            <a href="/premium.html" class="underline font-semibold hover:text-green-100">Passer Premium pour continuer →</a>
+          `;
+          freeTrialBanner.classList.remove('from-green-500', 'to-green-600');
+          freeTrialBanner.classList.add('from-amber-500', 'to-orange-500');
+        }
+        freeTrialBanner.classList.remove('hidden');
+      }
+    }
+
+    // Check user status
+    async function checkUserStatus() {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session) {
+          currentUser = session.user;
+          
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('is_premium, configurator_uses')
+            .eq('id', currentUser.id)
+            .single();
+          
+          if (profile) {
+            userProfile = profile;
+            isPremium = profile.is_premium === true;
+            configurationCount = profile.configurator_uses || 0;
+            hasUsedFreeConfiguration = configurationCount >= FREE_CONFIGURATIONS;
+          }
+          
+          document.getElementById('paywallAuthLink').textContent = 'Retour à mon compte';
+          document.getElementById('paywallAuthLink').href = '/account.html';
+        } else {
+          hasUsedFreeConfiguration = localStorage.getItem(LOCAL_STORAGE_KEY) === 'true';
+        }
+        
+        updateUsageBanners();
+      } catch (error) {
+        console.error('Error checking user status:', error);
+      }
+    }
+
+    // Initialize on load
+    checkUserStatus();
+
     // Generate result
     function generateResult() {
+      // Check if user can configure
+      if (!canConfigure()) {
+        showPaywall();
+        return;
+      }
       // Determine recommendations based on selections
       let racquet = { brand: 'Babolat', name: 'Pure Drive', category: 'Polyvalent', weight: '300g', head: '100 sq in', stiffness: 72, stiffnessDisplay: 'RA 72', price: '269€', reason: 'Raquette polyvalente idéale pour progresser.', stringStiffness: 240 };
       let string = { brand: 'Babolat', name: 'RPM Blast', type: 'Polyester', spin: '10/10', control: '8/10', comfort: '5/10', price: '18€', reason: 'Excellent pour générer du spin.', stiffness: 240 };
@@ -584,6 +762,9 @@
 
       // Calculate and display RCS
       updateRCSDisplay(racquet.stiffness, string.stiffness, tension.numValue, rcsProfile);
+
+      // Record usage
+      recordConfigurationUsage();
 
       goToStep(4);
     }
