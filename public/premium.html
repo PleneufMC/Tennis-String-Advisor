@@ -520,34 +520,35 @@
     
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Stripe configuration
-    const STRIPE_PUBLISHABLE_KEY = 'pk_live_51NYqROIkmQ7vFcvcPkJOYzWZeTYuSe1Csd4WZjEaQuKOjj5hTTwYwaAXTTZOLOLasgoSjGzLpahFLFchclO9Mv9X00hvROTwRk';
+    // Stripe Payment Links (direct checkout - no server needed)
+    const PAYMENT_LINKS = {
+      monthly: 'https://buy.stripe.com/bJedR9aD1cZkaNwduk8Vi03',
+      annual: 'https://buy.stripe.com/bJe00jeThbVgaNw1LC8Vi04',
+      lifetime: 'https://buy.stripe.com/28E3cvfXl8J4f3M9e48Vi05'
+    };
     
-    // Pricing configuration with real Stripe Price IDs
+    // Pricing configuration
     const PLANS = {
       monthly: {
         name: 'Premium Mensuel',
         price: '2,99€',
         priceValue: 2.99,
         note: 'Renouvellement mensuel, sans engagement',
-        stripePrice: 'price_1Sf3qpIkmQ7vFcvcYHBFjCf2',
-        mode: 'subscription'
+        paymentLink: PAYMENT_LINKS.monthly
       },
       annual: {
         name: 'Premium Annuel',
         price: '24,99€',
         priceValue: 24.99,
         note: 'Paiement annuel, économisez 30%',
-        stripePrice: 'price_1Sf3vFIkmQ7vFcvc1QPO5kaQ',
-        mode: 'subscription'
+        paymentLink: PAYMENT_LINKS.annual
       },
       lifetime: {
         name: 'Lifetime (Offre de lancement)',
         price: '19,99€',
         priceValue: 19.99,
         note: 'Paiement unique, accès à vie',
-        stripePrice: 'price_1Sf3w1IkmQ7vFcvcQ63qylGG',
-        mode: 'payment'
+        paymentLink: PAYMENT_LINKS.lifetime
       }
     };
 
@@ -664,7 +665,7 @@
       selectedPlan = null;
     }
 
-    // Process payment with Stripe Checkout
+    // Process payment - redirect to Stripe Payment Link
     async function processPayment() {
       if (!currentUser || !selectedPlan) return;
 
@@ -674,56 +675,21 @@
       document.getElementById('payButton').disabled = true;
 
       try {
-        // Option 1: Utiliser Stripe Checkout (côté client - simple)
-        // Nécessite de configurer la clé publique Stripe
+        // Build payment link with prefilled email and client reference
+        let paymentUrl = plan.paymentLink;
         
-        if (STRIPE_PUBLISHABLE_KEY && STRIPE_PUBLISHABLE_KEY !== 'pk_live_VOTRE_CLE_PUBLIQUE') {
-          const stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
-          
-          // Rediriger vers Stripe Checkout
-          const { error } = await stripe.redirectToCheckout({
-            lineItems: [{ price: plan.stripePrice, quantity: 1 }],
-            mode: plan.mode,
-            successUrl: window.location.origin + '/account.html?payment=success&plan=' + selectedPlan,
-            cancelUrl: window.location.origin + '/premium.html?payment=cancelled',
-            customerEmail: currentUser.email,
-            clientReferenceId: currentUser.id
-          });
-          
-          if (error) {
-            throw error;
-          }
-        } else {
-          // Option 2: Appel à une fonction Supabase Edge Function
-          // Décommentez et configurez si vous utilisez les Edge Functions
-          /*
-          const { data, error } = await supabase.functions.invoke('create-checkout-session', {
-            body: { 
-              priceId: plan.stripePrice, 
-              userId: currentUser.id,
-              userEmail: currentUser.email,
-              planType: selectedPlan,
-              mode: plan.mode,
-              successUrl: window.location.origin + '/account.html?payment=success&plan=' + selectedPlan,
-              cancelUrl: window.location.origin + '/premium.html?payment=cancelled'
-            }
-          });
-          
-          if (error) throw error;
-          
-          if (data.url) {
-            window.location.href = data.url;
-          }
-          */
-          
-          // Mode démo temporaire - afficher instructions
-          alert(`💡 Configuration Stripe requise !\n\nPour activer les paiements :\n\n1. Récupérez votre clé publique Stripe (pk_live_xxx ou pk_test_xxx)\n2. Remplacez 'pk_live_VOTRE_CLE_PUBLIQUE' dans le code\n3. Configurez les webhooks Stripe\n\nPrice ID sélectionné : ${plan.stripePrice}`);
+        // Add email prefill if available
+        if (currentUser.email) {
+          paymentUrl += '?prefilled_email=' + encodeURIComponent(currentUser.email);
+          paymentUrl += '&client_reference_id=' + encodeURIComponent(currentUser.id);
         }
+        
+        // Redirect to Stripe Payment Link
+        window.location.href = paymentUrl;
 
       } catch (error) {
         console.error('Payment error:', error);
         alert('Erreur lors du paiement : ' + (error.message || 'Veuillez réessayer.'));
-      } finally {
         document.getElementById('paySpinner').classList.add('hidden');
         document.getElementById('payButton').disabled = false;
       }
@@ -735,9 +701,12 @@
       const payment = urlParams.get('payment');
       
       if (payment === 'cancelled') {
-        // Show cancelled message
         alert('Paiement annulé. Vous pouvez réessayer quand vous voulez.');
-        // Clean URL
+        window.history.replaceState({}, document.title, '/premium.html');
+      }
+      
+      if (payment === 'success') {
+        alert('🎉 Paiement réussi ! Bienvenue dans Premium !');
         window.history.replaceState({}, document.title, '/premium.html');
       }
     }
