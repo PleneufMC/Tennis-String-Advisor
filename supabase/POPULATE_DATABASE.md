@@ -331,4 +331,4 @@ Les scripts gèrent les conflits avec `ON CONFLICT (slug) DO UPDATE`.
 
 ---
 
-**Besoin d'aide ?** Vérifiez les logs des scripts ou contactez contact@tennisstringadvisor.com
+**Besoin d'aide ?** Vérifiez les logs des scripts ou contactez pleneuftrading@gmail.com

@@ -225,4 +225,4 @@ FROM public.profiles;
 
 ---
 
-**Besoin d'aide ?** Ouvrez une issue sur GitHub ou contactez contact@tennisstringadvisor.com
+**Besoin d'aide ?** Ouvrez une issue sur GitHub ou contactez pleneuftrading@gmail.com

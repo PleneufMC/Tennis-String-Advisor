@@ -270,4 +270,4 @@ Vérifiez que vous utilisez la bonne clé (test vs live) et qu'elle est correcte
 
 - **Stripe** : https://support.stripe.com/
 - **Supabase** : https://supabase.com/docs
-- **Tennis String Advisor** : contact@tennisstringadvisor.com
+- **Tennis String Advisor** : pleneuftrading@gmail.com
