@@ -115,8 +115,8 @@
             <div class="text-xs text-green-600 mt-2">→ Gratuit</div>
           </a>
         </div>
-        <!-- Journal de Cordage - Premium -->
-        <div id="journalCard" class="hidden bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-200 p-6 text-center">
+        <!-- Journal de Cordage -->
+        <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-200 p-6 text-center">
           <a href="/journal-cordage.html" class="block">
             <div class="text-3xl mb-2">📋</div>
             <div class="text-blue-800 font-semibold">Journal Cordage</div>
@@ -263,6 +263,9 @@
               <a href="/compare.html" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-50 transition text-gray-700">
                 <span>📊</span> Comparateur
               </a>
+              <a href="/journal-cordage.html" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-50 transition text-blue-700 border border-blue-200">
+                <span>📋</span> Journal Cordage <span class="ml-auto text-xs bg-blue-100 px-2 py-0.5 rounded-full">⭐ Premium</span>
+              </a>
             </div>
           </div>
 
@@ -353,8 +356,7 @@
               document.getElementById('premiumStats').classList.remove('hidden');
               document.getElementById('freeUserCta').classList.add('hidden');
               document.getElementById('recentSetupsSection').classList.remove('hidden');
-              // Show journal card for premium users
-              document.getElementById('journalCard')?.classList.remove('hidden');
+              
               
               // Load setups for premium users
               await loadPremiumSetups();
@@ -369,8 +371,7 @@
             document.getElementById('premiumStats').classList.remove('hidden');
             document.getElementById('freeUserCta').classList.add('hidden');
             document.getElementById('recentSetupsSection').classList.remove('hidden');
-            document.getElementById('journalCard')?.classList.remove('hidden');
-          }
+            }
           console.log('Profile table not yet available');
         }
 
