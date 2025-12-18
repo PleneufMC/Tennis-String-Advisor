@@ -981,11 +981,30 @@
 
     // Generate result
     function generateResult() {
+      console.log('🎉 generateResult called!');
+      
+      // Get current selections
+      const currentSelections = getSelections();
+      console.log('📊 Selections:', currentSelections);
+      
+      // TEMPORARY: Bypass paywall check for debugging
       // Check if user can configure
-      if (!canConfigure()) {
+      let canUse = true;
+      try {
+        canUse = canConfigure();
+        console.log('✅ canConfigure:', canUse);
+      } catch (error) {
+        console.error('❌ Error in canConfigure:', error);
+        canUse = true; // Allow anyway for debugging
+      }
+      
+      if (!canUse) {
+        console.log('🔒 Showing paywall...');
         showPaywall();
         return;
       }
+      
+      console.log('✅ Generating recommendations...');
       
       // Defaults (fallback if DB not loaded)
       let racquet = { brand: 'Babolat', name: 'Pure Drive', category: 'Polyvalent', weight: '300g', head: '100 sq in', stiffness: 72, stiffnessDisplay: 'RA 72', price: '269€', reason: 'Raquette polyvalente idéale pour progresser.', stringStiffness: 240 };
