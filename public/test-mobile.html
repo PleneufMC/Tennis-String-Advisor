@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Mobile Debug</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif; 
+      padding: 20px; 
+      background: #f5f5f5;
+    }
+    h2 { color: #333; margin-top: 30px; }
+    .group { 
+      background: white; 
+      padding: 15px; 
+      border-radius: 10px; 
+      margin-bottom: 20px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .group-title { 
+      font-weight: bold; 
+      margin-bottom: 10px; 
+      color: #666;
+    }
+    .cards { 
+      display: flex; 
+      gap: 10px; 
+      flex-wrap: wrap;
+    }
+    .card {
+      padding: 15px 25px;
+      border: 3px solid #ddd;
+      border-radius: 10px;
+      background: white;
+      cursor: pointer;
+      font-size: 16px;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      transition: all 0.15s;
+    }
+    .card.selected {
+      border-color: #16a34a;
+      background: #f0fdf4;
+    }
+    .card:active {
+      transform: scale(0.95);
+    }
+    #log {
+      background: #1e1e1e;
+      color: #0f0;
+      padding: 15px;
+      border-radius: 10px;
+      font-family: monospace;
+      font-size: 12px;
+      max-height: 300px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+    }
+    .log-entry { margin: 5px 0; }
+    .log-click { color: #0ff; }
+    .log-select { color: #0f0; }
+    .log-deselect { color: #f80; }
+    .log-state { color: #ff0; }
+    button {
+      padding: 10px 20px;
+      margin: 5px;
+      border-radius: 5px;
+      border: none;
+      background: #333;
+      color: white;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔬 Test Mobile Debug</h1>
+  <p>Cette page isole le problème de sélection.</p>
+
+  <div class="group">
+    <div class="group-title">NIVEAU (category: level)</div>
+    <div class="cards" id="level-cards">
+      <div class="card" data-category="level" data-value="debutant">🌱 Débutant</div>
+      <div class="card" data-category="level" data-value="intermediaire">📈 Inter</div>
+      <div class="card" data-category="level" data-value="avance">⭐ Avancé</div>
+    </div>
+  </div>
+
+  <div class="group">
+    <div class="group-title">FRÉQUENCE (category: frequency)</div>
+    <div class="cards" id="frequency-cards">
+      <div class="card" data-category="frequency" data-value="occasionnel">🎾 Occasionnel</div>
+      <div class="card" data-category="frequency" data-value="regulier">📅 Régulier</div>
+      <div class="card" data-category="frequency" data-value="intensif">🔥 Intensif</div>
+    </div>
+  </div>
+
+  <div class="group">
+    <div class="group-title">État actuel</div>
+    <div id="state" style="font-size: 18px; padding: 10px;">
+      level: <strong id="state-level">-</strong><br>
+      frequency: <strong id="state-frequency">-</strong>
+    </div>
+  </div>
+
+  <div style="margin: 20px 0;">
+    <button onclick="clearLog()">🗑️ Effacer log</button>
+    <button onclick="location.reload()">🔄 Recharger</button>
+  </div>
+
+  <h2>📋 Event Log</h2>
+  <div id="log"></div>
+
+  <script>
+    // State
+    const selections = { level: null, frequency: null };
+    const selectedCards = { level: null, frequency: null };
+    
+    // Logging
+    const logEl = document.getElementById('log');
+    function log(msg, type = '') {
+      const time = new Date().toLocaleTimeString();
+      const entry = document.createElement('div');
+      entry.className = 'log-entry ' + (type ? 'log-' + type : '');
+      entry.textContent = `[${time}] ${msg}`;
+      logEl.appendChild(entry);
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+    function clearLog() { logEl.innerHTML = ''; }
+    
+    // Update state display
+    function updateStateDisplay() {
+      document.getElementById('state-level').textContent = selections.level || '-';
+      document.getElementById('state-frequency').textContent = selections.frequency || '-';
+    }
+    
+    // Selection handler
+    function handleCardSelection(card) {
+      const category = card.dataset.category;
+      const value = card.dataset.value;
+      
+      log(`handleCardSelection: category="${category}", value="${value}"`, 'select');
+      
+      // Deselect previous
+      const prev = selectedCards[category];
+      if (prev && prev !== card) {
+        prev.classList.remove('selected');
+        log(`  Deselected previous: ${prev.dataset.value}`, 'deselect');
+      }
+      
+      // Select new
+      card.classList.add('selected');
+      selectedCards[category] = card;
+      selections[category] = value;
+      
+      log(`  State now: ${JSON.stringify(selections)}`, 'state');
+      updateStateDisplay();
+    }
+    
+    // EVENT DELEGATION - single listener
+    document.body.addEventListener('click', function(e) {
+      const card = e.target.closest('.card');
+      
+      log(`Body click - target: ${e.target.tagName}.${e.target.className}`, 'click');
+      log(`  closest('.card'): ${card ? card.dataset.value : 'null'}`, 'click');
+      
+      if (card && card.dataset.category) {
+        handleCardSelection(card);
+      }
+    });
+    
+    // Also log touch events to see what's happening
+    document.body.addEventListener('touchstart', function(e) {
+      log(`touchstart on ${e.target.tagName}`, 'click');
+    }, { passive: true });
+    
+    document.body.addEventListener('touchend', function(e) {
+      log(`touchend on ${e.target.tagName}`, 'click');
+    }, { passive: true });
+    
+    log('Page loaded - ready for testing', 'state');
+    log('Tap cards and watch the log', 'state');
+  </script>
+</body>
+</html>
