@@ -5,8 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Configurateur Expert - Tennis String Advisor</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="/js/rcs-calculator.js"></script>
+  <!-- DEFER external scripts to prevent interference with event listeners -->
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script defer src="/js/rcs-calculator.js"></script>
   <style>
     .animate-fade-in { animation: fadeIn 0.3s ease-in; }
     @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
@@ -39,9 +40,9 @@
     }
     .option-card:active { transform: scale(0.98); }
   </style>
-  <!-- Google Analytics 4 -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-YSSLHJ5WYD"></script>
-  <script src="/js/analytics.js"></script>
+  <!-- Google Analytics 4 - Load AFTER page interactions setup -->
+  <script defer src="https://www.googletagmanager.com/gtag/js?id=G-YSSLHJ5WYD"></script>
+  <script defer src="/js/analytics.js"></script>
 </head>
 <body class="bg-gray-50 min-h-screen">
   <!-- Premium Paywall Modal -->
@@ -1324,6 +1325,11 @@
         const card = e.target.closest('.option-card');
         
         if (card && card.dataset.category) {
+          // CRITICAL: Stop ALL other listeners from executing
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+          e.preventDefault();
+          
           console.log('🖱️ Delegated click on card:', card.dataset.category, card.dataset.value);
           handleCardSelection(card);
           return; // Don't process further
@@ -1339,7 +1345,7 @@
           else if (btnId === 'prevStep3') { e.preventDefault(); goToStep(2); }
           else if (btnId === 'generateBtn') { e.preventDefault(); generateResult(); }
         }
-      }, { passive: false });
+      }, { capture: true });
       
       console.log('✅ Configurator v6 ready!');
       console.log('📱 Using EVENT DELEGATION - single listener on body');
