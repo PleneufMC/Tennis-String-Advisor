@@ -190,7 +190,7 @@
       </div>
 
       <div class="flex justify-end mt-8">
-        <button onclick="goToStep(2)" class="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition">
+        <button id="nextStep1" class="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition">
           Suivant →
         </button>
       </div>
@@ -244,10 +244,10 @@
       </div>
 
       <div class="flex justify-between mt-8">
-        <button onclick="goToStep(1)" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition">
+        <button id="prevStep2" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition">
           ← Précédent
         </button>
-        <button onclick="goToStep(3)" class="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition">
+        <button id="nextStep2" class="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition">
           Suivant →
         </button>
       </div>
@@ -296,10 +296,10 @@
       </div>
 
       <div class="flex justify-between mt-8">
-        <button onclick="goToStep(2)" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition">
+        <button id="prevStep3" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition">
           ← Précédent
         </button>
-        <button onclick="generateResult()" class="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition">
+        <button id="generateBtn" class="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition">
           Voir mes recommandations 🎉
         </button>
       </div>
@@ -1254,12 +1254,78 @@
     window.selectOption = selectOption;
     window.goToStep = goToStep;
     window.restartConfigurator = restartConfigurator;
+    window.generateResult = generateResult;
     
     // Initialize on page load
     document.addEventListener('DOMContentLoaded', function() {
       console.log('Configurator initialized');
+      
       // Ensure step 1 is visible and indicators are set correctly
       goToStep(1);
+      
+      // MOBILE FIX: Add event listeners instead of relying on onclick attributes
+      // This is more reliable on mobile devices
+      const nextStep1 = document.getElementById('nextStep1');
+      const prevStep2 = document.getElementById('prevStep2');
+      const nextStep2 = document.getElementById('nextStep2');
+      const prevStep3 = document.getElementById('prevStep3');
+      const generateBtn = document.getElementById('generateBtn');
+      
+      if (nextStep1) {
+        nextStep1.addEventListener('click', function(e) {
+          e.preventDefault();
+          console.log('Next Step 1 clicked');
+          goToStep(2);
+        });
+      }
+      
+      if (prevStep2) {
+        prevStep2.addEventListener('click', function(e) {
+          e.preventDefault();
+          console.log('Prev Step 2 clicked');
+          goToStep(1);
+        });
+      }
+      
+      if (nextStep2) {
+        nextStep2.addEventListener('click', function(e) {
+          e.preventDefault();
+          console.log('Next Step 2 clicked');
+          goToStep(3);
+        });
+      }
+      
+      if (prevStep3) {
+        prevStep3.addEventListener('click', function(e) {
+          e.preventDefault();
+          console.log('Prev Step 3 clicked');
+          goToStep(2);
+        });
+      }
+      
+      if (generateBtn) {
+        generateBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          console.log('Generate button clicked');
+          generateResult();
+        });
+      }
+      
+      // Also add touch event listeners for better mobile support
+      const addTouchSupport = (btn, callback) => {
+        if (btn) {
+          btn.addEventListener('touchend', function(e) {
+            e.preventDefault();
+            callback();
+          });
+        }
+      };
+      
+      addTouchSupport(nextStep1, () => goToStep(2));
+      addTouchSupport(prevStep2, () => goToStep(1));
+      addTouchSupport(nextStep2, () => goToStep(3));
+      addTouchSupport(prevStep3, () => goToStep(2));
+      addTouchSupport(generateBtn, () => generateResult());
     });
   </script>
 </body>
