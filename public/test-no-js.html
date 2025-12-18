@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Sans JavaScript (Pure CSS)</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { 
+      font-family: -apple-system, sans-serif; 
+      padding: 20px; 
+      background: #f5f5f5;
+    }
+    
+    .group {
+      background: white;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-radius: 10px;
+    }
+    
+    .group-title {
+      font-weight: bold;
+      font-size: 18px;
+      margin-bottom: 15px;
+    }
+    
+    /* Hide actual radio buttons */
+    input[type="radio"] {
+      display: none;
+    }
+    
+    /* Style the labels as cards */
+    label {
+      display: block;
+      padding: 20px;
+      border: 3px solid #ddd;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    
+    /* Selected state - using :checked */
+    input[type="radio"]:checked + label {
+      border-color: #16a34a !important;
+      background: #f0fdf4 !important;
+      font-weight: bold;
+    }
+    
+    label:active {
+      transform: scale(0.98);
+    }
+    
+    .state {
+      background: #e0f2fe;
+      padding: 15px;
+      border-radius: 10px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔬 Test Sans JavaScript</h1>
+  <p>Cette version utilise UNIQUEMENT du CSS (input radio + :checked)</p>
+
+  <form>
+    <div class="group">
+      <div class="group-title">NIVEAU</div>
+      
+      <input type="radio" name="level" id="level-deb" value="debutant">
+      <label for="level-deb">🌱 Débutant</label>
+      
+      <input type="radio" name="level" id="level-int" value="intermediaire">
+      <label for="level-int">📈 Intermédiaire</label>
+      
+      <input type="radio" name="level" id="level-adv" value="avance">
+      <label for="level-adv">⭐ Avancé</label>
+    </div>
+
+    <div class="group">
+      <div class="group-title">FRÉQUENCE</div>
+      
+      <input type="radio" name="frequency" id="freq-occ" value="occasionnel">
+      <label for="freq-occ">🎾 Occasionnel</label>
+      
+      <input type="radio" name="frequency" id="freq-reg" value="regulier">
+      <label for="freq-reg">📅 Régulier</label>
+      
+      <input type="radio" name="frequency" id="freq-int" value="intensif">
+      <label for="freq-int">🔥 Intensif</label>
+    </div>
+
+    <div class="state">
+      <strong>Instructions :</strong>
+      <ul style="margin-top: 10px; padding-left: 20px;">
+        <li>Sélectionnez un niveau (la bordure devient verte)</li>
+        <li>Sélectionnez une fréquence (elle doit aussi devenir verte)</li>
+        <li><strong>Les deux doivent rester vertes en même temps</strong></li>
+      </ul>
+      <p style="margin-top: 10px; color: #666;">
+        Si ça fonctionne ici mais pas sur configurator.html, 
+        le problème vient 100% du JavaScript ou des scripts externes.
+      </p>
+    </div>
+  </form>
+
+  <script>
+    // MINIMAL JS just to show state (doesn't affect selection)
+    document.addEventListener('change', function() {
+      console.log('Level:', document.querySelector('input[name="level"]:checked')?.value || 'none');
+      console.log('Frequency:', document.querySelector('input[name="frequency"]:checked')?.value || 'none');
+    });
+  </script>
+</body>
+</html>
