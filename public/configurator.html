@@ -27,8 +27,17 @@
     .step-completed { background: #16a34a; }
     .step-pending { background: #e5e7eb; }
     .option-card:hover { border-color: #16a34a; transform: translateY(-2px); }
-    .option-card.selected { border-color: #16a34a; background: #f0fdf4; }
-    .option-card { transition: all 0.2s ease; }
+    .option-card.selected { border-color: #16a34a !important; background: #f0fdf4 !important; }
+    .option-card { 
+      transition: all 0.2s ease;
+      /* MOBILE FIX: Prevent touch issues */
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      -webkit-user-select: none;
+      cursor: pointer;
+    }
+    .option-card:active { transform: scale(0.98); }
   </style>
   <!-- Google Analytics 4 -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-YSSLHJ5WYD"></script>
@@ -147,22 +156,22 @@
       <h2 class="text-xl font-bold text-gray-900 mb-6">Quel est votre niveau de jeu ?</h2>
       
       <div id="level-group" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="debutant" onclick="selectOption(this, 'level')">
+        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="debutant" data-category="level">
           <div class="text-3xl mb-3">🌱</div>
           <h3 class="font-semibold text-gray-900 mb-1">Débutant</h3>
           <p class="text-sm text-gray-500">Moins de 2 ans de pratique, apprentissage des bases</p>
         </div>
-        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="intermediaire" onclick="selectOption(this, 'level')">
+        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="intermediaire" data-category="level">
           <div class="text-3xl mb-3">📈</div>
           <h3 class="font-semibold text-gray-900 mb-1">Intermédiaire</h3>
           <p class="text-sm text-gray-500">2-5 ans de pratique, technique en progression</p>
         </div>
-        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="avance" onclick="selectOption(this, 'level')">
+        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="avance" data-category="level">
           <div class="text-3xl mb-3">⭐</div>
           <h3 class="font-semibold text-gray-900 mb-1">Avancé</h3>
           <p class="text-sm text-gray-500">5+ ans de pratique, maîtrise technique</p>
         </div>
-        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="competition" onclick="selectOption(this, 'level')">
+        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="competition" data-category="level">
           <div class="text-3xl mb-3">🏆</div>
           <h3 class="font-semibold text-gray-900 mb-1">Compétition</h3>
           <p class="text-sm text-gray-500">Joueur classé, entraînement régulier intensif</p>
@@ -172,17 +181,17 @@
       <h2 class="text-xl font-bold text-gray-900 mb-6">À quelle fréquence jouez-vous ?</h2>
       
       <div id="frequency-group" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="occasionnel" onclick="selectOption(this, 'frequency')">
+        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="occasionnel" data-category="frequency">
           <div class="text-3xl mb-3">🎾</div>
           <h3 class="font-semibold text-gray-900 mb-1">Occasionnel</h3>
           <p class="text-sm text-gray-500">1-2 fois par mois</p>
         </div>
-        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="regulier" onclick="selectOption(this, 'frequency')">
+        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="regulier" data-category="frequency">
           <div class="text-3xl mb-3">📅</div>
           <h3 class="font-semibold text-gray-900 mb-1">Régulier</h3>
           <p class="text-sm text-gray-500">1-2 fois par semaine</p>
         </div>
-        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="intensif" onclick="selectOption(this, 'frequency')">
+        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="intensif" data-category="frequency">
           <div class="text-3xl mb-3">🔥</div>
           <h3 class="font-semibold text-gray-900 mb-1">Intensif</h3>
           <p class="text-sm text-gray-500">3+ fois par semaine</p>
@@ -201,22 +210,22 @@
       <h2 class="text-xl font-bold text-gray-900 mb-6">Quel est votre style de jeu ?</h2>
       
       <div id="style-group" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="puissance" onclick="selectOption(this, 'style')">
+        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="puissance" data-category="style">
           <div class="text-3xl mb-3">💥</div>
           <h3 class="font-semibold text-gray-900 mb-1">Puissance</h3>
           <p class="text-sm text-gray-500">Frappes lourdes, service puissant, jeu agressif</p>
         </div>
-        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="controle" onclick="selectOption(this, 'style')">
+        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="controle" data-category="style">
           <div class="text-3xl mb-3">🎯</div>
           <h3 class="font-semibold text-gray-900 mb-1">Contrôle</h3>
           <p class="text-sm text-gray-500">Précision, placement, construction du point</p>
         </div>
-        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="spin" onclick="selectOption(this, 'style')">
+        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="spin" data-category="style">
           <div class="text-3xl mb-3">🌀</div>
           <h3 class="font-semibold text-gray-900 mb-1">Spin / Lifté</h3>
           <p class="text-sm text-gray-500">Effets importants, jeu en fond de court</p>
         </div>
-        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="polyvalent" onclick="selectOption(this, 'style')">
+        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="polyvalent" data-category="style">
           <div class="text-3xl mb-3">⚖️</div>
           <h3 class="font-semibold text-gray-900 mb-1">Polyvalent</h3>
           <p class="text-sm text-gray-500">Équilibré, adaptable à toutes les situations</p>
@@ -226,17 +235,17 @@
       <h2 class="text-xl font-bold text-gray-900 mb-6">Avez-vous des problèmes physiques ?</h2>
       
       <div id="physical-group" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="aucun" onclick="selectOption(this, 'physical')">
+        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="aucun" data-category="physical">
           <div class="text-3xl mb-3">💪</div>
           <h3 class="font-semibold text-gray-900 mb-1">Aucun</h3>
           <p class="text-sm text-gray-500">Pas de problème particulier</p>
         </div>
-        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="bras" onclick="selectOption(this, 'physical')">
+        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="bras" data-category="physical">
           <div class="text-3xl mb-3">🦾</div>
           <h3 class="font-semibold text-gray-900 mb-1">Bras sensible</h3>
           <p class="text-sm text-gray-500">Tennis elbow, douleurs au coude</p>
         </div>
-        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="epaule" onclick="selectOption(this, 'physical')">
+        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="epaule" data-category="physical">
           <div class="text-3xl mb-3">🩹</div>
           <h3 class="font-semibold text-gray-900 mb-1">Épaule fragile</h3>
           <p class="text-sm text-gray-500">Douleurs à l'épaule</p>
@@ -258,17 +267,17 @@
       <h2 class="text-xl font-bold text-gray-900 mb-6">Quel est votre budget pour la raquette ?</h2>
       
       <div id="budget-racquet-group" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="eco" onclick="selectOption(this, 'budget-racquet')">
+        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="eco" data-category="budget-racquet">
           <div class="text-3xl mb-3">💰</div>
           <h3 class="font-semibold text-gray-900 mb-1">Économique</h3>
           <p class="text-sm text-gray-500">Moins de 150€</p>
         </div>
-        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="medium" onclick="selectOption(this, 'budget-racquet')">
+        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="medium" data-category="budget-racquet">
           <div class="text-3xl mb-3">💰💰</div>
           <h3 class="font-semibold text-gray-900 mb-1">Moyen</h3>
           <p class="text-sm text-gray-500">150€ - 250€</p>
         </div>
-        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="premium" onclick="selectOption(this, 'budget-racquet')">
+        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="premium" data-category="budget-racquet">
           <div class="text-3xl mb-3">💎</div>
           <h3 class="font-semibold text-gray-900 mb-1">Premium</h3>
           <p class="text-sm text-gray-500">Plus de 250€</p>
@@ -278,17 +287,17 @@
       <h2 class="text-xl font-bold text-gray-900 mb-6">Quel est votre budget pour le cordage ?</h2>
       
       <div id="budget-string-group" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="eco" onclick="selectOption(this, 'budget-string')">
+        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="eco" data-category="budget-string">
           <div class="text-3xl mb-3">🧵</div>
           <h3 class="font-semibold text-gray-900 mb-1">Économique</h3>
           <p class="text-sm text-gray-500">Moins de 15€</p>
         </div>
-        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="medium" onclick="selectOption(this, 'budget-string')">
+        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="medium" data-category="budget-string">
           <div class="text-3xl mb-3">🧶</div>
           <h3 class="font-semibold text-gray-900 mb-1">Moyen</h3>
           <p class="text-sm text-gray-500">15€ - 25€</p>
         </div>
-        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="premium" onclick="selectOption(this, 'budget-string')">
+        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="premium" data-category="budget-string">
           <div class="text-3xl mb-3">✨</div>
           <h3 class="font-semibold text-gray-900 mb-1">Premium</h3>
           <p class="text-sm text-gray-500">Plus de 25€</p>
@@ -534,42 +543,46 @@
       'budget-string': null
     };
 
-    // Select option - COMPLETELY REWRITTEN for mobile reliability
+    // SOLUTION 5: Completely isolated selection handling
+    // Uses data-category attributes and prevents ANY event conflicts
+    let isProcessingTouch = false; // Debounce flag
+    
     function selectOption(element, category) {
-      console.log('selectOption called with category:', category);
+      // Prevent double-firing on mobile
+      if (isProcessingTouch) {
+        console.log('⏳ Debouncing - ignoring duplicate event');
+        return;
+      }
       
-      // Find the specific group container for this category
+      console.log('🎯 selectOption START:', category, element.dataset.value);
+      
+      // Find the group container by category
       const groupId = category + '-group';
       const groupContainer = document.getElementById(groupId);
       
-      if (groupContainer) {
-        // Deselect all cards in THIS specific group only
-        const cardsInGroup = groupContainer.querySelectorAll('.option-card');
-        cardsInGroup.forEach(card => {
-          card.classList.remove('selected');
-          console.log('Deselecting card in', groupId);
-        });
-      } else {
-        // Fallback: use parent element approach
-        console.log('Group container not found, using parent approach');
-        const parent = element.parentElement;
-        const siblings = Array.from(parent.children).filter(child => 
-          child.classList.contains('option-card')
-        );
-        siblings.forEach(card => card.classList.remove('selected'));
+      if (!groupContainer) {
+        console.error('❌ Group not found:', groupId);
+        return;
       }
       
-      // Add selection to clicked element
+      // STEP 1: Deselect only cards in this specific group
+      const cardsInGroup = groupContainer.querySelectorAll('.option-card');
+      cardsInGroup.forEach(card => {
+        card.classList.remove('selected');
+        card.style.borderColor = '';
+        card.style.backgroundColor = '';
+      });
+      
+      // STEP 2: Select the clicked element
       element.classList.add('selected');
-      selections[category] = element.dataset.value;
-      
-      // Verify the selection is saved
-      console.log('✅ Selected:', category, '=', element.dataset.value);
-      console.log('📊 All selections:', JSON.stringify(selections));
-      
-      // Visual feedback
       element.style.borderColor = '#16a34a';
       element.style.backgroundColor = '#f0fdf4';
+      
+      // STEP 3: Save selection
+      selections[category] = element.dataset.value;
+      
+      console.log('✅ Selected:', category, '=', element.dataset.value);
+      console.log('📊 Current selections:', JSON.stringify(selections));
     }
 
     // Navigate steps
@@ -1275,113 +1288,82 @@
       goToStep(1);
     }
 
-    // CRITICAL FIX: Ensure functions are globally accessible for onclick handlers
-    // This is especially important for mobile browsers
+    // Make functions globally accessible
     window.selectOption = selectOption;
     window.goToStep = goToStep;
     window.restartConfigurator = restartConfigurator;
     window.generateResult = generateResult;
     
-    // Initialize on page load
+    // ========================================
+    // SOLUTION 5: MOBILE-FIRST EVENT HANDLING
+    // ========================================
+    // Key insight: On mobile, touchend fires BEFORE click.
+    // We use ONLY click events with pointer-events CSS
+    // and touch-action CSS to prevent all the issues.
+    
     document.addEventListener('DOMContentLoaded', function() {
-      console.log('Configurator initialized');
+      console.log('🚀 Configurator v5 initializing...');
       
-      // Ensure step 1 is visible and indicators are set correctly
+      // Initialize step 1
       goToStep(1);
       
-      // MOBILE FIX: Add event listeners instead of relying on onclick attributes
-      // This is more reliable on mobile devices
-      const nextStep1 = document.getElementById('nextStep1');
-      const prevStep2 = document.getElementById('prevStep2');
-      const nextStep2 = document.getElementById('nextStep2');
-      const prevStep3 = document.getElementById('prevStep3');
-      const generateBtn = document.getElementById('generateBtn');
-      
-      if (nextStep1) {
-        nextStep1.addEventListener('click', function(e) {
-          e.preventDefault();
-          console.log('Next Step 1 clicked');
-          goToStep(2);
-        });
-      }
-      
-      if (prevStep2) {
-        prevStep2.addEventListener('click', function(e) {
-          e.preventDefault();
-          console.log('Prev Step 2 clicked');
-          goToStep(1);
-        });
-      }
-      
-      if (nextStep2) {
-        nextStep2.addEventListener('click', function(e) {
-          e.preventDefault();
-          console.log('Next Step 2 clicked');
-          goToStep(3);
-        });
-      }
-      
-      if (prevStep3) {
-        prevStep3.addEventListener('click', function(e) {
-          e.preventDefault();
-          console.log('Prev Step 3 clicked');
-          goToStep(2);
-        });
-      }
-      
-      if (generateBtn) {
-        generateBtn.addEventListener('click', function(e) {
-          e.preventDefault();
-          console.log('Generate button clicked');
-          generateResult();
-        });
-      }
-      
-      // Also add touch event listeners for better mobile support
-      const addTouchSupport = (btn, callback) => {
-        if (btn) {
-          btn.addEventListener('touchend', function(e) {
-            e.preventDefault();
-            callback();
-          });
+      // ---- OPTION CARDS ----
+      // Use ONLY click events (works for both mouse AND touch)
+      // The browser synthesizes a click event after touchend
+      document.querySelectorAll('.option-card').forEach(card => {
+        const category = card.dataset.category;
+        
+        if (!category) {
+          console.warn('Card missing data-category:', card);
+          return;
         }
+        
+        // Single click handler - works for both desktop and mobile
+        card.addEventListener('click', function(e) {
+          // Don't prevent default - let natural click behavior work
+          e.stopPropagation(); // Prevent bubbling to parent
+          
+          console.log('🖱️ Card CLICK:', category, this.dataset.value);
+          selectOption(this, category);
+        }, { passive: false });
+        
+        // Add touch feedback CSS
+        card.style.touchAction = 'manipulation'; // Prevents double-tap zoom
+        card.style.webkitTapHighlightColor = 'transparent';
+        card.style.userSelect = 'none';
+        card.style.webkitUserSelect = 'none';
+      });
+      
+      console.log('📋 Attached listeners to', document.querySelectorAll('.option-card').length, 'option cards');
+      
+      // ---- NAVIGATION BUTTONS ----
+      // Simple click handlers for nav buttons
+      const buttons = {
+        'nextStep1': () => goToStep(2),
+        'prevStep2': () => goToStep(1),
+        'nextStep2': () => goToStep(3),
+        'prevStep3': () => goToStep(2),
+        'generateBtn': () => generateResult()
       };
       
-      addTouchSupport(nextStep1, () => goToStep(2));
-      addTouchSupport(prevStep2, () => goToStep(1));
-      addTouchSupport(nextStep2, () => goToStep(3));
-      addTouchSupport(prevStep3, () => goToStep(2));
-      addTouchSupport(generateBtn, () => generateResult());
-      
-      // CRITICAL FIX: Add event listeners to all option cards
-      // This ensures mobile touch events work correctly
-      document.querySelectorAll('.option-card').forEach(card => {
-        // Get category from the onclick attribute if present
-        const onclickAttr = card.getAttribute('onclick');
-        if (onclickAttr) {
-          const match = onclickAttr.match(/selectOption\(this,\s*'([^']+)'\)/);
-          if (match) {
-            const category = match[1];
-            
-            // Add click listener
-            card.addEventListener('click', function(e) {
-              e.stopPropagation();
-              console.log('Card clicked:', category, card.dataset.value);
-              selectOption(this, category);
-            });
-            
-            // Add touch listener for mobile
-            card.addEventListener('touchend', function(e) {
-              e.preventDefault();
-              e.stopPropagation();
-              console.log('Card touched:', category, card.dataset.value);
-              selectOption(this, category);
-            });
-          }
+      Object.entries(buttons).forEach(([id, handler]) => {
+        const btn = document.getElementById(id);
+        if (btn) {
+          btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('🔘 Button clicked:', id);
+            handler();
+          });
+          
+          // Touch-friendly styles
+          btn.style.touchAction = 'manipulation';
+          btn.style.webkitTapHighlightColor = 'transparent';
         }
       });
       
-      console.log('All event listeners attached');
+      console.log('✅ Configurator v5 ready!');
+      console.log('📱 All option cards now use data-category attributes');
+      console.log('📱 Using single click handler (no onclick conflicts)');
     });
   </script>
 </body>
