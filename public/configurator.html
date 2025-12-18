@@ -536,14 +536,27 @@
 
     // Select option
     function selectOption(element, category) {
-      // Remove selection from siblings
+      // FIXED: Only deselect cards in the same category group
+      // Instead of using parentElement, find all cards with the same category
       const parent = element.parentElement;
-      parent.querySelectorAll('.option-card').forEach(card => {
+      
+      // Get all option cards in the same grid container (direct siblings)
+      const siblings = Array.from(parent.children).filter(child => 
+        child.classList.contains('option-card')
+      );
+      
+      // Remove selection from siblings only
+      siblings.forEach(card => {
         card.classList.remove('selected');
       });
-      // Add selection
+      
+      // Add selection to clicked element
       element.classList.add('selected');
       selections[category] = element.dataset.value;
+      
+      // Debug log for mobile testing
+      console.log('Selected:', category, '=', element.dataset.value);
+      console.log('All selections:', selections);
     }
 
     // Navigate steps
@@ -1326,6 +1339,36 @@
       addTouchSupport(nextStep2, () => goToStep(3));
       addTouchSupport(prevStep3, () => goToStep(2));
       addTouchSupport(generateBtn, () => generateResult());
+      
+      // CRITICAL FIX: Add event listeners to all option cards
+      // This ensures mobile touch events work correctly
+      document.querySelectorAll('.option-card').forEach(card => {
+        // Get category from the onclick attribute if present
+        const onclickAttr = card.getAttribute('onclick');
+        if (onclickAttr) {
+          const match = onclickAttr.match(/selectOption\(this,\s*'([^']+)'\)/);
+          if (match) {
+            const category = match[1];
+            
+            // Add click listener
+            card.addEventListener('click', function(e) {
+              e.stopPropagation();
+              console.log('Card clicked:', category, card.dataset.value);
+              selectOption(this, category);
+            });
+            
+            // Add touch listener for mobile
+            card.addEventListener('touchend', function(e) {
+              e.preventDefault();
+              e.stopPropagation();
+              console.log('Card touched:', category, card.dataset.value);
+              selectOption(this, category);
+            });
+          }
+        }
+      });
+      
+      console.log('All event listeners attached');
     });
   </script>
 </body>
