@@ -256,9 +256,18 @@ document.querySelectorAll('.option-card').forEach(card => {
 ---
 
 ### Solution 6: Event Delegation + Explicit State Management
-**Commit**: (pending)
-**Date**: Current attempt
+**Commit**: `6e61179`
+**Date**: Fourth attempt
 **Hypothesis**: Even with data-category attributes, attaching individual event listeners to each card might cause issues. Use EVENT DELEGATION instead - ONE listener on document.body.
+
+**Result**: ❌ Failed on configurator.html, but ✅ worked on test pages
+
+---
+
+### Solution 7: Event Capture Priority + stopImmediatePropagation
+**Commit**: `8b98040`
+**Date**: Current attempt (DIAGNOSIS-BASED FIX)
+**Hypothesis**: External scripts (Supabase, Google Analytics) add their own event listeners that interfere with our handlers.
 
 **Changes Made**:
 
@@ -308,6 +317,42 @@ document.body.addEventListener('click', function(e) {
 
 ---
 
+**Diagnostic Process**:
+1. Created `test-mobile.html` - simple cards ✅ **Works**
+2. Created `test-configurator-minimal.html` - Tailwind + grids ✅ **Works**
+3. Original `configurator.html` - Full stack ❌ **Fails**
+
+**Conclusion**: External scripts (Supabase/Analytics) interfere.
+
+**Changes Made**:
+
+1. **Event Capture Phase** - Execute BEFORE other libraries:
+```javascript
+document.body.addEventListener('click', function(e) {
+  const card = e.target.closest('.option-card');
+  if (card && card.dataset.category) {
+    e.stopPropagation();
+    e.stopImmediatePropagation();  // Stop ALL handlers
+    e.preventDefault();
+    handleCardSelection(card);
+  }
+}, { capture: true });  // ← Capture phase!
+```
+
+2. **Defer external scripts**:
+```html
+<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script defer src="/js/analytics.js"></script>
+```
+
+**Why This Should Work**:
+- Event phases: **capture** → target → bubble
+- `capture: true` means our handler runs FIRST
+- `stopImmediatePropagation()` prevents Supabase/Analytics from seeing the event
+- Even if they add listeners, they execute AFTER ours (in bubble phase)
+
+---
+
 ## Summary of All Approaches
 
 | Solution | Approach | Result |
@@ -317,7 +362,8 @@ document.body.addEventListener('click', function(e) {
 | 3 | stopPropagation on touch events | ❌ Failed |
 | 4 | Unique group IDs | ❌ Failed |
 | 5 | data-category + single click handler + CSS | ❌ Failed |
-| 6 | **Event Delegation + Explicit State** | ⏳ Testing |
+| 6 | Event Delegation + Explicit State | ❌ Failed (but worked on test pages!) |
+| 7 | **Event Capture + stopImmediatePropagation** | ⏳ Testing |
 
 ## Key Learnings
 
