@@ -1248,6 +1248,19 @@
       });
       goToStep(1);
     }
+
+    // CRITICAL FIX: Ensure functions are globally accessible for onclick handlers
+    // This is especially important for mobile browsers
+    window.selectOption = selectOption;
+    window.goToStep = goToStep;
+    window.restartConfigurator = restartConfigurator;
+    
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('Configurator initialized');
+      // Ensure step 1 is visible and indicators are set correctly
+      goToStep(1);
+    });
   </script>
 </body>
 </html>
