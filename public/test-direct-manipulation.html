@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Direct DOM Manipulation</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .card {
+      padding: 20px;
+      border: 3px solid #ddd;
+      border-radius: 10px;
+      margin: 10px;
+      cursor: pointer;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    .card.selected {
+      border-color: #16a34a !important;
+      background: #f0fdf4 !important;
+    }
+    #log {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #000;
+      color: #0f0;
+      padding: 10px;
+      font-family: monospace;
+      font-size: 11px;
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 9999;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 p-4">
+  <h1 class="text-2xl font-bold mb-4">🔬 Test Sans Event Listeners</h1>
+  <p class="text-sm text-gray-600 mb-6">Cette version utilise des attributs HTML onclick UNIQUEMENT</p>
+
+  <div class="bg-white p-6 rounded-xl">
+    <h2 class="font-bold mb-4">NIVEAU</h2>
+    <div id="level-group">
+      <!-- ONCLICK INLINE - PAS D'EVENT LISTENER JS -->
+      <div class="card" data-cat="level" data-val="debutant" onclick="sel(this)">
+        🌱 Débutant
+      </div>
+      <div class="card" data-cat="level" data-val="inter" onclick="sel(this)">
+        📈 Intermédiaire
+      </div>
+    </div>
+
+    <h2 class="font-bold mb-4 mt-6">FRÉQUENCE</h2>
+    <div id="frequency-group">
+      <div class="card" data-cat="frequency" data-val="occas" onclick="sel(this)">
+        🎾 Occasionnel
+      </div>
+      <div class="card" data-cat="frequency" data-val="reg" onclick="sel(this)">
+        📅 Régulier
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-6 p-4 bg-blue-50 rounded-lg">
+    <strong>État:</strong> <span id="state">-</span>
+  </div>
+
+  <div id="log"></div>
+
+  <script>
+    // State tracking
+    const state = { level: null, frequency: null };
+    const selected = { level: null, frequency: null };
+    
+    // Logging
+    function log(msg) {
+      const time = new Date().toLocaleTimeString();
+      const logEl = document.getElementById('log');
+      logEl.innerHTML += `[${time}] ${msg}<br>`;
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+    
+    // SIMPLIFIED selection - called by onclick
+    function sel(card) {
+      const cat = card.dataset.cat;
+      const val = card.dataset.val;
+      
+      log(`sel() called: cat=${cat}, val=${val}`);
+      
+      // Deselect previous in this category
+      if (selected[cat]) {
+        selected[cat].classList.remove('selected');
+        log(`  Removed 'selected' from previous`);
+      }
+      
+      // Select new
+      card.classList.add('selected');
+      selected[cat] = card;
+      state[cat] = val;
+      
+      log(`  State now: ${JSON.stringify(state)}`);
+      document.getElementById('state').textContent = JSON.stringify(state);
+    }
+    
+    // Expose globally
+    window.sel = sel;
+    
+    log('Page loaded - onclick attributes ready');
+  </script>
+</body>
+</html>
