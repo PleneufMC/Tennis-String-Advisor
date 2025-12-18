@@ -27,18 +27,37 @@
     .step-active { background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%); }
     .step-completed { background: #16a34a; }
     .step-pending { background: #e5e7eb; }
-    .option-card:hover { border-color: #16a34a; transform: translateY(-2px); }
-    .option-card.selected { border-color: #16a34a !important; background: #f0fdf4 !important; }
+    
+    /* SOLUTION 8: Radio button approach - immune to external scripts */
+    input[type="radio"].option-input { 
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+    
     .option-card { 
       transition: all 0.2s ease;
-      /* MOBILE FIX: Prevent touch issues */
       touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
       user-select: none;
       -webkit-user-select: none;
       cursor: pointer;
     }
-    .option-card:active { transform: scale(0.98); }
+    
+    .option-card:hover { 
+      border-color: #16a34a; 
+      transform: translateY(-2px); 
+    }
+    
+    .option-card:active { 
+      transform: scale(0.98); 
+    }
+    
+    /* Selected state via :checked pseudo-class */
+    input[type="radio"].option-input:checked + .option-card { 
+      border-color: #16a34a !important; 
+      background: #f0fdf4 !important; 
+    }
   </style>
   <!-- Google Analytics 4 - Load AFTER page interactions setup -->
   <script defer src="https://www.googletagmanager.com/gtag/js?id=G-YSSLHJ5WYD"></script>
@@ -157,45 +176,66 @@
       <h2 class="text-xl font-bold text-gray-900 mb-6">Quel est votre niveau de jeu ?</h2>
       
       <div id="level-group" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="debutant" data-category="level">
-          <div class="text-3xl mb-3">🌱</div>
-          <h3 class="font-semibold text-gray-900 mb-1">Débutant</h3>
-          <p class="text-sm text-gray-500">Moins de 2 ans de pratique, apprentissage des bases</p>
+        <div>
+          <input type="radio" name="level" id="level-debutant" value="debutant" class="option-input">
+          <label for="level-debutant" class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer block">
+            <div class="text-3xl mb-3">🌱</div>
+            <h3 class="font-semibold text-gray-900 mb-1">Débutant</h3>
+            <p class="text-sm text-gray-500">Moins de 2 ans de pratique, apprentissage des bases</p>
+          </label>
         </div>
-        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="intermediaire" data-category="level">
-          <div class="text-3xl mb-3">📈</div>
-          <h3 class="font-semibold text-gray-900 mb-1">Intermédiaire</h3>
-          <p class="text-sm text-gray-500">2-5 ans de pratique, technique en progression</p>
+        <div>
+          <input type="radio" name="level" id="level-intermediaire" value="intermediaire" class="option-input">
+          <label for="level-intermediaire" class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer block">
+            <div class="text-3xl mb-3">📈</div>
+            <h3 class="font-semibold text-gray-900 mb-1">Intermédiaire</h3>
+            <p class="text-sm text-gray-500">2-5 ans de pratique, technique en progression</p>
+          </label>
         </div>
-        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="avance" data-category="level">
-          <div class="text-3xl mb-3">⭐</div>
-          <h3 class="font-semibold text-gray-900 mb-1">Avancé</h3>
-          <p class="text-sm text-gray-500">5+ ans de pratique, maîtrise technique</p>
+        <div>
+          <input type="radio" name="level" id="level-avance" value="avance" class="option-input">
+          <label for="level-avance" class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer block">
+            <div class="text-3xl mb-3">⭐</div>
+            <h3 class="font-semibold text-gray-900 mb-1">Avancé</h3>
+            <p class="text-sm text-gray-500">5+ ans de pratique, maîtrise technique</p>
+          </label>
         </div>
-        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="competition" data-category="level">
-          <div class="text-3xl mb-3">🏆</div>
-          <h3 class="font-semibold text-gray-900 mb-1">Compétition</h3>
-          <p class="text-sm text-gray-500">Joueur classé, entraînement régulier intensif</p>
+        <div>
+          <input type="radio" name="level" id="level-competition" value="competition" class="option-input">
+          <label for="level-competition" class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer block">
+            <div class="text-3xl mb-3">🏆</div>
+            <h3 class="font-semibold text-gray-900 mb-1">Compétition</h3>
+            <p class="text-sm text-gray-500">Joueur classé, entraînement régulier intensif</p>
+          </label>
         </div>
       </div>
 
       <h2 class="text-xl font-bold text-gray-900 mb-6">À quelle fréquence jouez-vous ?</h2>
       
       <div id="frequency-group" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="occasionnel" data-category="frequency">
-          <div class="text-3xl mb-3">🎾</div>
-          <h3 class="font-semibold text-gray-900 mb-1">Occasionnel</h3>
-          <p class="text-sm text-gray-500">1-2 fois par mois</p>
+        <div>
+          <input type="radio" name="frequency" id="frequency-occasionnel" value="occasionnel" class="option-input">
+          <label for="frequency-occasionnel" class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer block">
+            <div class="text-3xl mb-3">🎾</div>
+            <h3 class="font-semibold text-gray-900 mb-1">Occasionnel</h3>
+            <p class="text-sm text-gray-500">1-2 fois par mois</p>
+          </label>
         </div>
-        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="regulier" data-category="frequency">
-          <div class="text-3xl mb-3">📅</div>
-          <h3 class="font-semibold text-gray-900 mb-1">Régulier</h3>
-          <p class="text-sm text-gray-500">1-2 fois par semaine</p>
+        <div>
+          <input type="radio" name="frequency" id="frequency-regulier" value="regulier" class="option-input">
+          <label for="frequency-regulier" class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer block">
+            <div class="text-3xl mb-3">📅</div>
+            <h3 class="font-semibold text-gray-900 mb-1">Régulier</h3>
+            <p class="text-sm text-gray-500">1-2 fois par semaine</p>
+          </label>
         </div>
-        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="intensif" data-category="frequency">
-          <div class="text-3xl mb-3">🔥</div>
-          <h3 class="font-semibold text-gray-900 mb-1">Intensif</h3>
-          <p class="text-sm text-gray-500">3+ fois par semaine</p>
+        <div>
+          <input type="radio" name="frequency" id="frequency-intensif" value="intensif" class="option-input">
+          <label for="frequency-intensif" class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer block">
+            <div class="text-3xl mb-3">🔥</div>
+            <h3 class="font-semibold text-gray-900 mb-1">Intensif</h3>
+            <p class="text-sm text-gray-500">3+ fois par semaine</p>
+          </label>
         </div>
       </div>
 
@@ -211,23 +251,59 @@
       <h2 class="text-xl font-bold text-gray-900 mb-6">Quel est votre style de jeu ?</h2>
       
       <div id="style-group" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="puissance" data-category="style">
-          <div class="text-3xl mb-3">💥</div>
+        <div>
+
+          <input type="radio" name="style" id="style_puissance" value="puissance" class="option-input">
+
+          <label for="style_puissance" class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer block">
+
+            <div class="text-3xl mb-3">💥
+
+          </label>
+
+        </div>
           <h3 class="font-semibold text-gray-900 mb-1">Puissance</h3>
           <p class="text-sm text-gray-500">Frappes lourdes, service puissant, jeu agressif</p>
         </div>
-        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="controle" data-category="style">
-          <div class="text-3xl mb-3">🎯</div>
+        <div>
+
+          <input type="radio" name="style" id="style_controle" value="controle" class="option-input">
+
+          <label for="style_controle" class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer block">
+
+            <div class="text-3xl mb-3">🎯
+
+          </label>
+
+        </div>
           <h3 class="font-semibold text-gray-900 mb-1">Contrôle</h3>
           <p class="text-sm text-gray-500">Précision, placement, construction du point</p>
         </div>
-        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="spin" data-category="style">
-          <div class="text-3xl mb-3">🌀</div>
+        <div>
+
+          <input type="radio" name="style" id="style_spin" value="spin" class="option-input">
+
+          <label for="style_spin" class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer block">
+
+            <div class="text-3xl mb-3">🌀
+
+          </label>
+
+        </div>
           <h3 class="font-semibold text-gray-900 mb-1">Spin / Lifté</h3>
           <p class="text-sm text-gray-500">Effets importants, jeu en fond de court</p>
         </div>
-        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="polyvalent" data-category="style">
-          <div class="text-3xl mb-3">⚖️</div>
+        <div>
+
+          <input type="radio" name="style" id="style_polyvalent" value="polyvalent" class="option-input">
+
+          <label for="style_polyvalent" class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer block">
+
+            <div class="text-3xl mb-3">⚖️
+
+          </label>
+
+        </div>
           <h3 class="font-semibold text-gray-900 mb-1">Polyvalent</h3>
           <p class="text-sm text-gray-500">Équilibré, adaptable à toutes les situations</p>
         </div>
@@ -236,18 +312,45 @@
       <h2 class="text-xl font-bold text-gray-900 mb-6">Avez-vous des problèmes physiques ?</h2>
       
       <div id="physical-group" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="aucun" data-category="physical">
-          <div class="text-3xl mb-3">💪</div>
+        <div>
+
+          <input type="radio" name="physical" id="physical_aucun" value="aucun" class="option-input">
+
+          <label for="physical_aucun" class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer block">
+
+            <div class="text-3xl mb-3">💪
+
+          </label>
+
+        </div>
           <h3 class="font-semibold text-gray-900 mb-1">Aucun</h3>
           <p class="text-sm text-gray-500">Pas de problème particulier</p>
         </div>
-        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="bras" data-category="physical">
-          <div class="text-3xl mb-3">🦾</div>
+        <div>
+
+          <input type="radio" name="physical" id="physical_bras" value="bras" class="option-input">
+
+          <label for="physical_bras" class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer block">
+
+            <div class="text-3xl mb-3">🦾
+
+          </label>
+
+        </div>
           <h3 class="font-semibold text-gray-900 mb-1">Bras sensible</h3>
           <p class="text-sm text-gray-500">Tennis elbow, douleurs au coude</p>
         </div>
-        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="epaule" data-category="physical">
-          <div class="text-3xl mb-3">🩹</div>
+        <div>
+
+          <input type="radio" name="physical" id="physical_epaule" value="epaule" class="option-input">
+
+          <label for="physical_epaule" class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer block">
+
+            <div class="text-3xl mb-3">🩹
+
+          </label>
+
+        </div>
           <h3 class="font-semibold text-gray-900 mb-1">Épaule fragile</h3>
           <p class="text-sm text-gray-500">Douleurs à l'épaule</p>
         </div>
@@ -268,18 +371,45 @@
       <h2 class="text-xl font-bold text-gray-900 mb-6">Quel est votre budget pour la raquette ?</h2>
       
       <div id="budget-racquet-group" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="eco" data-category="budget-racquet">
-          <div class="text-3xl mb-3">💰</div>
+        <div>
+
+          <input type="radio" name="budget-racquet" id="budget-racquet_eco" value="eco" class="option-input">
+
+          <label for="budget-racquet_eco" class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer block">
+
+            <div class="text-3xl mb-3">💰
+
+          </label>
+
+        </div>
           <h3 class="font-semibold text-gray-900 mb-1">Économique</h3>
           <p class="text-sm text-gray-500">Moins de 150€</p>
         </div>
-        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="medium" data-category="budget-racquet">
-          <div class="text-3xl mb-3">💰💰</div>
+        <div>
+
+          <input type="radio" name="budget-racquet" id="budget-racquet_medium" value="medium" class="option-input">
+
+          <label for="budget-racquet_medium" class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer block">
+
+            <div class="text-3xl mb-3">💰💰
+
+          </label>
+
+        </div>
           <h3 class="font-semibold text-gray-900 mb-1">Moyen</h3>
           <p class="text-sm text-gray-500">150€ - 250€</p>
         </div>
-        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="premium" data-category="budget-racquet">
-          <div class="text-3xl mb-3">💎</div>
+        <div>
+
+          <input type="radio" name="budget-racquet" id="budget-racquet_premium" value="premium" class="option-input">
+
+          <label for="budget-racquet_premium" class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer block">
+
+            <div class="text-3xl mb-3">💎
+
+          </label>
+
+        </div>
           <h3 class="font-semibold text-gray-900 mb-1">Premium</h3>
           <p class="text-sm text-gray-500">Plus de 250€</p>
         </div>
@@ -288,18 +418,45 @@
       <h2 class="text-xl font-bold text-gray-900 mb-6">Quel est votre budget pour le cordage ?</h2>
       
       <div id="budget-string-group" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="eco" data-category="budget-string">
-          <div class="text-3xl mb-3">🧵</div>
+        <div>
+
+          <input type="radio" name="budget-string" id="budget-string_eco" value="eco" class="option-input">
+
+          <label for="budget-string_eco" class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer block">
+
+            <div class="text-3xl mb-3">🧵
+
+          </label>
+
+        </div>
           <h3 class="font-semibold text-gray-900 mb-1">Économique</h3>
           <p class="text-sm text-gray-500">Moins de 15€</p>
         </div>
-        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="medium" data-category="budget-string">
-          <div class="text-3xl mb-3">🧶</div>
+        <div>
+
+          <input type="radio" name="budget-string" id="budget-string_medium" value="medium" class="option-input">
+
+          <label for="budget-string_medium" class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer block">
+
+            <div class="text-3xl mb-3">🧶
+
+          </label>
+
+        </div>
           <h3 class="font-semibold text-gray-900 mb-1">Moyen</h3>
           <p class="text-sm text-gray-500">15€ - 25€</p>
         </div>
-        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="premium" data-category="budget-string">
-          <div class="text-3xl mb-3">✨</div>
+        <div>
+
+          <input type="radio" name="budget-string" id="budget-string_premium" value="premium" class="option-input">
+
+          <label for="budget-string_premium" class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer block">
+
+            <div class="text-3xl mb-3">✨
+
+          </label>
+
+        </div>
           <h3 class="font-semibold text-gray-900 mb-1">Premium</h3>
           <p class="text-sm text-gray-500">Plus de 25€</p>
         </div>
@@ -534,64 +691,35 @@
     let racquetsDB = [];
     let stringsDB = [];
 
-    // State
-    const selections = {
-      level: null,
-      frequency: null,
-      style: null,
-      physical: null,
-      'budget-racquet': null,
-      'budget-string': null
-    };
+    // SOLUTION 8: Read state from radio buttons instead of tracking in JS
+    function getSelections() {
+      return {
+        level: document.querySelector('input[name="level"]:checked')?.value || null,
+        frequency: document.querySelector('input[name="frequency"]:checked')?.value || null,
+        style: document.querySelector('input[name="style"]:checked')?.value || null,
+        physical: document.querySelector('input[name="physical"]:checked')?.value || null,
+        'budget-racquet': document.querySelector('input[name="budget-racquet"]:checked')?.value || null,
+        'budget-string': document.querySelector('input[name="budget-string"]:checked')?.value || null
+      };
+    }
+    
+    // Legacy selections object for compatibility (read from radio buttons)
+    const selections = new Proxy({}, {
+      get(target, prop) {
+        const radioName = prop.toString();
+        return document.querySelector(`input[name="${radioName}"]:checked`)?.value || null;
+      }
+    });
 
     // =====================================================
-    // SOLUTION 6: Event Delegation + Explicit State Management
+    // SOLUTION 8: NATIVE RADIO BUTTONS
     // =====================================================
-    // Instead of attaching listeners to each card, we use ONE
-    // listener on the document and check what was clicked.
-    // This avoids any bubbling/capture phase issues.
-    
-    // Track selected cards by category (store the element reference)
-    const selectedCards = {
-      'level': null,
-      'frequency': null,
-      'style': null,
-      'physical': null,
-      'budget-racquet': null,
-      'budget-string': null
-    };
-    
-    function handleCardSelection(card) {
-      const category = card.dataset.category;
-      const value = card.dataset.value;
-      
-      if (!category || !value) {
-        console.warn('Card missing data attributes:', card);
-        return;
-      }
-      
-      console.log('🎯 handleCardSelection:', category, value);
-      
-      // STEP 1: If there's a previously selected card in this category, deselect it
-      const previousCard = selectedCards[category];
-      if (previousCard && previousCard !== card) {
-        previousCard.classList.remove('selected');
-        console.log('  ↳ Deselected previous:', previousCard.dataset.value);
-      }
-      
-      // STEP 2: Select the new card
-      card.classList.add('selected');
-      selectedCards[category] = card;
-      selections[category] = value;
-      
-      console.log('✅ Now selected:', category, '=', value);
-      console.log('📊 All selections:', JSON.stringify(selections));
-    }
-    
-    // Legacy function for compatibility
-    function selectOption(element, category) {
-      handleCardSelection(element);
-    }
+    // No complex JavaScript needed! Radio buttons handle:
+    // - Selection state (:checked pseudo-class)
+    // - Mutual exclusivity (only one per name)
+    // - Immune to external script interference
+    // 
+    // We just read values with querySelector when needed.
 
     // Navigate steps
     function goToStep(step) {
@@ -1287,69 +1415,39 @@
 
     // Restart
     function restartConfigurator() {
-      // Reset selections object
-      Object.keys(selections).forEach(key => selections[key] = null);
-      // Reset selectedCards references
-      Object.keys(selectedCards).forEach(key => selectedCards[key] = null);
-      // Remove all selected classes
-      document.querySelectorAll('.option-card').forEach(card => {
-        card.classList.remove('selected');
+      // Uncheck all radio buttons
+      document.querySelectorAll('input[type="radio"].option-input').forEach(radio => {
+        radio.checked = false;
       });
       goToStep(1);
     }
 
     // Make functions globally accessible
-    window.selectOption = selectOption;
     window.goToStep = goToStep;
     window.restartConfigurator = restartConfigurator;
     window.generateResult = generateResult;
-    window.handleCardSelection = handleCardSelection;
+    window.getSelections = getSelections;
     
     // =====================================================
-    // SOLUTION 6: EVENT DELEGATION
+    // SOLUTION 8: SIMPLE EVENT HANDLING FOR NAV BUTTONS
     // =====================================================
-    // ONE click listener on document.body catches ALL clicks.
-    // We check if the click target (or its parent) is an option-card.
-    // This completely avoids any per-element listener issues.
+    // Radio buttons handle themselves - we only need nav
     
     document.addEventListener('DOMContentLoaded', function() {
-      console.log('🚀 Configurator v6 (Event Delegation) initializing...');
+      console.log('🚀 Configurator v8 (Native Radio Buttons) initializing...');
       
       // Initialize step 1
       goToStep(1);
       
-      // ---- SINGLE DELEGATED EVENT LISTENER ----
-      // This catches ALL clicks on the page
-      document.body.addEventListener('click', function(e) {
-        // Find if we clicked on an option-card (or inside one)
-        const card = e.target.closest('.option-card');
-        
-        if (card && card.dataset.category) {
-          // CRITICAL: Stop ALL other listeners from executing
-          e.stopPropagation();
-          e.stopImmediatePropagation();
-          e.preventDefault();
-          
-          console.log('🖱️ Delegated click on card:', card.dataset.category, card.dataset.value);
-          handleCardSelection(card);
-          return; // Don't process further
-        }
-        
-        // Check for navigation buttons
-        const btn = e.target.closest('button');
-        if (btn) {
-          const btnId = btn.id;
-          if (btnId === 'nextStep1') { e.preventDefault(); goToStep(2); }
-          else if (btnId === 'prevStep2') { e.preventDefault(); goToStep(1); }
-          else if (btnId === 'nextStep2') { e.preventDefault(); goToStep(3); }
-          else if (btnId === 'prevStep3') { e.preventDefault(); goToStep(2); }
-          else if (btnId === 'generateBtn') { e.preventDefault(); generateResult(); }
-        }
-      }, { capture: true });
+      // Simple navigation button handlers
+      document.getElementById('nextStep1')?.addEventListener('click', (e) => { e.preventDefault(); goToStep(2); });
+      document.getElementById('prevStep2')?.addEventListener('click', (e) => { e.preventDefault(); goToStep(1); });
+      document.getElementById('nextStep2')?.addEventListener('click', (e) => { e.preventDefault(); goToStep(3); });
+      document.getElementById('prevStep3')?.addEventListener('click', (e) => { e.preventDefault(); goToStep(2); });
+      document.getElementById('generateBtn')?.addEventListener('click', (e) => { e.preventDefault(); generateResult(); });
       
-      console.log('✅ Configurator v6 ready!');
-      console.log('📱 Using EVENT DELEGATION - single listener on body');
-      console.log('📋 Found', document.querySelectorAll('.option-card').length, 'option cards');
+      console.log('✅ Configurator v8 ready! Using native radio buttons.');
+      console.log('📋 Total radio inputs:', document.querySelectorAll('input[type="radio"]').length);
     });
   </script>
 </body>
