@@ -240,7 +240,7 @@
       </div>
 
       <div class="flex justify-end mt-8">
-        <button id="nextStep1" class="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition">
+        <button id="nextStep1" onclick="goToStep(2); return false;" class="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition">
           Suivant →
         </button>
       </div>
@@ -357,10 +357,10 @@
       </div>
 
       <div class="flex justify-between mt-8">
-        <button id="prevStep2" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition">
+        <button id="prevStep2" onclick="goToStep(1); return false;" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition">
           ← Précédent
         </button>
-        <button id="nextStep2" class="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition">
+        <button id="nextStep2" onclick="goToStep(3); return false;" class="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition">
           Suivant →
         </button>
       </div>
@@ -463,10 +463,10 @@
       </div>
 
       <div class="flex justify-between mt-8">
-        <button id="prevStep3" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition">
+        <button id="prevStep3" onclick="goToStep(2); return false;" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition">
           ← Précédent
         </button>
-        <button id="generateBtn" class="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition">
+        <button id="generateBtn" onclick="generateResult(); return false;" class="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition">
           Voir mes recommandations 🎉
         </button>
       </div>
@@ -1439,15 +1439,9 @@
       // Initialize step 1
       goToStep(1);
       
-      // Simple navigation button handlers
-      document.getElementById('nextStep1')?.addEventListener('click', (e) => { e.preventDefault(); goToStep(2); });
-      document.getElementById('prevStep2')?.addEventListener('click', (e) => { e.preventDefault(); goToStep(1); });
-      document.getElementById('nextStep2')?.addEventListener('click', (e) => { e.preventDefault(); goToStep(3); });
-      document.getElementById('prevStep3')?.addEventListener('click', (e) => { e.preventDefault(); goToStep(2); });
-      document.getElementById('generateBtn')?.addEventListener('click', (e) => { e.preventDefault(); generateResult(); });
-      
-      console.log('✅ Configurator v8 ready! Using native radio buttons.');
+      console.log('✅ Configurator v8 ready!');
       console.log('📋 Total radio inputs:', document.querySelectorAll('input[type="radio"]').length);
+      console.log('🔘 Navigation uses onclick attributes (immune to external scripts)');
     });
   </script>
 </body>
