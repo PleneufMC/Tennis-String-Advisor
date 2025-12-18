@@ -253,6 +253,61 @@ document.querySelectorAll('.option-card').forEach(card => {
 
 ---
 
+---
+
+### Solution 6: Event Delegation + Explicit State Management
+**Commit**: (pending)
+**Date**: Current attempt
+**Hypothesis**: Even with data-category attributes, attaching individual event listeners to each card might cause issues. Use EVENT DELEGATION instead - ONE listener on document.body.
+
+**Changes Made**:
+
+1. **Track selected cards by reference** (not just by class):
+```javascript
+const selectedCards = {
+  'level': null,
+  'frequency': null,
+  // ... etc
+};
+```
+
+2. **New handleCardSelection function**:
+```javascript
+function handleCardSelection(card) {
+  const category = card.dataset.category;
+  
+  // Deselect previous card in this category (if any)
+  const previousCard = selectedCards[category];
+  if (previousCard && previousCard !== card) {
+    previousCard.classList.remove('selected');
+  }
+  
+  // Select new card
+  card.classList.add('selected');
+  selectedCards[category] = card;
+  selections[category] = card.dataset.value;
+}
+```
+
+3. **Single delegated event listener on body**:
+```javascript
+document.body.addEventListener('click', function(e) {
+  const card = e.target.closest('.option-card');
+  if (card && card.dataset.category) {
+    handleCardSelection(card);
+  }
+});
+```
+
+**Why This Should Work**:
+- Only ONE event listener exists (on body)
+- No per-card listeners = no possibility of multiple handlers firing
+- `closest('.option-card')` finds the card even if user clicks on child element
+- Explicit tracking of selected card by reference (not querySelectorAll)
+- Deselects only the previous card in same category, nothing else
+
+---
+
 ## Summary of All Approaches
 
 | Solution | Approach | Result |
@@ -261,7 +316,8 @@ document.querySelectorAll('.option-card').forEach(card => {
 | 2 | addEventListener for nav buttons | ❌ Failed |
 | 3 | stopPropagation on touch events | ❌ Failed |
 | 4 | Unique group IDs | ❌ Failed |
-| 5 | **data-category + single click handler + CSS** | ⏳ Testing |
+| 5 | data-category + single click handler + CSS | ❌ Failed |
+| 6 | **Event Delegation + Explicit State** | ⏳ Testing |
 
 ## Key Learnings
 
@@ -270,3 +326,5 @@ document.querySelectorAll('.option-card').forEach(card => {
 3. **touch-action: manipulation is essential for responsive touch UX**
 4. **data-attributes are cleaner than parsing onclick strings**
 5. **The browser's synthetic click event after touch is sufficient - no need for touchend handlers**
+6. **Event delegation (single listener on body) is the most reliable approach**
+7. **Track selected elements by reference, not by querying the DOM**
