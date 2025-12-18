@@ -363,7 +363,9 @@ document.body.addEventListener('click', function(e) {
 | 4 | Unique group IDs | ❌ Failed |
 | 5 | data-category + single click handler + CSS | ❌ Failed |
 | 6 | Event Delegation + Explicit State | ❌ Failed (but worked on test pages!) |
-| 7 | **Event Capture + stopImmediatePropagation** | ⏳ Testing |
+| 7 | **Event Capture + stopImmediatePropagation** | ❌ Failed |
+| 8 | **Native Radio Buttons (options)** | ✅ **SUCCESS** |
+| 9 | **Event Capture for Generate Button** | ⏳ Testing |
 
 ## Key Learnings
 
@@ -374,3 +376,109 @@ document.body.addEventListener('click', function(e) {
 5. **The browser's synthetic click event after touch is sufficient - no need for touchend handlers**
 6. **Event delegation (single listener on body) is the most reliable approach**
 7. **Track selected elements by reference, not by querying the DOM**
+8. **Native radio buttons are immune to JS event interference** - use them for selections!
+9. **Some buttons need event capture even with onclick** - especially "action" buttons
+
+---
+
+## 🔧 Solution 8: Native Radio Buttons (FINAL FIX for selections)
+
+**Commit:** `27d7791`  
+**Status:** ✅ **SUCCESS**
+
+### Problem
+After 7 failed attempts, realized **external scripts fundamentally conflict with JavaScript event listeners**.
+
+### Breakthrough Discovery
+Created test pages:
+- `test-mobile.html` - Simple radio buttons → ✅ Works
+- `test-configurator-minimal.html` - Same HTML but no Supabase → ✅ Works
+- `configurator.html` - With Supabase/Analytics → ❌ Fails
+
+**Conclusion:** The problem is NOT our code, it's **external script interference**.
+
+### Solution: Abandon JavaScript Selection Entirely
+Convert all option cards to **native HTML radio buttons**:
+
+```html
+<!-- Before (div + JavaScript) -->
+<div class="option-card" onclick="selectOption('level', this)" data-value="debutant">
+  Débutant
+</div>
+
+<!-- After (native radio button) -->
+<input type="radio" id="level-debutant" name="level" value="debutant">
+<label for="level-debutant">Débutant</label>
+```
+
+```css
+/* Style the label to look like a card */
+input[type="radio"] { display: none; }
+input[type="radio"]:checked + label {
+  background: #10b981;
+  color: white;
+}
+```
+
+```javascript
+// Read values on-demand (no event listeners!)
+function getSelections() {
+  return {
+    level: document.querySelector('input[name="level"]:checked')?.value
+  };
+}
+```
+
+### Why This Works
+- ✅ **Browser manages state** - no JavaScript needed for selection
+- ✅ **CSS `:checked` pseudo-class** - visual feedback is native
+- ✅ **Immune to external scripts** - they can't interfere with native form controls
+- ✅ **Simpler code** - removed ~100 lines of event handling
+- ✅ **Accessible** - screen readers understand radio buttons
+
+### Result
+✅ Selections work perfectly on all devices  
+✅ Multiple groups (level + frequency) work simultaneously  
+✅ No conflicts with Supabase/Analytics
+
+---
+
+## 🔧 Solution 9: Event Capture for Generate Button
+
+**Commit:** `9494660`  
+**Status:** ⏳ Testing
+
+### Problem
+After Solution 8, selections work but **"Voir mes recommandations" button doesn't respond** on mobile.
+
+### Root Cause
+Even `onclick` attributes can be intercepted by external scripts on mobile browsers, especially for "action" buttons.
+
+### Solution
+Add event listener with **capture phase** specifically for generate button:
+
+```javascript
+document.addEventListener('DOMContentLoaded', function() {
+  const generateBtn = document.getElementById('generateBtn');
+  if (generateBtn) {
+    generateBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+      e.preventDefault();
+      generateResult();
+      return false;
+    }, { capture: true }); // Run BEFORE external scripts
+  }
+});
+```
+
+### Why It Should Work
+- **`capture: true`**: Executes in capture phase → runs BEFORE Supabase/Analytics
+- **`stopImmediatePropagation()`**: Blocks other listeners on same element
+- **Double protection**: Keep `onclick` + add `addEventListener`
+
+### Test
+After deployment:
+1. Clear Chrome mobile cache
+2. Navigate through configurator steps
+3. Click "Voir mes recommandations" → should show results

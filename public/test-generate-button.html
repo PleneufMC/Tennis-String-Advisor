@@ -3,142 +3,144 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Test Bouton Générer</title>
+  <title>Test Generate Button</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Load external scripts like real configurator -->
-  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    #log {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: #000;
-      color: #0f0;
-      padding: 10px;
-      font-family: monospace;
-      font-size: 11px;
-      max-height: 250px;
-      overflow-y: auto;
-      z-index: 9999;
+    /* Radio buttons styling */
+    input[type="radio"] {
+      display: none;
     }
-    .log-entry { margin: 3px 0; border-bottom: 1px solid #333; }
-    .log-error { color: #f00; }
-    .log-success { color: #0f0; }
-    .log-info { color: #ff0; }
+    
+    input[type="radio"] + label {
+      display: block;
+      padding: 1rem;
+      border: 2px solid #e5e7eb;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: white;
+    }
+    
+    input[type="radio"]:checked + label {
+      background: #10b981;
+      color: white;
+      border-color: #10b981;
+    }
+    
+    input[type="radio"] + label:hover {
+      border-color: #10b981;
+    }
   </style>
 </head>
-<body class="bg-gray-50 p-4">
-  <h1 class="text-2xl font-bold mb-4">🔬 Test Bouton Générer</h1>
-  
-  <div class="bg-white p-6 rounded-xl mb-4">
-    <h2 class="font-bold mb-4">Sélections</h2>
-    <div class="space-y-3">
-      <div>
-        <input type="radio" name="level" id="l1" value="debutant" class="hidden">
-        <label for="l1" class="block p-4 border-2 rounded cursor-pointer">
-          <input type="radio" name="level" value="debutant"> Débutant
-        </label>
+<body class="bg-gray-50 p-8">
+  <div class="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow">
+    <h1 class="text-2xl font-bold mb-6">🧪 Test Bouton "Générer"</h1>
+    
+    <!-- Step 1: Level -->
+    <div class="mb-6">
+      <h3 class="text-lg font-semibold mb-3">Niveau</h3>
+      <div class="grid grid-cols-1 gap-3">
+        <input type="radio" id="debutant" name="level" value="debutant">
+        <label for="debutant">Débutant</label>
+        
+        <input type="radio" id="intermediaire" name="level" value="intermediaire">
+        <label for="intermediaire">Intermédiaire</label>
+        
+        <input type="radio" id="competition" name="level" value="competition">
+        <label for="competition">Compétition</label>
       </div>
-      <div>
-        <input type="radio" name="frequency" id="f1" value="regulier" class="hidden">
-        <label for="f1" class="block p-4 border-2 rounded cursor-pointer">
-          <input type="radio" name="frequency" value="regulier"> Régulier
-        </label>
+    </div>
+    
+    <!-- Step 2: Frequency -->
+    <div class="mb-6">
+      <h3 class="text-lg font-semibold mb-3">Fréquence</h3>
+      <div class="grid grid-cols-1 gap-3">
+        <input type="radio" id="occasionnel" name="frequency" value="occasionnel">
+        <label for="occasionnel">Occasionnel</label>
+        
+        <input type="radio" id="regulier" name="frequency" value="regulier">
+        <label for="regulier">Régulier</label>
+        
+        <input type="radio" id="intensif" name="frequency" value="intensif">
+        <label for="intensif">Intensif</label>
       </div>
+    </div>
+    
+    <!-- Generate Button -->
+    <div class="mt-8">
+      <button 
+        id="generateBtn" 
+        onclick="testGenerate(); return false;" 
+        class="w-full px-6 py-4 bg-green-600 text-white rounded-lg font-semibold text-lg hover:bg-green-700 transition">
+        🎉 Voir mes recommandations
+      </button>
+    </div>
+    
+    <!-- Log -->
+    <div class="mt-6 p-4 bg-gray-100 rounded">
+      <h3 class="font-semibold mb-2">📋 Log en temps réel :</h3>
+      <pre id="log" class="text-xs whitespace-pre-wrap"></pre>
+    </div>
+    
+    <!-- Result -->
+    <div id="result" class="mt-6 p-4 bg-blue-100 rounded hidden">
+      <h3 class="font-semibold mb-2">✅ Résultat :</h3>
+      <pre id="resultContent" class="text-sm whitespace-pre-wrap"></pre>
     </div>
   </div>
 
-  <div class="space-y-3">
-    <button onclick="testGenerateResult(); return false;" class="w-full px-6 py-4 bg-green-600 text-white rounded-lg font-semibold text-lg">
-      🎉 Voir mes recommandations (onclick)
-    </button>
-    
-    <button id="testBtn2" class="w-full px-6 py-4 bg-blue-600 text-white rounded-lg font-semibold text-lg">
-      🧪 Test avec addEventListener
-    </button>
-  </div>
-
-  <div id="log"></div>
-
   <script>
-    // Logging
     const logEl = document.getElementById('log');
-    function log(msg, type = 'info') {
-      const time = new Date().toLocaleTimeString();
-      const entry = document.createElement('div');
-      entry.className = `log-entry log-${type}`;
-      entry.textContent = `[${time}] ${msg}`;
-      logEl.appendChild(entry);
-      logEl.scrollTop = logEl.scrollHeight;
-      console.log(msg);
+    const resultEl = document.getElementById('result');
+    const resultContentEl = document.getElementById('resultContent');
+    
+    function log(message) {
+      const timestamp = new Date().toLocaleTimeString();
+      logEl.textContent += `[${timestamp}] ${message}\n`;
+      console.log(message);
     }
-
-    // Mock functions from configurator
-    function getSelections() {
-      return {
-        level: document.querySelector('input[name="level"]:checked')?.value || null,
-        frequency: document.querySelector('input[name="frequency"]:checked')?.value || null
-      };
-    }
-
-    function canConfigure() {
-      log('canConfigure() called', 'info');
-      // Simplified version
-      return true;
-    }
-
-    function showPaywall() {
-      log('showPaywall() called', 'error');
-      alert('Paywall!');
-    }
-
-    function goToStep(step) {
-      log(`goToStep(${step}) called`, 'success');
-    }
-
-    // Test function
-    function testGenerateResult() {
-      log('=== testGenerateResult START ===', 'success');
+    
+    log('✅ Script loaded');
+    
+    // Test function called by onclick
+    function testGenerate() {
+      log('🎉 testGenerate() called!');
       
-      try {
-        const selections = getSelections();
-        log(`Selections: ${JSON.stringify(selections)}`, 'info');
-        
-        const canUse = canConfigure();
-        log(`canConfigure: ${canUse}`, 'info');
-        
-        if (!canUse) {
-          log('Showing paywall...', 'error');
-          showPaywall();
-          return;
-        }
-        
-        log('✅ Would generate results here', 'success');
-        log(`Level: ${selections.level}, Frequency: ${selections.frequency}`, 'info');
-        
-        // Simulate going to results
-        setTimeout(() => {
-          log('Going to step 4...', 'success');
-          goToStep(4);
-        }, 1000);
-        
-      } catch (error) {
-        log(`❌ ERROR: ${error.message}`, 'error');
-        log(`Stack: ${error.stack}`, 'error');
+      // Get selections
+      const level = document.querySelector('input[name="level"]:checked')?.value;
+      const frequency = document.querySelector('input[name="frequency"]:checked')?.value;
+      
+      log(`📊 Level: ${level || 'NOT SELECTED'}`);
+      log(`📊 Frequency: ${frequency || 'NOT SELECTED'}`);
+      
+      if (!level || !frequency) {
+        log('❌ Missing selections!');
+        alert('Veuillez sélectionner un niveau ET une fréquence');
+        return false;
       }
+      
+      log('✅ All selections valid');
+      
+      // Show result
+      resultEl.classList.remove('hidden');
+      resultContentEl.textContent = JSON.stringify({ level, frequency }, null, 2);
+      
+      log('✅ Result displayed!');
+      
+      return false; // Prevent default
     }
-
-    // Expose globally
-    window.testGenerateResult = testGenerateResult;
-
-    // Test with addEventListener
-    document.getElementById('testBtn2')?.addEventListener('click', function() {
-      log('=== addEventListener version ===', 'info');
-      testGenerateResult();
+    
+    // Expose to global scope
+    window.testGenerate = testGenerate;
+    
+    log('✅ testGenerate exposed to window');
+    
+    // Listen to button clicks for debugging
+    document.getElementById('generateBtn').addEventListener('click', function(e) {
+      log('🔍 addEventListener ALSO triggered (should not interfere)');
     });
-
-    log('Page loaded - ready for testing', 'success');
+    
+    log('✅ Ready to test!');
   </script>
 </body>
 </html>

@@ -1458,6 +1458,21 @@
       // Initialize step 1
       goToStep(1);
       
+      // CRITICAL FIX: Add event listener with capture for generate button
+      // This ensures it runs BEFORE Supabase/Analytics can intercept
+      const generateBtn = document.getElementById('generateBtn');
+      if (generateBtn) {
+        generateBtn.addEventListener('click', function(e) {
+          console.log('🎉 Generate button clicked (capture phase)');
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+          e.preventDefault();
+          generateResult();
+          return false;
+        }, { capture: true }); // Execute in capture phase
+        console.log('✅ Generate button listener attached with capture:true');
+      }
+      
       console.log('✅ Configurator v8 ready!');
       console.log('📋 Total radio inputs:', document.querySelectorAll('input[type="radio"]').length);
       console.log('🔘 Navigation uses onclick attributes (immune to external scripts)');
