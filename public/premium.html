@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Premium - Tennis String Advisor</title>
+  <meta name="description" content="Passez Premium et accédez à toutes les fonctionnalités : setups illimités, alertes prix, export PDF et plus encore.">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://js.stripe.com/v3/"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            tennis: { green: '#16a34a', dark: '#0d1117', light: '#f0fdf4' }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .pricing-card { transition: all 0.3s ease; }
+    .pricing-card:hover { transform: translateY(-4px); }
+    .popular-badge { animation: pulse 2s infinite; }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.8; }
+    }
+    .lifetime-urgency { animation: glow 1.5s ease-in-out infinite alternate; }
+    @keyframes glow {
+      from { box-shadow: 0 0 20px rgba(251, 191, 36, 0.3); }
+      to { box-shadow: 0 0 30px rgba(251, 191, 36, 0.6); }
+    }
+    .countdown-number { font-variant-numeric: tabular-nums; }
+  </style>
+  <!-- Google Analytics 4 -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-YSSLHJ5WYD"></script>
+  <script src="/js/analytics.js"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <!-- Header -->
+  <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 py-4">
+      <div class="flex items-center justify-between">
+        <a href="/" class="flex items-center gap-2">
+          <span class="text-2xl">🎾</span>
+          <span class="font-bold text-xl text-gray-900">Tennis String Advisor</span>
+        </a>
+        <nav class="hidden md:flex items-center gap-6">
+          <a href="/" class="text-gray-600 hover:text-green-600 transition">Accueil</a>
+          <a href="/configurator.html" class="text-gray-600 hover:text-green-600 transition">Configurateur</a>
+          <a href="/racquets.html" class="text-gray-600 hover:text-green-600 transition">Raquettes</a>
+          <a href="/strings.html" class="text-gray-600 hover:text-green-600 transition">Cordages</a>
+          <a href="/rcs-calculator.html" class="text-gray-600 hover:text-green-600 transition">🩺 RCS</a>
+        </nav>
+        <a href="/auth.html" id="authLink" class="hidden md:flex items-center gap-2 px-4 py-2 text-sm font-medium text-green-600 hover:bg-green-50 rounded-lg transition">
+          👤 Mon Compte
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Lifetime Launch Banner (shown only if places available) -->
+  <div id="lifetimeBanner" class="bg-gradient-to-r from-amber-500 to-orange-500 text-white py-3 px-4">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-2 text-center">
+      <span class="font-bold">🚀 Offre de lancement :</span>
+      <span>Lifetime à <strong>19,99€</strong> (une seule fois, accès à vie)</span>
+      <span class="bg-white/20 px-3 py-1 rounded-full text-sm font-bold">
+        <span id="lifetimeRemaining" class="countdown-number">150</span> places restantes
+      </span>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <main class="max-w-6xl mx-auto px-4 py-12">
+    <!-- Hero Section -->
+    <div class="text-center mb-12">
+      <span class="inline-flex items-center gap-2 bg-amber-100 text-amber-800 px-4 py-2 rounded-full text-sm font-semibold mb-4">
+        ⭐ Premium
+      </span>
+      <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+        Passez au niveau supérieur
+      </h1>
+      <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+        Sauvegardez vos setups, recevez des alertes prix et optimisez votre équipement comme un pro.
+      </p>
+    </div>
+
+    <!-- Pricing Cards -->
+    <div class="grid md:grid-cols-3 gap-8 mb-16">
+      <!-- Monthly Plan -->
+      <div class="pricing-card bg-white rounded-2xl border border-gray-200 p-8 relative">
+        <div class="mb-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-2">Premium Mensuel</h3>
+          <p class="text-gray-500 text-sm">Sans engagement, résiliable à tout moment</p>
+        </div>
+        <div class="mb-6">
+          <span class="text-4xl font-bold text-gray-900">2,99€</span>
+          <span class="text-gray-500">/mois</span>
+        </div>
+        <ul class="space-y-3 mb-8">
+          <li class="flex items-center gap-2 text-gray-700">
+            <span class="text-green-500">✓</span>
+            Setups illimités
+          </li>
+          <li class="flex items-center gap-2 text-gray-700">
+            <span class="text-green-500">✓</span>
+            Historique des cordages
+          </li>
+          <li class="flex items-center gap-2 text-gray-700">
+            <span class="text-green-500">✓</span>
+            Alertes prix
+          </li>
+          <li class="flex items-center gap-2 text-gray-700">
+            <span class="text-green-500">✓</span>
+            Export PDF
+          </li>
+          <li class="flex items-center gap-2 text-gray-700">
+            <span class="text-green-500">✓</span>
+            RCS avancé
+          </li>
+          <li class="flex items-center gap-2 text-gray-700">
+            <span class="text-green-500">✓</span>
+            Support prioritaire
+          </li>
+        </ul>
+        <button onclick="selectPlan('monthly')" class="w-full py-3 px-6 border-2 border-green-600 text-green-600 font-semibold rounded-xl hover:bg-green-50 transition">
+          Choisir ce plan
+        </button>
+      </div>
+
+      <!-- Annual Plan (Popular) -->
+      <div class="pricing-card bg-white rounded-2xl border-2 border-green-500 p-8 relative shadow-xl">
+        <div class="popular-badge absolute -top-4 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-4 py-1 rounded-full text-sm font-bold">
+          Le plus populaire
+        </div>
+        <div class="mb-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-2">Premium Annuel</h3>
+          <p class="text-gray-500 text-sm">Économisez ~30% par rapport au mensuel</p>
+        </div>
+        <div class="mb-2">
+          <span class="text-4xl font-bold text-gray-900">24,99€</span>
+          <span class="text-gray-500">/an</span>
+        </div>
+        <div class="mb-6 text-sm text-green-600 font-medium">
+          Soit 2,08€/mois • Économisez 10,89€/an
+        </div>
+        <ul class="space-y-3 mb-8">
+          <li class="flex items-center gap-2 text-gray-700">
+            <span class="text-green-500">✓</span>
+            Setups illimités
+          </li>
+          <li class="flex items-center gap-2 text-gray-700">
+            <span class="text-green-500">✓</span>
+            Historique des cordages
+          </li>
+          <li class="flex items-center gap-2 text-gray-700">
+            <span class="text-green-500">✓</span>
+            Alertes prix
+          </li>
+          <li class="flex items-center gap-2 text-gray-700">
+            <span class="text-green-500">✓</span>
+            Export PDF
+          </li>
+          <li class="flex items-center gap-2 text-gray-700">
+            <span class="text-green-500">✓</span>
+            RCS avancé
+          </li>
+          <li class="flex items-center gap-2 text-gray-700">
+            <span class="text-green-500">✓</span>
+            Support prioritaire
+          </li>
+        </ul>
+        <button onclick="selectPlan('annual')" class="w-full py-3 px-6 bg-green-600 text-white font-semibold rounded-xl hover:bg-green-700 transition shadow-lg">
+          Choisir ce plan
+        </button>
+      </div>
+
+      <!-- Lifetime Plan (Launch Offer) -->
+      <div id="lifetimeCard" class="pricing-card lifetime-urgency bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl border-2 border-amber-400 p-8 relative">
+        <div class="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-4 py-1 rounded-full text-sm font-bold flex items-center gap-1">
+          🚀 Lancement
+        </div>
+        <div class="mb-6">
+          <h3 class="text-lg font-semibold text-amber-900 mb-2">Lifetime</h3>
+          <p class="text-amber-700 text-sm">Une seule fois, accès à vie</p>
+        </div>
+        <div class="mb-2">
+          <span class="text-4xl font-bold text-amber-900">19,99€</span>
+          <span class="text-amber-700">une fois</span>
+        </div>
+        <div class="mb-6">
+          <div class="bg-amber-200/50 rounded-lg p-3 text-center">
+            <span class="text-amber-800 font-bold text-lg" id="lifetimeRemainingCard">150</span>
+            <span class="text-amber-700 text-sm"> / 150 places</span>
+            <div class="w-full bg-amber-200 rounded-full h-2 mt-2">
+              <div id="lifetimeProgress" class="bg-gradient-to-r from-amber-500 to-orange-500 h-2 rounded-full" style="width: 100%"></div>
+            </div>
+          </div>
+        </div>
+        <ul class="space-y-3 mb-8">
+          <li class="flex items-center gap-2 text-amber-800">
+            <span class="text-amber-500">✓</span>
+            Tout le Premium, pour toujours
+          </li>
+          <li class="flex items-center gap-2 text-amber-800">
+            <span class="text-amber-500">✓</span>
+            Futures fonctionnalités incluses
+          </li>
+          <li class="flex items-center gap-2 text-amber-800">
+            <span class="text-amber-500">✓</span>
+            Jamais de paiement récurrent
+          </li>
+          <li class="flex items-center gap-2 text-amber-800">
+            <span class="text-amber-500">✓</span>
+            Badge "Early Supporter" 🏆
+          </li>
+        </ul>
+        <button onclick="selectPlan('lifetime')" class="w-full py-3 px-6 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-xl hover:from-amber-600 hover:to-orange-600 transition shadow-lg">
+          Réserver ma place
+        </button>
+      </div>
+    </div>
+
+    <!-- Lifetime Sold Out Card (hidden by default) -->
+    <div id="lifetimeSoldOut" class="hidden pricing-card bg-gray-100 rounded-2xl border-2 border-gray-300 p-8 relative opacity-75">
+      <div class="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-gray-500 text-white px-4 py-1 rounded-full text-sm font-bold">
+        Épuisé
+      </div>
+      <div class="mb-6">
+        <h3 class="text-lg font-semibold text-gray-500 mb-2">Lifetime</h3>
+        <p class="text-gray-400 text-sm">Offre de lancement terminée</p>
+      </div>
+      <div class="mb-6">
+        <span class="text-4xl font-bold text-gray-400 line-through">19,99€</span>
+      </div>
+      <div class="text-center py-8">
+        <span class="text-4xl mb-2 block">😢</span>
+        <p class="text-gray-500">Les 150 places ont été prises !</p>
+        <p class="text-gray-400 text-sm mt-2">Inscrivez-vous à la liste d'attente</p>
+      </div>
+      <button onclick="joinWaitlist()" class="w-full py-3 px-6 bg-gray-300 text-gray-600 font-semibold rounded-xl hover:bg-gray-400 transition">
+        Liste d'attente
+      </button>
+    </div>
+
+    <!-- Features Detail Section -->
+    <div class="bg-white rounded-2xl border border-gray-200 p-8 md:p-12 mb-16">
+      <h2 class="text-2xl font-bold text-gray-900 mb-8 text-center">Tout ce qui est inclus dans Premium</h2>
+      
+      <div class="grid md:grid-cols-2 gap-8">
+        <!-- Feature 1 -->
+        <div class="flex gap-4">
+          <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center text-2xl flex-shrink-0">
+            🎾
+          </div>
+          <div>
+            <h3 class="font-semibold text-gray-900 mb-1">Setups illimités</h3>
+            <p class="text-gray-600 text-sm">Sauvegardez toutes vos combinaisons raquette + cordage + tension. Ne perdez plus jamais vos configurations préférées.</p>
+          </div>
+        </div>
+
+        <!-- Feature 2 -->
+        <div class="flex gap-4">
+          <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-2xl flex-shrink-0">
+            📊
+          </div>
+          <div>
+            <h3 class="font-semibold text-gray-900 mb-1">Historique des cordages</h3>
+            <p class="text-gray-600 text-sm">Suivez la durée de vie de chaque cordage et identifiez ceux qui durent le plus longtemps pour votre jeu.</p>
+          </div>
+        </div>
+
+        <!-- Feature 3 -->
+        <div class="flex gap-4">
+          <div class="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center text-2xl flex-shrink-0">
+            🔔
+          </div>
+          <div>
+            <h3 class="font-semibold text-gray-900 mb-1">Alertes prix</h3>
+            <p class="text-gray-600 text-sm">Soyez notifié par email quand vos produits favoris sont en promotion. Ne ratez plus les bonnes affaires.</p>
+          </div>
+        </div>
+
+        <!-- Feature 4 -->
+        <div class="flex gap-4">
+          <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center text-2xl flex-shrink-0">
+            📄
+          </div>
+          <div>
+            <h3 class="font-semibold text-gray-900 mb-1">Export PDF</h3>
+            <p class="text-gray-600 text-sm">Générez une fiche professionnelle à donner à votre cordeur. Fini les erreurs de communication.</p>
+          </div>
+        </div>
+
+        <!-- Feature 5 -->
+        <div class="flex gap-4">
+          <div class="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center text-2xl flex-shrink-0">
+            🩺
+          </div>
+          <div>
+            <h3 class="font-semibold text-gray-900 mb-1">RCS avancé</h3>
+            <p class="text-gray-600 text-sm">Accédez à l'historique de vos scores RCS et recevez des recommandations personnalisées pour protéger vos articulations.</p>
+          </div>
+        </div>
+
+        <!-- Feature 6 -->
+        <div class="flex gap-4">
+          <div class="w-12 h-12 bg-cyan-100 rounded-xl flex items-center justify-center text-2xl flex-shrink-0">
+            💬
+          </div>
+          <div>
+            <h3 class="font-semibold text-gray-900 mb-1">Support prioritaire</h3>
+            <p class="text-gray-600 text-sm">Réponse garantie sous 24h. Nos experts sont là pour vous aider à optimiser votre équipement.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Comparison Table -->
+    <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden mb-16">
+      <div class="px-8 py-6 bg-gray-50 border-b border-gray-200">
+        <h2 class="text-xl font-bold text-gray-900">Gratuit vs Premium</h2>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead>
+            <tr class="border-b border-gray-200">
+              <th class="text-left py-4 px-6 font-semibold text-gray-700">Fonctionnalité</th>
+              <th class="text-center py-4 px-6 font-semibold text-gray-700">Gratuit</th>
+              <th class="text-center py-4 px-6 font-semibold text-amber-600 bg-amber-50">⭐ Premium</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-b border-gray-100">
+              <td class="py-4 px-6 text-gray-700">Catalogue raquettes & cordages</td>
+              <td class="py-4 px-6 text-center text-green-500">✓</td>
+              <td class="py-4 px-6 text-center text-green-500 bg-amber-50">✓</td>
+            </tr>
+            <tr class="border-b border-gray-100">
+              <td class="py-4 px-6 text-gray-700">Calculateur RCS</td>
+              <td class="py-4 px-6 text-center text-green-500">✓</td>
+              <td class="py-4 px-6 text-center text-green-500 bg-amber-50">✓</td>
+            </tr>
+            <tr class="border-b border-gray-100">
+              <td class="py-4 px-6 text-gray-700">Configurateur & Comparateur</td>
+              <td class="py-4 px-6 text-center text-green-500">✓</td>
+              <td class="py-4 px-6 text-center text-green-500 bg-amber-50">✓</td>
+            </tr>
+            <tr class="border-b border-gray-100">
+              <td class="py-4 px-6 text-gray-700">Profil joueur</td>
+              <td class="py-4 px-6 text-center text-green-500">✓</td>
+              <td class="py-4 px-6 text-center text-green-500 bg-amber-50">✓</td>
+            </tr>
+            <tr class="border-b border-gray-100">
+              <td class="py-4 px-6 text-gray-700 font-medium">Sauvegarde de setups</td>
+              <td class="py-4 px-6 text-center text-red-400">✗</td>
+              <td class="py-4 px-6 text-center text-green-500 bg-amber-50 font-medium">Illimité</td>
+            </tr>
+            <tr class="border-b border-gray-100">
+              <td class="py-4 px-6 text-gray-700 font-medium">Historique cordages</td>
+              <td class="py-4 px-6 text-center text-red-400">✗</td>
+              <td class="py-4 px-6 text-center text-green-500 bg-amber-50">✓</td>
+            </tr>
+            <tr class="border-b border-gray-100">
+              <td class="py-4 px-6 text-gray-700 font-medium">Alertes prix</td>
+              <td class="py-4 px-6 text-center text-red-400">✗</td>
+              <td class="py-4 px-6 text-center text-green-500 bg-amber-50">✓</td>
+            </tr>
+            <tr class="border-b border-gray-100">
+              <td class="py-4 px-6 text-gray-700 font-medium">Export PDF</td>
+              <td class="py-4 px-6 text-center text-red-400">✗</td>
+              <td class="py-4 px-6 text-center text-green-500 bg-amber-50">✓</td>
+            </tr>
+            <tr>
+              <td class="py-4 px-6 text-gray-700 font-medium">Support prioritaire</td>
+              <td class="py-4 px-6 text-center text-red-400">✗</td>
+              <td class="py-4 px-6 text-center text-green-500 bg-amber-50">✓</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- FAQ Section -->
+    <div class="mb-16">
+      <h2 class="text-2xl font-bold text-gray-900 mb-8 text-center">Questions fréquentes</h2>
+      
+      <div class="space-y-4 max-w-3xl mx-auto">
+        <div class="bg-white rounded-xl border border-gray-200 p-6">
+          <h3 class="font-semibold text-gray-900 mb-2">Puis-je annuler à tout moment ?</h3>
+          <p class="text-gray-600">Oui, l'abonnement mensuel est sans engagement. Vous pouvez l'annuler à tout moment depuis votre espace compte. Vous gardez l'accès jusqu'à la fin de la période payée.</p>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-gray-200 p-6">
+          <h3 class="font-semibold text-gray-900 mb-2">Qu'est-ce que l'offre Lifetime exactement ?</h3>
+          <p class="text-gray-600">C'est une offre de lancement limitée à 150 places. Vous payez une seule fois 19,99€ et vous avez accès à Premium à vie, y compris toutes les futures fonctionnalités. Aucun paiement récurrent.</p>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-gray-200 p-6">
+          <h3 class="font-semibold text-gray-900 mb-2">Comment fonctionnent les alertes prix ?</h3>
+          <p class="text-gray-600">Vous ajoutez des produits à vos favoris, et nous surveillons les prix chez nos partenaires (Tennis Warehouse, Tennis-Point, Decathlon). Dès qu'un prix baisse, vous recevez un email.</p>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-gray-200 p-6">
+          <h3 class="font-semibold text-gray-900 mb-2">Est-ce que mes données sont sécurisées ?</h3>
+          <p class="text-gray-600">Absolument. Nous utilisons Supabase (infrastructure sécurisée) et le paiement est géré par Stripe, leader mondial du paiement en ligne. Nous ne stockons jamais vos coordonnées bancaires.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Final CTA -->
+    <div class="bg-gradient-to-r from-green-600 to-green-500 rounded-2xl p-8 md:p-12 text-center text-white">
+      <h2 class="text-2xl md:text-3xl font-bold mb-4">Prêt à optimiser votre équipement ?</h2>
+      <p class="text-green-100 mb-8 max-w-xl mx-auto">Rejoignez des centaines de joueurs qui ont amélioré leur confort de jeu grâce à Tennis String Advisor.</p>
+      <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <button onclick="selectPlan('annual')" class="px-8 py-4 bg-white text-green-700 font-bold rounded-xl hover:bg-green-50 transition shadow-lg">
+          Commencer avec l'Annuel – 24,99€/an
+        </button>
+        <button onclick="selectPlan('lifetime')" id="finalLifetimeCta" class="px-8 py-4 bg-gradient-to-r from-amber-400 to-orange-400 text-white font-bold rounded-xl hover:from-amber-500 hover:to-orange-500 transition shadow-lg">
+          🚀 Lifetime – 19,99€ (150 places)
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-gray-900 text-white mt-16">
+    <div class="max-w-7xl mx-auto px-4 py-12">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div>
+          <div class="flex items-center gap-2 mb-4">
+            <span class="text-2xl">🎾</span>
+            <span class="font-bold text-xl">Tennis String Advisor</span>
+          </div>
+          <p class="text-gray-400 text-sm">Votre expert en cordages et raquettes de tennis.</p>
+        </div>
+        <div>
+          <h4 class="font-semibold mb-4">Produits</h4>
+          <ul class="space-y-2 text-gray-400 text-sm">
+            <li><a href="/racquets.html" class="hover:text-white transition">Raquettes</a></li>
+            <li><a href="/strings.html" class="hover:text-white transition">Cordages</a></li>
+            <li><a href="/rcs-calculator.html" class="hover:text-white transition">Calculateur RCS</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-semibold mb-4">Outils</h4>
+          <ul class="space-y-2 text-gray-400 text-sm">
+            <li><a href="/configurator.html" class="hover:text-white transition">Configurateur</a></li>
+            <li><a href="/compare.html" class="hover:text-white transition">Comparateur</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-semibold mb-4">Légal</h4>
+          <ul class="space-y-2 text-gray-400 text-sm">
+            <li><a href="/privacy.html" class="hover:text-white transition">Confidentialité</a></li>
+            <li><a href="/terms.html" class="hover:text-white transition">CGV</a></li>
+            <li><a href="/contact.html" class="hover:text-white transition">Contact</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400 text-sm">
+        <p>© 2025 Tennis String Advisor. Une marque de Pleneuf Trading LLC. Tous droits réservés.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Checkout Modal -->
+  <div id="checkoutModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl w-full max-w-md overflow-hidden">
+      <div class="bg-gradient-to-r from-green-600 to-green-500 px-6 py-4 text-white">
+        <h2 class="text-xl font-bold">Finaliser votre commande</h2>
+        <p class="text-green-100 text-sm mt-1" id="checkoutPlanName">Plan sélectionné</p>
+      </div>
+      <div class="p-6">
+        <div class="bg-gray-50 rounded-xl p-4 mb-6">
+          <div class="flex justify-between items-center">
+            <span class="text-gray-700">Total</span>
+            <span class="text-2xl font-bold text-gray-900" id="checkoutPrice">0€</span>
+          </div>
+          <p class="text-xs text-gray-500 mt-2" id="checkoutNote">Paiement sécurisé par Stripe</p>
+        </div>
+        
+        <div id="notLoggedIn" class="hidden mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl">
+          <p class="text-amber-800 text-sm">
+            <strong>Connexion requise</strong><br>
+            Vous devez avoir un compte pour souscrire à Premium.
+          </p>
+          <a href="/auth.html" class="inline-block mt-3 text-amber-700 font-semibold hover:underline">
+            Se connecter / Créer un compte →
+          </a>
+        </div>
+        
+        <div id="loggedIn" class="hidden">
+          <p class="text-gray-600 text-sm mb-4">
+            Connecté en tant que : <strong id="userEmailCheckout"></strong>
+          </p>
+          <button onclick="processPayment()" id="payButton" class="w-full py-3 px-6 bg-green-600 text-white font-semibold rounded-xl hover:bg-green-700 transition flex items-center justify-center gap-2">
+            <span>💳 Payer maintenant</span>
+            <span id="paySpinner" class="hidden">⏳</span>
+          </button>
+          <p class="text-xs text-gray-400 text-center mt-4">
+            En continuant, vous acceptez nos <a href="/terms.html" class="underline">CGV</a> et notre <a href="/privacy.html" class="underline">politique de confidentialité</a>.
+          </p>
+        </div>
+      </div>
+      <div class="px-6 pb-6">
+        <button onclick="closeCheckoutModal()" class="w-full py-3 border border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition">
+          Annuler
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Supabase configuration
+    const SUPABASE_URL = 'https://yhhdkllbaxuhwrfpsmev.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InloaGRrbGxiYXh1aHdyZnBzbWV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU3NjI0MDEsImV4cCI6MjA4MTMzODQwMX0.2aC_gYZf0xxz6MXi5zcaCH2S64RBaQvXU7a5qiuD0_k';
+    
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Stripe Payment Links (direct checkout - no server needed)
+    const PAYMENT_LINKS = {
+      monthly: 'https://buy.stripe.com/bJedR9aD1cZkaNwduk8Vi03',
+      annual: 'https://buy.stripe.com/bJe00jeThbVgaNw1LC8Vi04',
+      lifetime: 'https://buy.stripe.com/28E3cvfXl8J4f3M9e48Vi05'
+    };
+    
+    // Pricing configuration
+    const PLANS = {
+      monthly: {
+        name: 'Premium Mensuel',
+        price: '2,99€',
+        priceValue: 2.99,
+        note: 'Renouvellement mensuel, sans engagement',
+        paymentLink: PAYMENT_LINKS.monthly
+      },
+      annual: {
+        name: 'Premium Annuel',
+        price: '24,99€',
+        priceValue: 24.99,
+        note: 'Paiement annuel, économisez 30%',
+        paymentLink: PAYMENT_LINKS.annual
+      },
+      lifetime: {
+        name: 'Lifetime (Offre de lancement)',
+        price: '19,99€',
+        priceValue: 19.99,
+        note: 'Paiement unique, accès à vie',
+        paymentLink: PAYMENT_LINKS.lifetime
+      }
+    };
+
+    // Lifetime places management
+    const LIFETIME_TOTAL = 150;
+    let lifetimeRemaining = LIFETIME_TOTAL;
+    let currentUser = null;
+    let selectedPlan = null;
+
+    // Initialize
+    async function init() {
+      // Check auth
+      const { data: { session } } = await supabase.auth.getSession();
+      currentUser = session?.user || null;
+      
+      // Update auth link
+      const authLink = document.getElementById('authLink');
+      if (currentUser) {
+        authLink.href = '/account.html';
+        authLink.innerHTML = '👤 Mon Compte';
+      }
+
+      // Load lifetime remaining count
+      await loadLifetimeCount();
+    }
+
+    // Load lifetime remaining count from storage/database
+    async function loadLifetimeCount() {
+      // Try to get from Supabase first
+      try {
+        const { data, error } = await supabase
+          .from('settings')
+          .select('value')
+          .eq('key', 'lifetime_remaining')
+          .single();
+        
+        if (data && !error) {
+          lifetimeRemaining = parseInt(data.value) || LIFETIME_TOTAL;
+        }
+      } catch (e) {
+        // Fallback to localStorage for demo
+        const stored = localStorage.getItem('tsa_lifetime_remaining');
+        if (stored !== null) {
+          lifetimeRemaining = parseInt(stored);
+        }
+      }
+
+      updateLifetimeDisplay();
+    }
+
+    // Update lifetime display
+    function updateLifetimeDisplay() {
+      const remaining = Math.max(0, lifetimeRemaining);
+      const percentage = (remaining / LIFETIME_TOTAL) * 100;
+
+      // Update all counters
+      document.getElementById('lifetimeRemaining').textContent = remaining;
+      document.getElementById('lifetimeRemainingCard').textContent = remaining;
+      document.getElementById('lifetimeProgress').style.width = percentage + '%';
+
+      // If sold out
+      if (remaining <= 0) {
+        document.getElementById('lifetimeBanner').classList.add('hidden');
+        document.getElementById('lifetimeCard').classList.add('hidden');
+        document.getElementById('lifetimeSoldOut').classList.remove('hidden');
+        document.getElementById('finalLifetimeCta').classList.add('hidden');
+        
+        // Update grid to 2 columns
+        document.querySelector('.grid.md\\:grid-cols-3')?.classList.replace('md:grid-cols-3', 'md:grid-cols-2');
+      }
+
+      // Urgency: less than 20 remaining
+      if (remaining <= 20 && remaining > 0) {
+        document.getElementById('lifetimeRemainingCard').classList.add('text-red-600');
+        document.getElementById('lifetimeRemaining').classList.add('text-red-200');
+      }
+    }
+
+    // Select plan
+    function selectPlan(planId) {
+      selectedPlan = planId;
+      const plan = PLANS[planId];
+      
+      if (!plan) return;
+
+      // Check if lifetime is sold out
+      if (planId === 'lifetime' && lifetimeRemaining <= 0) {
+        alert('Désolé, les 150 places Lifetime ont été prises. Choisissez le plan Annuel pour économiser.');
+        return;
+      }
+
+      // Update modal
+      document.getElementById('checkoutPlanName').textContent = plan.name;
+      document.getElementById('checkoutPrice').textContent = plan.price;
+      document.getElementById('checkoutNote').textContent = plan.note;
+
+      // Show/hide based on auth
+      if (currentUser) {
+        document.getElementById('notLoggedIn').classList.add('hidden');
+        document.getElementById('loggedIn').classList.remove('hidden');
+        document.getElementById('userEmailCheckout').textContent = currentUser.email;
+      } else {
+        document.getElementById('notLoggedIn').classList.remove('hidden');
+        document.getElementById('loggedIn').classList.add('hidden');
+      }
+
+      // Show modal
+      document.getElementById('checkoutModal').classList.remove('hidden');
+    }
+
+    // Close checkout modal
+    function closeCheckoutModal() {
+      document.getElementById('checkoutModal').classList.add('hidden');
+      selectedPlan = null;
+    }
+
+    // Process payment - redirect to Stripe Payment Link
+    async function processPayment() {
+      if (!currentUser || !selectedPlan) return;
+
+      const plan = PLANS[selectedPlan];
+      
+      document.getElementById('paySpinner').classList.remove('hidden');
+      document.getElementById('payButton').disabled = true;
+
+      try {
+        // Build payment link with prefilled email and client reference
+        let paymentUrl = plan.paymentLink;
+        
+        // Add email prefill if available
+        if (currentUser.email) {
+          paymentUrl += '?prefilled_email=' + encodeURIComponent(currentUser.email);
+          paymentUrl += '&client_reference_id=' + encodeURIComponent(currentUser.id);
+        }
+        
+        // Redirect to Stripe Payment Link
+        window.location.href = paymentUrl;
+
+      } catch (error) {
+        console.error('Payment error:', error);
+        alert('Erreur lors du paiement : ' + (error.message || 'Veuillez réessayer.'));
+        document.getElementById('paySpinner').classList.add('hidden');
+        document.getElementById('payButton').disabled = false;
+      }
+    }
+    
+    // Check for payment success/cancel on page load
+    function checkPaymentStatus() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const payment = urlParams.get('payment');
+      
+      if (payment === 'cancelled') {
+        alert('Paiement annulé. Vous pouvez réessayer quand vous voulez.');
+        window.history.replaceState({}, document.title, '/premium.html');
+      }
+      
+      if (payment === 'success') {
+        alert('🎉 Paiement réussi ! Bienvenue dans Premium !');
+        window.history.replaceState({}, document.title, '/premium.html');
+      }
+    }
+    
+    checkPaymentStatus();
+
+    // Join waitlist
+    function joinWaitlist() {
+      const email = prompt('Entrez votre email pour être notifié si des places Lifetime se libèrent :');
+      if (email && email.includes('@')) {
+        // TODO: Save to database
+        localStorage.setItem('tsa_waitlist_email', email);
+        alert('Merci ! Vous serez notifié si des places se libèrent.');
+      }
+    }
+
+    // Close modal on escape
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeCheckoutModal();
+    });
+
+    // Close modal on backdrop click
+    document.getElementById('checkoutModal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('checkoutModal')) closeCheckoutModal();
+    });
+
+    // Initialize
+    init();
+  </script>
+</body>
+</html>

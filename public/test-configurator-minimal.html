@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Configurateur (Sans Scripts Externes)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .option-card:hover { border-color: #16a34a; transform: translateY(-2px); }
+    .option-card.selected { border-color: #16a34a !important; background: #f0fdf4 !important; }
+    .option-card { 
+      transition: all 0.2s ease;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      -webkit-user-select: none;
+      cursor: pointer;
+    }
+    .option-card:active { transform: scale(0.98); }
+    #log {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #1e1e1e;
+      color: #0f0;
+      padding: 10px;
+      font-family: monospace;
+      font-size: 10px;
+      max-height: 150px;
+      overflow-y: auto;
+      z-index: 9999;
+    }
+  </style>
+</head>
+<body class="bg-gray-50">
+  <div class="max-w-4xl mx-auto px-4 py-8">
+    <h1 class="text-2xl font-bold mb-4">Test Configurateur (Minimal)</h1>
+    <p class="text-sm text-gray-600 mb-8">Sans Supabase, Analytics, RCS - juste Tailwind</p>
+
+    <!-- Step 1 -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+      <h2 class="text-xl font-bold text-gray-900 mb-6">Quel est votre niveau de jeu ?</h2>
+      
+      <div id="level-group" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="debutant" data-category="level">
+          <div class="text-3xl mb-3">🌱</div>
+          <h3 class="font-semibold text-gray-900 mb-1">Débutant</h3>
+          <p class="text-sm text-gray-500">Moins de 2 ans de pratique</p>
+        </div>
+        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="intermediaire" data-category="level">
+          <div class="text-3xl mb-3">📈</div>
+          <h3 class="font-semibold text-gray-900 mb-1">Intermédiaire</h3>
+          <p class="text-sm text-gray-500">2-5 ans de pratique</p>
+        </div>
+      </div>
+
+      <h2 class="text-xl font-bold text-gray-900 mb-6">À quelle fréquence jouez-vous ?</h2>
+      
+      <div id="frequency-group" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="occasionnel" data-category="frequency">
+          <div class="text-3xl mb-3">🎾</div>
+          <h3 class="font-semibold text-gray-900 mb-1">Occasionnel</h3>
+          <p class="text-sm text-gray-500">1-2 fois par mois</p>
+        </div>
+        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="regulier" data-category="frequency">
+          <div class="text-3xl mb-3">📅</div>
+          <h3 class="font-semibold text-gray-900 mb-1">Régulier</h3>
+          <p class="text-sm text-gray-500">1-2 fois par semaine</p>
+        </div>
+        <div class="option-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer" data-value="intensif" data-category="frequency">
+          <div class="text-3xl mb-3">🔥</div>
+          <h3 class="font-semibold text-gray-900 mb-1">Intensif</h3>
+          <p class="text-sm text-gray-500">3+ fois par semaine</p>
+        </div>
+      </div>
+
+      <div class="mt-6 p-4 bg-blue-50 rounded-lg">
+        <strong>Sélections :</strong><br>
+        <span id="state">-</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Log -->
+  <div id="log"></div>
+
+  <script>
+    // State
+    const selections = { level: null, frequency: null };
+    const selectedCards = { level: null, frequency: null };
+    
+    // Logging
+    const logEl = document.getElementById('log');
+    function log(msg) {
+      const time = new Date().toLocaleTimeString();
+      logEl.innerHTML += `[${time}] ${msg}<br>`;
+      logEl.scrollTop = logEl.scrollHeight;
+      
+      // Update state display
+      document.getElementById('state').textContent = JSON.stringify(selections);
+    }
+    
+    // Selection handler
+    function handleCardSelection(card) {
+      const category = card.dataset.category;
+      const value = card.dataset.value;
+      
+      log(`handleCardSelection: ${category}=${value}`);
+      
+      // Deselect previous
+      const prev = selectedCards[category];
+      if (prev && prev !== card) {
+        prev.classList.remove('selected');
+        log(`  Deselected: ${prev.dataset.value}`);
+      }
+      
+      // Select new
+      card.classList.add('selected');
+      selectedCards[category] = card;
+      selections[category] = value;
+      
+      log(`  State: ${JSON.stringify(selections)}`);
+    }
+    
+    // EVENT DELEGATION
+    document.addEventListener('DOMContentLoaded', function() {
+      log('Page loaded');
+      
+      document.body.addEventListener('click', function(e) {
+        const card = e.target.closest('.option-card');
+        
+        if (card && card.dataset.category) {
+          log(`Click detected on: ${card.dataset.category}`);
+          handleCardSelection(card);
+        }
+      }, { passive: false });
+      
+      log('Listener attached - ready');
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Configurateur (Radio Buttons)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- External scripts that were causing issues -->
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    /* Hide radio buttons */
+    input[type="radio"] { display: none; }
+    
+    /* Style labels as option cards */
+    .option-label {
+      display: block;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    
+    /* Selected state using :checked */
+    input[type="radio"]:checked + .option-label {
+      border-color: #16a34a !important;
+      background: #f0fdf4 !important;
+    }
+    
+    .option-label:active {
+      transform: scale(0.98);
+    }
+  </style>
+</head>
+<body class="bg-gray-50">
+  <div class="max-w-4xl mx-auto px-4 py-8">
+    <h1 class="text-2xl font-bold mb-2">Configurateur v8 (Radio Buttons)</h1>
+    <p class="text-gray-600 mb-8">Utilise des inputs radio natifs - immunisé contre les scripts externes</p>
+
+    <form id="configuratorForm">
+      <!-- Step 1 -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+        <h2 class="text-xl font-bold text-gray-900 mb-6">Quel est votre niveau de jeu ?</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+          <div>
+            <input type="radio" name="level" id="level-deb" value="debutant">
+            <label for="level-deb" class="option-label border-2 border-gray-200 rounded-xl p-6">
+              <div class="text-3xl mb-3">🌱</div>
+              <h3 class="font-semibold text-gray-900 mb-1">Débutant</h3>
+              <p class="text-sm text-gray-500">Moins de 2 ans de pratique</p>
+            </label>
+          </div>
+          
+          <div>
+            <input type="radio" name="level" id="level-int" value="intermediaire">
+            <label for="level-int" class="option-label border-2 border-gray-200 rounded-xl p-6">
+              <div class="text-3xl mb-3">📈</div>
+              <h3 class="font-semibold text-gray-900 mb-1">Intermédiaire</h3>
+              <p class="text-sm text-gray-500">2-5 ans de pratique</p>
+            </label>
+          </div>
+          
+          <div>
+            <input type="radio" name="level" id="level-adv" value="avance">
+            <label for="level-adv" class="option-label border-2 border-gray-200 rounded-xl p-6">
+              <div class="text-3xl mb-3">⭐</div>
+              <h3 class="font-semibold text-gray-900 mb-1">Avancé</h3>
+              <p class="text-sm text-gray-500">5+ ans de pratique</p>
+            </label>
+          </div>
+          
+          <div>
+            <input type="radio" name="level" id="level-comp" value="competition">
+            <label for="level-comp" class="option-label border-2 border-gray-200 rounded-xl p-6">
+              <div class="text-3xl mb-3">🏆</div>
+              <h3 class="font-semibold text-gray-900 mb-1">Compétition</h3>
+              <p class="text-sm text-gray-500">Joueur classé</p>
+            </label>
+          </div>
+        </div>
+
+        <h2 class="text-xl font-bold text-gray-900 mb-6">À quelle fréquence jouez-vous ?</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <input type="radio" name="frequency" id="freq-occ" value="occasionnel">
+            <label for="freq-occ" class="option-label border-2 border-gray-200 rounded-xl p-6">
+              <div class="text-3xl mb-3">🎾</div>
+              <h3 class="font-semibold text-gray-900 mb-1">Occasionnel</h3>
+              <p class="text-sm text-gray-500">1-2 fois par mois</p>
+            </label>
+          </div>
+          
+          <div>
+            <input type="radio" name="frequency" id="freq-reg" value="regulier">
+            <label for="freq-reg" class="option-label border-2 border-gray-200 rounded-xl p-6">
+              <div class="text-3xl mb-3">📅</div>
+              <h3 class="font-semibold text-gray-900 mb-1">Régulier</h3>
+              <p class="text-sm text-gray-500">1-2 fois par semaine</p>
+            </label>
+          </div>
+          
+          <div>
+            <input type="radio" name="frequency" id="freq-int" value="intensif">
+            <label for="freq-int" class="option-label border-2 border-gray-200 rounded-xl p-6">
+              <div class="text-3xl mb-3">🔥</div>
+              <h3 class="font-semibold text-gray-900 mb-1">Intensif</h3>
+              <p class="text-sm text-gray-500">3+ fois par semaine</p>
+            </label>
+          </div>
+        </div>
+
+        <div class="mt-6 p-4 bg-blue-50 rounded-lg">
+          <strong>État actuel :</strong><br>
+          <span id="state">Aucune sélection</span>
+        </div>
+
+        <button type="button" onclick="showState()" class="mt-4 px-6 py-3 bg-green-600 text-white rounded-lg font-semibold">
+          Voir l'état
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    function showState() {
+      const level = document.querySelector('input[name="level"]:checked')?.value || 'none';
+      const frequency = document.querySelector('input[name="frequency"]:checked')?.value || 'none';
+      
+      const state = { level, frequency };
+      document.getElementById('state').textContent = JSON.stringify(state);
+      
+      console.log('State:', state);
+      alert(`Level: ${level}\nFrequency: ${frequency}`);
+    }
+    
+    // Auto-update state display on change
+    document.querySelectorAll('input[type="radio"]').forEach(radio => {
+      radio.addEventListener('change', showState);
+    });
+  </script>
+</body>
+</html>

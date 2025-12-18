@@ -1,13 +1,49 @@
+# Dependencies
 node_modules/
+
+# Environment
 .env
-.next/
-.DS_Store
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.vercel
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+
+# Next.js
+.next/
+out/
+
+# Build
+dist/
+build/
+
+# IDE & OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Deployment
+.vercel
+.netlify
+
+# Database
+*.db
+*.sqlite
+
+# Legacy files (archived)
+_legacy_archive/
+
+# Testing
+coverage/
+.nyc_output/
+
+# Misc
+*.tsbuildinfo
+.eslintcache

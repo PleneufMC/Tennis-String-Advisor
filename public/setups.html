@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mes Setups - Tennis String Advisor</title>
+  <meta name="description" content="Gérez vos configurations raquette + cordage + tension sauvegardées.">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/js/rcs-calculator.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            tennis: { green: '#16a34a', dark: '#0d1117', light: '#f0fdf4' }
+          }
+        }
+      }
+    }
+  </script>
+  <!-- Google Analytics 4 -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-YSSLHJ5WYD"></script>
+  <script src="/js/analytics.js"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <!-- Header -->
+  <header class="bg-white border-b border-gray-200 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 py-4">
+      <div class="flex items-center justify-between">
+        <a href="/" class="flex items-center gap-2">
+          <span class="text-2xl">🎾</span>
+          <span class="font-bold text-xl text-gray-900">Tennis String Advisor</span>
+        </a>
+        <nav class="hidden md:flex items-center gap-6">
+          <a href="/" class="text-gray-600 hover:text-green-600 transition">Accueil</a>
+          <a href="/configurator.html" class="text-gray-600 hover:text-green-600 transition">Configurateur</a>
+          <a href="/racquets.html" class="text-gray-600 hover:text-green-600 transition">Raquettes</a>
+          <a href="/strings.html" class="text-gray-600 hover:text-green-600 transition">Cordages</a>
+          <a href="/rcs-calculator.html" class="text-gray-600 hover:text-green-600 transition">🩺 RCS</a>
+        </nav>
+        <div class="flex items-center gap-4">
+          <a href="/account.html" class="text-sm text-green-600 hover:underline">Mon Compte</a>
+          <button onclick="handleLogout()" class="px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition">
+            Déconnexion
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-6xl mx-auto px-4 py-8">
+    <!-- Page Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+      <div>
+        <div class="flex items-center gap-2 text-sm text-gray-500 mb-2">
+          <a href="/account.html" class="hover:text-green-600">Mon Compte</a>
+          <span>›</span>
+          <span class="text-gray-900">Mes Setups</span>
+        </div>
+        <h1 class="text-3xl font-bold text-gray-900">🎾 Mes Setups</h1>
+        <p class="text-gray-600 mt-1">Gérez vos configurations raquette + cordage + tension</p>
+      </div>
+      <button onclick="openCreateModal()" id="createBtn"
+        class="inline-flex items-center gap-2 px-6 py-3 bg-green-600 text-white font-semibold rounded-xl hover:bg-green-700 transition shadow-lg">
+        ➕ Créer un Setup
+      </button>
+    </div>
+
+    <!-- Stats Bar -->
+    <div class="bg-white rounded-xl border border-gray-200 p-4 mb-6 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-6">
+        <div>
+          <span class="text-2xl font-bold text-green-600" id="setupCount">0</span>
+          <span class="text-gray-500 text-sm"> / </span>
+          <span class="text-gray-500 text-sm" id="setupLimit">3</span>
+          <span class="text-gray-500 text-sm ml-1">setups</span>
+        </div>
+        <div class="h-8 w-px bg-gray-200"></div>
+        <div class="text-sm text-gray-500">
+          Score RCS moyen: <span class="font-semibold text-gray-900" id="avgRcs">--</span>
+        </div>
+      </div>
+      <a href="/premium.html" class="text-sm text-amber-600 hover:underline" id="premiumLink">
+        ⭐ Passer Premium pour des setups illimités
+      </a>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loadingState" class="text-center py-16">
+      <div class="inline-block animate-spin text-4xl mb-4">🎾</div>
+      <p class="text-gray-600">Chargement...</p>
+    </div>
+
+    <!-- Premium Required State -->
+    <div id="premiumRequired" class="hidden">
+      <div class="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl border-2 border-amber-200 overflow-hidden">
+        <div class="bg-gradient-to-r from-amber-500 to-orange-500 px-8 py-6 text-center">
+          <span class="text-5xl mb-4 block">⭐</span>
+          <h2 class="text-2xl font-bold text-white">Fonctionnalité Premium</h2>
+          <p class="text-amber-100 mt-2">La sauvegarde de setups est réservée aux membres Premium</p>
+        </div>
+        
+        <div class="p-8">
+          <div class="max-w-2xl mx-auto">
+            <h3 class="text-xl font-bold text-gray-900 mb-6 text-center">Pourquoi passer Premium ?</h3>
+            
+            <div class="grid md:grid-cols-2 gap-6 mb-8">
+              <div class="flex items-start gap-3">
+                <div class="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center text-xl flex-shrink-0">🎾</div>
+                <div>
+                  <div class="font-semibold text-gray-900">Setups illimités</div>
+                  <div class="text-sm text-gray-600">Sauvegardez toutes vos configurations raquette + cordage + tension</div>
+                </div>
+              </div>
+              <div class="flex items-start gap-3">
+                <div class="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center text-xl flex-shrink-0">📊</div>
+                <div>
+                  <div class="font-semibold text-gray-900">Historique complet</div>
+                  <div class="text-sm text-gray-600">Suivez l'évolution de vos cordages dans le temps</div>
+                </div>
+              </div>
+              <div class="flex items-start gap-3">
+                <div class="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center text-xl flex-shrink-0">🔔</div>
+                <div>
+                  <div class="font-semibold text-gray-900">Alertes prix</div>
+                  <div class="text-sm text-gray-600">Soyez notifié quand vos produits favoris sont en promo</div>
+                </div>
+              </div>
+              <div class="flex items-start gap-3">
+                <div class="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center text-xl flex-shrink-0">📄</div>
+                <div>
+                  <div class="font-semibold text-gray-900">Export PDF</div>
+                  <div class="text-sm text-gray-600">Exportez vos setups pour les partager avec votre cordeur</div>
+                </div>
+              </div>
+              <div class="flex items-start gap-3">
+                <div class="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center text-xl flex-shrink-0">🩺</div>
+                <div>
+                  <div class="font-semibold text-gray-900">RCS Avancé</div>
+                  <div class="text-sm text-gray-600">Analyse détaillée et recommandations personnalisées</div>
+                </div>
+              </div>
+              <div class="flex items-start gap-3">
+                <div class="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center text-xl flex-shrink-0">💬</div>
+                <div>
+                  <div class="font-semibold text-gray-900">Support prioritaire</div>
+                  <div class="text-sm text-gray-600">Assistance dédiée par email</div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="bg-white rounded-xl p-6 border border-amber-200 text-center mb-6">
+              <div class="text-sm text-gray-500 mb-1">Abonnement mensuel</div>
+              <div class="text-4xl font-bold text-amber-600">2,99€<span class="text-lg text-gray-500 font-normal">/mois</span></div>
+              <div class="text-sm text-gray-500 mt-1">ou 24,99€/an (~30% d'économie)</div>
+            </div>
+            
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+              <a href="/premium.html" class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-xl hover:from-amber-600 hover:to-orange-600 transition shadow-lg">
+                ⭐ Devenir Premium
+              </a>
+              <a href="/account.html" class="inline-flex items-center justify-center gap-2 px-8 py-4 border border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition">
+                ← Retour au compte
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- What's free section -->
+      <div class="mt-8 bg-white rounded-xl border border-gray-200 p-6">
+        <h3 class="font-bold text-gray-900 mb-4">✅ Ce qui reste gratuit</h3>
+        <div class="grid md:grid-cols-4 gap-4">
+          <a href="/racquets.html" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition">
+            <span class="text-2xl">🎾</span>
+            <span class="text-gray-700">Catalogue Raquettes</span>
+          </a>
+          <a href="/strings.html" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition">
+            <span class="text-2xl">🧵</span>
+            <span class="text-gray-700">Catalogue Cordages</span>
+          </a>
+          <a href="/rcs-calculator.html" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition">
+            <span class="text-2xl">🩺</span>
+            <span class="text-gray-700">Calculateur RCS</span>
+          </a>
+          <a href="/configurator.html" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition">
+            <span class="text-2xl">⚙️</span>
+            <span class="text-gray-700">Configurateur</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Premium Content (only shown to premium users) -->
+    <div id="premiumContent" class="hidden">
+      <!-- Empty State -->
+      <div id="emptyState" class="hidden text-center py-16 bg-white rounded-2xl border border-gray-200">
+        <span class="text-6xl mb-4 block">📦</span>
+        <h2 class="text-xl font-bold text-gray-900 mb-2">Aucun setup sauvegardé</h2>
+        <p class="text-gray-600 mb-6">Créez votre premier setup pour retrouver vos configurations préférées.</p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+          <button onclick="openCreateModal()"
+            class="inline-flex items-center gap-2 px-6 py-3 bg-green-600 text-white font-semibold rounded-xl hover:bg-green-700 transition">
+            ➕ Créer un Setup
+          </button>
+          <a href="/configurator.html"
+            class="inline-flex items-center gap-2 px-6 py-3 border border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition">
+            ⚙️ Utiliser le Configurateur
+          </a>
+        </div>
+      </div>
+
+    <!-- Setups Grid -->
+      <div id="setupsGrid" class="hidden grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <!-- Setups will be rendered here -->
+      </div>
+    </div>
+  </main>
+
+  <!-- Create/Edit Setup Modal -->
+  <div id="setupModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+        <h2 class="text-xl font-bold text-gray-900" id="modalTitle">Créer un Setup</h2>
+        <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+      </div>
+      
+      <form id="setupForm" onsubmit="handleSaveSetup(event)" class="p-6 space-y-6">
+        <input type="hidden" id="setupId">
+        
+        <!-- Setup Name -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Nom du setup *</label>
+          <input type="text" id="setupName" required maxlength="50"
+            class="w-full rounded-lg border-gray-300 border p-3 focus:ring-green-500 focus:border-green-500"
+            placeholder="Ex: Setup compétition terre battue">
+        </div>
+
+        <!-- Racquet Selection -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Raquette *</label>
+          <select id="racquetSelect" required onchange="updateRcsPreview()"
+            class="w-full rounded-lg border-gray-300 border p-3 focus:ring-green-500 focus:border-green-500">
+            <option value="">Sélectionner une raquette...</option>
+          </select>
+          <p class="text-xs text-gray-500 mt-1" id="racquetInfo"></p>
+        </div>
+
+        <!-- String Selection -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Cordage *</label>
+          <select id="stringSelect" required onchange="updateRcsPreview()"
+            class="w-full rounded-lg border-gray-300 border p-3 focus:ring-green-500 focus:border-green-500">
+            <option value="">Sélectionner un cordage...</option>
+          </select>
+          <p class="text-xs text-gray-500 mt-1" id="stringInfo"></p>
+        </div>
+
+        <!-- Tension -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Tension (kg) *</label>
+          <div class="flex items-center gap-4">
+            <input type="range" id="tensionSlider" min="18" max="30" value="24" step="0.5"
+              class="flex-1" onchange="updateTensionDisplay(); updateRcsPreview();">
+            <div class="w-20 text-center">
+              <input type="number" id="tensionInput" min="18" max="30" value="24" step="0.5" required
+                class="w-full rounded-lg border-gray-300 border p-2 text-center focus:ring-green-500 focus:border-green-500"
+                onchange="updateSliderFromInput(); updateRcsPreview();">
+              <span class="text-xs text-gray-500">kg</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- RCS Preview -->
+        <div class="bg-gray-50 rounded-xl p-4 border border-gray-200">
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="text-sm text-gray-600">Score RCS estimé</div>
+              <div class="text-3xl font-bold" id="rcsPreview">--</div>
+              <div class="text-sm" id="rcsLabel">Sélectionnez raquette et cordage</div>
+            </div>
+            <div class="w-24 h-24 rounded-full border-8 flex items-center justify-center" id="rcsGauge"
+              style="border-color: #e5e7eb;">
+              <span class="text-2xl" id="rcsEmoji">❓</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Notes (optionnel)</label>
+          <textarea id="setupNotes" rows="3" maxlength="500"
+            class="w-full rounded-lg border-gray-300 border p-3 focus:ring-green-500 focus:border-green-500"
+            placeholder="Ex: Idéal pour les matchs sur dur en été..."></textarea>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex items-center gap-4 pt-4 border-t border-gray-200">
+          <button type="submit" id="saveBtn"
+            class="flex-1 px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition flex items-center justify-center gap-2">
+            <span>💾 Sauvegarder</span>
+            <span id="saveSpinner" class="hidden">⏳</span>
+          </button>
+          <button type="button" onclick="closeModal()"
+            class="px-6 py-3 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition">
+            Annuler
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Affiliate Modal -->
+  <div id="affiliateModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl w-full max-w-lg overflow-hidden">
+      <div class="bg-gradient-to-r from-green-600 to-green-500 px-6 py-4 text-white">
+        <h2 class="text-xl font-bold">🛒 Où acheter ?</h2>
+        <p class="text-green-100 text-sm mt-1" id="affiliateProduct">Produit</p>
+      </div>
+      <div class="p-6 space-y-4" id="affiliateLinks">
+        <!-- Links will be rendered here -->
+      </div>
+      <div class="px-6 pb-6">
+        <button onclick="closeAffiliateModal()" class="w-full py-3 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition">
+          Fermer
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-gray-900 text-white mt-16">
+    <div class="max-w-7xl mx-auto px-4 py-8">
+      <div class="text-center text-gray-400 text-sm">
+        <p>© 2025 Tennis String Advisor. Une marque de Pleneuf Trading LLC. Tous droits réservés.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Supabase configuration
+    const SUPABASE_URL = 'https://yhhdkllbaxuhwrfpsmev.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InloaGRrbGxiYXh1aHdyZnBzbWV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU3NjI0MDEsImV4cCI6MjA4MTMzODQwMX0.2aC_gYZf0xxz6MXi5zcaCH2S64RBaQvXU7a5qiuD0_k';
+    
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let currentUser = null;
+    let userProfile = null;
+    let racquets = [];
+    let strings = [];
+    let userSetups = [];
+    let maxSetups = 3; // Free limit
+    let isPremium = false;
+
+    // Affiliate links configuration
+    const AFFILIATE_CONFIG = {
+      tennisWarehouse: {
+        name: 'Tennis Warehouse',
+        logo: '🏬',
+        baseUrl: 'https://www.tennis-warehouse.com/',
+        tag: '?from=tsa' // Example affiliate tag
+      },
+      tennisPoint: {
+        name: 'Tennis-Point',
+        logo: '🎾',
+        baseUrl: 'https://www.tennis-point.fr/',
+        tag: '?utm_source=tennisstring'
+      },
+      decathlon: {
+        name: 'Decathlon',
+        logo: '🏪',
+        baseUrl: 'https://www.decathlon.fr/',
+        tag: '?mc=affiliate_tsa'
+      }
+    };
+
+    // Check authentication
+    async function checkAuth() {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        window.location.href = '/auth.html';
+        return;
+      }
+      
+      currentUser = session.user;
+      await loadData();
+    }
+
+    // Load all data
+    async function loadData() {
+      try {
+        // Load racquets
+        const { data: racquetData } = await supabase
+          .from('racquets')
+          .select('*')
+          .order('brand, model');
+        racquets = racquetData || [];
+
+        // Load strings
+        const { data: stringData } = await supabase
+          .from('strings')
+          .select('*')
+          .order('brand, model');
+        strings = stringData || [];
+
+        // Populate selects
+        populateRacquetSelect();
+        populateStringSelect();
+
+        // Check if premium
+        try {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('is_premium')
+            .eq('id', currentUser.id)
+            .single();
+          
+          if (profile?.is_premium) {
+            isPremium = true;
+            maxSetups = Infinity;
+            document.getElementById('setupLimit').textContent = '∞';
+            document.getElementById('premiumLink').classList.add('hidden');
+          }
+        } catch (e) {
+          // Profile table may not exist - check localStorage fallback for demo
+          isPremium = localStorage.getItem('tsa_premium_demo') === 'true';
+        }
+
+        // Show appropriate content based on premium status
+        document.getElementById('loadingState').classList.add('hidden');
+        
+        if (!isPremium) {
+          // Show premium required page
+          document.getElementById('premiumRequired').classList.remove('hidden');
+          document.getElementById('premiumContent').classList.add('hidden');
+          // Hide header elements for non-premium
+          document.querySelector('.flex.flex-col.md\\:flex-row.md\\:items-center.justify-between')?.classList.add('hidden');
+          document.querySelector('.bg-white.rounded-xl.border.border-gray-200.p-4.mb-6')?.classList.add('hidden');
+          return;
+        }
+        
+        // Premium user - show full content
+        document.getElementById('premiumRequired').classList.add('hidden');
+        document.getElementById('premiumContent').classList.remove('hidden');
+        
+        // Load user setups
+        await loadSetups();
+
+      } catch (error) {
+        console.error('Error loading data:', error);
+        document.getElementById('loadingState').innerHTML = `
+          <div class="text-red-500 text-4xl mb-4">❌</div>
+          <p class="text-gray-600">Erreur lors du chargement des données.</p>
+          <button onclick="location.reload()" class="mt-4 text-green-600 hover:underline">Réessayer</button>
+        `;
+      }
+    }
+
+    // Load user setups
+    async function loadSetups() {
+      try {
+        const { data: setups, error } = await supabase
+          .from('user_setups')
+          .select('*, racquets(*), strings(*)')
+          .eq('user_id', currentUser.id)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        userSetups = setups || [];
+        renderSetups();
+
+      } catch (error) {
+        console.log('Setups table not available yet:', error.message);
+        // Show empty state as table may not exist
+        userSetups = [];
+        renderSetups();
+      }
+    }
+
+    // Render setups
+    function renderSetups() {
+      document.getElementById('setupCount').textContent = userSetups.length;
+
+      // Calculate average RCS
+      if (userSetups.length > 0) {
+        const avg = Math.round(userSetups.reduce((sum, s) => sum + (s.rcs_score || 0), 0) / userSetups.length);
+        document.getElementById('avgRcs').textContent = avg || '--';
+      }
+
+      // Update create button state
+      if (userSetups.length >= maxSetups && !isPremium) {
+        document.getElementById('createBtn').disabled = true;
+        document.getElementById('createBtn').classList.add('opacity-50', 'cursor-not-allowed');
+        document.getElementById('createBtn').title = `Limite de ${maxSetups} setups atteinte. Passez Premium pour plus.`;
+      }
+
+      if (userSetups.length === 0) {
+        document.getElementById('emptyState').classList.remove('hidden');
+        document.getElementById('setupsGrid').classList.add('hidden');
+        return;
+      }
+
+      document.getElementById('emptyState').classList.add('hidden');
+      document.getElementById('setupsGrid').classList.remove('hidden');
+
+      const grid = document.getElementById('setupsGrid');
+      grid.innerHTML = userSetups.map(setup => renderSetupCard(setup)).join('');
+    }
+
+    // Render setup card
+    function renderSetupCard(setup) {
+      const rcsColor = setup.rcs_score < 40 ? 'green' : setup.rcs_score < 60 ? 'yellow' : setup.rcs_score < 80 ? 'orange' : 'red';
+      const rcsEmoji = setup.rcs_score < 40 ? '💚' : setup.rcs_score < 60 ? '💛' : setup.rcs_score < 80 ? '🧡' : '❤️';
+      const rcsLabel = getRcsLabel(setup.rcs_score);
+      
+      const racquet = setup.racquets || {};
+      const string = setup.strings || {};
+
+      return `
+        <div class="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition group">
+          <!-- Header -->
+          <div class="bg-gradient-to-r from-gray-900 to-gray-800 px-4 py-3 flex items-center justify-between">
+            <h3 class="font-bold text-white truncate">${escapeHtml(setup.name || 'Setup sans nom')}</h3>
+            <div class="flex items-center gap-1">
+              <button onclick="editSetup('${setup.id}')" class="p-2 text-gray-400 hover:text-white transition" title="Modifier">
+                ✏️
+              </button>
+              <button onclick="deleteSetup('${setup.id}')" class="p-2 text-gray-400 hover:text-red-400 transition" title="Supprimer">
+                🗑️
+              </button>
+            </div>
+          </div>
+
+          <!-- Content -->
+          <div class="p-4">
+            <!-- Racquet -->
+            <div class="flex items-center gap-3 mb-3">
+              <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center text-lg">🎾</div>
+              <div class="flex-1 min-w-0">
+                <div class="font-semibold text-gray-900 truncate">${racquet.brand || ''} ${racquet.model || 'Raquette'}</div>
+                <div class="text-xs text-gray-500">${racquet.weight || '?'}g • RA ${racquet.stiffness || '?'}</div>
+              </div>
+              <button onclick="showAffiliate('racquet', ${JSON.stringify(racquet).replace(/"/g, '&quot;')})" 
+                class="text-xs text-green-600 hover:underline whitespace-nowrap">
+                Acheter →
+              </button>
+            </div>
+
+            <!-- String -->
+            <div class="flex items-center gap-3 mb-3">
+              <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center text-lg">🧵</div>
+              <div class="flex-1 min-w-0">
+                <div class="font-semibold text-gray-900 truncate">${string.brand || ''} ${string.model || 'Cordage'}</div>
+                <div class="text-xs text-gray-500">${string.type || 'N/A'} • ${string.stiffness || '?'} lb/in</div>
+              </div>
+              <button onclick="showAffiliate('string', ${JSON.stringify(string).replace(/"/g, '&quot;')})" 
+                class="text-xs text-green-600 hover:underline whitespace-nowrap">
+                Acheter →
+              </button>
+            </div>
+
+            <!-- Tension -->
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center text-lg">⚡</div>
+              <div>
+                <div class="font-semibold text-gray-900">${setup.tension || '?'} kg</div>
+                <div class="text-xs text-gray-500">Tension</div>
+              </div>
+            </div>
+
+            <!-- RCS Score -->
+            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+              <div>
+                <div class="text-sm text-gray-600">Score RCS</div>
+                <div class="flex items-center gap-2">
+                  <span class="text-2xl font-bold" style="color: ${rcsColor === 'green' ? '#16a34a' : rcsColor === 'yellow' ? '#ca8a04' : rcsColor === 'orange' ? '#ea580c' : '#dc2626'}">${setup.rcs_score || '--'}</span>
+                  <span class="text-lg">${rcsEmoji}</span>
+                </div>
+                <div class="text-xs text-gray-500">${rcsLabel}</div>
+              </div>
+              <a href="/rcs-calculator.html?ra=${racquet.stiffness || ''}&cordage=${string.stiffness || ''}&tension=${setup.tension || ''}"
+                class="text-sm text-green-600 hover:underline">
+                Détails →
+              </a>
+            </div>
+
+            <!-- Notes -->
+            ${setup.notes ? `
+              <div class="mt-3 p-3 bg-amber-50 rounded-lg border border-amber-100">
+                <div class="text-xs text-amber-800">${escapeHtml(setup.notes)}</div>
+              </div>
+            ` : ''}
+
+            <!-- Date -->
+            <div class="mt-3 text-xs text-gray-400 text-right">
+              Créé le ${new Date(setup.created_at).toLocaleDateString('fr-FR')}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // Get RCS label
+    function getRcsLabel(score) {
+      if (!score) return 'Non calculé';
+      if (score < 20) return 'Ultra Confort';
+      if (score < 40) return 'Très Confort';
+      if (score < 60) return 'Équilibré';
+      if (score < 80) return 'Performance';
+      return 'Extrême';
+    }
+
+    // Escape HTML
+    function escapeHtml(text) {
+      if (!text) return '';
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // Populate racquet select
+    function populateRacquetSelect() {
+      const select = document.getElementById('racquetSelect');
+      const grouped = racquets.reduce((acc, r) => {
+        if (!acc[r.brand]) acc[r.brand] = [];
+        acc[r.brand].push(r);
+        return acc;
+      }, {});
+
+      let html = '<option value="">Sélectionner une raquette...</option>';
+      Object.keys(grouped).sort().forEach(brand => {
+        html += `<optgroup label="${brand}">`;
+        grouped[brand].forEach(r => {
+          html += `<option value="${r.id}" data-stiffness="${r.stiffness || ''}" data-weight="${r.weight || ''}">${r.model}${r.variant ? ` ${r.variant}` : ''} - RA ${r.stiffness || '?'}</option>`;
+        });
+        html += '</optgroup>';
+      });
+      select.innerHTML = html;
+    }
+
+    // Populate string select
+    function populateStringSelect() {
+      const select = document.getElementById('stringSelect');
+      const grouped = strings.reduce((acc, s) => {
+        if (!acc[s.brand]) acc[s.brand] = [];
+        acc[s.brand].push(s);
+        return acc;
+      }, {});
+
+      let html = '<option value="">Sélectionner un cordage...</option>';
+      Object.keys(grouped).sort().forEach(brand => {
+        html += `<optgroup label="${brand}">`;
+        grouped[brand].forEach(s => {
+          html += `<option value="${s.id}" data-stiffness="${s.stiffness || ''}" data-type="${s.type || ''}">${s.model} - ${s.stiffness || '?'} lb/in (${s.type || 'N/A'})</option>`;
+        });
+        html += '</optgroup>';
+      });
+      select.innerHTML = html;
+    }
+
+    // Update tension display
+    function updateTensionDisplay() {
+      document.getElementById('tensionInput').value = document.getElementById('tensionSlider').value;
+    }
+
+    // Update slider from input
+    function updateSliderFromInput() {
+      document.getElementById('tensionSlider').value = document.getElementById('tensionInput').value;
+    }
+
+    // Update RCS preview
+    function updateRcsPreview() {
+      const racquetSelect = document.getElementById('racquetSelect');
+      const stringSelect = document.getElementById('stringSelect');
+      const tension = parseFloat(document.getElementById('tensionInput').value);
+
+      const racquetOption = racquetSelect.options[racquetSelect.selectedIndex];
+      const stringOption = stringSelect.options[stringSelect.selectedIndex];
+
+      const ra = parseFloat(racquetOption?.dataset?.stiffness);
+      const cordage = parseFloat(stringOption?.dataset?.stiffness);
+
+      // Update info
+      if (racquetOption?.value) {
+        document.getElementById('racquetInfo').textContent = `RA: ${ra || 'N/A'}, Poids: ${racquetOption.dataset.weight || 'N/A'}g`;
+      } else {
+        document.getElementById('racquetInfo').textContent = '';
+      }
+
+      if (stringOption?.value) {
+        document.getElementById('stringInfo').textContent = `Rigidité: ${cordage || 'N/A'} lb/in, Type: ${stringOption.dataset.type || 'N/A'}`;
+      } else {
+        document.getElementById('stringInfo').textContent = '';
+      }
+
+      // Calculate RCS
+      if (ra && cordage && tension && typeof RCS !== 'undefined') {
+        const score = RCS.calculate(ra, cordage, tension);
+        const decile = RCS.getDecile(score);
+        
+        document.getElementById('rcsPreview').textContent = Math.round(score);
+        document.getElementById('rcsLabel').textContent = decile.label;
+        
+        // Update gauge color and emoji
+        const gauge = document.getElementById('rcsGauge');
+        const emoji = document.getElementById('rcsEmoji');
+        
+        if (score < 30) {
+          gauge.style.borderColor = '#16a34a';
+          emoji.textContent = '💚';
+        } else if (score < 50) {
+          gauge.style.borderColor = '#84cc16';
+          emoji.textContent = '💛';
+        } else if (score < 70) {
+          gauge.style.borderColor = '#eab308';
+          emoji.textContent = '🧡';
+        } else if (score < 90) {
+          gauge.style.borderColor = '#f97316';
+          emoji.textContent = '🔶';
+        } else {
+          gauge.style.borderColor = '#dc2626';
+          emoji.textContent = '❤️';
+        }
+      } else {
+        document.getElementById('rcsPreview').textContent = '--';
+        document.getElementById('rcsLabel').textContent = 'Sélectionnez raquette et cordage';
+        document.getElementById('rcsGauge').style.borderColor = '#e5e7eb';
+        document.getElementById('rcsEmoji').textContent = '❓';
+      }
+    }
+
+    // Open create modal
+    function openCreateModal() {
+      if (userSetups.length >= maxSetups && !isPremium) {
+        alert(`Vous avez atteint la limite de ${maxSetups} setups. Passez Premium pour en sauvegarder davantage.`);
+        return;
+      }
+
+      document.getElementById('modalTitle').textContent = 'Créer un Setup';
+      document.getElementById('setupForm').reset();
+      document.getElementById('setupId').value = '';
+      document.getElementById('tensionInput').value = 24;
+      document.getElementById('tensionSlider').value = 24;
+      updateRcsPreview();
+      document.getElementById('setupModal').classList.remove('hidden');
+    }
+
+    // Edit setup
+    function editSetup(id) {
+      const setup = userSetups.find(s => s.id === id);
+      if (!setup) return;
+
+      document.getElementById('modalTitle').textContent = 'Modifier le Setup';
+      document.getElementById('setupId').value = setup.id;
+      document.getElementById('setupName').value = setup.name || '';
+      document.getElementById('racquetSelect').value = setup.racquet_id || '';
+      document.getElementById('stringSelect').value = setup.string_id || '';
+      document.getElementById('tensionInput').value = setup.tension || 24;
+      document.getElementById('tensionSlider').value = setup.tension || 24;
+      document.getElementById('setupNotes').value = setup.notes || '';
+      
+      updateRcsPreview();
+      document.getElementById('setupModal').classList.remove('hidden');
+    }
+
+    // Close modal
+    function closeModal() {
+      document.getElementById('setupModal').classList.add('hidden');
+    }
+
+    // Save setup
+    async function handleSaveSetup(e) {
+      e.preventDefault();
+
+      const setupId = document.getElementById('setupId').value;
+      const racquetSelect = document.getElementById('racquetSelect');
+      const stringSelect = document.getElementById('stringSelect');
+      const racquetOption = racquetSelect.options[racquetSelect.selectedIndex];
+      const stringOption = stringSelect.options[stringSelect.selectedIndex];
+
+      const ra = parseFloat(racquetOption?.dataset?.stiffness) || 63;
+      const cordage = parseFloat(stringOption?.dataset?.stiffness) || 180;
+      const tension = parseFloat(document.getElementById('tensionInput').value);
+
+      // Calculate RCS
+      let rcsScore = null;
+      if (typeof RCS !== 'undefined' && ra && cordage && tension) {
+        rcsScore = Math.round(RCS.calculate(ra, cordage, tension));
+      }
+
+      const setupData = {
+        user_id: currentUser.id,
+        name: document.getElementById('setupName').value.trim(),
+        racquet_id: document.getElementById('racquetSelect').value || null,
+        string_id: document.getElementById('stringSelect').value || null,
+        tension: tension,
+        rcs_score: rcsScore,
+        notes: document.getElementById('setupNotes').value.trim() || null,
+        updated_at: new Date().toISOString()
+      };
+
+      document.getElementById('saveSpinner').classList.remove('hidden');
+      document.getElementById('saveBtn').disabled = true;
+
+      try {
+        let result;
+        
+        if (setupId) {
+          // Update existing
+          result = await supabase
+            .from('user_setups')
+            .update(setupData)
+            .eq('id', setupId)
+            .eq('user_id', currentUser.id)
+            .select();
+        } else {
+          // Create new
+          setupData.created_at = new Date().toISOString();
+          result = await supabase
+            .from('user_setups')
+            .insert(setupData)
+            .select();
+        }
+
+        if (result.error) throw result.error;
+
+        closeModal();
+        await loadSetups();
+
+      } catch (error) {
+        console.error('Save error:', error);
+        
+        if (error.message.includes('relation') || error.code === '42P01') {
+          alert('La table user_setups n\'existe pas encore. Veuillez d\'abord exécuter le script SQL dans Supabase Dashboard.');
+        } else {
+          alert('Erreur: ' + error.message);
+        }
+      } finally {
+        document.getElementById('saveSpinner').classList.add('hidden');
+        document.getElementById('saveBtn').disabled = false;
+      }
+    }
+
+    // Delete setup
+    async function deleteSetup(id) {
+      if (!confirm('Êtes-vous sûr de vouloir supprimer ce setup ?')) return;
+
+      try {
+        const { error } = await supabase
+          .from('user_setups')
+          .delete()
+          .eq('id', id)
+          .eq('user_id', currentUser.id);
+
+        if (error) throw error;
+
+        await loadSetups();
+
+      } catch (error) {
+        console.error('Delete error:', error);
+        alert('Erreur lors de la suppression: ' + error.message);
+      }
+    }
+
+    // Show affiliate modal
+    function showAffiliate(type, product) {
+      const productName = `${product.brand || ''} ${product.model || (type === 'racquet' ? 'Raquette' : 'Cordage')}`.trim();
+      document.getElementById('affiliateProduct').textContent = productName;
+
+      const searchQuery = encodeURIComponent(productName);
+      
+      let html = '';
+      Object.entries(AFFILIATE_CONFIG).forEach(([key, config]) => {
+        html += `
+          <a href="${config.baseUrl}search/?q=${searchQuery}${config.tag}" 
+            target="_blank" rel="noopener noreferrer"
+            class="flex items-center gap-4 p-4 border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-green-500 transition group">
+            <div class="text-3xl">${config.logo}</div>
+            <div class="flex-1">
+              <div class="font-semibold text-gray-900 group-hover:text-green-700">${config.name}</div>
+              <div class="text-sm text-gray-500">Voir les offres →</div>
+            </div>
+          </a>
+        `;
+      });
+
+      document.getElementById('affiliateLinks').innerHTML = html;
+      document.getElementById('affiliateModal').classList.remove('hidden');
+    }
+
+    // Close affiliate modal
+    function closeAffiliateModal() {
+      document.getElementById('affiliateModal').classList.add('hidden');
+    }
+
+    // Handle logout
+    async function handleLogout() {
+      await supabase.auth.signOut();
+      window.location.href = '/auth.html';
+    }
+
+    // Close modals on escape
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeModal();
+        closeAffiliateModal();
+      }
+    });
+
+    // Initialize
+    checkAuth();
+  </script>
+</body>
+</html>

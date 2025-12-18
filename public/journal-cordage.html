@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Journal de Cordage - Tennis String Advisor</title>
+  <meta name="description" content="Gérez votre journal de cordage et suivez les commandes de vos clients.">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/js/rcs-calculator.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            tennis: { green: '#16a34a', dark: '#0d1117', light: '#f0fdf4' }
+          }
+        }
+      }
+    }
+  </script>
+  <!-- Google Analytics 4 -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-YSSLHJ5WYD"></script>
+  <script src="/js/analytics.js"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <!-- Header -->
+  <header class="bg-white border-b border-gray-200 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 py-4">
+      <div class="flex items-center justify-between">
+        <a href="/" class="flex items-center gap-2">
+          <span class="text-2xl">🎾</span>
+          <span class="font-bold text-xl text-gray-900">Tennis String Advisor</span>
+        </a>
+        <nav class="hidden md:flex items-center gap-6">
+          <a href="/" class="text-gray-600 hover:text-green-600 transition">Accueil</a>
+          <a href="/configurator.html" class="text-gray-600 hover:text-green-600 transition">Configurateur</a>
+          <a href="/racquets.html" class="text-gray-600 hover:text-green-600 transition">Raquettes</a>
+          <a href="/strings.html" class="text-gray-600 hover:text-green-600 transition">Cordages</a>
+          <a href="/rcs-calculator.html" class="text-gray-600 hover:text-green-600 transition">🩺 RCS</a>
+        </nav>
+        <div class="flex items-center gap-4">
+          <a href="/account.html" class="text-sm text-green-600 hover:underline">Mon Compte</a>
+          <button onclick="handleLogout()" class="px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition">
+            Déconnexion
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto px-4 py-8">
+    <!-- Page Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+      <div>
+        <div class="flex items-center gap-2 text-sm text-gray-500 mb-2">
+          <a href="/account.html" class="hover:text-green-600">Mon Compte</a>
+          <span>›</span>
+          <span class="text-gray-900">Journal de Cordage</span>
+        </div>
+        <h1 class="text-3xl font-bold text-gray-900">📋 Journal de Cordage</h1>
+        <p class="text-gray-600 mt-1">Gérez les cordages de vos clients</p>
+      </div>
+      <button onclick="openCreateModal()" id="createBtn"
+        class="inline-flex items-center gap-2 px-6 py-3 bg-green-600 text-white font-semibold rounded-xl hover:bg-green-700 transition shadow-lg">
+        ➕ Nouveau Cordage
+      </button>
+    </div>
+
+    <!-- Stats Bar -->
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+      <div class="bg-white rounded-xl border border-gray-200 p-4 text-center">
+        <div class="text-3xl font-bold text-gray-900" id="statTotal">0</div>
+        <div class="text-sm text-gray-500">Total</div>
+      </div>
+      <div class="bg-yellow-50 rounded-xl border border-yellow-200 p-4 text-center">
+        <div class="text-3xl font-bold text-yellow-600" id="statPending">0</div>
+        <div class="text-sm text-yellow-700">En attente</div>
+      </div>
+      <div class="bg-blue-50 rounded-xl border border-blue-200 p-4 text-center">
+        <div class="text-3xl font-bold text-blue-600" id="statInProgress">0</div>
+        <div class="text-sm text-blue-700">En cours</div>
+      </div>
+      <div class="bg-green-50 rounded-xl border border-green-200 p-4 text-center">
+        <div class="text-3xl font-bold text-green-600" id="statCompleted">0</div>
+        <div class="text-sm text-green-700">Terminés</div>
+      </div>
+      <div class="bg-purple-50 rounded-xl border border-purple-200 p-4 text-center">
+        <div class="text-3xl font-bold text-purple-600" id="statRevenue">0€</div>
+        <div class="text-sm text-purple-700">Ce mois</div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white rounded-xl border border-gray-200 p-4 mb-6">
+      <div class="flex flex-wrap items-center gap-4">
+        <div class="flex-1 min-w-[200px]">
+          <input type="text" id="searchInput" placeholder="🔍 Rechercher client, raquette, cordage..."
+            class="w-full rounded-lg border-gray-300 border p-3 focus:ring-green-500 focus:border-green-500"
+            oninput="filterEntries()">
+        </div>
+        <select id="statusFilter" onchange="filterEntries()"
+          class="rounded-lg border-gray-300 border p-3 focus:ring-green-500 focus:border-green-500">
+          <option value="">Tous les statuts</option>
+          <option value="pending">En attente</option>
+          <option value="in_progress">En cours</option>
+          <option value="completed">Terminé</option>
+          <option value="delivered">Livré</option>
+        </select>
+        <select id="dateFilter" onchange="filterEntries()"
+          class="rounded-lg border-gray-300 border p-3 focus:ring-green-500 focus:border-green-500">
+          <option value="">Toutes les dates</option>
+          <option value="today">Aujourd'hui</option>
+          <option value="week">Cette semaine</option>
+          <option value="month">Ce mois</option>
+          <option value="year">Cette année</option>
+        </select>
+        <button onclick="exportToCSV()" class="px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition flex items-center gap-2">
+          📥 Exporter CSV
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loadingState" class="text-center py-16">
+      <div class="inline-block animate-spin text-4xl mb-4">🎾</div>
+      <p class="text-gray-600">Chargement...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="hidden text-center py-16 bg-white rounded-2xl border border-gray-200">
+      <span class="text-6xl mb-4 block">📋</span>
+      <h2 class="text-xl font-bold text-gray-900 mb-2">Aucun cordage enregistré</h2>
+      <p class="text-gray-600 mb-6">Commencez par enregistrer votre premier cordage client.</p>
+      <button onclick="openCreateModal()"
+        class="inline-flex items-center gap-2 px-6 py-3 bg-green-600 text-white font-semibold rounded-xl hover:bg-green-700 transition">
+        ➕ Nouveau Cordage
+      </button>
+    </div>
+
+    <!-- Journal Table -->
+    <div id="journalTable" class="hidden bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-gray-50 border-b border-gray-200">
+            <tr>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Date</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Client</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Raquette</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Cordage</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Tension</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">RCS</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Prix</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Statut</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="journalBody" class="divide-y divide-gray-200">
+            <!-- Entries will be rendered here -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div id="pagination" class="hidden flex items-center justify-between mt-4">
+      <div class="text-sm text-gray-500">
+        Affichage <span id="showingFrom">1</span>-<span id="showingTo">10</span> sur <span id="totalEntries">0</span>
+      </div>
+      <div class="flex gap-2">
+        <button onclick="prevPage()" id="prevBtn" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+          ← Précédent
+        </button>
+        <button onclick="nextPage()" id="nextBtn" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+          Suivant →
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Create/Edit Modal -->
+  <div id="entryModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+      <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+        <h2 class="text-xl font-bold text-gray-900" id="modalTitle">Nouveau Cordage</h2>
+        <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+      </div>
+      
+      <form id="entryForm" onsubmit="handleSaveEntry(event)" class="p-6 space-y-6">
+        <input type="hidden" id="entryId">
+        
+        <!-- Client Info -->
+        <div class="bg-blue-50 rounded-xl p-4 border border-blue-200">
+          <h3 class="font-semibold text-blue-900 mb-4">👤 Informations Client</h3>
+          <div class="grid md:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Nom du client *</label>
+              <input type="text" id="clientName" required
+                class="w-full rounded-lg border-gray-300 border p-3 focus:ring-green-500 focus:border-green-500"
+                placeholder="Jean Dupont">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Téléphone</label>
+              <input type="tel" id="clientPhone"
+                class="w-full rounded-lg border-gray-300 border p-3 focus:ring-green-500 focus:border-green-500"
+                placeholder="06 12 34 56 78">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <input type="email" id="clientEmail"
+                class="w-full rounded-lg border-gray-300 border p-3 focus:ring-green-500 focus:border-green-500"
+                placeholder="jean@email.com">
+            </div>
+          </div>
+        </div>
+
+        <!-- Equipment -->
+        <div class="bg-green-50 rounded-xl p-4 border border-green-200">
+          <h3 class="font-semibold text-green-900 mb-4">🎾 Équipement</h3>
+          <div class="grid md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Raquette</label>
+              <select id="racquetSelect" onchange="updateRacquetInfo(); updateRcsPreview()"
+                class="w-full rounded-lg border-gray-300 border p-3 focus:ring-green-500 focus:border-green-500">
+                <option value="">Sélectionner ou saisir manuellement</option>
+              </select>
+              <input type="text" id="racquetManual" placeholder="Ou saisir: Marque Modèle"
+                class="w-full mt-2 rounded-lg border-gray-300 border p-3 focus:ring-green-500 focus:border-green-500"
+                oninput="clearRacquetSelect()">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Cordage *</label>
+              <select id="stringSelect" onchange="updateStringInfo(); updateRcsPreview()"
+                class="w-full rounded-lg border-gray-300 border p-3 focus:ring-green-500 focus:border-green-500">
+                <option value="">Sélectionner ou saisir manuellement</option>
+              </select>
+              <input type="text" id="stringManual" placeholder="Ou saisir: Marque Modèle"
+                class="w-full mt-2 rounded-lg border-gray-300 border p-3 focus:ring-green-500 focus:border-green-500"
+                oninput="clearStringSelect()">
+            </div>
+          </div>
+        </div>
+
+        <!-- Tension -->
+        <div class="bg-purple-50 rounded-xl p-4 border border-purple-200">
+          <h3 class="font-semibold text-purple-900 mb-4">⚡ Tension</h3>
+          <div class="grid md:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Montants (kg) *</label>
+              <input type="number" id="tensionMains" required min="15" max="35" step="0.5" value="24"
+                class="w-full rounded-lg border-gray-300 border p-3 focus:ring-green-500 focus:border-green-500"
+                onchange="updateRcsPreview()">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Travers (kg)</label>
+              <input type="number" id="tensionCrosses" min="15" max="35" step="0.5" placeholder="Même si vide"
+                class="w-full rounded-lg border-gray-300 border p-3 focus:ring-green-500 focus:border-green-500">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Score RCS</label>
+              <div class="flex items-center gap-2 p-3 bg-white rounded-lg border border-purple-200">
+                <span class="text-2xl font-bold" id="rcsPreview">--</span>
+                <span class="text-lg" id="rcsEmoji">❓</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pricing -->
+        <div class="bg-amber-50 rounded-xl p-4 border border-amber-200">
+          <h3 class="font-semibold text-amber-900 mb-4">💰 Tarification</h3>
+          <div class="grid md:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Prix cordage (€)</label>
+              <input type="number" id="stringPrice" min="0" step="0.01" placeholder="15.00"
+                class="w-full rounded-lg border-gray-300 border p-3 focus:ring-green-500 focus:border-green-500"
+                onchange="updateTotalPrice()">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Main d'œuvre (€)</label>
+              <input type="number" id="laborPrice" min="0" step="0.01" placeholder="15.00"
+                class="w-full rounded-lg border-gray-300 border p-3 focus:ring-green-500 focus:border-green-500"
+                onchange="updateTotalPrice()">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Total (€)</label>
+              <input type="number" id="totalPrice" min="0" step="0.01" readonly
+                class="w-full rounded-lg border-gray-300 border p-3 bg-gray-100 font-bold text-lg">
+            </div>
+          </div>
+        </div>
+
+        <!-- Status & Dates -->
+        <div class="grid md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Statut</label>
+            <select id="entryStatus"
+              class="w-full rounded-lg border-gray-300 border p-3 focus:ring-green-500 focus:border-green-500">
+              <option value="pending">🟡 En attente</option>
+              <option value="in_progress">🔵 En cours</option>
+              <option value="completed">🟢 Terminé</option>
+              <option value="delivered">✅ Livré</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Date de réception</label>
+            <input type="date" id="receivedAt"
+              class="w-full rounded-lg border-gray-300 border p-3 focus:ring-green-500 focus:border-green-500">
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+          <textarea id="entryNotes" rows="2"
+            class="w-full rounded-lg border-gray-300 border p-3 focus:ring-green-500 focus:border-green-500"
+            placeholder="Instructions particulières, remarques..."></textarea>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex items-center gap-4 pt-4 border-t border-gray-200">
+          <button type="submit" id="saveBtn"
+            class="flex-1 px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition flex items-center justify-center gap-2">
+            <span>💾 Enregistrer</span>
+            <span id="saveSpinner" class="hidden">⏳</span>
+          </button>
+          <button type="button" onclick="closeModal()"
+            class="px-6 py-3 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition">
+            Annuler
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-gray-900 text-white mt-16">
+    <div class="max-w-7xl mx-auto px-4 py-8">
+      <div class="text-center text-gray-400 text-sm">
+        <p>© 2025 Tennis String Advisor. Une marque de Pleneuf Trading LLC. Tous droits réservés.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Supabase configuration
+    const SUPABASE_URL = 'https://yhhdkllbaxuhwrfpsmev.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InloaGRrbGxiYXh1aHdyZnBzbWV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU3NjI0MDEsImV4cCI6MjA4MTMzODQwMX0.2aC_gYZf0xxz6MXi5zcaCH2S64RBaQvXU7a5qiuD0_k';
+    
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let currentUser = null;
+    let racquets = [];
+    let strings = [];
+    let journalEntries = [];
+    let filteredEntries = [];
+    let currentPage = 1;
+    const entriesPerPage = 20;
+
+    // Check authentication
+    async function checkAuth() {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        window.location.href = '/auth.html';
+        return;
+      }
+      
+      currentUser = session.user;
+      await loadData();
+    }
+
+    // Load all data
+    async function loadData() {
+      try {
+        // Load racquets
+        const { data: racquetData } = await supabase
+          .from('racquets')
+          .select('*')
+          .order('brand, model');
+        racquets = racquetData || [];
+
+        // Load strings
+        const { data: stringData } = await supabase
+          .from('strings')
+          .select('*')
+          .order('brand, model');
+        strings = stringData || [];
+
+        // Populate selects
+        populateRacquetSelect();
+        populateStringSelect();
+
+        // Load journal entries
+        await loadJournalEntries();
+
+      } catch (error) {
+        console.error('Error loading data:', error);
+        document.getElementById('loadingState').innerHTML = `
+          <div class="text-red-500 text-4xl mb-4">❌</div>
+          <p class="text-gray-600">Erreur lors du chargement des données.</p>
+          <button onclick="location.reload()" class="mt-4 text-green-600 hover:underline">Réessayer</button>
+        `;
+      }
+    }
+
+    // Load journal entries
+    async function loadJournalEntries() {
+      try {
+        const { data: entries, error } = await supabase
+          .from('stringing_journal')
+          .select('*')
+          .eq('user_id', currentUser.id)
+          .order('received_at', { ascending: false });
+
+        if (error) throw error;
+
+        journalEntries = entries || [];
+        filteredEntries = [...journalEntries];
+        
+        updateStats();
+        renderEntries();
+
+      } catch (error) {
+        console.error('Error loading journal:', error);
+        journalEntries = [];
+        filteredEntries = [];
+        renderEntries();
+      }
+    }
+
+    // Update statistics
+    function updateStats() {
+      const total = journalEntries.length;
+      const pending = journalEntries.filter(e => e.status === 'pending').length;
+      const inProgress = journalEntries.filter(e => e.status === 'in_progress').length;
+      const completed = journalEntries.filter(e => e.status === 'completed' || e.status === 'delivered').length;
+      
+      // Calculate revenue this month
+      const now = new Date();
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+      const monthRevenue = journalEntries
+        .filter(e => new Date(e.received_at) >= monthStart && e.total_price)
+        .reduce((sum, e) => sum + parseFloat(e.total_price || 0), 0);
+
+      document.getElementById('statTotal').textContent = total;
+      document.getElementById('statPending').textContent = pending;
+      document.getElementById('statInProgress').textContent = inProgress;
+      document.getElementById('statCompleted').textContent = completed;
+      document.getElementById('statRevenue').textContent = monthRevenue.toFixed(0) + '€';
+    }
+
+    // Filter entries
+    function filterEntries() {
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      const status = document.getElementById('statusFilter').value;
+      const dateFilter = document.getElementById('dateFilter').value;
+      
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+      const monthAgo = new Date(now.getFullYear(), now.getMonth(), 1);
+      const yearAgo = new Date(now.getFullYear(), 0, 1);
+
+      filteredEntries = journalEntries.filter(entry => {
+        // Search filter
+        const matchSearch = !search || 
+          entry.client_name?.toLowerCase().includes(search) ||
+          entry.racquet_brand?.toLowerCase().includes(search) ||
+          entry.racquet_model?.toLowerCase().includes(search) ||
+          entry.string_brand?.toLowerCase().includes(search) ||
+          entry.string_model?.toLowerCase().includes(search);
+
+        // Status filter
+        const matchStatus = !status || entry.status === status;
+
+        // Date filter
+        let matchDate = true;
+        if (dateFilter) {
+          const entryDate = new Date(entry.received_at);
+          switch (dateFilter) {
+            case 'today':
+              matchDate = entryDate >= today;
+              break;
+            case 'week':
+              matchDate = entryDate >= weekAgo;
+              break;
+            case 'month':
+              matchDate = entryDate >= monthAgo;
+              break;
+            case 'year':
+              matchDate = entryDate >= yearAgo;
+              break;
+          }
+        }
+
+        return matchSearch && matchStatus && matchDate;
+      });
+
+      currentPage = 1;
+      renderEntries();
+    }
+
+    // Render entries
+    function renderEntries() {
+      document.getElementById('loadingState').classList.add('hidden');
+      
+      if (filteredEntries.length === 0) {
+        document.getElementById('emptyState').classList.remove('hidden');
+        document.getElementById('journalTable').classList.add('hidden');
+        document.getElementById('pagination').classList.add('hidden');
+        return;
+      }
+
+      document.getElementById('emptyState').classList.add('hidden');
+      document.getElementById('journalTable').classList.remove('hidden');
+      document.getElementById('pagination').classList.remove('hidden');
+
+      // Pagination
+      const start = (currentPage - 1) * entriesPerPage;
+      const end = start + entriesPerPage;
+      const pageEntries = filteredEntries.slice(start, end);
+
+      document.getElementById('showingFrom').textContent = start + 1;
+      document.getElementById('showingTo').textContent = Math.min(end, filteredEntries.length);
+      document.getElementById('totalEntries').textContent = filteredEntries.length;
+
+      document.getElementById('prevBtn').disabled = currentPage === 1;
+      document.getElementById('nextBtn').disabled = end >= filteredEntries.length;
+
+      // Render table
+      const tbody = document.getElementById('journalBody');
+      tbody.innerHTML = pageEntries.map(entry => renderEntryRow(entry)).join('');
+    }
+
+    // Render entry row
+    function renderEntryRow(entry) {
+      const statusConfig = {
+        pending: { label: 'En attente', color: 'yellow', icon: '🟡' },
+        in_progress: { label: 'En cours', color: 'blue', icon: '🔵' },
+        completed: { label: 'Terminé', color: 'green', icon: '🟢' },
+        delivered: { label: 'Livré', color: 'purple', icon: '✅' }
+      };
+
+      const status = statusConfig[entry.status] || statusConfig.pending;
+      const rcsColor = entry.rcs_score < 40 ? 'text-green-600' : entry.rcs_score < 60 ? 'text-yellow-600' : entry.rcs_score < 80 ? 'text-orange-600' : 'text-red-600';
+
+      return `
+        <tr class="hover:bg-gray-50 transition">
+          <td class="px-4 py-3">
+            <div class="text-sm font-medium text-gray-900">${formatDate(entry.received_at)}</div>
+          </td>
+          <td class="px-4 py-3">
+            <div class="text-sm font-medium text-gray-900">${escapeHtml(entry.client_name)}</div>
+            ${entry.client_phone ? `<div class="text-xs text-gray-500">${escapeHtml(entry.client_phone)}</div>` : ''}
+          </td>
+          <td class="px-4 py-3">
+            <div class="text-sm text-gray-900">${escapeHtml(entry.racquet_brand || '')} ${escapeHtml(entry.racquet_model || '')}</div>
+          </td>
+          <td class="px-4 py-3">
+            <div class="text-sm text-gray-900">${escapeHtml(entry.string_brand || '')} ${escapeHtml(entry.string_model || '')}</div>
+          </td>
+          <td class="px-4 py-3">
+            <div class="text-sm font-medium text-gray-900">${entry.tension_mains} kg</div>
+            ${entry.tension_crosses ? `<div class="text-xs text-gray-500">T: ${entry.tension_crosses} kg</div>` : ''}
+          </td>
+          <td class="px-4 py-3">
+            <span class="text-lg font-bold ${rcsColor}">${entry.rcs_score || '--'}</span>
+          </td>
+          <td class="px-4 py-3">
+            <div class="text-sm font-medium text-gray-900">${entry.total_price ? entry.total_price + '€' : '--'}</div>
+          </td>
+          <td class="px-4 py-3">
+            <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-${status.color}-100 text-${status.color}-800">
+              ${status.icon} ${status.label}
+            </span>
+          </td>
+          <td class="px-4 py-3">
+            <div class="flex items-center gap-1">
+              <button onclick="editEntry('${entry.id}')" class="p-2 text-gray-400 hover:text-blue-600 transition" title="Modifier">
+                ✏️
+              </button>
+              <button onclick="updateStatus('${entry.id}')" class="p-2 text-gray-400 hover:text-green-600 transition" title="Changer statut">
+                🔄
+              </button>
+              <button onclick="deleteEntry('${entry.id}')" class="p-2 text-gray-400 hover:text-red-600 transition" title="Supprimer">
+                🗑️
+              </button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }
+
+    // Format date
+    function formatDate(dateStr) {
+      if (!dateStr) return '--';
+      return new Date(dateStr).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    }
+
+    // Escape HTML
+    function escapeHtml(text) {
+      if (!text) return '';
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // Pagination
+    function prevPage() {
+      if (currentPage > 1) {
+        currentPage--;
+        renderEntries();
+      }
+    }
+
+    function nextPage() {
+      if (currentPage * entriesPerPage < filteredEntries.length) {
+        currentPage++;
+        renderEntries();
+      }
+    }
+
+    // Populate selects
+    function populateRacquetSelect() {
+      const select = document.getElementById('racquetSelect');
+      const grouped = racquets.reduce((acc, r) => {
+        if (!acc[r.brand]) acc[r.brand] = [];
+        acc[r.brand].push(r);
+        return acc;
+      }, {});
+
+      let html = '<option value="">Sélectionner ou saisir manuellement</option>';
+      Object.keys(grouped).sort().forEach(brand => {
+        html += `<optgroup label="${brand}">`;
+        grouped[brand].forEach(r => {
+          html += `<option value="${r.id}" data-brand="${r.brand}" data-model="${r.model}" data-stiffness="${r.stiffness || ''}">${r.model} - RA ${r.stiffness || '?'}</option>`;
+        });
+        html += '</optgroup>';
+      });
+      select.innerHTML = html;
+    }
+
+    function populateStringSelect() {
+      const select = document.getElementById('stringSelect');
+      const grouped = strings.reduce((acc, s) => {
+        if (!acc[s.brand]) acc[s.brand] = [];
+        acc[s.brand].push(s);
+        return acc;
+      }, {});
+
+      let html = '<option value="">Sélectionner ou saisir manuellement</option>';
+      Object.keys(grouped).sort().forEach(brand => {
+        html += `<optgroup label="${brand}">`;
+        grouped[brand].forEach(s => {
+          html += `<option value="${s.id}" data-brand="${s.brand}" data-model="${s.model}" data-stiffness="${s.stiffness || ''}">${s.model} - ${s.stiffness || '?'} lb/in</option>`;
+        });
+        html += '</optgroup>';
+      });
+      select.innerHTML = html;
+    }
+
+    // Clear selects when typing manually
+    function clearRacquetSelect() {
+      document.getElementById('racquetSelect').value = '';
+    }
+
+    function clearStringSelect() {
+      document.getElementById('stringSelect').value = '';
+    }
+
+    // Update info
+    function updateRacquetInfo() {
+      const select = document.getElementById('racquetSelect');
+      const option = select.options[select.selectedIndex];
+      if (option?.value) {
+        document.getElementById('racquetManual').value = '';
+      }
+    }
+
+    function updateStringInfo() {
+      const select = document.getElementById('stringSelect');
+      const option = select.options[select.selectedIndex];
+      if (option?.value) {
+        document.getElementById('stringManual').value = '';
+      }
+    }
+
+    // Update total price
+    function updateTotalPrice() {
+      const stringPrice = parseFloat(document.getElementById('stringPrice').value) || 0;
+      const laborPrice = parseFloat(document.getElementById('laborPrice').value) || 0;
+      document.getElementById('totalPrice').value = (stringPrice + laborPrice).toFixed(2);
+    }
+
+    // Update RCS preview
+    function updateRcsPreview() {
+      const racquetSelect = document.getElementById('racquetSelect');
+      const stringSelect = document.getElementById('stringSelect');
+      const tension = parseFloat(document.getElementById('tensionMains').value);
+
+      const racquetOption = racquetSelect.options[racquetSelect.selectedIndex];
+      const stringOption = stringSelect.options[stringSelect.selectedIndex];
+
+      const ra = parseFloat(racquetOption?.dataset?.stiffness);
+      const cordage = parseFloat(stringOption?.dataset?.stiffness);
+
+      if (ra && cordage && tension && typeof RCS !== 'undefined') {
+        const score = RCS.calculate(ra, cordage, tension);
+        document.getElementById('rcsPreview').textContent = Math.round(score);
+        
+        if (score < 40) {
+          document.getElementById('rcsEmoji').textContent = '💚';
+        } else if (score < 60) {
+          document.getElementById('rcsEmoji').textContent = '💛';
+        } else if (score < 80) {
+          document.getElementById('rcsEmoji').textContent = '🧡';
+        } else {
+          document.getElementById('rcsEmoji').textContent = '❤️';
+        }
+      } else {
+        document.getElementById('rcsPreview').textContent = '--';
+        document.getElementById('rcsEmoji').textContent = '❓';
+      }
+    }
+
+    // Open create modal
+    function openCreateModal() {
+      document.getElementById('modalTitle').textContent = 'Nouveau Cordage';
+      document.getElementById('entryForm').reset();
+      document.getElementById('entryId').value = '';
+      document.getElementById('receivedAt').value = new Date().toISOString().split('T')[0];
+      document.getElementById('rcsPreview').textContent = '--';
+      document.getElementById('rcsEmoji').textContent = '❓';
+      document.getElementById('entryModal').classList.remove('hidden');
+    }
+
+    // Edit entry
+    function editEntry(id) {
+      const entry = journalEntries.find(e => e.id === id);
+      if (!entry) return;
+
+      document.getElementById('modalTitle').textContent = 'Modifier le Cordage';
+      document.getElementById('entryId').value = entry.id;
+      document.getElementById('clientName').value = entry.client_name || '';
+      document.getElementById('clientPhone').value = entry.client_phone || '';
+      document.getElementById('clientEmail').value = entry.client_email || '';
+      document.getElementById('racquetSelect').value = entry.racquet_id || '';
+      document.getElementById('racquetManual').value = entry.racquet_id ? '' : `${entry.racquet_brand || ''} ${entry.racquet_model || ''}`.trim();
+      document.getElementById('stringSelect').value = entry.string_id || '';
+      document.getElementById('stringManual').value = entry.string_id ? '' : `${entry.string_brand || ''} ${entry.string_model || ''}`.trim();
+      document.getElementById('tensionMains').value = entry.tension_mains || 24;
+      document.getElementById('tensionCrosses').value = entry.tension_crosses || '';
+      document.getElementById('stringPrice').value = entry.string_price || '';
+      document.getElementById('laborPrice').value = entry.labor_price || '';
+      document.getElementById('totalPrice').value = entry.total_price || '';
+      document.getElementById('entryStatus').value = entry.status || 'pending';
+      document.getElementById('receivedAt').value = entry.received_at || '';
+      document.getElementById('entryNotes').value = entry.notes || '';
+      
+      updateRcsPreview();
+      document.getElementById('entryModal').classList.remove('hidden');
+    }
+
+    // Close modal
+    function closeModal() {
+      document.getElementById('entryModal').classList.add('hidden');
+    }
+
+    // Save entry
+    async function handleSaveEntry(e) {
+      e.preventDefault();
+
+      const entryId = document.getElementById('entryId').value;
+      const racquetSelect = document.getElementById('racquetSelect');
+      const stringSelect = document.getElementById('stringSelect');
+      
+      const racquetOption = racquetSelect.options[racquetSelect.selectedIndex];
+      const stringOption = stringSelect.options[stringSelect.selectedIndex];
+      
+      const racquetManual = document.getElementById('racquetManual').value.trim();
+      const stringManual = document.getElementById('stringManual').value.trim();
+
+      // Get racquet info
+      let racquetBrand = '', racquetModel = '', racquetId = null;
+      if (racquetOption?.value) {
+        racquetId = racquetOption.value;
+        racquetBrand = racquetOption.dataset.brand;
+        racquetModel = racquetOption.dataset.model;
+      } else if (racquetManual) {
+        const parts = racquetManual.split(' ');
+        racquetBrand = parts[0] || '';
+        racquetModel = parts.slice(1).join(' ') || '';
+      }
+
+      // Get string info
+      let stringBrand = '', stringModel = '', stringId = null;
+      if (stringOption?.value) {
+        stringId = stringOption.value;
+        stringBrand = stringOption.dataset.brand;
+        stringModel = stringOption.dataset.model;
+      } else if (stringManual) {
+        const parts = stringManual.split(' ');
+        stringBrand = parts[0] || '';
+        stringModel = parts.slice(1).join(' ') || '';
+      }
+
+      // Calculate RCS
+      let rcsScore = null;
+      const ra = parseFloat(racquetOption?.dataset?.stiffness);
+      const cordage = parseFloat(stringOption?.dataset?.stiffness);
+      const tension = parseFloat(document.getElementById('tensionMains').value);
+      
+      if (ra && cordage && tension && typeof RCS !== 'undefined') {
+        rcsScore = Math.round(RCS.calculate(ra, cordage, tension));
+      }
+
+      const entryData = {
+        user_id: currentUser.id,
+        client_name: document.getElementById('clientName').value.trim(),
+        client_phone: document.getElementById('clientPhone').value.trim() || null,
+        client_email: document.getElementById('clientEmail').value.trim() || null,
+        racquet_id: racquetId,
+        racquet_brand: racquetBrand || null,
+        racquet_model: racquetModel || null,
+        string_id: stringId,
+        string_brand: stringBrand || null,
+        string_model: stringModel || null,
+        tension_mains: parseFloat(document.getElementById('tensionMains').value),
+        tension_crosses: parseFloat(document.getElementById('tensionCrosses').value) || null,
+        string_price: parseFloat(document.getElementById('stringPrice').value) || null,
+        labor_price: parseFloat(document.getElementById('laborPrice').value) || null,
+        total_price: parseFloat(document.getElementById('totalPrice').value) || null,
+        status: document.getElementById('entryStatus').value,
+        received_at: document.getElementById('receivedAt').value || new Date().toISOString().split('T')[0],
+        notes: document.getElementById('entryNotes').value.trim() || null,
+        rcs_score: rcsScore,
+        updated_at: new Date().toISOString()
+      };
+
+      document.getElementById('saveSpinner').classList.remove('hidden');
+      document.getElementById('saveBtn').disabled = true;
+
+      try {
+        let result;
+        
+        if (entryId) {
+          result = await supabase
+            .from('stringing_journal')
+            .update(entryData)
+            .eq('id', entryId)
+            .eq('user_id', currentUser.id)
+            .select();
+        } else {
+          entryData.created_at = new Date().toISOString();
+          result = await supabase
+            .from('stringing_journal')
+            .insert(entryData)
+            .select();
+        }
+
+        if (result.error) throw result.error;
+
+        closeModal();
+        await loadJournalEntries();
+
+      } catch (error) {
+        console.error('Save error:', error);
+        alert('Erreur: ' + error.message);
+      } finally {
+        document.getElementById('saveSpinner').classList.add('hidden');
+        document.getElementById('saveBtn').disabled = false;
+      }
+    }
+
+    // Update status quickly
+    async function updateStatus(id) {
+      const entry = journalEntries.find(e => e.id === id);
+      if (!entry) return;
+
+      const statusOrder = ['pending', 'in_progress', 'completed', 'delivered'];
+      const currentIndex = statusOrder.indexOf(entry.status);
+      const nextStatus = statusOrder[(currentIndex + 1) % statusOrder.length];
+
+      try {
+        const { error } = await supabase
+          .from('stringing_journal')
+          .update({ status: nextStatus, updated_at: new Date().toISOString() })
+          .eq('id', id)
+          .eq('user_id', currentUser.id);
+
+        if (error) throw error;
+
+        await loadJournalEntries();
+
+      } catch (error) {
+        console.error('Status update error:', error);
+        alert('Erreur: ' + error.message);
+      }
+    }
+
+    // Delete entry
+    async function deleteEntry(id) {
+      if (!confirm('Êtes-vous sûr de vouloir supprimer cette entrée ?')) return;
+
+      try {
+        const { error } = await supabase
+          .from('stringing_journal')
+          .delete()
+          .eq('id', id)
+          .eq('user_id', currentUser.id);
+
+        if (error) throw error;
+
+        await loadJournalEntries();
+
+      } catch (error) {
+        console.error('Delete error:', error);
+        alert('Erreur: ' + error.message);
+      }
+    }
+
+    // Export to CSV
+    function exportToCSV() {
+      if (filteredEntries.length === 0) {
+        alert('Aucune donnée à exporter');
+        return;
+      }
+
+      const headers = ['Date', 'Client', 'Téléphone', 'Email', 'Raquette', 'Cordage', 'Tension Montants', 'Tension Travers', 'RCS', 'Prix Cordage', 'Main Oeuvre', 'Total', 'Statut', 'Notes'];
+      
+      const rows = filteredEntries.map(e => [
+        e.received_at,
+        e.client_name,
+        e.client_phone || '',
+        e.client_email || '',
+        `${e.racquet_brand || ''} ${e.racquet_model || ''}`.trim(),
+        `${e.string_brand || ''} ${e.string_model || ''}`.trim(),
+        e.tension_mains,
+        e.tension_crosses || '',
+        e.rcs_score || '',
+        e.string_price || '',
+        e.labor_price || '',
+        e.total_price || '',
+        e.status,
+        e.notes || ''
+      ]);
+
+      const csvContent = [headers, ...rows]
+        .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+        .join('\n');
+
+      const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `journal-cordage-${new Date().toISOString().split('T')[0]}.csv`;
+      link.click();
+    }
+
+    // Handle logout
+    async function handleLogout() {
+      await supabase.auth.signOut();
+      window.location.href = '/auth.html';
+    }
+
+    // Close modal on escape
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeModal();
+    });
+
+    // Initialize
+    checkAuth();
+  </script>
+</body>
+</html>

@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Comparateur - Tennis String Advisor</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            tennis: { green: '#16a34a', dark: '#0d1117', light: '#f0fdf4' }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .rating-bar { height: 8px; border-radius: 4px; background: #e5e7eb; }
+    .rating-fill { height: 100%; border-radius: 4px; transition: width 0.3s ease; }
+  </style>
+  <!-- Google Analytics 4 -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-YSSLHJ5WYD"></script>
+  <script src="/js/analytics.js"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <!-- Header -->
+  <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 py-4">
+      <div class="flex items-center justify-between">
+        <a href="/" class="flex items-center gap-2">
+          <span class="text-2xl">🎾</span>
+          <span class="font-bold text-xl text-gray-900">Tennis String Advisor</span>
+        </a>
+        <nav class="hidden md:flex items-center gap-6">
+          <a href="/" class="text-gray-600 hover:text-green-600 transition">Accueil</a>
+          <a href="/configurator.html" class="text-gray-600 hover:text-green-600 transition">Configurateur</a>
+          <a href="/racquets.html" class="text-gray-600 hover:text-green-600 transition">Raquettes</a>
+          <a href="/strings.html" class="text-gray-600 hover:text-green-600 transition">Cordages</a>
+          <a href="/compare.html" class="text-green-600 font-semibold">Comparateur</a>
+          <a href="/rcs-calculator.html" class="text-gray-600 hover:text-green-600 transition">🩺 RCS</a>
+        </nav>
+        <a href="/auth.html" id="authLink" class="hidden md:flex items-center gap-2 px-4 py-2 text-sm font-medium text-green-600 hover:bg-green-50 rounded-lg transition">
+          👤 Mon Compte
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto px-4 py-8">
+    <!-- Page Header -->
+    <div class="mb-8 text-center">
+      <h1 class="text-3xl font-bold text-gray-900 mb-2">Comparateur</h1>
+      <p class="text-gray-600">Comparez jusqu'à 4 produits côte à côte</p>
+    </div>
+
+    <!-- Type Selector -->
+    <div class="flex justify-center gap-4 mb-8">
+      <button id="compareRacquets" class="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition">
+        🎾 Comparer Raquettes
+      </button>
+      <button id="compareStrings" class="px-6 py-3 bg-white text-gray-700 rounded-lg font-semibold border border-gray-300 hover:bg-gray-50 transition">
+        🧵 Comparer Cordages
+      </button>
+    </div>
+
+    <!-- Racquets Comparison -->
+    <div id="racquetsComparison" class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      <!-- Selection Row -->
+      <div class="grid grid-cols-4 gap-4 p-6 bg-gray-50 border-b">
+        <div class="text-center">
+          <select class="w-full p-3 border border-gray-300 rounded-lg bg-white font-medium" id="racquet1">
+            <option value="">Sélectionner...</option>
+          </select>
+        </div>
+        <div class="text-center">
+          <select class="w-full p-3 border border-gray-300 rounded-lg bg-white font-medium" id="racquet2">
+            <option value="">Sélectionner...</option>
+          </select>
+        </div>
+        <div class="text-center">
+          <select class="w-full p-3 border border-gray-300 rounded-lg bg-white font-medium" id="racquet3">
+            <option value="">Sélectionner...</option>
+          </select>
+        </div>
+        <div class="text-center">
+          <select class="w-full p-3 border border-gray-300 rounded-lg bg-white font-medium" id="racquet4">
+            <option value="">Sélectionner...</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Comparison Table -->
+      <div class="p-6 overflow-x-auto" id="racquetCompareTable">
+        <table class="w-full min-w-[600px]">
+          <thead>
+            <tr class="border-b">
+              <th class="text-left py-3 px-4 font-semibold text-gray-700">Caractéristique</th>
+              <th class="text-center py-3 px-4 font-semibold text-green-600" id="r1-name">-</th>
+              <th class="text-center py-3 px-4 font-semibold text-blue-600" id="r2-name">-</th>
+              <th class="text-center py-3 px-4 font-semibold text-orange-600" id="r3-name">-</th>
+              <th class="text-center py-3 px-4 font-semibold text-purple-600" id="r4-name">-</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-b hover:bg-gray-50">
+              <td class="py-4 px-4 font-medium text-gray-700">Marque</td>
+              <td class="py-4 px-4 text-center" id="r1-brand">-</td>
+              <td class="py-4 px-4 text-center" id="r2-brand">-</td>
+              <td class="py-4 px-4 text-center" id="r3-brand">-</td>
+              <td class="py-4 px-4 text-center" id="r4-brand">-</td>
+            </tr>
+            <tr class="border-b hover:bg-gray-50">
+              <td class="py-4 px-4 font-medium text-gray-700">Poids</td>
+              <td class="py-4 px-4 text-center" id="r1-weight">-</td>
+              <td class="py-4 px-4 text-center" id="r2-weight">-</td>
+              <td class="py-4 px-4 text-center" id="r3-weight">-</td>
+              <td class="py-4 px-4 text-center" id="r4-weight">-</td>
+            </tr>
+            <tr class="border-b hover:bg-gray-50">
+              <td class="py-4 px-4 font-medium text-gray-700">Taille de tête</td>
+              <td class="py-4 px-4 text-center" id="r1-head">-</td>
+              <td class="py-4 px-4 text-center" id="r2-head">-</td>
+              <td class="py-4 px-4 text-center" id="r3-head">-</td>
+              <td class="py-4 px-4 text-center" id="r4-head">-</td>
+            </tr>
+            <tr class="border-b hover:bg-gray-50">
+              <td class="py-4 px-4 font-medium text-gray-700">Rigidité (RA)</td>
+              <td class="py-4 px-4 text-center" id="r1-stiffness">-</td>
+              <td class="py-4 px-4 text-center" id="r2-stiffness">-</td>
+              <td class="py-4 px-4 text-center" id="r3-stiffness">-</td>
+              <td class="py-4 px-4 text-center" id="r4-stiffness">-</td>
+            </tr>
+            <tr class="border-b hover:bg-gray-50">
+              <td class="py-4 px-4 font-medium text-gray-700">Plan de cordage</td>
+              <td class="py-4 px-4 text-center" id="r1-pattern">-</td>
+              <td class="py-4 px-4 text-center" id="r2-pattern">-</td>
+              <td class="py-4 px-4 text-center" id="r3-pattern">-</td>
+              <td class="py-4 px-4 text-center" id="r4-pattern">-</td>
+            </tr>
+            <tr class="border-b hover:bg-gray-50">
+              <td class="py-4 px-4 font-medium text-gray-700">Catégorie</td>
+              <td class="py-4 px-4 text-center" id="r1-category">-</td>
+              <td class="py-4 px-4 text-center" id="r2-category">-</td>
+              <td class="py-4 px-4 text-center" id="r3-category">-</td>
+              <td class="py-4 px-4 text-center" id="r4-category">-</td>
+            </tr>
+            <tr class="border-b hover:bg-gray-50">
+              <td class="py-4 px-4 font-medium text-gray-700">Joueur Pro</td>
+              <td class="py-4 px-4 text-center" id="r1-pro">-</td>
+              <td class="py-4 px-4 text-center" id="r2-pro">-</td>
+              <td class="py-4 px-4 text-center" id="r3-pro">-</td>
+              <td class="py-4 px-4 text-center" id="r4-pro">-</td>
+            </tr>
+            <tr class="hover:bg-gray-50">
+              <td class="py-4 px-4 font-medium text-gray-700">Prix</td>
+              <td class="py-4 px-4 text-center font-bold text-green-600" id="r1-price">-</td>
+              <td class="py-4 px-4 text-center font-bold text-green-600" id="r2-price">-</td>
+              <td class="py-4 px-4 text-center font-bold text-green-600" id="r3-price">-</td>
+              <td class="py-4 px-4 text-center font-bold text-green-600" id="r4-price">-</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Strings Comparison (Hidden by default) -->
+    <div id="stringsComparison" class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hidden">
+      <!-- Selection Row -->
+      <div class="grid grid-cols-4 gap-4 p-6 bg-gray-50 border-b">
+        <div class="text-center">
+          <select class="w-full p-3 border border-gray-300 rounded-lg bg-white font-medium" id="string1">
+            <option value="">Sélectionner...</option>
+          </select>
+        </div>
+        <div class="text-center">
+          <select class="w-full p-3 border border-gray-300 rounded-lg bg-white font-medium" id="string2">
+            <option value="">Sélectionner...</option>
+          </select>
+        </div>
+        <div class="text-center">
+          <select class="w-full p-3 border border-gray-300 rounded-lg bg-white font-medium" id="string3">
+            <option value="">Sélectionner...</option>
+          </select>
+        </div>
+        <div class="text-center">
+          <select class="w-full p-3 border border-gray-300 rounded-lg bg-white font-medium" id="string4">
+            <option value="">Sélectionner...</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Comparison Table -->
+      <div class="p-6 overflow-x-auto" id="stringCompareTable">
+        <table class="w-full min-w-[600px]">
+          <thead>
+            <tr class="border-b">
+              <th class="text-left py-3 px-4 font-semibold text-gray-700">Caractéristique</th>
+              <th class="text-center py-3 px-4 font-semibold text-green-600" id="s1-name">-</th>
+              <th class="text-center py-3 px-4 font-semibold text-blue-600" id="s2-name">-</th>
+              <th class="text-center py-3 px-4 font-semibold text-orange-600" id="s3-name">-</th>
+              <th class="text-center py-3 px-4 font-semibold text-purple-600" id="s4-name">-</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-b hover:bg-gray-50">
+              <td class="py-4 px-4 font-medium text-gray-700">Marque</td>
+              <td class="py-4 px-4 text-center" id="s1-brand">-</td>
+              <td class="py-4 px-4 text-center" id="s2-brand">-</td>
+              <td class="py-4 px-4 text-center" id="s3-brand">-</td>
+              <td class="py-4 px-4 text-center" id="s4-brand">-</td>
+            </tr>
+            <tr class="border-b hover:bg-gray-50">
+              <td class="py-4 px-4 font-medium text-gray-700">Type</td>
+              <td class="py-4 px-4 text-center" id="s1-type">-</td>
+              <td class="py-4 px-4 text-center" id="s2-type">-</td>
+              <td class="py-4 px-4 text-center" id="s3-type">-</td>
+              <td class="py-4 px-4 text-center" id="s4-type">-</td>
+            </tr>
+            <tr class="border-b hover:bg-gray-50">
+              <td class="py-4 px-4 font-medium text-gray-700">Spin</td>
+              <td class="py-4 px-4 text-center" id="s1-spin">-</td>
+              <td class="py-4 px-4 text-center" id="s2-spin">-</td>
+              <td class="py-4 px-4 text-center" id="s3-spin">-</td>
+              <td class="py-4 px-4 text-center" id="s4-spin">-</td>
+            </tr>
+            <tr class="border-b hover:bg-gray-50">
+              <td class="py-4 px-4 font-medium text-gray-700">Contrôle</td>
+              <td class="py-4 px-4 text-center" id="s1-control">-</td>
+              <td class="py-4 px-4 text-center" id="s2-control">-</td>
+              <td class="py-4 px-4 text-center" id="s3-control">-</td>
+              <td class="py-4 px-4 text-center" id="s4-control">-</td>
+            </tr>
+            <tr class="border-b hover:bg-gray-50">
+              <td class="py-4 px-4 font-medium text-gray-700">Confort</td>
+              <td class="py-4 px-4 text-center" id="s1-comfort">-</td>
+              <td class="py-4 px-4 text-center" id="s2-comfort">-</td>
+              <td class="py-4 px-4 text-center" id="s3-comfort">-</td>
+              <td class="py-4 px-4 text-center" id="s4-comfort">-</td>
+            </tr>
+            <tr class="border-b hover:bg-gray-50">
+              <td class="py-4 px-4 font-medium text-gray-700">Durabilité</td>
+              <td class="py-4 px-4 text-center" id="s1-durability">-</td>
+              <td class="py-4 px-4 text-center" id="s2-durability">-</td>
+              <td class="py-4 px-4 text-center" id="s3-durability">-</td>
+              <td class="py-4 px-4 text-center" id="s4-durability">-</td>
+            </tr>
+            <tr class="border-b hover:bg-gray-50">
+              <td class="py-4 px-4 font-medium text-gray-700">Joueur Pro</td>
+              <td class="py-4 px-4 text-center" id="s1-pro">-</td>
+              <td class="py-4 px-4 text-center" id="s2-pro">-</td>
+              <td class="py-4 px-4 text-center" id="s3-pro">-</td>
+              <td class="py-4 px-4 text-center" id="s4-pro">-</td>
+            </tr>
+            <tr class="hover:bg-gray-50">
+              <td class="py-4 px-4 font-medium text-gray-700">Prix</td>
+              <td class="py-4 px-4 text-center font-bold text-green-600" id="s1-price">-</td>
+              <td class="py-4 px-4 text-center font-bold text-green-600" id="s2-price">-</td>
+              <td class="py-4 px-4 text-center font-bold text-green-600" id="s3-price">-</td>
+              <td class="py-4 px-4 text-center font-bold text-green-600" id="s4-price">-</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Quick Tips -->
+    <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="bg-white rounded-xl p-6 border border-gray-200">
+        <div class="text-3xl mb-3">💡</div>
+        <h3 class="font-semibold text-gray-900 mb-2">Conseil Raquette</h3>
+        <p class="text-gray-600 text-sm">Une rigidité RA élevée (>68) offre plus de puissance mais moins de confort. Privilégiez un RA plus bas si vous avez des problèmes de bras.</p>
+      </div>
+      <div class="bg-white rounded-xl p-6 border border-gray-200">
+        <div class="text-3xl mb-3">🎯</div>
+        <h3 class="font-semibold text-gray-900 mb-2">Conseil Cordage</h3>
+        <p class="text-gray-600 text-sm">Les polyesters offrent du contrôle et du spin mais moins de confort. Les multifilaments sont plus doux pour le bras.</p>
+      </div>
+      <div class="bg-white rounded-xl p-6 border border-gray-200">
+        <div class="text-3xl mb-3">⚖️</div>
+        <h3 class="font-semibold text-gray-900 mb-2">Équilibre</h3>
+        <p class="text-gray-600 text-sm">Associez une raquette rigide avec un cordage souple, ou une raquette flexible avec un cordage rigide pour un meilleur équilibre.</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-gray-900 text-white mt-16">
+    <div class="max-w-7xl mx-auto px-4 py-12">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div>
+          <div class="flex items-center gap-2 mb-4">
+            <span class="text-2xl">🎾</span>
+            <span class="font-bold text-xl">Tennis String Advisor</span>
+          </div>
+          <p class="text-gray-400 text-sm">Expert en cordages et raquettes de tennis depuis 2024.</p>
+        </div>
+        <div>
+          <h4 class="font-semibold mb-4">Navigation</h4>
+          <ul class="space-y-2 text-gray-400 text-sm">
+            <li><a href="/" class="hover:text-white transition">Accueil</a></li>
+            <li><a href="/racquets.html" class="hover:text-white transition">Raquettes</a></li>
+            <li><a href="/strings.html" class="hover:text-white transition">Cordages</a></li>
+            <li><a href="/compare.html" class="hover:text-white transition">Comparateur</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-semibold mb-4">Outils</h4>
+          <ul class="space-y-2 text-gray-400 text-sm">
+            <li><a href="/configurator.html" class="hover:text-white transition">Configurateur</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-semibold mb-4">Contact</h4>
+          <p class="text-gray-400 text-sm">pleneuftrading@gmail.com</p>
+        </div>
+      </div>
+      <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400 text-sm">
+        <p>© 2025 Tennis String Advisor. Une marque de Pleneuf Trading LLC. Tous droits réservés.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Supabase configuration
+    const SUPABASE_URL = 'https://yhhdkllbaxuhwrfpsmev.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InloaGRrbGxiYXh1aHdyZnBzbWV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU3NjI0MDEsImV4cCI6MjA4MTMzODQwMX0.2aC_gYZf0xxz6MXi5zcaCH2S64RBaQvXU7a5qiuD0_k';
+    
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+    let racquetsData = {};
+    let stringsData = {};
+    
+    // Fetch data from Supabase
+    async function fetchData() {
+      try {
+        // Fetch racquets
+        const { data: racquets, error: rError } = await supabase
+          .from('racquets')
+          .select('*')
+          .order('brand', { ascending: true });
+        
+        if (rError) throw rError;
+        
+        // Fetch strings
+        const { data: strings, error: sError } = await supabase
+          .from('strings')
+          .select('*')
+          .order('brand', { ascending: true });
+        
+        if (sError) throw sError;
+        
+        // Build data maps and populate selects
+        racquets.forEach(r => {
+          racquetsData[r.id] = r;
+        });
+        
+        strings.forEach(s => {
+          stringsData[s.id] = s;
+        });
+        
+        // Populate racquet selects
+        ['racquet1', 'racquet2', 'racquet3', 'racquet4'].forEach(id => {
+          const select = document.getElementById(id);
+          racquets.forEach(r => {
+            const option = document.createElement('option');
+            option.value = r.id;
+            option.textContent = `${r.brand} ${r.model} ${r.variant || ''}`;
+            select.appendChild(option);
+          });
+        });
+        
+        // Populate string selects
+        ['string1', 'string2', 'string3', 'string4'].forEach(id => {
+          const select = document.getElementById(id);
+          strings.forEach(s => {
+            const option = document.createElement('option');
+            option.value = s.id;
+            option.textContent = `${s.brand} ${s.model}`;
+            select.appendChild(option);
+          });
+        });
+        
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    }
+    
+    // Tab switching
+    document.getElementById('compareRacquets').addEventListener('click', function() {
+      this.classList.add('bg-green-600', 'text-white');
+      this.classList.remove('bg-white', 'text-gray-700', 'border', 'border-gray-300');
+      document.getElementById('compareStrings').classList.remove('bg-green-600', 'text-white');
+      document.getElementById('compareStrings').classList.add('bg-white', 'text-gray-700', 'border', 'border-gray-300');
+      document.getElementById('racquetsComparison').classList.remove('hidden');
+      document.getElementById('stringsComparison').classList.add('hidden');
+    });
+
+    document.getElementById('compareStrings').addEventListener('click', function() {
+      this.classList.add('bg-green-600', 'text-white');
+      this.classList.remove('bg-white', 'text-gray-700', 'border', 'border-gray-300');
+      document.getElementById('compareRacquets').classList.remove('bg-green-600', 'text-white');
+      document.getElementById('compareRacquets').classList.add('bg-white', 'text-gray-700', 'border', 'border-gray-300');
+      document.getElementById('stringsComparison').classList.remove('hidden');
+      document.getElementById('racquetsComparison').classList.add('hidden');
+    });
+
+    // Racquet comparison
+    ['racquet1', 'racquet2', 'racquet3', 'racquet4'].forEach((id, index) => {
+      document.getElementById(id).addEventListener('change', function() {
+        const value = this.value;
+        const prefix = 'r' + (index + 1);
+        if (value && racquetsData[value]) {
+          const r = racquetsData[value];
+          document.getElementById(prefix + '-name').textContent = r.model + ' ' + (r.variant || '');
+          document.getElementById(prefix + '-brand').textContent = r.brand;
+          document.getElementById(prefix + '-weight').textContent = r.weight + 'g';
+          document.getElementById(prefix + '-head').textContent = r.head_size + ' sq in';
+          document.getElementById(prefix + '-stiffness').textContent = r.stiffness ? 'RA ' + r.stiffness : 'N/D';
+          document.getElementById(prefix + '-pattern').textContent = r.string_pattern || 'N/D';
+          document.getElementById(prefix + '-category').textContent = r.category || 'N/D';
+          document.getElementById(prefix + '-pro').textContent = r.pro_usage || '-';
+          document.getElementById(prefix + '-price').textContent = r.price_eur + '€';
+        } else {
+          ['name', 'brand', 'weight', 'head', 'stiffness', 'pattern', 'category', 'pro', 'price'].forEach(field => {
+            document.getElementById(prefix + '-' + field).textContent = '-';
+          });
+        }
+      });
+    });
+
+    // String comparison
+    ['string1', 'string2', 'string3', 'string4'].forEach((id, index) => {
+      document.getElementById(id).addEventListener('change', function() {
+        const value = this.value;
+        const prefix = 's' + (index + 1);
+        if (value && stringsData[value]) {
+          const s = stringsData[value];
+          document.getElementById(prefix + '-name').textContent = s.model;
+          document.getElementById(prefix + '-brand').textContent = s.brand;
+          document.getElementById(prefix + '-type').textContent = s.type;
+          document.getElementById(prefix + '-spin').textContent = s.spin + '/10';
+          document.getElementById(prefix + '-control').textContent = s.control + '/10';
+          document.getElementById(prefix + '-comfort').textContent = s.comfort + '/10';
+          document.getElementById(prefix + '-durability').textContent = s.durability + '/10';
+          document.getElementById(prefix + '-pro').textContent = s.pro_usage || '-';
+          document.getElementById(prefix + '-price').textContent = s.price_eur + '€';
+        } else {
+          ['name', 'brand', 'type', 'spin', 'control', 'comfort', 'durability', 'pro', 'price'].forEach(field => {
+            document.getElementById(prefix + '-' + field).textContent = '-';
+          });
+        }
+      });
+    });
+    
+    // Check auth state for nav
+    async function checkAuthForNav() {
+      const { data: { session } } = await supabase.auth.getSession();
+      const authLink = document.getElementById('authLink');
+      if (session) {
+        authLink.href = '/account.html';
+        authLink.innerHTML = '👤 Mon Compte';
+      } else {
+        authLink.href = '/auth.html';
+        authLink.innerHTML = '👤 Connexion';
+      }
+    }
+    
+    // Initialize
+    fetchData();
+    checkAuthForNav();
+  </script>
+</body>
+</html>

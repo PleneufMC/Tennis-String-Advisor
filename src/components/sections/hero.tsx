@@ -122,7 +122,7 @@ export function Hero() {
                 transition={{ delay: 0.8, duration: 0.4 }}
                 className="grid grid-cols-3 gap-6 pt-8 border-t border-gray-200"
               >
-                {stats.map((stat, index) => (
+                {stats.map((stat) => (
                   <div key={stat.label} className="text-center">
                     <div className="flex justify-center mb-2">
                       <stat.icon className="w-6 h-6 text-tennis-green-600" />
