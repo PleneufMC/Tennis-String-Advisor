@@ -366,7 +366,8 @@ document.body.addEventListener('click', function(e) {
 | 7 | **Event Capture + stopImmediatePropagation** | ❌ Failed |
 | 8 | **Native Radio Buttons (options)** | ✅ **SUCCESS** |
 | 9 | **Event Capture for Generate Button** | ❌ Failed on mobile |
-| 10 | **Native HTML Form + ontouchend** | ⏳ Testing |
+| 10 | **Native HTML Form + ontouchend** | ❌ JavaScript error |
+| 11 | **Fix ReferenceError** | ⏳ Testing |
 
 ## Key Learnings
 
@@ -547,3 +548,65 @@ function handleGenerate() {
 2. Open configurator, complete all steps
 3. **Touch** "Voir mes recommandations" button
 4. Should trigger `handleGenerate()` → call `generateResult()` → show results page
+
+**Result:** ❌ **JavaScript Error!**  
+Error message: **"Cannot access 'selections' before initialization"**
+
+---
+
+## 🐛 Solution 11: Fix ReferenceError (CRITICAL BUG FIX)
+
+**Commit:** `f8cf0b8`  
+**Status:** ⏳ Testing
+
+### Problem Discovery
+User sent screenshot showing JavaScript error:
+```
+tennisstringadvisor.org indique
+Erreur: Cannot access 'selections' before initialization
+```
+
+This error appeared on BOTH mobile and desktop, proving the problem was NOT event listeners but a **JavaScript bug**.
+
+### Root Cause
+In `generateResult()` function:
+1. Line 994: `const currentSelections = getSelections();` ✅ Correct
+2. Line 1026: `if (selections.level === 'debutant')` ❌ **Wrong variable!**
+
+The function was using:
+- ❌ `selections` (a Proxy that can cause initialization issues)
+- ✅ Should use `currentSelections` (the already-fetched object)
+
+### Solution
+Replace ALL occurrences of `selections.` with `currentSelections.` in `generateResult()`:
+
+```javascript
+// Before (WRONG)
+if (selections.level === 'debutant') {
+  // ...
+}
+
+// After (CORRECT)
+const currentSelections = getSelections();
+if (currentSelections.level === 'debutant') {
+  // ...
+}
+```
+
+### Changes
+- Replaced 11 occurrences of `selections.` with `currentSelections.`
+- Now uses the already-fetched selections object
+- Eliminates ReferenceError
+
+### Why This Fixes It
+- `getSelections()` returns a **simple object** from radio button values
+- `selections` is a **Proxy** that can have initialization issues
+- Using `currentSelections` avoids Proxy complexity entirely
+
+### Test
+After deployment (~2 minutes):
+1. Open `https://tennisstringadvisor.org/configurator.html`
+2. Complete all steps
+3. Click "Voir mes recommandations"
+4. Should NO LONGER show error
+5. Should display results page
