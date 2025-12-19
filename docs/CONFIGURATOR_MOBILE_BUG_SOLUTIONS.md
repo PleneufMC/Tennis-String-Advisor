@@ -610,3 +610,102 @@ After deployment (~2 minutes):
 3. Click "Voir mes recommandations"
 4. Should NO LONGER show error
 5. Should display results page
+
+---
+
+## 🔧 Solution 12: Fix Supabase Initialization Errors (2024-12-19)
+
+**Commit:** (pending)  
+**Status:** ⏳ Testing
+
+### Problem Discovery
+During production audit, found JavaScript errors on ALL pages:
+```
+Cannot read properties of undefined (reading 'createClient')
+Identifier 'supabase' has already been declared
+```
+
+### Root Cause Analysis
+1. **configurator.html**: `const supabase` declared TWICE (lines 686 and 1427)
+2. **All HTML files**: Using `window.supabase.createClient()` without checking if SDK is loaded
+3. **configurator.html**: Supabase SDK loaded with `defer`, but inline script runs immediately
+
+### Solution Applied
+
+#### 1. Fix Double Declaration in configurator.html
+Removed duplicate declaration in `checkAuthForNav()` function:
+```javascript
+// Before (WRONG - redeclares supabase)
+async function checkAuthForNav() {
+  const SUPABASE_URL = '...';
+  const SUPABASE_ANON_KEY = '...';
+  const supabase = window.supabase.createClient(...);  // ❌ Duplicate!
+}
+
+// After (CORRECT - uses global instance)
+async function checkAuthForNav() {
+  if (typeof supabase === 'undefined') return;
+  // Uses global supabase instance
+}
+```
+
+#### 2. Add Safe Initialization to All HTML Files
+Applied to: configurator.html, racquets.html, strings.html, compare.html, rcs-calculator.html, premium.html, journal-cordage.html, auth.html, account.html, setups.html, index.html
+
+```javascript
+// Before (UNSAFE)
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// After (SAFE)
+let supabaseClient = null;
+try {
+  if (window.supabase && window.supabase.createClient) {
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    console.log('✅ Supabase initialized');
+  }
+} catch (e) {
+  console.error('❌ Supabase init error:', e);
+}
+const supabase = supabaseClient;
+```
+
+#### 3. Deferred Initialization for configurator.html
+Because Supabase SDK is loaded with `defer`:
+```javascript
+let supabase = null;
+function initSupabase() {
+  if (window.supabase && window.supabase.createClient) {
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    checkUserStatus();
+    loadCatalogData();
+  } else {
+    setTimeout(initSupabase, 100);  // Retry until SDK loads
+  }
+}
+```
+
+### Files Modified
+- `public/configurator.html` - Major refactor for deferred init
+- `public/configurator-fixed.html` - Synced with main
+- `public/racquets.html`
+- `public/strings.html`
+- `public/compare.html`
+- `public/rcs-calculator.html`
+- `public/premium.html`
+- `public/journal-cordage.html`
+- `public/auth.html`
+- `public/account.html`
+- `public/setups.html`
+- `public/index.html`
+
+### Expected Result
+- ✅ No more "Cannot read properties of undefined" errors
+- ✅ No more "Identifier already declared" errors
+- ✅ Graceful degradation if Supabase fails to load
+- ✅ Console logs for debugging
+
+### Test After Deployment
+1. Open DevTools console on any page
+2. Should see "✅ Supabase initialized" 
+3. No red JavaScript errors
+4. All functionality works normally
