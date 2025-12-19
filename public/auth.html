@@ -292,7 +292,6 @@
     } catch (e) {
       console.error('❌ Supabase init error:', e);
     }
-    const supabase = supabaseClient;
 
     // Check if already logged in or handle OAuth callback
     async function checkAuth() {
@@ -308,7 +307,7 @@
         return;
       }
       
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await supabaseClient.auth.getSession();
       
       if (session) {
         // User is logged in, redirect to account
@@ -320,7 +319,7 @@
     }
     
     // Listen for auth state changes (important for OAuth)
-    supabase.auth.onAuthStateChange((event, session) => {
+    supabaseClient.auth.onAuthStateChange((event, session) => {
       console.log('Auth event:', event);
       if (event === 'SIGNED_IN' && session) {
         showMessage('Connexion réussie ! Redirection...', 'success');
@@ -383,7 +382,7 @@
       document.getElementById('loginBtn').disabled = true;
       
       try {
-        const { data, error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabaseClient.auth.signInWithPassword({
           email,
           password
         });
@@ -422,7 +421,7 @@
       document.getElementById('registerBtn').disabled = true;
       
       try {
-        const { data, error } = await supabase.auth.signUp({
+        const { data, error } = await supabaseClient.auth.signUp({
           email,
           password,
           options: {
@@ -461,7 +460,7 @@
         // Get the current site URL for proper redirect
         const siteUrl = window.location.origin;
         
-        const { data, error } = await supabase.auth.signInWithOAuth({
+        const { data, error } = await supabaseClient.auth.signInWithOAuth({
           provider: 'google',
           options: {
             redirectTo: siteUrl + '/auth.html',
@@ -485,7 +484,7 @@
       try {
         const siteUrl = window.location.origin;
         
-        const { data, error } = await supabase.auth.signInWithOAuth({
+        const { data, error } = await supabaseClient.auth.signInWithOAuth({
           provider: 'facebook',
           options: {
             redirectTo: siteUrl + '/auth.html',
@@ -511,7 +510,7 @@
       }
       
       try {
-        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
           redirectTo: window.location.origin + '/reset-password.html'
         });
         

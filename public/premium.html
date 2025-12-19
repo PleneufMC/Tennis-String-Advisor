@@ -527,7 +527,6 @@
     } catch (e) {
       console.error('❌ Supabase init error:', e);
     }
-    const supabase = supabaseClient;
 
     // Stripe Payment Links (direct checkout - no server needed)
     const PAYMENT_LINKS = {
@@ -570,7 +569,7 @@
     // Initialize
     async function init() {
       // Check auth
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await supabaseClient.auth.getSession();
       currentUser = session?.user || null;
       
       // Update auth link
@@ -588,7 +587,7 @@
     async function loadLifetimeCount() {
       // Try to get from Supabase first
       try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
           .from('settings')
           .select('value')
           .eq('key', 'lifetime_remaining')
