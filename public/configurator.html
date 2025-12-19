@@ -463,12 +463,19 @@
       </div>
 
       <div class="flex justify-between mt-8">
-        <button id="prevStep3" onclick="goToStep(2); return false;" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition">
+        <button id="prevStep3" type="button" onclick="goToStep(2); return false;" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition">
           ← Précédent
         </button>
-        <button id="generateBtn" onclick="generateResult(); return false;" class="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition">
-          Voir mes recommandations 🎉
-        </button>
+        <form id="generateForm" onsubmit="return handleGenerate();" style="display: inline;">
+          <button 
+            id="generateBtn" 
+            type="submit" 
+            class="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition" 
+            ontouchstart=""
+            ontouchend="handleGenerate(); return false;">
+            Voir mes recommandations 🎉
+          </button>
+        </form>
       </div>
     </div>
 
@@ -1441,11 +1448,24 @@
       goToStep(1);
     }
 
+    // SOLUTION 10: Ultra-simple form handler
+    function handleGenerate() {
+      console.log('🚀 handleGenerate() called from form onsubmit');
+      try {
+        generateResult();
+      } catch (error) {
+        console.error('❌ Error in generateResult:', error);
+        alert('Erreur: ' + error.message);
+      }
+      return false; // Prevent form submission
+    }
+    
     // Make functions globally accessible
     window.goToStep = goToStep;
     window.restartConfigurator = restartConfigurator;
     window.generateResult = generateResult;
     window.getSelections = getSelections;
+    window.handleGenerate = handleGenerate;
     
     // =====================================================
     // SOLUTION 8: SIMPLE EVENT HANDLING FOR NAV BUTTONS
@@ -1458,19 +1478,33 @@
       // Initialize step 1
       goToStep(1);
       
-      // CRITICAL FIX: Add event listener with capture for generate button
-      // This ensures it runs BEFORE Supabase/Analytics can intercept
-      const generateBtn = document.getElementById('generateBtn');
-      if (generateBtn) {
-        generateBtn.addEventListener('click', function(e) {
-          console.log('🎉 Generate button clicked (capture phase)');
+      // SOLUTION 10: Use FORM submit instead of button click
+      // Forms are harder for external scripts to intercept
+      const generateForm = document.getElementById('generateForm');
+      if (generateForm) {
+        generateForm.addEventListener('submit', function(e) {
+          console.log('🎉 Generate FORM submitted (capture phase)');
           e.stopPropagation();
           e.stopImmediatePropagation();
           e.preventDefault();
           generateResult();
           return false;
         }, { capture: true }); // Execute in capture phase
-        console.log('✅ Generate button listener attached with capture:true');
+        console.log('✅ Generate FORM listener attached with capture:true');
+      }
+      
+      // Fallback: Also listen on button directly
+      const generateBtn = document.getElementById('generateBtn');
+      if (generateBtn) {
+        generateBtn.addEventListener('click', function(e) {
+          console.log('🎉 Generate button clicked (capture phase - fallback)');
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+          e.preventDefault();
+          generateResult();
+          return false;
+        }, { capture: true });
+        console.log('✅ Generate button listener attached (fallback)');
       }
       
       console.log('✅ Configurator v8 ready!');
