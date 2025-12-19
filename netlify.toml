@@ -2,7 +2,18 @@
   command = "echo 'Deploying static files'"
   publish = "public"
 
-# SPA fallback for client-side routing
+# Specific routes for HTML files (must come BEFORE catch-all)
+[[redirects]]
+  from = "/configurator"
+  to = "/configurator.html"
+  status = 200
+
+[[redirects]]
+  from = "/configurator-fixed"
+  to = "/configurator-fixed.html"
+  status = 200
+
+# SPA fallback for client-side routing (catch-all at the end)
 [[redirects]]
   from = "/*"
   to = "/index.html"
