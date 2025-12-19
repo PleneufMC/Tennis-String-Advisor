@@ -311,9 +311,8 @@
     } catch (e) {
       console.error('❌ Supabase init error:', e);
     }
-    const supabase = supabaseClient;
       
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await supabaseClient.auth.getSession();
       const authLink = document.getElementById('authLink');
       if (authLink) {
         if (session) {

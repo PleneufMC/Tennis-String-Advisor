@@ -266,7 +266,6 @@
       console.error('❌ Supabase init error:', e);
     }
     // Alias for compatibility
-    const supabase = supabaseClient;
     
     let allRacquets = [];
     let filteredRacquets = [];
@@ -315,7 +314,7 @@
         return;
       }
       try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
           .from('racquets')
           .select('*')
           .order('brand', { ascending: true });
@@ -548,7 +547,7 @@
       }
       
       try {
-        const { error } = await supabase
+        const { error } = await supabaseClient
           .from('racquets')
           .update({ stiffness: raValue })
           .eq('id', currentRacquetId);
@@ -662,7 +661,7 @@
 
     // Check auth state for nav
     async function checkAuthForNav() {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await supabaseClient.auth.getSession();
       const authLink = document.getElementById('authLink');
       if (session) {
         authLink.href = '/account.html';

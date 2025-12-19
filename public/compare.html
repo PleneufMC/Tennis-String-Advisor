@@ -338,7 +338,6 @@
     } catch (e) {
       console.error('❌ Supabase init error:', e);
     }
-    const supabase = supabaseClient;
     
     let racquetsData = {};
     let stringsData = {};
@@ -347,7 +346,7 @@
     async function fetchData() {
       try {
         // Fetch racquets
-        const { data: racquets, error: rError } = await supabase
+        const { data: racquets, error: rError } = await supabaseClient
           .from('racquets')
           .select('*')
           .order('brand', { ascending: true });
@@ -355,7 +354,7 @@
         if (rError) throw rError;
         
         // Fetch strings
-        const { data: strings, error: sError } = await supabase
+        const { data: strings, error: sError } = await supabaseClient
           .from('strings')
           .select('*')
           .order('brand', { ascending: true });
@@ -467,7 +466,7 @@
     
     // Check auth state for nav
     async function checkAuthForNav() {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await supabaseClient.auth.getSession();
       const authLink = document.getElementById('authLink');
       if (session) {
         authLink.href = '/account.html';

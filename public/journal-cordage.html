@@ -357,7 +357,6 @@
     } catch (e) {
       console.error('❌ Supabase init error:', e);
     }
-    const supabase = supabaseClient;
 
     let currentUser = null;
     let racquets = [];
@@ -369,7 +368,7 @@
 
     // Check authentication
     async function checkAuth() {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await supabaseClient.auth.getSession();
       
       if (!session) {
         window.location.href = '/auth.html';
@@ -384,14 +383,14 @@
     async function loadData() {
       try {
         // Load racquets
-        const { data: racquetData } = await supabase
+        const { data: racquetData } = await supabaseClient
           .from('racquets')
           .select('*')
           .order('brand, model');
         racquets = racquetData || [];
 
         // Load strings
-        const { data: stringData } = await supabase
+        const { data: stringData } = await supabaseClient
           .from('strings')
           .select('*')
           .order('brand, model');
@@ -417,7 +416,7 @@
     // Load journal entries
     async function loadJournalEntries() {
       try {
-        const { data: entries, error } = await supabase
+        const { data: entries, error } = await supabaseClient
           .from('stringing_journal')
           .select('*')
           .eq('user_id', currentUser.id)
@@ -855,7 +854,7 @@
         let result;
         
         if (entryId) {
-          result = await supabase
+          result = await supabaseClient
             .from('stringing_journal')
             .update(entryData)
             .eq('id', entryId)
@@ -863,7 +862,7 @@
             .select();
         } else {
           entryData.created_at = new Date().toISOString();
-          result = await supabase
+          result = await supabaseClient
             .from('stringing_journal')
             .insert(entryData)
             .select();
@@ -893,7 +892,7 @@
       const nextStatus = statusOrder[(currentIndex + 1) % statusOrder.length];
 
       try {
-        const { error } = await supabase
+        const { error } = await supabaseClient
           .from('stringing_journal')
           .update({ status: nextStatus, updated_at: new Date().toISOString() })
           .eq('id', id)
@@ -914,7 +913,7 @@
       if (!confirm('Êtes-vous sûr de vouloir supprimer cette entrée ?')) return;
 
       try {
-        const { error } = await supabase
+        const { error } = await supabaseClient
           .from('stringing_journal')
           .delete()
           .eq('id', id)
@@ -969,7 +968,7 @@
 
     // Handle logout
     async function handleLogout() {
-      await supabase.auth.signOut();
+      await supabaseClient.auth.signOut();
       window.location.href = '/auth.html';
     }
 

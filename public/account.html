@@ -309,14 +309,13 @@
     } catch (e) {
       console.error('❌ Supabase init error:', e);
     }
-    const supabase = supabaseClient;
 
     let currentUser = null;
     let userProfile = null;
 
     // Check authentication
     async function checkAuth() {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await supabaseClient.auth.getSession();
       
       if (!session) {
         window.location.href = '/auth.html';
@@ -343,7 +342,7 @@
 
         // Try to load profile from Supabase (if table exists)
         try {
-          const { data: profile, error } = await supabase
+          const { data: profile, error } = await supabaseClient
             .from('profiles')
             .select('*')
             .eq('id', currentUser.id)
@@ -401,7 +400,7 @@
     // Load premium setups
     async function loadPremiumSetups() {
       try {
-        const { data: setups, error } = await supabase
+        const { data: setups, error } = await supabaseClient
           .from('user_setups')
           .select('*, racquets(*), strings(*)')
           .eq('user_id', currentUser.id)
@@ -471,7 +470,7 @@
       document.getElementById('profileBtn').disabled = true;
       
       try {
-        const { error } = await supabase
+        const { error } = await supabaseClient
           .from('profiles')
           .upsert(profileData, { onConflict: 'id' });
         
@@ -509,7 +508,7 @@
 
     // Handle logout
     async function handleLogout() {
-      await supabase.auth.signOut();
+      await supabaseClient.auth.signOut();
       window.location.href = '/auth.html';
     }
 
@@ -519,7 +518,7 @@
       
       if (confirm(`Envoyer un email de réinitialisation de mot de passe à ${email} ?`)) {
         try {
-          const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
             redirectTo: window.location.origin + '/reset-password.html'
           });
           
@@ -539,11 +538,11 @@
         if (confirm('Dernière confirmation: Voulez-vous vraiment supprimer définitivement votre compte ?')) {
           try {
             // Delete user data first
-            await supabase.from('user_setups').delete().eq('user_id', currentUser.id);
-            await supabase.from('profiles').delete().eq('id', currentUser.id);
+            await supabaseClient.from('user_setups').delete().eq('user_id', currentUser.id);
+            await supabaseClient.from('profiles').delete().eq('id', currentUser.id);
             
             // Sign out (actual user deletion requires admin privileges)
-            await supabase.auth.signOut();
+            await supabaseClient.auth.signOut();
             
             alert('Votre compte a été marqué pour suppression. Vous serez déconnecté.');
             window.location.href = '/';

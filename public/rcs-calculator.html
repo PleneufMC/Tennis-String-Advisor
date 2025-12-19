@@ -553,7 +553,6 @@
     } catch (e) {
       console.error('❌ Supabase init error:', e);
     }
-    const supabase = supabaseClient;
     
     let racquets = [];
     let strings = [];
@@ -587,13 +586,13 @@
     // Check user auth and premium status
     async function checkUserStatus() {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session } } = await supabaseClient.auth.getSession();
         
         if (session) {
           currentUser = session.user;
           
           // Fetch profile to check premium status and RCS usage
-          const { data: profile } = await supabase
+          const { data: profile } = await supabaseClient
             .from('profiles')
             .select('is_premium, rcs_calculations_used')
             .eq('id', currentUser.id)
@@ -675,7 +674,7 @@
       if (currentUser) {
         // Update in Supabase
         calculationCount++;
-        await supabase
+        await supabaseClient
           .from('profiles')
           .update({ rcs_calculations_used: calculationCount })
           .eq('id', currentUser.id);
@@ -734,8 +733,8 @@
     async function loadData() {
       try {
         const [racquetsRes, stringsRes] = await Promise.all([
-          supabase.from('racquets').select('id, brand, model, variant, stiffness').order('brand, model'),
-          supabase.from('strings').select('id, brand, model, stiffness, type').order('brand, model')
+          supabaseClient.from('racquets').select('id, brand, model, variant, stiffness').order('brand, model'),
+          supabaseClient.from('strings').select('id, brand, model, stiffness, type').order('brand, model')
         ]);
         
         racquets = racquetsRes.data || [];
