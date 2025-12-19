@@ -680,10 +680,30 @@
   </footer>
 
   <script>
-    // Supabase config
+    // Supabase config - wait for SDK to load (loaded with defer)
     const SUPABASE_URL = 'https://yhhdkllbaxuhwrfpsmev.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InloaGRrbGxiYXh1aHdyZnBzbWV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU3NjI0MDEsImV4cCI6MjA4MTMzODQwMX0.2aC_gYZf0xxz6MXi5zcaCH2S64RBaQvXU7a5qiuD0_k';
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+    // Initialize supabase when SDK is ready
+    let supabase = null;
+    function initSupabase() {
+      if (window.supabase && window.supabase.createClient) {
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        console.log('✅ Supabase initialized');
+        // Now we can check auth state and load data
+        checkUserStatus();
+        loadCatalogData();
+      } else {
+        // Retry after 100ms if SDK not loaded yet
+        setTimeout(initSupabase, 100);
+      }
+    }
+    // Start initialization after DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initSupabase);
+    } else {
+      initSupabase();
+    }
 
     // Configuration usage tracking
     let currentUser = null;
@@ -835,6 +855,12 @@
 
     // Check user status
     async function checkUserStatus() {
+      if (!supabase) {
+        console.log('⏳ Supabase not ready, using local storage');
+        hasUsedFreeConfiguration = localStorage.getItem(LOCAL_STORAGE_KEY) === 'true';
+        updateUsageBanners();
+        return;
+      }
       try {
         const { data: { session } } = await supabase.auth.getSession();
         
@@ -868,6 +894,10 @@
 
     // Load racquets and strings from database
     async function loadCatalogData() {
+      if (!supabase) {
+        console.log('⏳ Supabase not ready, skipping catalog load');
+        return;
+      }
       try {
         // Load racquets
         const { data: racquets, error: rError } = await supabase
@@ -895,9 +925,8 @@
       }
     }
 
-    // Initialize on load
-    checkUserStatus();
-    loadCatalogData();
+    // Initialize on load - called by initSupabase() when SDK is ready
+    // checkUserStatus() and loadCatalogData() are now called in initSupabase()
 
     // Smart racquet picker based on criteria
     function pickBestRacquet(criteria) {
@@ -1419,12 +1448,14 @@
       }
     }
 
-    // Check auth state for nav
+    // Check auth state for nav - reuses global supabase instance
     async function checkAuthForNav() {
       try {
-        const SUPABASE_URL = 'https://yhhdkllbaxuhwrfpsmev.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InloaGRrbGxiYXh1aHdyZnBzbWV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU3NjI0MDEsImV4cCI6MjA4MTMzODQwMX0.2aC_gYZf0xxz6MXi5zcaCH2S64RBaQvXU7a5qiuD0_k';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // Use the global supabase instance (already declared at line 686)
+        if (typeof supabase === 'undefined') {
+          console.log('Supabase not ready yet, skipping auth check');
+          return;
+        }
         
         const { data: { session } } = await supabase.auth.getSession();
         const authLink = document.getElementById('authLink');
@@ -1435,9 +1466,10 @@
           authLink.href = '/auth.html';
           authLink.innerHTML = '👤 Connexion';
         }
-      } catch (e) { console.log('Auth check skipped'); }
+      } catch (e) { console.log('Auth check skipped:', e.message); }
     }
-    checkAuthForNav();
+    // Delay auth check to ensure Supabase SDK is loaded (defer script)
+    setTimeout(checkAuthForNav, 100);
 
     // Restart
     function restartConfigurator() {
