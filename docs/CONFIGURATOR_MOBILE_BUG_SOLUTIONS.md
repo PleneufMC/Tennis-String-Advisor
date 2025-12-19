@@ -365,7 +365,8 @@ document.body.addEventListener('click', function(e) {
 | 6 | Event Delegation + Explicit State | ❌ Failed (but worked on test pages!) |
 | 7 | **Event Capture + stopImmediatePropagation** | ❌ Failed |
 | 8 | **Native Radio Buttons (options)** | ✅ **SUCCESS** |
-| 9 | **Event Capture for Generate Button** | ⏳ Testing |
+| 9 | **Event Capture for Generate Button** | ❌ Failed on mobile |
+| 10 | **Native HTML Form + ontouchend** | ⏳ Testing |
 
 ## Key Learnings
 
@@ -482,3 +483,67 @@ After deployment:
 1. Clear Chrome mobile cache
 2. Navigate through configurator steps
 3. Click "Voir mes recommandations" → should show results
+
+**Result:** ❌ **FAILED** - User confirmed button still doesn't work on mobile
+
+---
+
+## 🚨 Solution 10: Native HTML Form + ontouchend (LAST RESORT)
+
+**Commit:** `32e3e35`  
+**Status:** ⏳ Testing
+
+### Problem
+After 9 solutions, user confirms: **"toujours impossible de clicker sur voir mes recommandations"**
+
+Even Solution 9 (event capture) failed on mobile.
+
+### Analysis
+External scripts (Supabase/Analytics) intercept ALL of:
+- ❌ `onclick` attributes
+- ❌ `addEventListener('click')` (even with `capture: true`)
+- ❌ `stopImmediatePropagation()`
+
+### Solution: Native HTML Form + Direct Touch
+Use the most primitive browser mechanisms:
+
+```html
+<form id="generateForm" onsubmit="return handleGenerate();">
+  <button 
+    id="generateBtn" 
+    type="submit"
+    ontouchend="handleGenerate(); return false;">
+    Voir mes recommandations 🎉
+  </button>
+</form>
+```
+
+```javascript
+function handleGenerate() {
+  console.log('🚀 handleGenerate() called');
+  try {
+    generateResult();
+  } catch (error) {
+    console.error('❌ Error:', error);
+    alert('Erreur: ' + error.message);
+  }
+  return false; // Prevent form submission
+}
+```
+
+### Triple Protection Layer
+1. **`ontouchend` attribute** → Direct mobile touch handling (no click synthesis)
+2. **`onsubmit` form handler** → Native browser form submission
+3. **`addEventListener` on form** → JavaScript fallback
+
+### Why This Should Work
+- **Native form submission** is the most primitive browser behavior
+- **`ontouchend`** fires directly on touch END, no 300ms delay, no click synthesis
+- External scripts rarely intercept form submissions
+- If this fails, problem is deeper (Service Workers, browser cache, extensions)
+
+### Test
+1. Clear Chrome mobile cache completely
+2. Open configurator, complete all steps
+3. **Touch** "Voir mes recommandations" button
+4. Should trigger `handleGenerate()` → call `generateResult()` → show results page
