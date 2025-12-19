@@ -684,12 +684,12 @@
     const SUPABASE_URL = 'https://yhhdkllbaxuhwrfpsmev.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InloaGRrbGxiYXh1aHdyZnBzbWV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU3NjI0MDEsImV4cCI6MjA4MTMzODQwMX0.2aC_gYZf0xxz6MXi5zcaCH2S64RBaQvXU7a5qiuD0_k';
     
-    // Initialize supabase when SDK is ready
-    let supabase = null;
+    // Initialize supabase when SDK is ready - using supabaseClient to avoid conflict with SDK's window.supabase
+    let supabaseClient = null;
     function initSupabase() {
       if (window.supabase && window.supabase.createClient) {
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        console.log('✅ Supabase initialized');
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        console.log('✅ Supabase client initialized');
         // Now we can check auth state and load data
         checkUserStatus();
         loadCatalogData();
@@ -812,7 +812,7 @@
       
       if (currentUser) {
         configurationCount++;
-        await supabase
+        await supabaseClient
           .from('profiles')
           .update({ configurator_uses: configurationCount })
           .eq('id', currentUser.id);
@@ -855,19 +855,19 @@
 
     // Check user status
     async function checkUserStatus() {
-      if (!supabase) {
+      if (!supabaseClient) {
         console.log('⏳ Supabase not ready, using local storage');
         hasUsedFreeConfiguration = localStorage.getItem(LOCAL_STORAGE_KEY) === 'true';
         updateUsageBanners();
         return;
       }
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session } } = await supabaseClient.auth.getSession();
         
         if (session) {
           currentUser = session.user;
           
-          const { data: profile } = await supabase
+          const { data: profile } = await supabaseClient
             .from('profiles')
             .select('is_premium, configurator_uses')
             .eq('id', currentUser.id)
@@ -894,13 +894,13 @@
 
     // Load racquets and strings from database
     async function loadCatalogData() {
-      if (!supabase) {
+      if (!supabaseClient) {
         console.log('⏳ Supabase not ready, skipping catalog load');
         return;
       }
       try {
         // Load racquets
-        const { data: racquets, error: rError } = await supabase
+        const { data: racquets, error: rError } = await supabaseClient
           .from('racquets')
           .select('*')
           .order('brand', { ascending: true });
@@ -911,7 +911,7 @@
         }
         
         // Load strings
-        const { data: strings, error: sError } = await supabase
+        const { data: strings, error: sError } = await supabaseClient
           .from('strings')
           .select('*')
           .order('brand', { ascending: true });
@@ -1454,12 +1454,12 @@
     async function checkAuthForNav() {
       try {
         // Use the global supabase instance (already declared at line 686)
-        if (typeof supabase === 'undefined') {
+        if (typeof supabaseClient === 'undefined') {
           console.log('Supabase not ready yet, skipping auth check');
           return;
         }
         
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session } } = await supabaseClient.auth.getSession();
         const authLink = document.getElementById('authLink');
         if (session) {
           authLink.href = '/account.html';
