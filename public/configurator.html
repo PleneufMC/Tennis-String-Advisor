@@ -930,7 +930,8 @@
 
     // Smart racquet picker based on criteria
     function pickBestRacquet(criteria) {
-      if (racquetsDB.length === 0) {
+      // Check if racquetsDB is initialized
+      if (typeof racquetsDB === 'undefined' || !racquetsDB || racquetsDB.length === 0) {
         // Fallback to hardcoded if DB not loaded
         return null;
       }
@@ -982,7 +983,8 @@
 
     // Smart string picker
     function pickBestString(criteria) {
-      if (stringsDB.length === 0) {
+      // Check if stringsDB is initialized
+      if (typeof stringsDB === 'undefined' || !stringsDB || stringsDB.length === 0) {
         return null;
       }
       
