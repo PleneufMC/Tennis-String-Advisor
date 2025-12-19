@@ -1023,7 +1023,7 @@
       let stringCriteria = {};
 
       // PRIORITY 1: Adjust for LEVEL (débutant needs confort!)
-      if (selections.level === 'debutant') {
+      if (currentSelections.level === 'debutant') {
         racquetCriteria = {
           level: 'Beginner',
           category: ['Light', 'Tweener'],
@@ -1073,7 +1073,7 @@
         } else {
           string = { brand: 'Tecnifibre', name: 'NRG2', type: 'Multifilament', spin: '6/10', control: '7/10', comfort: '10/10', price: '16€', reason: 'Multifilament doux qui protège le bras et offre de la puissance.', stiffness: 145 };
         }
-      } else if (selections.level === 'intermediaire') {
+      } else if (currentSelections.level === 'intermediaire') {
         racquetCriteria = {
           level: 'Intermediate',
           category: ['Tweener', 'Modern Player'],
@@ -1124,9 +1124,9 @@
       }
 
       // PRIORITY 2: Adjust for physical issues (OVERRIDES level for safety)
-      if (selections.physical === 'bras' || selections.physical === 'epaule') {
+      if (currentSelections.physical === 'bras' || currentSelections.physical === 'epaule') {
         racquetCriteria = {
-          level: selections.level === 'debutant' ? 'Beginner' : 'Intermediate',
+          level: currentSelections.level === 'debutant' ? 'Beginner' : 'Intermediate',
           category: ['Tweener', 'Light'],
           maxStiffness: 64,
           preferComfort: true
@@ -1174,10 +1174,10 @@
         }
       }
       // PRIORITY 3: Customize based on style (ONLY for advanced/competition players)
-      else if (selections.level === 'avance' || selections.level === 'competition') {
-        if (selections.style === 'puissance') {
+      else if (currentSelections.level === 'avance' || currentSelections.level === 'competition') {
+        if (currentSelections.style === 'puissance') {
           racquetCriteria = {
-            level: selections.level === 'avance' ? 'Advanced' : 'Pro',
+            level: currentSelections.level === 'avance' ? 'Advanced' : 'Pro',
             category: ['Power', 'Modern Player'],
             minStiffness: 66
           };
@@ -1222,9 +1222,9 @@
           } else {
             string = { brand: 'Luxilon', name: 'ALU Power', type: 'Polyester', spin: '8/10', control: '9/10', comfort: '6/10', price: '19€', reason: 'Contrôle optimal pour canaliser votre puissance.', stiffness: 230 };
           }
-        } else if (selections.style === 'controle') {
+        } else if (currentSelections.style === 'controle') {
           racquetCriteria = {
-            level: selections.level === 'avance' ? 'Advanced' : 'Pro',
+            level: currentSelections.level === 'avance' ? 'Advanced' : 'Pro',
             category: ['Control', 'Classic Player']
           };
           stringCriteria = {
@@ -1268,9 +1268,9 @@
           } else {
             string = { brand: 'Head', name: 'Hawk', type: 'Polyester', spin: '7/10', control: '9/10', comfort: '5/10', price: '12€', reason: 'Précision et durabilité excellentes.', stiffness: 215 };
           }
-        } else if (selections.style === 'spin') {
+        } else if (currentSelections.style === 'spin') {
           racquetCriteria = {
-            level: selections.level === 'avance' ? 'Advanced' : 'Pro',
+            level: currentSelections.level === 'avance' ? 'Advanced' : 'Pro',
             category: ['Modern Player', 'Spin']
           };
           stringCriteria = {
