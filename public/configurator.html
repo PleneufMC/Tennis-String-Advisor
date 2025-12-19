@@ -930,41 +930,63 @@
 
     // Smart racquet picker based on criteria
     function pickBestRacquet(criteria) {
+      console.log('🎾 pickBestRacquet called with criteria:', criteria);
+      
       // Check if racquetsDB is initialized
       if (typeof racquetsDB === 'undefined' || !racquetsDB || racquetsDB.length === 0) {
-        // Fallback to hardcoded if DB not loaded
+        console.log('❌ racquetsDB not loaded, returning null');
         return null;
       }
       
+      console.log(`📊 Starting with ${racquetsDB.length} racquets`);
       let candidates = [...racquetsDB];
       
       // Filter by player level
       if (criteria.level) {
+        const beforeCount = candidates.length;
         candidates = candidates.filter(r => {
           const levels = r.player_level || [];
           return levels.some(l => l.toLowerCase() === criteria.level.toLowerCase());
         });
+        console.log(`  Level filter (${criteria.level}): ${beforeCount} → ${candidates.length}`);
       }
       
       // Filter by category
       if (criteria.category) {
+        const beforeCount = candidates.length;
         candidates = candidates.filter(r => {
           const cat = (r.category || '').toLowerCase();
           return criteria.category.some(c => cat.includes(c.toLowerCase()));
         });
+        console.log(`  Category filter (${criteria.category}): ${beforeCount} → ${candidates.length}`);
       }
       
       // Filter by stiffness range (comfort requirement)
+      // Apply stiffness filter only to racquets with known stiffness values
       if (criteria.maxStiffness) {
-        candidates = candidates.filter(r => 
-          r.stiffness && r.stiffness <= criteria.maxStiffness
-        );
+        const beforeCount = candidates.length;
+        const stiffnessFiltered = candidates.filter(r => r.stiffness && r.stiffness <= criteria.maxStiffness);
+        // If stiffness filter eliminates all candidates, relax it to include unknown stiffness
+        if (stiffnessFiltered.length > 0) {
+          candidates = stiffnessFiltered;
+        } else {
+          console.log(`  ⚠️ Max stiffness filter too restrictive, including unknown stiffness racquets`);
+          candidates = candidates.filter(r => !r.stiffness || r.stiffness <= criteria.maxStiffness);
+        }
+        console.log(`  Max stiffness filter (${criteria.maxStiffness}): ${beforeCount} → ${candidates.length}`);
       }
       
       if (criteria.minStiffness) {
-        candidates = candidates.filter(r => 
-          r.stiffness && r.stiffness >= criteria.minStiffness
-        );
+        const beforeCount = candidates.length;
+        const stiffnessFiltered = candidates.filter(r => r.stiffness && r.stiffness >= criteria.minStiffness);
+        // If stiffness filter eliminates all candidates, relax it to include unknown stiffness
+        if (stiffnessFiltered.length > 0) {
+          candidates = stiffnessFiltered;
+        } else {
+          console.log(`  ⚠️ Min stiffness filter too restrictive, including unknown stiffness racquets`);
+          candidates = candidates.filter(r => !r.stiffness || r.stiffness >= criteria.minStiffness);
+        }
+        console.log(`  Min stiffness filter (${criteria.minStiffness}): ${beforeCount} → ${candidates.length}`);
       }
       
       // Sort by preference
@@ -978,24 +1000,32 @@
       
       // Pick one randomly from top 3 to add variety
       const topCandidates = candidates.slice(0, Math.min(3, candidates.length));
-      return topCandidates[Math.floor(Math.random() * topCandidates.length)] || candidates[0];
+      const picked = topCandidates[Math.floor(Math.random() * topCandidates.length)] || candidates[0];
+      console.log(`✅ Picked racquet: ${picked ? picked.brand + ' ' + picked.model : 'null'}`);
+      return picked;
     }
 
     // Smart string picker
     function pickBestString(criteria) {
+      console.log('🎸 pickBestString called with criteria:', criteria);
+      
       // Check if stringsDB is initialized
       if (typeof stringsDB === 'undefined' || !stringsDB || stringsDB.length === 0) {
+        console.log('❌ stringsDB not loaded, returning null');
         return null;
       }
       
+      console.log(`📊 Starting with ${stringsDB.length} strings`);
       let candidates = [...stringsDB];
       
       // Filter by type
       if (criteria.types) {
+        const beforeCount = candidates.length;
         candidates = candidates.filter(s => {
           const type = (s.type || '').toLowerCase();
           return criteria.types.some(t => type.includes(t.toLowerCase()));
         });
+        console.log(`  Type filter (${criteria.types.join(', ')}): ${beforeCount} → ${candidates.length}`);
       }
       
       // Sort by comfort if needed
@@ -1014,7 +1044,9 @@
       }
       
       const topCandidates = candidates.slice(0, Math.min(3, candidates.length));
-      return topCandidates[Math.floor(Math.random() * topCandidates.length)] || candidates[0];
+      const picked = topCandidates[Math.floor(Math.random() * topCandidates.length)] || candidates[0];
+      console.log(`✅ Picked string: ${picked ? picked.brand + ' ' + picked.model : 'null'}`);
+      return picked;
     }
 
     // Generate result
@@ -1158,8 +1190,8 @@
       if (currentSelections.physical === 'bras' || currentSelections.physical === 'epaule') {
         racquetCriteria = {
           level: currentSelections.level === 'debutant' ? 'Beginner' : 'Intermediate',
-          category: ['Tweener', 'Light'],
-          maxStiffness: 64,
+          category: ['Tweener', 'Light', 'Comfort'],
+          maxStiffness: 66, // Increased from 64 to include comfort racquets (65-66 RA)
           preferComfort: true
         };
         stringCriteria = {
