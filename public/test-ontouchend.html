@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test ontouchend</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-YSSLHJ5WYD"></script>
+</head>
+<body class="bg-gray-50 p-8">
+  <div class="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow">
+    <h1 class="text-2xl font-bold mb-6">🧪 Test ontouchend + Supabase/Analytics</h1>
+    
+    <p class="mb-4 text-gray-600">
+      Cette page teste si <code>ontouchend</code> fonctionne AVEC Supabase et Google Analytics chargés.
+    </p>
+    
+    <!-- Test 1: Simple button with ontouchend -->
+    <div class="mb-8 p-4 border rounded">
+      <h3 class="font-semibold mb-3">Test 1: Button avec ontouchend</h3>
+      <button 
+        id="test1"
+        ontouchend="test1Clicked()"
+        class="w-full px-6 py-4 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition">
+        🔵 Toucher ici (ontouchend)
+      </button>
+    </div>
+    
+    <!-- Test 2: Form with onsubmit -->
+    <div class="mb-8 p-4 border rounded">
+      <h3 class="font-semibold mb-3">Test 2: Form avec onsubmit</h3>
+      <form onsubmit="test2Submitted(); return false;">
+        <button 
+          type="submit"
+          class="w-full px-6 py-4 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition">
+          🟢 Toucher ici (form submit)
+        </button>
+      </form>
+    </div>
+    
+    <!-- Test 3: Form + ontouchend (Solution 10) -->
+    <div class="mb-8 p-4 border rounded">
+      <h3 class="font-semibold mb-3">Test 3: Form + ontouchend (SOLUTION 10)</h3>
+      <form id="test3Form" onsubmit="test3Handler(); return false;">
+        <button 
+          id="test3"
+          type="submit"
+          ontouchend="test3Handler(); return false;"
+          class="w-full px-6 py-4 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition">
+          🟣 Toucher ici (form + ontouchend)
+        </button>
+      </form>
+    </div>
+    
+    <!-- Test 4: addEventListener with capture -->
+    <div class="mb-8 p-4 border rounded">
+      <h3 class="font-semibold mb-3">Test 4: addEventListener (capture)</h3>
+      <button 
+        id="test4"
+        class="w-full px-6 py-4 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition">
+        🔴 Toucher ici (addEventListener)
+      </button>
+    </div>
+    
+    <!-- Log -->
+    <div class="mt-6 p-4 bg-gray-100 rounded">
+      <h3 class="font-semibold mb-2">📋 Log en temps réel :</h3>
+      <button onclick="clearLog()" class="mb-2 px-3 py-1 bg-gray-300 rounded text-sm">Effacer</button>
+      <pre id="log" class="text-xs whitespace-pre-wrap max-h-96 overflow-auto"></pre>
+    </div>
+  </div>
+
+  <script>
+    const logEl = document.getElementById('log');
+    
+    function log(message) {
+      const timestamp = new Date().toLocaleTimeString();
+      logEl.textContent += `[${timestamp}] ${message}\n`;
+      console.log(message);
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+    
+    function clearLog() {
+      logEl.textContent = '';
+    }
+    
+    // Test 1: ontouchend
+    function test1Clicked() {
+      log('✅ TEST 1: ontouchend WORKS!');
+    }
+    window.test1Clicked = test1Clicked;
+    
+    // Test 2: form submit
+    function test2Submitted() {
+      log('✅ TEST 2: form onsubmit WORKS!');
+      return false;
+    }
+    window.test2Submitted = test2Submitted;
+    
+    // Test 3: Solution 10 (form + ontouchend)
+    function test3Handler() {
+      log('✅ TEST 3: Solution 10 (form + ontouchend) WORKS!');
+      return false;
+    }
+    window.test3Handler = test3Handler;
+    
+    // Test 4: addEventListener with capture
+    document.getElementById('test4').addEventListener('click', function(e) {
+      log('✅ TEST 4: addEventListener (capture) WORKS!');
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+    }, { capture: true });
+    
+    log('✅ Page loaded with Supabase and Analytics');
+    log('🔍 Supabase loaded: ' + (typeof window.supabase !== 'undefined'));
+    log('🔍 Google Analytics loaded: ' + (typeof gtag !== 'undefined'));
+    log('📱 Touch device: ' + ('ontouchstart' in window));
+    log('');
+    log('👆 Test each button above');
+  </script>
+</body>
+</html>
