@@ -715,8 +715,10 @@
     const LOCAL_STORAGE_KEY = 'configurator_free_used';
     
     // Database cache
-    let racquetsDB = [];
-    let stringsDB = [];
+    // SOLUTION B: Use 'var' instead of 'let' to avoid Temporal Dead Zone
+    // 'var' is hoisted and initialized to undefined, preventing TDZ errors
+    var racquetsDB = [];
+    var stringsDB = [];
 
     // SOLUTION 8: Read state from radio buttons instead of tracking in JS
     function getSelections() {
