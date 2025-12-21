@@ -1,0 +1,23 @@
+# robots.txt for Tennis String Advisor
+# https://tennisstringadvisor.org
+
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://tennisstringadvisor.org/sitemap.xml
+
+# Disallow test/debug pages
+Disallow: /test-*.html
+Disallow: /configurator-fixed.html
+Disallow: /configurator-radio.html
+
+# Allow all crawlers for main content
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Slurp
+Allow: /
