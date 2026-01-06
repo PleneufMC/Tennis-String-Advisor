@@ -127,6 +127,30 @@
             ✨ Premium
           </a>
         </div>
+        <!-- Mobile menu button -->
+        <button class="md:hidden p-2 rounded-lg hover:bg-gray-100" onclick="document.getElementById('mobileMenu').classList.toggle('hidden')">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+          </svg>
+        </button>
+      </div>
+      <!-- Mobile menu -->
+      <div id="mobileMenu" class="hidden md:hidden pb-4">
+        <div class="flex flex-col space-y-2">
+          <a href="index.html" class="px-4 py-2 text-sm font-medium rounded-lg bg-green-100 text-green-700">Accueil</a>
+          <a href="configurator.html" class="px-4 py-2 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-100">Configurateur</a>
+          <a href="racquets.html" class="px-4 py-2 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-100">Raquettes</a>
+          <a href="strings.html" class="px-4 py-2 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-100">Cordages</a>
+          <a href="compare.html" class="px-4 py-2 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-100">Comparateur</a>
+          <a href="blog/" class="px-4 py-2 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-100">📚 Blog</a>
+          <a href="rcs-calculator.html" class="px-4 py-2 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-100">🩺 RCS</a>
+          <a href="/auth.html" class="px-4 py-2 text-sm font-medium text-green-600 hover:bg-green-50 rounded-lg">👤 Mon Compte</a>
+          <a href="premium.html" class="px-4 py-2 text-sm font-medium text-amber-700 bg-amber-100 hover:bg-amber-200 rounded-lg">✨ Premium</a>
+          <div class="border-t border-gray-200 my-2"></div>
+          <a href="/en/" class="px-4 py-2 text-sm font-medium rounded-lg text-blue-600 hover:bg-blue-50 flex items-center gap-2">
+            🇬🇧 English Version
+          </a>
+        </div>
       </div>
     </nav>
   </header>
