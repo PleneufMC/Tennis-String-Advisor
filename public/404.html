@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Page non trouvée - Tennis String Advisor</title>
+  <meta name="robots" content="noindex">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .bounce { animation: bounce 2s infinite; }
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-20px); }
+    }
+  </style>
+  <!-- Google Analytics 4 -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-YSSLHJ5WYD"></script>
+  <script src="/js/analytics.js"></script>
+</head>
+<body class="bg-gray-50 font-sans antialiased min-h-screen flex flex-col">
+  <!-- Header -->
+  <header class="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+    <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex h-16 items-center justify-between">
+        <a href="/" class="flex items-center space-x-2">
+          <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-green-700 rounded-xl flex items-center justify-center">
+            <span class="text-white text-xl">🎾</span>
+          </div>
+          <span class="text-lg font-bold text-gray-900">Tennis String <span class="text-green-600">Advisor</span></span>
+        </a>
+        <div class="hidden md:flex items-center gap-1">
+          <a href="/" class="px-4 py-2 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-100">Accueil</a>
+          <a href="/configurator.html" class="px-4 py-2 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-100">Configurateur</a>
+          <a href="/racquets.html" class="px-4 py-2 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-100">Raquettes</a>
+          <a href="/strings.html" class="px-4 py-2 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-100">Cordages</a>
+          <a href="/blog/" class="px-4 py-2 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-100">Blog</a>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-grow flex items-center justify-center px-4 py-16">
+    <div class="text-center max-w-2xl">
+      <!-- Animated Tennis Ball -->
+      <div class="bounce mb-8">
+        <span class="text-8xl">🎾</span>
+      </div>
+      
+      <!-- Error Message -->
+      <h1 class="text-6xl md:text-8xl font-bold text-gray-900 mb-4">404</h1>
+      <h2 class="text-2xl md:text-3xl font-semibold text-gray-700 mb-4">Oups ! Balle hors du court</h2>
+      <p class="text-gray-500 mb-8 text-lg">
+        La page que vous cherchez semble avoir été frappée trop fort et s'est perdue dans les tribunes.
+      </p>
+
+      <!-- Suggestions -->
+      <div class="bg-white rounded-2xl shadow-lg p-8 mb-8">
+        <h3 class="font-semibold text-gray-900 mb-4">Que souhaitez-vous faire ?</h3>
+        <div class="grid sm:grid-cols-2 gap-4">
+          <a href="/configurator.html" class="flex items-center gap-3 p-4 rounded-xl border-2 border-gray-100 hover:border-green-500 hover:bg-green-50 transition group">
+            <span class="text-2xl">⚙️</span>
+            <div class="text-left">
+              <div class="font-semibold text-gray-900 group-hover:text-green-700">Configurateur</div>
+              <div class="text-sm text-gray-500">Trouvez votre setup idéal</div>
+            </div>
+          </a>
+          <a href="/racquets.html" class="flex items-center gap-3 p-4 rounded-xl border-2 border-gray-100 hover:border-green-500 hover:bg-green-50 transition group">
+            <span class="text-2xl">🎾</span>
+            <div class="text-left">
+              <div class="font-semibold text-gray-900 group-hover:text-green-700">Raquettes</div>
+              <div class="text-sm text-gray-500">104 modèles disponibles</div>
+            </div>
+          </a>
+          <a href="/strings.html" class="flex items-center gap-3 p-4 rounded-xl border-2 border-gray-100 hover:border-green-500 hover:bg-green-50 transition group">
+            <span class="text-2xl">🧵</span>
+            <div class="text-left">
+              <div class="font-semibold text-gray-900 group-hover:text-green-700">Cordages</div>
+              <div class="text-sm text-gray-500">165 cordages analysés</div>
+            </div>
+          </a>
+          <a href="/blog/" class="flex items-center gap-3 p-4 rounded-xl border-2 border-gray-100 hover:border-green-500 hover:bg-green-50 transition group">
+            <span class="text-2xl">📚</span>
+            <div class="text-left">
+              <div class="font-semibold text-gray-900 group-hover:text-green-700">Blog</div>
+              <div class="text-sm text-gray-500">Guides et conseils experts</div>
+            </div>
+          </a>
+        </div>
+      </div>
+
+      <!-- Back Home Button -->
+      <a href="/" class="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-green-600 to-green-700 text-white font-bold rounded-xl hover:from-green-700 hover:to-green-800 transition shadow-lg">
+        ← Retour à l'accueil
+      </a>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-gray-900 text-white py-8">
+    <div class="max-w-7xl mx-auto px-4 text-center">
+      <p class="text-gray-400 text-sm">© 2025 Tennis String Advisor. Tous droits réservés.</p>
+    </div>
+  </footer>
+</body>
+</html>
