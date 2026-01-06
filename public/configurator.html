@@ -8,6 +8,8 @@
   <!-- DEFER external scripts to prevent interference with event listeners -->
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script defer src="/js/rcs-calculator.js"></script>
+  <link rel="stylesheet" href="/css/dark-mode.css">
+  <script src="/js/theme.js"></script>
   <style>
     .animate-fade-in { animation: fadeIn 0.3s ease-in; }
     @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
@@ -20,7 +22,8 @@
             tennis: { green: '#16a34a', dark: '#0d1117', light: '#f0fdf4' }
           }
         }
-      }
+      },
+      darkMode: 'class'
     }
   </script>
   <style>
@@ -136,12 +139,28 @@
           <a href="/compare.html" class="text-gray-600 hover:text-green-600 transition">Comparateur</a>
           <a href="/rcs-calculator.html" class="text-gray-600 hover:text-green-600 transition">🩺 RCS</a>
         </nav>
-        <a href="/auth.html" id="authLink" class="hidden md:flex items-center gap-2 px-4 py-2 text-sm font-medium text-green-600 hover:bg-green-50 rounded-lg transition">
-          👤 Mon Compte
-        </a>
+        <div class="flex items-center gap-3">
+          <button onclick="toggleDarkMode()" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition" aria-label="Toggle dark mode">
+            <span class="theme-icon text-xl">🌙</span>
+          </button>
+          <a href="/auth.html" id="authLink" class="hidden md:flex items-center gap-2 px-4 py-2 text-sm font-medium text-green-600 hover:bg-green-50 dark:text-green-400 dark:hover:bg-gray-700 rounded-lg transition">
+            👤 Mon Compte
+          </a>
+        </div>
       </div>
     </div>
   </header>
+
+  <!-- Breadcrumbs -->
+  <nav class="bg-gray-100 dark:bg-gray-800 py-3 border-b border-gray-200 dark:border-gray-700">
+    <div class="max-w-4xl mx-auto px-4">
+      <ol class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+        <li><a href="/" class="hover:text-green-600 dark:hover:text-green-400">Accueil</a></li>
+        <li><span class="mx-2">/</span></li>
+        <li class="text-gray-900 dark:text-white font-medium">Configurateur</li>
+      </ol>
+    </div>
+  </nav>
 
   <!-- Main Content -->
   <main class="max-w-4xl mx-auto px-4 py-8">

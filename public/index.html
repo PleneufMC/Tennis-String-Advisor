@@ -13,9 +13,12 @@
             tennis: { 500: '#22c55e', 600: '#16a34a', 700: '#15803d' }
           }
         }
-      }
+      },
+      darkMode: 'class'
     }
   </script>
+  <link rel="stylesheet" href="/css/dark-mode.css">
+  <script src="/js/theme.js"></script>
   <style>
     .hero-bg { background: linear-gradient(135deg, rgba(34, 197, 94, 0.95) 0%, rgba(22, 163, 74, 0.9) 100%); }
     [x-cloak] { display: none !important; }
@@ -46,10 +49,13 @@
           <a href="rcs-calculator.html" class="px-4 py-2 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-100">🩺 RCS</a>
         </div>
         <div class="hidden md:flex items-center gap-3">
-          <a href="/auth.html" id="authLink" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-green-600 hover:bg-green-50 rounded-lg transition">
+          <button onclick="toggleDarkMode()" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition" aria-label="Toggle dark mode">
+            <span class="theme-icon text-xl">🌙</span>
+          </button>
+          <a href="/auth.html" id="authLink" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-green-600 hover:bg-green-50 dark:text-green-400 dark:hover:bg-gray-700 rounded-lg transition">
             👤 Mon Compte
           </a>
-          <a href="premium.html" class="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-amber-700 bg-amber-100 rounded-lg hover:bg-amber-200">
+          <a href="premium.html" class="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-amber-700 bg-amber-100 rounded-lg hover:bg-amber-200 dark:bg-amber-900 dark:text-amber-200">
             ✨ Premium
           </a>
         </div>
