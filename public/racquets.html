@@ -3,7 +3,69 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Catalogue de 104 raquettes de tennis analysées. Filtrez par marque, poids, rigidité RA, prix. Trouvez la raquette parfaite pour votre jeu.">
+  <meta name="keywords" content="raquette tennis, catalogue, Babolat, Wilson, Head, Yonex, comparatif">
+  <meta property="og:title" content="Catalogue des Raquettes - Tennis String Advisor">
+  <meta property="og:description" content="104 raquettes de tennis analysées. Filtrez et trouvez la raquette idéale.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://tennisstringadvisor.org/racquets.html">
+  <link rel="canonical" href="https://tennisstringadvisor.org/racquets.html">
   <title>Catalogue des Raquettes - Tennis String Advisor</title>
+  
+  <!-- Schema.org ItemList for Racquets -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "name": "Catalogue des Raquettes de Tennis",
+    "description": "Plus de 100 raquettes de tennis analysées avec specs détaillées",
+    "numberOfItems": 104,
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "item": {
+          "@type": "Product",
+          "name": "Babolat Pure Drive",
+          "brand": {"@type": "Brand", "name": "Babolat"},
+          "category": "Raquette de Tennis"
+        }
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "item": {
+          "@type": "Product",
+          "name": "Wilson Blade 98",
+          "brand": {"@type": "Brand", "name": "Wilson"},
+          "category": "Raquette de Tennis"
+        }
+      }
+    ]
+  }
+  </script>
+  
+  <!-- Schema.org BreadcrumbList -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Accueil",
+        "item": "https://tennisstringadvisor.org/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Raquettes",
+        "item": "https://tennisstringadvisor.org/racquets.html"
+      }
+    ]
+  }
+  </script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link rel="stylesheet" href="/css/dark-mode.css">
@@ -101,30 +163,23 @@
     </div>
 
     <!-- Filters -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
-      <div class="grid grid-cols-1 md:grid-cols-6 gap-4">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Recherche</label>
-          <input type="text" id="searchFilter" placeholder="Rechercher..." class="w-full rounded-lg border-gray-300 border p-2.5 focus:ring-green-500 focus:border-green-500">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-8">
+      <!-- Row 1: Main filters -->
+      <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-4">
+        <div class="col-span-2 md:col-span-1">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">🔍 Recherche</label>
+          <input type="text" id="searchFilter" placeholder="Nom, marque..." class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white border p-2.5 focus:ring-green-500 focus:border-green-500">
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Marque</label>
-          <select id="brandFilter" class="w-full rounded-lg border-gray-300 border p-2.5 focus:ring-green-500 focus:border-green-500">
-            <option value="">Toutes les marques</option>
-            <option value="Babolat">Babolat</option>
-            <option value="Wilson">Wilson</option>
-            <option value="Head">Head</option>
-            <option value="Yonex">Yonex</option>
-            <option value="Tecnifibre">Tecnifibre</option>
-            <option value="Prince">Prince</option>
-            <option value="Dunlop">Dunlop</option>
-            <option value="Volkl">Volkl</option>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">🏷️ Marque</label>
+          <select id="brandFilter" class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white border p-2.5 focus:ring-green-500 focus:border-green-500">
+            <option value="">Toutes</option>
           </select>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Catégorie</label>
-          <select id="categoryFilter" class="w-full rounded-lg border-gray-300 border p-2.5 focus:ring-green-500 focus:border-green-500">
-            <option value="">Toutes les catégories</option>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">📁 Catégorie</label>
+          <select id="categoryFilter" class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white border p-2.5 focus:ring-green-500 focus:border-green-500">
+            <option value="">Toutes</option>
             <option value="Power">Puissance</option>
             <option value="Control">Contrôle</option>
             <option value="Modern Player">Modern Player</option>
@@ -135,35 +190,102 @@
           </select>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Poids max</label>
-          <select id="weightFilter" class="w-full rounded-lg border-gray-300 border p-2.5 focus:ring-green-500 focus:border-green-500">
-            <option value="">Tous les poids</option>
-            <option value="270">Moins de 270g</option>
-            <option value="290">Moins de 290g</option>
-            <option value="300">Moins de 300g</option>
-            <option value="310">Moins de 310g</option>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">⚖️ Poids max</label>
+          <select id="weightFilter" class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white border p-2.5 focus:ring-green-500 focus:border-green-500">
+            <option value="">Tous</option>
+            <option value="270">< 270g</option>
+            <option value="290">< 290g</option>
+            <option value="300">< 300g</option>
+            <option value="310">< 310g</option>
+            <option value="330">< 330g</option>
           </select>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Prix max</label>
-          <select id="priceFilter" class="w-full rounded-lg border-gray-300 border p-2.5 focus:ring-green-500 focus:border-green-500">
-            <option value="">Tous les prix</option>
-            <option value="200">Moins de 200€</option>
-            <option value="250">Moins de 250€</option>
-            <option value="280">Moins de 280€</option>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">💰 Prix max</label>
+          <select id="priceFilter" class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white border p-2.5 focus:ring-green-500 focus:border-green-500">
+            <option value="">Tous</option>
+            <option value="150">< 150€</option>
+            <option value="200">< 200€</option>
+            <option value="250">< 250€</option>
+            <option value="280">< 280€</option>
+            <option value="300">< 300€</option>
           </select>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Rigidité RA</label>
-          <select id="stiffnessFilter" class="w-full rounded-lg border-gray-300 border p-2.5 focus:ring-green-500 focus:border-green-500">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">🔧 Rigidité RA</label>
+          <select id="stiffnessFilter" class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white border p-2.5 focus:ring-green-500 focus:border-green-500">
             <option value="">Toutes</option>
             <option value="with">Avec RA</option>
             <option value="without">Sans RA</option>
-            <option value="low">RA faible (&lt;62)</option>
-            <option value="medium">RA moyen (62-67)</option>
-            <option value="high">RA élevé (&gt;67)</option>
+            <option value="low">Flexible (<62)</option>
+            <option value="medium">Équilibré (62-67)</option>
+            <option value="high">Rigide (>67)</option>
           </select>
         </div>
+      </div>
+      <!-- Row 2: Advanced filters -->
+      <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">🎯 Taille tête</label>
+          <select id="headSizeFilter" class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white border p-2.5 focus:ring-green-500 focus:border-green-500">
+            <option value="">Toutes</option>
+            <option value="small">< 100 sq in (Contrôle)</option>
+            <option value="medium">100-105 sq in (Polyvalent)</option>
+            <option value="large">> 105 sq in (Puissance)</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">⚡ Équilibre</label>
+          <select id="balanceFilter" class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white border p-2.5 focus:ring-green-500 focus:border-green-500">
+            <option value="">Tous</option>
+            <option value="head-light">Tête légère (< 320mm)</option>
+            <option value="balanced">Équilibré (320-330mm)</option>
+            <option value="head-heavy">Tête lourde (> 330mm)</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">🔲 Plan cordage</label>
+          <select id="stringPatternFilter" class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white border p-2.5 focus:ring-green-500 focus:border-green-500">
+            <option value="">Tous</option>
+            <option value="16x19">16x19 (Spin)</option>
+            <option value="18x20">18x20 (Contrôle)</option>
+            <option value="16x18">16x18</option>
+            <option value="16x20">16x20</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">🏆 Pro Player</label>
+          <select id="proFilter" class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white border p-2.5 focus:ring-green-500 focus:border-green-500">
+            <option value="">Tous</option>
+            <option value="yes">Utilisé par des pros</option>
+          </select>
+        </div>
+        <div class="col-span-2 flex items-end gap-2">
+          <button onclick="resetFilters()" class="flex-1 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 px-4 py-2.5 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500 transition text-sm font-medium">
+            🔄 Réinitialiser
+          </button>
+        </div>
+      </div>
+      <!-- Active Filters Tags -->
+      <div id="activeFilters" class="flex flex-wrap gap-2 hidden">
+        <!-- Tags will be dynamically inserted here -->
+      </div>
+    </div>
+
+    <!-- Results Count -->
+    <div class="flex items-center justify-between mb-4">
+      <p id="resultsCount" class="text-gray-600 dark:text-gray-400 font-medium"></p>
+      <div class="flex items-center gap-2">
+        <label class="text-sm text-gray-600 dark:text-gray-400">Trier par:</label>
+        <select id="sortFilter" class="rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white border p-2 text-sm focus:ring-green-500 focus:border-green-500">
+          <option value="brand">Marque A-Z</option>
+          <option value="price-asc">Prix croissant</option>
+          <option value="price-desc">Prix décroissant</option>
+          <option value="weight-asc">Poids croissant</option>
+          <option value="weight-desc">Poids décroissant</option>
+          <option value="stiffness-asc">RA croissant</option>
+          <option value="stiffness-desc">RA décroissant</option>
+        </select>
       </div>
     </div>
 
@@ -425,33 +547,36 @@
       noResults.classList.add('hidden');
       grid.classList.remove('hidden');
       
+      // Update results count
+      document.getElementById('resultsCount').textContent = `${filteredRacquets.length} raquette${filteredRacquets.length > 1 ? 's' : ''} trouvée${filteredRacquets.length > 1 ? 's' : ''}`;
+      
       grid.innerHTML = filteredRacquets.map(racquet => `
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden card-hover ${racquet.stiffness === null ? 'border-amber-200' : ''}">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden card-hover ${racquet.stiffness === null ? 'border-amber-200 dark:border-amber-700' : ''}">
           <div class="bg-gradient-to-r ${brandColors[racquet.brand] || 'from-gray-400 to-gray-500'} h-2"></div>
           <div class="p-6">
             <div class="flex items-start justify-between mb-4">
               <div>
                 <span class="text-sm ${brandTextColors[racquet.brand] || 'text-gray-600'} font-medium">${racquet.brand}</span>
-                <h3 class="text-lg font-bold text-gray-900">${racquet.model} ${racquet.variant || ''}</h3>
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white">${racquet.model} ${racquet.variant || ''}</h3>
               </div>
               <span class="${categoryColors[racquet.category] || 'bg-gray-100 text-gray-800'} text-xs font-medium px-2.5 py-1 rounded">${racquet.category || 'N/A'}</span>
             </div>
             <div class="space-y-3 mb-4">
               <div class="flex justify-between text-sm">
-                <span class="text-gray-500">Poids</span>
-                <span class="font-medium">${racquet.weight}g</span>
+                <span class="text-gray-500 dark:text-gray-400">Poids</span>
+                <span class="font-medium dark:text-white">${racquet.weight}g</span>
               </div>
               <div class="flex justify-between text-sm">
-                <span class="text-gray-500">Tête</span>
-                <span class="font-medium">${racquet.head_size} sq in</span>
+                <span class="text-gray-500 dark:text-gray-400">Tête</span>
+                <span class="font-medium dark:text-white">${racquet.head_size} sq in</span>
               </div>
               <div class="flex justify-between items-center text-sm">
-                <span class="text-gray-500">Rigidité</span>
-                <span class="font-medium">${getStiffnessDisplay(racquet)}</span>
+                <span class="text-gray-500 dark:text-gray-400">Rigidité</span>
+                <span class="font-medium dark:text-white">${getStiffnessDisplay(racquet)}</span>
               </div>
               <div class="flex justify-between text-sm">
-                <span class="text-gray-500">Plan cordage</span>
-                <span class="font-medium">${racquet.string_pattern || 'N/D'}</span>
+                <span class="text-gray-500 dark:text-gray-400">Plan cordage</span>
+                <span class="font-medium dark:text-white">${racquet.string_pattern || 'N/D'}</span>
               </div>
             </div>
             ${racquet.stiffness === null ? `
@@ -467,7 +592,7 @@
               `).join('')}
             </div>
             ` : ''}
-            <p class="text-sm text-gray-600 mb-4 line-clamp-2">${racquet.description || ''}</p>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">${racquet.description || ''}</p>
             <div class="flex items-center justify-between pt-4 border-t">
               <span class="text-2xl font-bold text-green-600">${racquet.price_eur}€</span>
               <div class="flex items-center gap-2">
@@ -492,6 +617,11 @@
       const maxWeight = document.getElementById('weightFilter').value;
       const maxPrice = document.getElementById('priceFilter').value;
       const stiffnessFilter = document.getElementById('stiffnessFilter').value;
+      const headSizeFilter = document.getElementById('headSizeFilter').value;
+      const balanceFilter = document.getElementById('balanceFilter').value;
+      const stringPatternFilter = document.getElementById('stringPatternFilter').value;
+      const proFilter = document.getElementById('proFilter').value;
+      const sortFilter = document.getElementById('sortFilter').value;
       
       filteredRacquets = allRacquets.filter(racquet => {
         if (search && !`${racquet.brand} ${racquet.model} ${racquet.variant || ''}`.toLowerCase().includes(search)) return false;
@@ -499,6 +629,34 @@
         if (category && racquet.category !== category) return false;
         if (maxWeight && racquet.weight > parseInt(maxWeight)) return false;
         if (maxPrice && racquet.price_eur > parseInt(maxPrice)) return false;
+        
+        // Head size filter
+        if (headSizeFilter) {
+          const headSize = racquet.head_size;
+          switch (headSizeFilter) {
+            case 'small': if (headSize >= 100) return false; break;
+            case 'medium': if (headSize < 100 || headSize > 105) return false; break;
+            case 'large': if (headSize <= 105) return false; break;
+          }
+        }
+        
+        // Balance filter
+        if (balanceFilter && racquet.balance) {
+          const balance = racquet.balance;
+          switch (balanceFilter) {
+            case 'head-light': if (balance >= 320) return false; break;
+            case 'balanced': if (balance < 320 || balance > 330) return false; break;
+            case 'head-heavy': if (balance <= 330) return false; break;
+          }
+        }
+        
+        // String pattern filter
+        if (stringPatternFilter && racquet.string_pattern) {
+          if (!racquet.string_pattern.includes(stringPatternFilter)) return false;
+        }
+        
+        // Pro usage filter
+        if (proFilter === 'yes' && !racquet.pro_usage) return false;
         
         // Stiffness filter
         if (stiffnessFilter) {
@@ -524,7 +682,68 @@
         return true;
       });
       
+      // Sort results
+      filteredRacquets.sort((a, b) => {
+        switch (sortFilter) {
+          case 'brand': return a.brand.localeCompare(b.brand);
+          case 'price-asc': return a.price_eur - b.price_eur;
+          case 'price-desc': return b.price_eur - a.price_eur;
+          case 'weight-asc': return a.weight - b.weight;
+          case 'weight-desc': return b.weight - a.weight;
+          case 'stiffness-asc': return (a.stiffness || 999) - (b.stiffness || 999);
+          case 'stiffness-desc': return (b.stiffness || 0) - (a.stiffness || 0);
+          default: return 0;
+        }
+      });
+      
+      updateActiveFilters();
       renderRacquets();
+    }
+    
+    // Update active filters display
+    function updateActiveFilters() {
+      const container = document.getElementById('activeFilters');
+      const filters = [];
+      
+      const search = document.getElementById('searchFilter').value;
+      const brand = document.getElementById('brandFilter').value;
+      const category = document.getElementById('categoryFilter').value;
+      const maxWeight = document.getElementById('weightFilter').value;
+      const maxPrice = document.getElementById('priceFilter').value;
+      const stiffness = document.getElementById('stiffnessFilter').value;
+      const headSize = document.getElementById('headSizeFilter').value;
+      const balance = document.getElementById('balanceFilter').value;
+      const stringPattern = document.getElementById('stringPatternFilter').value;
+      const pro = document.getElementById('proFilter').value;
+      
+      if (search) filters.push({ label: `"${search}"`, filter: 'searchFilter' });
+      if (brand) filters.push({ label: brand, filter: 'brandFilter' });
+      if (category) filters.push({ label: category, filter: 'categoryFilter' });
+      if (maxWeight) filters.push({ label: `< ${maxWeight}g`, filter: 'weightFilter' });
+      if (maxPrice) filters.push({ label: `< ${maxPrice}€`, filter: 'priceFilter' });
+      if (stiffness) filters.push({ label: `RA: ${stiffness}`, filter: 'stiffnessFilter' });
+      if (headSize) filters.push({ label: `Tête: ${headSize}`, filter: 'headSizeFilter' });
+      if (balance) filters.push({ label: `Équilibre: ${balance}`, filter: 'balanceFilter' });
+      if (stringPattern) filters.push({ label: stringPattern, filter: 'stringPatternFilter' });
+      if (pro) filters.push({ label: 'Utilisé par pros', filter: 'proFilter' });
+      
+      if (filters.length === 0) {
+        container.classList.add('hidden');
+        return;
+      }
+      
+      container.classList.remove('hidden');
+      container.innerHTML = filters.map(f => `
+        <span class="inline-flex items-center gap-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-sm px-3 py-1 rounded-full">
+          ${f.label}
+          <button onclick="clearFilter('${f.filter}')" class="hover:text-green-600 dark:hover:text-green-400">×</button>
+        </span>
+      `).join('');
+    }
+    
+    function clearFilter(filterId) {
+      document.getElementById(filterId).value = '';
+      filterRacquets();
     }
     
     function resetFilters() {
@@ -534,7 +753,13 @@
       document.getElementById('weightFilter').value = '';
       document.getElementById('priceFilter').value = '';
       document.getElementById('stiffnessFilter').value = '';
+      document.getElementById('headSizeFilter').value = '';
+      document.getElementById('balanceFilter').value = '';
+      document.getElementById('stringPatternFilter').value = '';
+      document.getElementById('proFilter').value = '';
+      document.getElementById('sortFilter').value = 'brand';
       filteredRacquets = allRacquets;
+      updateActiveFilters();
       renderRacquets();
     }
     
@@ -600,13 +825,18 @@
       if (e.target === document.getElementById('raModal')) closeRaModal();
     });
     
-    // Event listeners
+    // Event listeners for all filters
     document.getElementById('searchFilter').addEventListener('input', filterRacquets);
     document.getElementById('brandFilter').addEventListener('change', filterRacquets);
     document.getElementById('categoryFilter').addEventListener('change', filterRacquets);
     document.getElementById('weightFilter').addEventListener('change', filterRacquets);
     document.getElementById('priceFilter').addEventListener('change', filterRacquets);
     document.getElementById('stiffnessFilter').addEventListener('change', filterRacquets);
+    document.getElementById('headSizeFilter').addEventListener('change', filterRacquets);
+    document.getElementById('balanceFilter').addEventListener('change', filterRacquets);
+    document.getElementById('stringPatternFilter').addEventListener('change', filterRacquets);
+    document.getElementById('proFilter').addEventListener('change', filterRacquets);
+    document.getElementById('sortFilter').addEventListener('change', filterRacquets);
     
     // Affiliate Links Configuration
     const AFFILIATE_CONFIG = {

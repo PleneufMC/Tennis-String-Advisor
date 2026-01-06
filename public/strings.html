@@ -3,7 +3,69 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Catalogue de 165 cordages tennis analysés. Filtrez par type (polyester, multifilament, boyau), spin, confort, prix. Trouvez le cordage idéal.">
+  <meta name="keywords" content="cordage tennis, catalogue, polyester, multifilament, boyau naturel, RPM Blast, Luxilon">
+  <meta property="og:title" content="Catalogue des Cordages - Tennis String Advisor">
+  <meta property="og:description" content="165 cordages de tennis analysés. Filtrez par type, spin, confort et trouvez le cordage parfait.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://tennisstringadvisor.org/strings.html">
+  <link rel="canonical" href="https://tennisstringadvisor.org/strings.html">
   <title>Catalogue des Cordages - Tennis String Advisor</title>
+  
+  <!-- Schema.org ItemList for Strings -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "name": "Catalogue des Cordages de Tennis",
+    "description": "Plus de 160 cordages de tennis analysés avec ratings de spin, confort et durabilité",
+    "numberOfItems": 165,
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "item": {
+          "@type": "Product",
+          "name": "Babolat RPM Blast",
+          "brand": {"@type": "Brand", "name": "Babolat"},
+          "category": "Cordage de Tennis - Polyester"
+        }
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "item": {
+          "@type": "Product",
+          "name": "Luxilon ALU Power",
+          "brand": {"@type": "Brand", "name": "Luxilon"},
+          "category": "Cordage de Tennis - Polyester"
+        }
+      }
+    ]
+  }
+  </script>
+  
+  <!-- Schema.org BreadcrumbList -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Accueil",
+        "item": "https://tennisstringadvisor.org/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Cordages",
+        "item": "https://tennisstringadvisor.org/strings.html"
+      }
+    ]
+  }
+  </script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link rel="stylesheet" href="/css/dark-mode.css">
@@ -81,32 +143,23 @@
     </div>
 
     <!-- Filters -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
-      <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Recherche</label>
-          <input type="text" id="searchFilter" placeholder="Rechercher..." class="w-full rounded-lg border-gray-300 border p-2.5 focus:ring-green-500 focus:border-green-500">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-8">
+      <!-- Row 1: Main filters -->
+      <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-4">
+        <div class="col-span-2 md:col-span-1">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">🔍 Recherche</label>
+          <input type="text" id="searchFilter" placeholder="Nom, marque..." class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white border p-2.5 focus:ring-green-500 focus:border-green-500">
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Marque</label>
-          <select id="brandFilter" class="w-full rounded-lg border-gray-300 border p-2.5 focus:ring-green-500 focus:border-green-500">
-            <option value="">Toutes les marques</option>
-            <option value="Babolat">Babolat</option>
-            <option value="Wilson">Wilson</option>
-            <option value="Luxilon">Luxilon</option>
-            <option value="Tecnifibre">Tecnifibre</option>
-            <option value="Head">Head</option>
-            <option value="Yonex">Yonex</option>
-            <option value="Solinco">Solinco</option>
-            <option value="Volkl">Volkl</option>
-            <option value="Prince">Prince</option>
-            <option value="Dunlop">Dunlop</option>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">🏷️ Marque</label>
+          <select id="brandFilter" class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white border p-2.5 focus:ring-green-500 focus:border-green-500">
+            <option value="">Toutes</option>
           </select>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Type</label>
-          <select id="typeFilter" class="w-full rounded-lg border-gray-300 border p-2.5 focus:ring-green-500 focus:border-green-500">
-            <option value="">Tous les types</option>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">🧵 Type</label>
+          <select id="typeFilter" class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white border p-2.5 focus:ring-green-500 focus:border-green-500">
+            <option value="">Tous</option>
             <option value="Polyester">Polyester</option>
             <option value="Multifilament">Multifilament</option>
             <option value="Natural Gut">Boyau naturel</option>
@@ -114,22 +167,98 @@
           </select>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Confort min</label>
-          <select id="comfortFilter" class="w-full rounded-lg border-gray-300 border p-2.5 focus:ring-green-500 focus:border-green-500">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">💰 Prix max</label>
+          <select id="priceFilter" class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white border p-2.5 focus:ring-green-500 focus:border-green-500">
             <option value="">Tous</option>
-            <option value="8">8+ (Confortable)</option>
-            <option value="9">9+ (Très confortable)</option>
+            <option value="10">< 10€</option>
+            <option value="15">< 15€</option>
+            <option value="20">< 20€</option>
+            <option value="30">< 30€</option>
+            <option value="50">< 50€</option>
           </select>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Prix max</label>
-          <select id="priceFilter" class="w-full rounded-lg border-gray-300 border p-2.5 focus:ring-green-500 focus:border-green-500">
-            <option value="">Tous les prix</option>
-            <option value="15">Moins de 15€</option>
-            <option value="20">Moins de 20€</option>
-            <option value="30">Moins de 30€</option>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">🎯 Spin min</label>
+          <select id="spinFilter" class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white border p-2.5 focus:ring-green-500 focus:border-green-500">
+            <option value="">Tous</option>
+            <option value="7">7+ (Bon spin)</option>
+            <option value="8">8+ (Excellent spin)</option>
+            <option value="9">9+ (Spin maximum)</option>
           </select>
         </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">🛡️ Contrôle min</label>
+          <select id="controlFilter" class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white border p-2.5 focus:ring-green-500 focus:border-green-500">
+            <option value="">Tous</option>
+            <option value="7">7+ (Bon contrôle)</option>
+            <option value="8">8+ (Excellent contrôle)</option>
+            <option value="9">9+ (Contrôle maximum)</option>
+          </select>
+        </div>
+      </div>
+      <!-- Row 2: Additional filters -->
+      <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">💨 Confort min</label>
+          <select id="comfortFilter" class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white border p-2.5 focus:ring-green-500 focus:border-green-500">
+            <option value="">Tous</option>
+            <option value="6">6+ (Correct)</option>
+            <option value="7">7+ (Confortable)</option>
+            <option value="8">8+ (Très confortable)</option>
+            <option value="9">9+ (Maximum)</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">⚙️ Durabilité min</label>
+          <select id="durabilityFilter" class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white border p-2.5 focus:ring-green-500 focus:border-green-500">
+            <option value="">Tous</option>
+            <option value="6">6+ (Correcte)</option>
+            <option value="7">7+ (Bonne)</option>
+            <option value="8">8+ (Très bonne)</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">📏 Gauge</label>
+          <select id="gaugeFilter" class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white border p-2.5 focus:ring-green-500 focus:border-green-500">
+            <option value="">Tous</option>
+            <option value="1.20">1.20mm (Fin - Plus de toucher)</option>
+            <option value="1.25">1.25mm (Standard)</option>
+            <option value="1.30">1.30mm (Épais - Plus durable)</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">🏆 Pro Player</label>
+          <select id="proFilter" class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white border p-2.5 focus:ring-green-500 focus:border-green-500">
+            <option value="">Tous</option>
+            <option value="yes">Utilisé par des pros</option>
+          </select>
+        </div>
+        <div class="col-span-2 flex items-end gap-2">
+          <button onclick="resetFilters()" class="flex-1 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 px-4 py-2.5 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500 transition text-sm font-medium">
+            🔄 Réinitialiser
+          </button>
+        </div>
+      </div>
+      <!-- Active Filters Tags -->
+      <div id="activeFilters" class="flex flex-wrap gap-2 hidden">
+        <!-- Tags will be dynamically inserted here -->
+      </div>
+    </div>
+
+    <!-- Results Count -->
+    <div class="flex items-center justify-between mb-4">
+      <p id="resultsCount" class="text-gray-600 dark:text-gray-400 font-medium"></p>
+      <div class="flex items-center gap-2">
+        <label class="text-sm text-gray-600 dark:text-gray-400">Trier par:</label>
+        <select id="sortFilter" class="rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white border p-2 text-sm focus:ring-green-500 focus:border-green-500">
+          <option value="brand">Marque A-Z</option>
+          <option value="price-asc">Prix croissant</option>
+          <option value="price-desc">Prix décroissant</option>
+          <option value="spin-desc">Spin (meilleur)</option>
+          <option value="control-desc">Contrôle (meilleur)</option>
+          <option value="comfort-desc">Confort (meilleur)</option>
+          <option value="durability-desc">Durabilité (meilleure)</option>
+        </select>
       </div>
     </div>
 
@@ -306,14 +435,17 @@
       noResults.classList.add('hidden');
       grid.classList.remove('hidden');
       
+      // Update results count
+      document.getElementById('resultsCount').textContent = `${filteredStrings.length} cordage${filteredStrings.length > 1 ? 's' : ''} trouvé${filteredStrings.length > 1 ? 's' : ''}`;
+      
       grid.innerHTML = filteredStrings.map(string => `
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden card-hover">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden card-hover">
           <div class="bg-gradient-to-r ${brandColors[string.brand] || 'from-gray-400 to-gray-500'} h-2"></div>
           <div class="p-6">
             <div class="flex items-start justify-between mb-4">
               <div>
                 <span class="text-sm ${brandTextColors[string.brand] || 'text-gray-600'} font-medium">${string.brand}</span>
-                <h3 class="text-lg font-bold text-gray-900">${string.model}</h3>
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white">${string.model}</h3>
               </div>
               <span class="${typeColors[string.type] || 'bg-gray-100 text-gray-800'} text-xs font-medium px-2.5 py-1 rounded">${string.type}</span>
             </div>
@@ -321,29 +453,29 @@
             <div class="space-y-3 mb-4">
               <div>
                 <div class="flex justify-between text-sm mb-1">
-                  <span class="text-gray-500">Spin</span>
-                  <span class="font-medium">${string.spin}/10</span>
+                  <span class="text-gray-500 dark:text-gray-400">Spin</span>
+                  <span class="font-medium dark:text-white">${string.spin}/10</span>
                 </div>
                 <div class="rating-bar"><div class="rating-fill ${getRatingColor(string.spin)}" style="width: ${string.spin * 10}%"></div></div>
               </div>
               <div>
                 <div class="flex justify-between text-sm mb-1">
-                  <span class="text-gray-500">Contrôle</span>
-                  <span class="font-medium">${string.control}/10</span>
+                  <span class="text-gray-500 dark:text-gray-400">Contrôle</span>
+                  <span class="font-medium dark:text-white">${string.control}/10</span>
                 </div>
                 <div class="rating-bar"><div class="rating-fill ${getRatingColor(string.control)}" style="width: ${string.control * 10}%"></div></div>
               </div>
               <div>
                 <div class="flex justify-between text-sm mb-1">
-                  <span class="text-gray-500">Confort</span>
-                  <span class="font-medium">${string.comfort}/10</span>
+                  <span class="text-gray-500 dark:text-gray-400">Confort</span>
+                  <span class="font-medium dark:text-white">${string.comfort}/10</span>
                 </div>
                 <div class="rating-bar"><div class="rating-fill ${getRatingColor(string.comfort)}" style="width: ${string.comfort * 10}%"></div></div>
               </div>
               <div>
                 <div class="flex justify-between text-sm mb-1">
-                  <span class="text-gray-500">Durabilité</span>
-                  <span class="font-medium">${string.durability}/10</span>
+                  <span class="text-gray-500 dark:text-gray-400">Durabilité</span>
+                  <span class="font-medium dark:text-white">${string.durability}/10</span>
                 </div>
                 <div class="rating-bar"><div class="rating-fill ${getRatingColor(string.durability)}" style="width: ${string.durability * 10}%"></div></div>
               </div>
@@ -355,7 +487,7 @@
             </div>
             ` : ''}
 
-            <div class="text-sm text-gray-600 mb-4">
+            <div class="text-sm text-gray-600 dark:text-gray-400 mb-4">
               Gauges: ${string.gauges ? string.gauges.join(', ') : 'N/A'}mm
             </div>
             
@@ -382,6 +514,12 @@
       const type = document.getElementById('typeFilter').value;
       const minComfort = document.getElementById('comfortFilter').value;
       const maxPrice = document.getElementById('priceFilter').value;
+      const minSpin = document.getElementById('spinFilter').value;
+      const minControl = document.getElementById('controlFilter').value;
+      const minDurability = document.getElementById('durabilityFilter').value;
+      const gaugeFilter = document.getElementById('gaugeFilter').value;
+      const proFilter = document.getElementById('proFilter').value;
+      const sortFilter = document.getElementById('sortFilter').value;
       
       filteredStrings = allStrings.filter(string => {
         if (search && !`${string.brand} ${string.model}`.toLowerCase().includes(search)) return false;
@@ -389,10 +527,84 @@
         if (type && string.type !== type) return false;
         if (minComfort && string.comfort < parseFloat(minComfort)) return false;
         if (maxPrice && string.price_eur > parseInt(maxPrice)) return false;
+        if (minSpin && string.spin < parseFloat(minSpin)) return false;
+        if (minControl && string.control < parseFloat(minControl)) return false;
+        if (minDurability && string.durability < parseFloat(minDurability)) return false;
+        
+        // Gauge filter
+        if (gaugeFilter && string.gauges) {
+          const hasGauge = string.gauges.some(g => Math.abs(parseFloat(g) - parseFloat(gaugeFilter)) < 0.03);
+          if (!hasGauge) return false;
+        }
+        
+        // Pro usage filter
+        if (proFilter === 'yes' && !string.pro_usage) return false;
+        
         return true;
       });
       
+      // Sort results
+      filteredStrings.sort((a, b) => {
+        switch (sortFilter) {
+          case 'brand': return a.brand.localeCompare(b.brand);
+          case 'price-asc': return a.price_eur - b.price_eur;
+          case 'price-desc': return b.price_eur - a.price_eur;
+          case 'spin-desc': return b.spin - a.spin;
+          case 'control-desc': return b.control - a.control;
+          case 'comfort-desc': return b.comfort - a.comfort;
+          case 'durability-desc': return b.durability - a.durability;
+          default: return 0;
+        }
+      });
+      
+      updateActiveFilters();
       renderStrings();
+    }
+    
+    // Update active filters display
+    function updateActiveFilters() {
+      const container = document.getElementById('activeFilters');
+      const filters = [];
+      
+      const search = document.getElementById('searchFilter').value;
+      const brand = document.getElementById('brandFilter').value;
+      const type = document.getElementById('typeFilter').value;
+      const comfort = document.getElementById('comfortFilter').value;
+      const price = document.getElementById('priceFilter').value;
+      const spin = document.getElementById('spinFilter').value;
+      const control = document.getElementById('controlFilter').value;
+      const durability = document.getElementById('durabilityFilter').value;
+      const gauge = document.getElementById('gaugeFilter').value;
+      const pro = document.getElementById('proFilter').value;
+      
+      if (search) filters.push({ label: `"${search}"`, filter: 'searchFilter' });
+      if (brand) filters.push({ label: brand, filter: 'brandFilter' });
+      if (type) filters.push({ label: type, filter: 'typeFilter' });
+      if (comfort) filters.push({ label: `Confort ≥${comfort}`, filter: 'comfortFilter' });
+      if (price) filters.push({ label: `< ${price}€`, filter: 'priceFilter' });
+      if (spin) filters.push({ label: `Spin ≥${spin}`, filter: 'spinFilter' });
+      if (control) filters.push({ label: `Contrôle ≥${control}`, filter: 'controlFilter' });
+      if (durability) filters.push({ label: `Durabilité ≥${durability}`, filter: 'durabilityFilter' });
+      if (gauge) filters.push({ label: `${gauge}mm`, filter: 'gaugeFilter' });
+      if (pro) filters.push({ label: 'Utilisé par pros', filter: 'proFilter' });
+      
+      if (filters.length === 0) {
+        container.classList.add('hidden');
+        return;
+      }
+      
+      container.classList.remove('hidden');
+      container.innerHTML = filters.map(f => `
+        <span class="inline-flex items-center gap-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-sm px-3 py-1 rounded-full">
+          ${f.label}
+          <button onclick="clearFilter('${f.filter}')" class="hover:text-green-600 dark:hover:text-green-400">×</button>
+        </span>
+      `).join('');
+    }
+    
+    function clearFilter(filterId) {
+      document.getElementById(filterId).value = '';
+      filterStrings();
     }
     
     function resetFilters() {
@@ -401,16 +613,29 @@
       document.getElementById('typeFilter').value = '';
       document.getElementById('comfortFilter').value = '';
       document.getElementById('priceFilter').value = '';
+      document.getElementById('spinFilter').value = '';
+      document.getElementById('controlFilter').value = '';
+      document.getElementById('durabilityFilter').value = '';
+      document.getElementById('gaugeFilter').value = '';
+      document.getElementById('proFilter').value = '';
+      document.getElementById('sortFilter').value = 'brand';
       filteredStrings = allStrings;
+      updateActiveFilters();
       renderStrings();
     }
     
-    // Event listeners
+    // Event listeners for all filters
     document.getElementById('searchFilter').addEventListener('input', filterStrings);
     document.getElementById('brandFilter').addEventListener('change', filterStrings);
     document.getElementById('typeFilter').addEventListener('change', filterStrings);
     document.getElementById('comfortFilter').addEventListener('change', filterStrings);
     document.getElementById('priceFilter').addEventListener('change', filterStrings);
+    document.getElementById('spinFilter').addEventListener('change', filterStrings);
+    document.getElementById('controlFilter').addEventListener('change', filterStrings);
+    document.getElementById('durabilityFilter').addEventListener('change', filterStrings);
+    document.getElementById('gaugeFilter').addEventListener('change', filterStrings);
+    document.getElementById('proFilter').addEventListener('change', filterStrings);
+    document.getElementById('sortFilter').addEventListener('change', filterStrings);
     
     // Affiliate Links Configuration
     const AFFILIATE_CONFIG = {
