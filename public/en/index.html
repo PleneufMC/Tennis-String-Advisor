@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Tennis String Advisor - Expert configurator to find your ideal setup. 104 racquets and 165 strings analyzed. Personalized recommendations based on your playing style.">
+  <meta name="keywords" content="tennis, string, racquet, configurator, setup, tension, guide">
+  <meta property="og:title" content="Tennis String Advisor - Expert in Strings and Racquets">
+  <meta property="og:description" content="Find your perfect tennis setup. Expert configurator with 104 racquets and 165 strings.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://tennisstringadvisor.org/en/">
+  <link rel="canonical" href="https://tennisstringadvisor.org/en/">
+  <link rel="alternate" hreflang="fr" href="https://tennisstringadvisor.org/">
+  <link rel="alternate" hreflang="en" href="https://tennisstringadvisor.org/en/">
+  <link rel="alternate" hreflang="x-default" href="https://tennisstringadvisor.org/">
+  <title>Tennis String Advisor - Expert in Strings and Racquets</title>
+  
+  <!-- Schema.org Organization -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Tennis String Advisor",
+    "url": "https://tennisstringadvisor.org",
+    "logo": "https://tennisstringadvisor.org/images/logo.png",
+    "description": "Expert in tennis strings and racquets. Personalized setup configurator.",
+    "sameAs": [],
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "email": "pleneuftrading@gmail.com",
+      "contactType": "customer service"
+    }
+  }
+  </script>
+  
+  <!-- Schema.org WebSite -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Tennis String Advisor",
+    "url": "https://tennisstringadvisor.org/en/",
+    "inLanguage": "en",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://tennisstringadvisor.org/en/racquets.html?search={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  }
+  </script>
+  
+  <!-- Schema.org SoftwareApplication -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Tennis String Advisor Configurator",
+    "applicationCategory": "SportsApplication",
+    "operatingSystem": "Web",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "EUR"
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.8",
+      "ratingCount": "70"
+    }
+  }
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            tennis: { 500: '#22c55e', 600: '#16a34a', 700: '#15803d' }
+          }
+        }
+      },
+      darkMode: 'class'
+    }
+  </script>
+  <link rel="stylesheet" href="/css/dark-mode.css">
+  <script src="/js/theme.js"></script>
+  <style>
+    .hero-bg { background: linear-gradient(135deg, rgba(34, 197, 94, 0.95) 0%, rgba(22, 163, 74, 0.9) 100%); }
+    [x-cloak] { display: none !important; }
+  </style>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <!-- Google Analytics 4 -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-YSSLHJ5WYD"></script>
+  <script src="/js/analytics.js"></script>
+</head>
+<body class="bg-gray-50 font-sans antialiased">
+  <!-- Header -->
+  <header class="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+    <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex h-16 items-center justify-between">
+        <a href="/en/" class="flex items-center space-x-2">
+          <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-green-700 rounded-xl flex items-center justify-center">
+            <span class="text-white text-xl">🎾</span>
+          </div>
+          <span class="text-lg font-bold text-gray-900">Tennis String <span class="text-green-600">Advisor</span></span>
+        </a>
+        <div class="hidden md:flex items-center gap-1">
+          <a href="/en/" class="px-4 py-2 text-sm font-medium rounded-lg bg-green-100 text-green-700">Home</a>
+          <a href="/en/configurator.html" class="px-4 py-2 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-100">Configurator</a>
+          <a href="/en/racquets.html" class="px-4 py-2 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-100">Racquets</a>
+          <a href="/en/strings.html" class="px-4 py-2 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-100">Strings</a>
+          <a href="/compare.html" class="px-4 py-2 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-100">Compare</a>
+          <a href="/rcs-calculator.html" class="px-4 py-2 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-100">🩺 RCS</a>
+        </div>
+        <div class="hidden md:flex items-center gap-3">
+          <!-- Language Selector -->
+          <div class="relative">
+            <a href="/" class="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition">
+              🇫🇷 FR
+            </a>
+          </div>
+          <button onclick="toggleDarkMode()" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition" aria-label="Toggle dark mode">
+            <span class="theme-icon text-xl">🌙</span>
+          </button>
+          <a href="/auth.html" id="authLink" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-green-600 hover:bg-green-50 dark:text-green-400 dark:hover:bg-gray-700 rounded-lg transition">
+            👤 My Account
+          </a>
+          <a href="/premium.html" class="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-amber-700 bg-amber-100 rounded-lg hover:bg-amber-200 dark:bg-amber-900 dark:text-amber-200">
+            ✨ Premium
+          </a>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero-bg min-h-[80vh] flex items-center">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <div class="grid lg:grid-cols-2 gap-12 items-center">
+        <div class="space-y-8">
+          <div class="inline-flex items-center gap-2 bg-white/20 backdrop-blur px-4 py-2 rounded-full">
+            <span class="text-yellow-300">✨</span>
+            <span class="text-white font-semibold">Expert Configurator 2025</span>
+          </div>
+          
+          <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight">
+            Find Your
+            <span class="block text-yellow-300 mt-2">Perfect</span>
+            <span class="block text-white/90 text-3xl md:text-4xl mt-2">Racquet & String Setup</span>
+          </h1>
+          
+          <p class="text-lg text-white/90 max-w-xl">
+            Configure your ideal equipment with our database of 
+            <strong>104 racquets</strong> and <strong>165 strings</strong>. 
+            Personalized recommendations based on your playing style.
+          </p>
+          
+          <div class="flex flex-col sm:flex-row gap-4">
+            <a href="/en/configurator.html" class="inline-flex items-center justify-center px-8 py-4 bg-white text-green-700 font-bold rounded-xl hover:bg-gray-100 transition shadow-lg">
+              ⚙️ Configure My Setup
+            </a>
+            <a href="/en/racquets.html" class="inline-flex items-center justify-center px-8 py-4 border-2 border-white/30 text-white font-bold rounded-xl hover:bg-white/10 transition">
+              🔍 Browse Catalog
+            </a>
+          </div>
+          
+          <div class="grid grid-cols-3 gap-4 pt-6">
+            <div class="text-center bg-white/10 backdrop-blur rounded-xl p-4">
+              <div class="text-2xl md:text-3xl font-bold text-white">104</div>
+              <div class="text-sm text-white/80">Racquets</div>
+            </div>
+            <div class="text-center bg-white/10 backdrop-blur rounded-xl p-4">
+              <div class="text-2xl md:text-3xl font-bold text-white">165</div>
+              <div class="text-sm text-white/80">Strings</div>
+            </div>
+            <div class="text-center bg-white/10 backdrop-blur rounded-xl p-4">
+              <div class="text-2xl md:text-3xl font-bold text-white">∞</div>
+              <div class="text-sm text-white/80">Configurations</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="hidden lg:block">
+          <div class="bg-white rounded-3xl p-8 shadow-2xl">
+            <h2 class="text-2xl font-bold text-gray-900 flex items-center gap-3 mb-6">
+              ✅ Key Features
+            </h2>
+            <ul class="space-y-4">
+              <li class="flex items-center gap-3 text-gray-700"><span class="text-green-500">✓</span> Complete database with RA stiffness indices</li>
+              <li class="flex items-center gap-3 text-gray-700"><span class="text-green-500">✓</span> Top 50 strings 2025 with analysis</li>
+              <li class="flex items-center gap-3 text-gray-700"><span class="text-green-500">✓</span> Advanced hybrid configuration</li>
+              <li class="flex items-center gap-3 text-gray-700"><span class="text-green-500">✓</span> Personalized recommendations</li>
+              <li class="flex items-center gap-3 text-gray-700"><span class="text-green-500">✓</span> Racquet/string compatibility analysis</li>
+              <li class="flex items-center gap-3 text-gray-700"><span class="text-green-500">✓</span> Multi-criteria comparator</li>
+            </ul>
+            <a href="/en/configurator.html" class="block w-full mt-6 px-6 py-4 bg-gradient-to-r from-green-600 to-green-700 text-white font-bold rounded-xl text-center hover:from-green-700 hover:to-green-800 transition">
+              Get Started Now →
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="py-16 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl md:text-4xl font-bold text-gray-900">Everything for Your Tennis Equipment</h2>
+        <p class="mt-4 text-lg text-gray-600">Professional tools to find the perfect equipment</p>
+      </div>
+      
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <a href="/en/configurator.html" class="group bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl hover:border-green-100 transition relative">
+          <span class="absolute top-4 right-4 bg-amber-100 text-amber-800 text-xs font-bold px-2 py-1 rounded-full">Popular</span>
+          <div class="flex items-start gap-4">
+            <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center text-2xl group-hover:bg-green-600 transition">⚙️</div>
+            <div>
+              <h3 class="text-lg font-bold text-gray-900 group-hover:text-green-700">Expert Configurator</h3>
+              <p class="mt-1 text-gray-600 text-sm">Create your ideal setup by combining racquet, string and tension.</p>
+            </div>
+          </div>
+        </a>
+        
+        <a href="/en/racquets.html" class="group bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl hover:border-green-100 transition">
+          <div class="flex items-start gap-4">
+            <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center text-2xl group-hover:bg-green-600 transition">🎾</div>
+            <div>
+              <h3 class="text-lg font-bold text-gray-900 group-hover:text-green-700">Racquet Catalog</h3>
+              <p class="mt-1 text-gray-600 text-sm">104 racquets with complete specs: weight, RA, balance.</p>
+            </div>
+          </div>
+        </a>
+        
+        <a href="/en/strings.html" class="group bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl hover:border-green-100 transition">
+          <div class="flex items-start gap-4">
+            <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center text-2xl group-hover:bg-green-600 transition">🧵</div>
+            <div>
+              <h3 class="text-lg font-bold text-gray-900 group-hover:text-green-700">String Catalog</h3>
+              <p class="mt-1 text-gray-600 text-sm">165 strings 2025: polyester, multifilament, natural gut.</p>
+            </div>
+          </div>
+        </a>
+        
+        <a href="/compare.html" class="group bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl hover:border-green-100 transition">
+          <div class="flex items-start gap-4">
+            <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center text-2xl group-hover:bg-green-600 transition">📊</div>
+            <div>
+              <h3 class="text-lg font-bold text-gray-900 group-hover:text-green-700">Comparator</h3>
+              <p class="mt-1 text-gray-600 text-sm">Compare up to 4 products side by side.</p>
+            </div>
+          </div>
+        </a>
+        
+        <a href="/rcs-calculator.html" class="group bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl hover:border-green-100 transition relative">
+          <span class="absolute top-4 right-4 bg-green-100 text-green-800 text-xs font-bold px-2 py-1 rounded-full">Health</span>
+          <div class="flex items-start gap-4">
+            <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center text-2xl group-hover:bg-green-600 transition">🩺</div>
+            <div>
+              <h3 class="text-lg font-bold text-gray-900 group-hover:text-green-700">RCS Calculator</h3>
+              <p class="mt-1 text-gray-600 text-sm">Evaluate the joint stress of your setup.</p>
+            </div>
+          </div>
+        </a>
+        
+        <a href="/premium.html" class="group bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl hover:border-green-100 transition relative">
+          <span class="absolute top-4 right-4 bg-amber-100 text-amber-800 text-xs font-bold px-2 py-1 rounded-full">New</span>
+          <div class="flex items-start gap-4">
+            <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center text-2xl group-hover:bg-green-600 transition">✨</div>
+            <div>
+              <h3 class="text-lg font-bold text-gray-900 group-hover:text-green-700">AI Recommendations</h3>
+              <p class="mt-1 text-gray-600 text-sm">Personalized suggestions based on your playing style.</p>
+            </div>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Brands -->
+  <section class="py-12 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-8">
+        <h2 class="text-2xl font-bold text-gray-900">Available Brands</h2>
+      </div>
+      <div class="flex flex-wrap justify-center items-center gap-8 md:gap-12">
+        <span class="text-xl font-bold text-gray-400 hover:text-green-600 transition cursor-pointer">Babolat</span>
+        <span class="text-xl font-bold text-gray-400 hover:text-green-600 transition cursor-pointer">Wilson</span>
+        <span class="text-xl font-bold text-gray-400 hover:text-green-600 transition cursor-pointer">Head</span>
+        <span class="text-xl font-bold text-gray-400 hover:text-green-600 transition cursor-pointer">Yonex</span>
+        <span class="text-xl font-bold text-gray-400 hover:text-green-600 transition cursor-pointer">Tecnifibre</span>
+        <span class="text-xl font-bold text-gray-400 hover:text-green-600 transition cursor-pointer">Luxilon</span>
+        <span class="text-xl font-bold text-gray-400 hover:text-green-600 transition cursor-pointer">Solinco</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="py-16 bg-gradient-to-r from-green-600 to-green-700">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Ready to Optimize Your Game?</h2>
+      <p class="text-lg text-white/90 mb-8 max-w-2xl mx-auto">Join thousands of players who found their perfect setup.</p>
+      <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <a href="/en/configurator.html" class="px-8 py-4 bg-white text-green-700 font-bold rounded-xl hover:bg-gray-100 transition shadow-lg">Configure My Setup →</a>
+        <a href="/premium.html" class="px-8 py-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-xl hover:from-amber-600 hover:to-orange-600 transition">✨ Discover Premium</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Newsletter Section -->
+  <section class="py-16 bg-gray-100 dark:bg-gray-800">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-8 md:p-12">
+        <div class="text-center mb-8">
+          <span class="text-4xl mb-4 block">📧</span>
+          <h2 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-3">Stay Informed</h2>
+          <p class="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+            Get expert tips, new guides and the latest trends in tennis equipment.
+          </p>
+        </div>
+        
+        <form id="newsletterForm" class="max-w-xl mx-auto">
+          <div class="flex flex-col sm:flex-row gap-3">
+            <div class="flex-1">
+              <label for="newsletterEmail" class="sr-only">Your email</label>
+              <input 
+                type="email" 
+                id="newsletterEmail" 
+                name="email"
+                placeholder="your@email.com" 
+                required
+                class="w-full px-5 py-4 rounded-xl border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500 text-gray-900 placeholder-gray-500"
+              >
+            </div>
+            <button 
+              type="submit"
+              class="px-8 py-4 bg-gradient-to-r from-green-600 to-green-700 text-white font-bold rounded-xl hover:from-green-700 hover:to-green-800 transition shadow-lg whitespace-nowrap"
+            >
+              Subscribe 🚀
+            </button>
+          </div>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-3 text-center">
+            🔒 We respect your privacy. Unsubscribe in one click.
+          </p>
+        </form>
+        
+        <!-- Success Message -->
+        <div id="newsletterSuccess" class="hidden text-center">
+          <div class="text-5xl mb-4">✅</div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Thank you for subscribing!</h3>
+          <p class="text-gray-600 dark:text-gray-400">You'll receive our latest articles and tips soon.</p>
+        </div>
+        
+        <!-- Error Message -->
+        <div id="newsletterError" class="hidden text-center text-red-600 dark:text-red-400 mt-4">
+          <p>An error occurred. Please try again.</p>
+        </div>
+        
+        <!-- Features -->
+        <div class="grid grid-cols-3 gap-4 mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
+          <div class="text-center">
+            <span class="text-2xl block mb-2">📚</span>
+            <span class="text-sm text-gray-600 dark:text-gray-400">Exclusive guides</span>
+          </div>
+          <div class="text-center">
+            <span class="text-2xl block mb-2">🎯</span>
+            <span class="text-sm text-gray-600 dark:text-gray-400">Expert tips</span>
+          </div>
+          <div class="text-center">
+            <span class="text-2xl block mb-2">🎁</span>
+            <span class="text-sm text-gray-600 dark:text-gray-400">Special offers</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-gray-900 text-white py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid md:grid-cols-4 gap-8">
+        <div>
+          <div class="flex items-center space-x-2 mb-4">
+            <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-green-700 rounded-xl flex items-center justify-center">
+              <span class="text-white text-xl">🎾</span>
+            </div>
+            <span class="text-lg font-bold">Tennis String <span class="text-green-400">Advisor</span></span>
+          </div>
+          <p class="text-gray-400 text-sm">Your expert in tennis strings and racquets.</p>
+        </div>
+        <div>
+          <h3 class="font-semibold mb-4">Products</h3>
+          <ul class="space-y-2 text-gray-400 text-sm">
+            <li><a href="/en/configurator.html" class="hover:text-white">Configurator</a></li>
+            <li><a href="/en/racquets.html" class="hover:text-white">Racquets</a></li>
+            <li><a href="/en/strings.html" class="hover:text-white">Strings</a></li>
+            <li><a href="/compare.html" class="hover:text-white">Comparator</a></li>
+            <li><a href="/rcs-calculator.html" class="hover:text-white">RCS Calculator</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="font-semibold mb-4">Resources</h3>
+          <ul class="space-y-2 text-gray-400 text-sm">
+            <li><a href="/blog/" class="hover:text-white">Guides</a></li>
+            <li><a href="/faq.html" class="hover:text-white">FAQ</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="font-semibold mb-4">Language</h3>
+          <ul class="space-y-2 text-gray-400 text-sm">
+            <li><a href="/" class="hover:text-white flex items-center gap-2">🇫🇷 Français</a></li>
+            <li><a href="/en/" class="hover:text-white flex items-center gap-2 text-green-400">🇬🇧 English</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-500 text-sm">
+        © 2025 Tennis String Advisor. A brand of Pleneuf Trading LLC. All rights reserved.
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // Check auth state for nav
+    async function checkAuthForNav() {
+      const SUPABASE_URL = 'https://yhhdkllbaxuhwrfpsmev.supabase.co';
+      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InloaGRrbGxiYXh1aHdyZnBzbWV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU3NjI0MDEsImV4cCI6MjA4MTMzODQwMX0.2aC_gYZf0xxz6MXi5zcaCH2S64RBaQvXU7a5qiuD0_k';
+      let supabaseClient = null;
+    try {
+      if (window.supabase && window.supabase.createClient) {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        console.log('✅ Supabase initialized');
+      }
+    } catch (e) {
+      console.error('❌ Supabase init error:', e);
+    }
+      
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      const authLink = document.getElementById('authLink');
+      if (authLink) {
+        if (session) {
+          authLink.href = '/account.html';
+          authLink.innerHTML = '👤 My Account';
+        } else {
+          authLink.href = '/auth.html';
+          authLink.innerHTML = '👤 Login';
+        }
+      }
+    }
+    checkAuthForNav();
+    
+    // Newsletter form handling
+    document.getElementById('newsletterForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const email = document.getElementById('newsletterEmail').value;
+      const form = document.getElementById('newsletterForm');
+      const success = document.getElementById('newsletterSuccess');
+      const error = document.getElementById('newsletterError');
+      
+      // Basic email validation
+      if (!email || !email.includes('@')) {
+        error.classList.remove('hidden');
+        return;
+      }
+      
+      try {
+        // Store in Supabase
+        const SUPABASE_URL = 'https://yhhdkllbaxuhwrfpsmev.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InloaGRrbGxiYXh1aHdyZnBzbWV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU3NjI0MDEsImV4cCI6MjA4MTMzODQwMX0.2aC_gYZf0xxz6MXi5zcaCH2S64RBaQvXU7a5qiuD0_k';
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        if (supabaseClient) {
+          const { data, error: dbError } = await supabaseClient
+            .from('newsletter_subscribers')
+            .insert([{ email: email, subscribed_at: new Date().toISOString(), language: 'en' }]);
+          
+          if (dbError && !dbError.message.includes('duplicate')) {
+            console.error('Newsletter subscription error:', dbError);
+          }
+        }
+        
+        // Track event
+        if (typeof gtag !== 'undefined') {
+          gtag('event', 'newsletter_subscribe', {
+            'event_category': 'engagement',
+            'event_label': 'homepage_en'
+          });
+        }
+        
+        // Show success message
+        form.classList.add('hidden');
+        success.classList.remove('hidden');
+        error.classList.add('hidden');
+        
+        // Store locally to prevent showing again
+        localStorage.setItem('newsletter_subscribed', 'true');
+        
+      } catch (err) {
+        console.error('Newsletter error:', err);
+        error.classList.remove('hidden');
+      }
+    });
+    
+    // Check if already subscribed
+    if (localStorage.getItem('newsletter_subscribed')) {
+      document.getElementById('newsletterForm').classList.add('hidden');
+      document.getElementById('newsletterSuccess').classList.remove('hidden');
+    }
+  </script>
+</body>
+</html>
