@@ -49,8 +49,73 @@
     </div>
   </header>
 
+  <!-- Global Loading State -->
+  <div id="globalLoading" class="text-center py-32">
+    <div class="inline-block animate-spin text-6xl mb-4">🎾</div>
+    <p class="text-gray-600 text-lg">Vérification de votre abonnement...</p>
+  </div>
+
+  <!-- Premium Paywall -->
+  <div id="premiumPaywall" class="hidden">
+    <div class="max-w-2xl mx-auto px-4 py-16 text-center">
+      <div class="bg-white rounded-3xl border border-gray-200 shadow-xl p-8 md:p-12">
+        <span class="text-6xl mb-6 block">👑</span>
+        <h1 class="text-3xl font-bold text-gray-900 mb-4">Fonctionnalité Premium</h1>
+        <p class="text-gray-600 mb-6 text-lg">
+          Le Journal de Cordage est une fonctionnalité exclusive pour les membres Premium.
+          Gérez vos clients, suivez vos cordages et optimisez votre activité.
+        </p>
+        
+        <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-6 mb-8">
+          <h2 class="font-bold text-green-900 mb-4">✨ Avantages Premium</h2>
+          <ul class="text-left space-y-3 text-gray-700">
+            <li class="flex items-center gap-3">
+              <span class="text-green-500">✓</span>
+              Journal de cordage illimité
+            </li>
+            <li class="flex items-center gap-3">
+              <span class="text-green-500">✓</span>
+              Calculs RCS illimités
+            </li>
+            <li class="flex items-center gap-3">
+              <span class="text-green-500">✓</span>
+              Sauvegardes de configurations illimitées
+            </li>
+            <li class="flex items-center gap-3">
+              <span class="text-green-500">✓</span>
+              Alertes prix personnalisées
+            </li>
+            <li class="flex items-center gap-3">
+              <span class="text-green-500">✓</span>
+              Recommandations IA avancées
+            </li>
+            <li class="flex items-center gap-3">
+              <span class="text-green-500">✓</span>
+              Export CSV et PDF
+            </li>
+          </ul>
+        </div>
+        
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+          <a href="/premium.html" 
+            class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold rounded-xl hover:from-green-700 hover:to-emerald-700 transition shadow-lg">
+            👑 Devenir Premium
+          </a>
+          <a href="/account.html" 
+            class="inline-flex items-center justify-center gap-2 px-8 py-4 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition">
+            ← Retour au compte
+          </a>
+        </div>
+        
+        <p class="text-sm text-gray-500 mt-6">
+          À partir de <span class="font-bold text-green-600">2,99€/mois</span> ou <span class="font-bold text-green-600">24,99€/an</span>
+        </p>
+      </div>
+    </div>
+  </div>
+
   <!-- Main Content -->
-  <main class="max-w-7xl mx-auto px-4 py-8">
+  <main id="mainContent" class="hidden max-w-7xl mx-auto px-4 py-8">
     <!-- Page Header -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
       <div>
@@ -359,6 +424,7 @@
     }
 
     let currentUser = null;
+    let userProfile = null;
     let racquets = [];
     let strings = [];
     let journalEntries = [];
@@ -366,8 +432,13 @@
     let currentPage = 1;
     const entriesPerPage = 20;
 
-    // Check authentication
+    // Check authentication and Premium status
     async function checkAuth() {
+      // Show global loading
+      document.getElementById('globalLoading').classList.remove('hidden');
+      document.getElementById('premiumPaywall').classList.add('hidden');
+      document.getElementById('mainContent').classList.add('hidden');
+      
       const { data: { session } } = await supabaseClient.auth.getSession();
       
       if (!session) {
@@ -376,7 +447,45 @@
       }
       
       currentUser = session.user;
-      await loadData();
+      
+      // Check Premium status
+      try {
+        const { data: profile, error } = await supabaseClient
+          .from('profiles')
+          .select('is_premium, premium_type, premium_expires_at')
+          .eq('id', currentUser.id)
+          .single();
+        
+        if (error) throw error;
+        userProfile = profile;
+        
+        // Check if user is Premium and subscription is still valid
+        const isPremiumActive = profile?.is_premium && 
+          (!profile.premium_expires_at || new Date(profile.premium_expires_at) > new Date());
+        
+        // Hide global loading
+        document.getElementById('globalLoading').classList.add('hidden');
+        
+        if (!isPremiumActive) {
+          // Show paywall, hide main content
+          document.getElementById('premiumPaywall').classList.remove('hidden');
+          document.getElementById('mainContent').classList.add('hidden');
+          return;
+        }
+        
+        // User is Premium - show main content
+        document.getElementById('premiumPaywall').classList.add('hidden');
+        document.getElementById('mainContent').classList.remove('hidden');
+        await loadData();
+        
+      } catch (error) {
+        console.error('Error checking premium status:', error);
+        // Hide global loading
+        document.getElementById('globalLoading').classList.add('hidden');
+        // Default to showing paywall if we can't verify
+        document.getElementById('premiumPaywall').classList.remove('hidden');
+        document.getElementById('mainContent').classList.add('hidden');
+      }
     }
 
     // Load all data
