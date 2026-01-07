@@ -168,7 +168,77 @@ CREATE POLICY "Users can delete own string history" ON public.string_history
   FOR DELETE USING (auth.uid() = user_id);
 
 -- ============================================
--- 5. PRICE_ALERTS TABLE (Future Feature)
+-- 5. STRINGING_JOURNAL TABLE (Premium Feature)
+-- ============================================
+-- Stores stringing orders for professional stringers
+-- Premium feature only
+
+CREATE TABLE IF NOT EXISTS public.stringing_journal (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  
+  -- Client Information
+  client_name TEXT NOT NULL,
+  client_phone TEXT,
+  client_email TEXT,
+  
+  -- Racquet Information
+  racquet_id INTEGER REFERENCES public.racquets(id) ON DELETE SET NULL,
+  racquet_brand TEXT,
+  racquet_model TEXT,
+  
+  -- String Information
+  string_id INTEGER REFERENCES public.strings(id) ON DELETE SET NULL,
+  string_brand TEXT,
+  string_model TEXT,
+  
+  -- Tension Settings
+  tension_mains DECIMAL(4,1) NOT NULL,
+  tension_crosses DECIMAL(4,1),
+  tension_unit TEXT DEFAULT 'kg' CHECK (tension_unit IN ('kg', 'lbs')),
+  
+  -- RCS Score (calculated)
+  rcs_score INTEGER,
+  
+  -- Pricing
+  string_price DECIMAL(8,2),
+  labor_price DECIMAL(8,2),
+  total_price DECIMAL(8,2),
+  
+  -- Status Management
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'in_progress', 'completed', 'delivered', 'cancelled')),
+  
+  -- Dates
+  received_at DATE DEFAULT CURRENT_DATE,
+  completed_at DATE,
+  delivered_at DATE,
+  
+  -- Notes
+  notes TEXT,
+  
+  -- Metadata
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Enable Row Level Security
+ALTER TABLE public.stringing_journal ENABLE ROW LEVEL SECURITY;
+
+-- Policies for stringing_journal
+CREATE POLICY "Users can view own stringing journal" ON public.stringing_journal
+  FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own stringing journal" ON public.stringing_journal
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own stringing journal" ON public.stringing_journal
+  FOR UPDATE USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete own stringing journal" ON public.stringing_journal
+  FOR DELETE USING (auth.uid() = user_id);
+
+-- ============================================
+-- 6. PRICE_ALERTS TABLE (Future Feature)
 -- ============================================
 -- Stores price alert subscriptions for premium users
 
@@ -250,6 +320,12 @@ CREATE TRIGGER profiles_updated_at
 DROP TRIGGER IF EXISTS user_setups_updated_at ON public.user_setups;
 CREATE TRIGGER user_setups_updated_at
   BEFORE UPDATE ON public.user_setups
+  FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
+-- Apply to stringing_journal
+DROP TRIGGER IF EXISTS stringing_journal_updated_at ON public.stringing_journal;
+CREATE TRIGGER stringing_journal_updated_at
+  BEFORE UPDATE ON public.stringing_journal
   FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 
 -- ============================================
@@ -338,6 +414,12 @@ CREATE INDEX IF NOT EXISTS idx_string_history_strung_date ON public.string_histo
 -- Index on price_alerts
 CREATE INDEX IF NOT EXISTS idx_price_alerts_user_id ON public.price_alerts(user_id);
 CREATE INDEX IF NOT EXISTS idx_price_alerts_active ON public.price_alerts(is_active) WHERE is_active = TRUE;
+
+-- Index on stringing_journal
+CREATE INDEX IF NOT EXISTS idx_stringing_journal_user_id ON public.stringing_journal(user_id);
+CREATE INDEX IF NOT EXISTS idx_stringing_journal_received_at ON public.stringing_journal(received_at DESC);
+CREATE INDEX IF NOT EXISTS idx_stringing_journal_status ON public.stringing_journal(status);
+CREATE INDEX IF NOT EXISTS idx_stringing_journal_client_name ON public.stringing_journal(client_name);
 
 -- ============================================
 -- VERIFICATION QUERIES (Run after setup)
