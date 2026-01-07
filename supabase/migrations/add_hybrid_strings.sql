@@ -3,21 +3,19 @@
 -- ============================================
 -- Migration: Add hybrid string support to user_setups and stringing_journal
 -- Feature: Allow different strings for mains and crosses
+-- Note: string_cross_id stored as TEXT (compatible with strings.id type)
 -- ============================================
 
 -- ============================================
 -- ADD HYBRID COLUMNS TO USER_SETUPS
 -- ============================================
 
--- Rename existing string columns to be explicit for MAINS
--- Add new columns for CROSS strings
-
--- First, let's add the new columns for cross strings
 ALTER TABLE public.user_setups 
 ADD COLUMN IF NOT EXISTS is_hybrid BOOLEAN DEFAULT FALSE;
 
+-- Using TEXT type for string_cross_id to match strings.id type
 ALTER TABLE public.user_setups 
-ADD COLUMN IF NOT EXISTS string_cross_id INTEGER REFERENCES public.strings(id) ON DELETE SET NULL;
+ADD COLUMN IF NOT EXISTS string_cross_id TEXT;
 
 ALTER TABLE public.user_setups 
 ADD COLUMN IF NOT EXISTS string_cross_brand TEXT;
@@ -41,8 +39,9 @@ COMMENT ON COLUMN public.user_setups.string_cross_model IS 'String model for CRO
 ALTER TABLE public.stringing_journal 
 ADD COLUMN IF NOT EXISTS is_hybrid BOOLEAN DEFAULT FALSE;
 
+-- Using TEXT type for string_cross_id to match strings.id type
 ALTER TABLE public.stringing_journal 
-ADD COLUMN IF NOT EXISTS string_cross_id INTEGER REFERENCES public.strings(id) ON DELETE SET NULL;
+ADD COLUMN IF NOT EXISTS string_cross_id TEXT;
 
 ALTER TABLE public.stringing_journal 
 ADD COLUMN IF NOT EXISTS string_cross_brand TEXT;
