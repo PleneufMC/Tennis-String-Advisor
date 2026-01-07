@@ -64,10 +64,15 @@ CREATE TABLE IF NOT EXISTS public.user_setups (
   racquet_id INTEGER REFERENCES public.racquets(id) ON DELETE SET NULL,
   racquet_brand TEXT,
   racquet_model TEXT,
-  -- String info
+  -- String info (MAINS / Montants)
   string_id INTEGER REFERENCES public.strings(id) ON DELETE SET NULL,
   string_brand TEXT,
   string_model TEXT,
+  -- Hybrid string support (CROSSES / Travers)
+  is_hybrid BOOLEAN DEFAULT FALSE,
+  string_cross_id INTEGER REFERENCES public.strings(id) ON DELETE SET NULL,
+  string_cross_brand TEXT,
+  string_cross_model TEXT,
   -- Tension
   tension_mains DECIMAL(4,1),
   tension_crosses DECIMAL(4,1),
@@ -187,10 +192,16 @@ CREATE TABLE IF NOT EXISTS public.stringing_journal (
   racquet_brand TEXT,
   racquet_model TEXT,
   
-  -- String Information
+  -- String Information (MAINS / Montants)
   string_id INTEGER REFERENCES public.strings(id) ON DELETE SET NULL,
   string_brand TEXT,
   string_model TEXT,
+  
+  -- Hybrid String Support (CROSSES / Travers)
+  is_hybrid BOOLEAN DEFAULT FALSE,
+  string_cross_id INTEGER REFERENCES public.strings(id) ON DELETE SET NULL,
+  string_cross_brand TEXT,
+  string_cross_model TEXT,
   
   -- Tension Settings
   tension_mains DECIMAL(4,1) NOT NULL,

@@ -283,19 +283,36 @@
         <!-- Equipment -->
         <div class="bg-green-50 rounded-xl p-4 border border-green-200">
           <h3 class="font-semibold text-green-900 mb-4">🎾 Équipement</h3>
+          
+          <!-- Racquet -->
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Raquette</label>
+            <select id="racquetSelect" onchange="updateRacquetInfo(); updateRcsPreview()"
+              class="w-full rounded-lg border-gray-300 border p-3 focus:ring-green-500 focus:border-green-500">
+              <option value="">Sélectionner ou saisir manuellement</option>
+            </select>
+            <input type="text" id="racquetManual" placeholder="Ou saisir: Marque Modèle"
+              class="w-full mt-2 rounded-lg border-gray-300 border p-3 focus:ring-green-500 focus:border-green-500"
+              oninput="clearRacquetSelect()">
+          </div>
+
+          <!-- Hybrid Toggle -->
+          <div class="mb-4 p-3 bg-white rounded-lg border border-green-200">
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input type="checkbox" id="isHybrid" onchange="toggleHybrid()"
+                class="w-5 h-5 text-green-600 rounded focus:ring-green-500">
+              <span class="font-medium text-gray-700">🔀 Cordage Hybride</span>
+              <span class="text-sm text-gray-500">(montants et travers différents)</span>
+            </label>
+          </div>
+
+          <!-- String Selection -->
           <div class="grid md:grid-cols-2 gap-4">
+            <!-- Mains String -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Raquette</label>
-              <select id="racquetSelect" onchange="updateRacquetInfo(); updateRcsPreview()"
-                class="w-full rounded-lg border-gray-300 border p-3 focus:ring-green-500 focus:border-green-500">
-                <option value="">Sélectionner ou saisir manuellement</option>
-              </select>
-              <input type="text" id="racquetManual" placeholder="Ou saisir: Marque Modèle"
-                class="w-full mt-2 rounded-lg border-gray-300 border p-3 focus:ring-green-500 focus:border-green-500"
-                oninput="clearRacquetSelect()">
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Cordage *</label>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                <span id="stringMainsLabel">Cordage *</span>
+              </label>
               <select id="stringSelect" onchange="updateStringInfo(); updateRcsPreview()"
                 class="w-full rounded-lg border-gray-300 border p-3 focus:ring-green-500 focus:border-green-500">
                 <option value="">Sélectionner ou saisir manuellement</option>
@@ -303,6 +320,18 @@
               <input type="text" id="stringManual" placeholder="Ou saisir: Marque Modèle"
                 class="w-full mt-2 rounded-lg border-gray-300 border p-3 focus:ring-green-500 focus:border-green-500"
                 oninput="clearStringSelect()">
+            </div>
+            
+            <!-- Cross String (hidden by default) -->
+            <div id="stringCrossSection" class="hidden">
+              <label class="block text-sm font-medium text-gray-700 mb-1">Cordage Travers *</label>
+              <select id="stringCrossSelect" onchange="updateStringCrossInfo(); updateRcsPreview()"
+                class="w-full rounded-lg border-gray-300 border p-3 focus:ring-green-500 focus:border-green-500">
+                <option value="">Sélectionner ou saisir manuellement</option>
+              </select>
+              <input type="text" id="stringCrossManual" placeholder="Ou saisir: Marque Modèle"
+                class="w-full mt-2 rounded-lg border-gray-300 border p-3 focus:ring-green-500 focus:border-green-500"
+                oninput="clearStringCrossSelect()">
             </div>
           </div>
         </div>
@@ -677,6 +706,7 @@
           </td>
           <td class="px-4 py-3">
             <div class="text-sm text-gray-900">${escapeHtml(entry.string_brand || '')} ${escapeHtml(entry.string_model || '')}</div>
+            ${entry.is_hybrid && entry.string_cross_brand ? `<div class="text-xs text-purple-600">🔀 ${escapeHtml(entry.string_cross_brand)} ${escapeHtml(entry.string_cross_model || '')}</div>` : ''}
           </td>
           <td class="px-4 py-3">
             <div class="text-sm font-medium text-gray-900">${entry.tension_mains} kg</div>
@@ -761,6 +791,7 @@
 
     function populateStringSelect() {
       const select = document.getElementById('stringSelect');
+      const selectCross = document.getElementById('stringCrossSelect');
       const grouped = strings.reduce((acc, s) => {
         if (!acc[s.brand]) acc[s.brand] = [];
         acc[s.brand].push(s);
@@ -776,6 +807,28 @@
         html += '</optgroup>';
       });
       select.innerHTML = html;
+      // Also populate cross string select
+      if (selectCross) {
+        selectCross.innerHTML = html;
+      }
+    }
+
+    // Toggle hybrid mode
+    function toggleHybrid() {
+      const isHybrid = document.getElementById('isHybrid').checked;
+      const crossSection = document.getElementById('stringCrossSection');
+      const mainsLabel = document.getElementById('stringMainsLabel');
+      
+      if (isHybrid) {
+        crossSection.classList.remove('hidden');
+        mainsLabel.textContent = 'Cordage Montants *';
+      } else {
+        crossSection.classList.add('hidden');
+        mainsLabel.textContent = 'Cordage *';
+        // Clear cross string selection
+        document.getElementById('stringCrossSelect').value = '';
+        document.getElementById('stringCrossManual').value = '';
+      }
     }
 
     // Clear selects when typing manually
@@ -785,6 +838,10 @@
 
     function clearStringSelect() {
       document.getElementById('stringSelect').value = '';
+    }
+
+    function clearStringCrossSelect() {
+      document.getElementById('stringCrossSelect').value = '';
     }
 
     // Update info
@@ -801,6 +858,14 @@
       const option = select.options[select.selectedIndex];
       if (option?.value) {
         document.getElementById('stringManual').value = '';
+      }
+    }
+
+    function updateStringCrossInfo() {
+      const select = document.getElementById('stringCrossSelect');
+      const option = select.options[select.selectedIndex];
+      if (option?.value) {
+        document.getElementById('stringCrossManual').value = '';
       }
     }
 
@@ -850,6 +915,10 @@
       document.getElementById('receivedAt').value = new Date().toISOString().split('T')[0];
       document.getElementById('rcsPreview').textContent = '--';
       document.getElementById('rcsEmoji').textContent = '❓';
+      // Reset hybrid state
+      document.getElementById('isHybrid').checked = false;
+      document.getElementById('stringCrossSection').classList.add('hidden');
+      document.getElementById('stringMainsLabel').textContent = 'Cordage *';
       document.getElementById('entryModal').classList.remove('hidden');
     }
 
@@ -867,6 +936,22 @@
       document.getElementById('racquetManual').value = entry.racquet_id ? '' : `${entry.racquet_brand || ''} ${entry.racquet_model || ''}`.trim();
       document.getElementById('stringSelect').value = entry.string_id || '';
       document.getElementById('stringManual').value = entry.string_id ? '' : `${entry.string_brand || ''} ${entry.string_model || ''}`.trim();
+      
+      // Hybrid string handling
+      const isHybrid = entry.is_hybrid || false;
+      document.getElementById('isHybrid').checked = isHybrid;
+      if (isHybrid) {
+        document.getElementById('stringCrossSection').classList.remove('hidden');
+        document.getElementById('stringMainsLabel').textContent = 'Cordage Montants *';
+        document.getElementById('stringCrossSelect').value = entry.string_cross_id || '';
+        document.getElementById('stringCrossManual').value = entry.string_cross_id ? '' : `${entry.string_cross_brand || ''} ${entry.string_cross_model || ''}`.trim();
+      } else {
+        document.getElementById('stringCrossSection').classList.add('hidden');
+        document.getElementById('stringMainsLabel').textContent = 'Cordage *';
+        document.getElementById('stringCrossSelect').value = '';
+        document.getElementById('stringCrossManual').value = '';
+      }
+      
       document.getElementById('tensionMains').value = entry.tension_mains || 24;
       document.getElementById('tensionCrosses').value = entry.tension_crosses || '';
       document.getElementById('stringPrice').value = entry.string_price || '';
@@ -892,12 +977,16 @@
       const entryId = document.getElementById('entryId').value;
       const racquetSelect = document.getElementById('racquetSelect');
       const stringSelect = document.getElementById('stringSelect');
+      const stringCrossSelect = document.getElementById('stringCrossSelect');
+      const isHybrid = document.getElementById('isHybrid').checked;
       
       const racquetOption = racquetSelect.options[racquetSelect.selectedIndex];
       const stringOption = stringSelect.options[stringSelect.selectedIndex];
+      const stringCrossOption = stringCrossSelect.options[stringCrossSelect.selectedIndex];
       
       const racquetManual = document.getElementById('racquetManual').value.trim();
       const stringManual = document.getElementById('stringManual').value.trim();
+      const stringCrossManual = document.getElementById('stringCrossManual').value.trim();
 
       // Get racquet info
       let racquetBrand = '', racquetModel = '', racquetId = null;
@@ -911,7 +1000,7 @@
         racquetModel = parts.slice(1).join(' ') || '';
       }
 
-      // Get string info
+      // Get string info (mains)
       let stringBrand = '', stringModel = '', stringId = null;
       if (stringOption?.value) {
         stringId = stringOption.value;
@@ -921,6 +1010,20 @@
         const parts = stringManual.split(' ');
         stringBrand = parts[0] || '';
         stringModel = parts.slice(1).join(' ') || '';
+      }
+
+      // Get cross string info (if hybrid)
+      let stringCrossBrand = null, stringCrossModel = null, stringCrossId = null;
+      if (isHybrid) {
+        if (stringCrossOption?.value) {
+          stringCrossId = stringCrossOption.value;
+          stringCrossBrand = stringCrossOption.dataset.brand;
+          stringCrossModel = stringCrossOption.dataset.model;
+        } else if (stringCrossManual) {
+          const parts = stringCrossManual.split(' ');
+          stringCrossBrand = parts[0] || '';
+          stringCrossModel = parts.slice(1).join(' ') || '';
+        }
       }
 
       // Calculate RCS
@@ -944,6 +1047,10 @@
         string_id: stringId,
         string_brand: stringBrand || null,
         string_model: stringModel || null,
+        is_hybrid: isHybrid,
+        string_cross_id: stringCrossId,
+        string_cross_brand: stringCrossBrand,
+        string_cross_model: stringCrossModel,
         tension_mains: parseFloat(document.getElementById('tensionMains').value),
         tension_crosses: parseFloat(document.getElementById('tensionCrosses').value) || null,
         string_price: parseFloat(document.getElementById('stringPrice').value) || null,
@@ -1045,7 +1152,7 @@
         return;
       }
 
-      const headers = ['Date', 'Client', 'Téléphone', 'Email', 'Raquette', 'Cordage', 'Tension Montants', 'Tension Travers', 'RCS', 'Prix Cordage', 'Main Oeuvre', 'Total', 'Statut', 'Notes'];
+      const headers = ['Date', 'Client', 'Téléphone', 'Email', 'Raquette', 'Cordage Montants', 'Cordage Travers', 'Hybride', 'Tension Montants', 'Tension Travers', 'RCS', 'Prix Cordage', 'Main Oeuvre', 'Total', 'Statut', 'Notes'];
       
       const rows = filteredEntries.map(e => [
         e.received_at,
@@ -1054,6 +1161,8 @@
         e.client_email || '',
         `${e.racquet_brand || ''} ${e.racquet_model || ''}`.trim(),
         `${e.string_brand || ''} ${e.string_model || ''}`.trim(),
+        e.is_hybrid ? `${e.string_cross_brand || ''} ${e.string_cross_model || ''}`.trim() : '',
+        e.is_hybrid ? 'Oui' : 'Non',
         e.tension_mains,
         e.tension_crosses || '',
         e.rcs_score || '',
