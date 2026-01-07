@@ -880,16 +880,31 @@
     function updateRcsPreview() {
       const racquetSelect = document.getElementById('racquetSelect');
       const stringSelect = document.getElementById('stringSelect');
+      const stringCrossSelect = document.getElementById('stringCrossSelect');
+      const isHybrid = document.getElementById('isHybrid').checked;
       const tension = parseFloat(document.getElementById('tensionMains').value);
 
       const racquetOption = racquetSelect.options[racquetSelect.selectedIndex];
       const stringOption = stringSelect.options[stringSelect.selectedIndex];
+      const stringCrossOption = stringCrossSelect?.options[stringCrossSelect.selectedIndex];
 
       const ra = parseFloat(racquetOption?.dataset?.stiffness);
-      const cordage = parseFloat(stringOption?.dataset?.stiffness);
+      const mainsStiffness = parseFloat(stringOption?.dataset?.stiffness);
+      const crossStiffness = parseFloat(stringCrossOption?.dataset?.stiffness);
 
-      if (ra && cordage && tension && typeof RCS !== 'undefined') {
-        const score = RCS.calculate(ra, cordage, tension);
+      let score = null;
+      
+      if (ra && mainsStiffness && tension && typeof RCS !== 'undefined') {
+        if (isHybrid && crossStiffness) {
+          // Hybrid calculation
+          const result = RCS.calculateHybrid(ra, mainsStiffness, crossStiffness, tension);
+          score = result.rcs;
+        } else {
+          // Standard calculation
+          const result = RCS.calculate(ra, mainsStiffness, tension);
+          score = result.rcs;
+        }
+        
         document.getElementById('rcsPreview').textContent = Math.round(score);
         
         if (score < 40) {
@@ -1026,14 +1041,23 @@
         }
       }
 
-      // Calculate RCS
+      // Calculate RCS (supports hybrid)
       let rcsScore = null;
       const ra = parseFloat(racquetOption?.dataset?.stiffness);
-      const cordage = parseFloat(stringOption?.dataset?.stiffness);
+      const mainsStiffness = parseFloat(stringOption?.dataset?.stiffness);
+      const crossStiffness = parseFloat(stringCrossOption?.dataset?.stiffness);
       const tension = parseFloat(document.getElementById('tensionMains').value);
       
-      if (ra && cordage && tension && typeof RCS !== 'undefined') {
-        rcsScore = Math.round(RCS.calculate(ra, cordage, tension));
+      if (ra && mainsStiffness && tension && typeof RCS !== 'undefined') {
+        if (isHybrid && crossStiffness) {
+          // Use hybrid calculation
+          const result = RCS.calculateHybrid(ra, mainsStiffness, crossStiffness, tension);
+          rcsScore = Math.round(result.rcs);
+        } else {
+          // Standard calculation
+          const result = RCS.calculate(ra, mainsStiffness, tension);
+          rcsScore = Math.round(result.rcs);
+        }
       }
 
       const entryData = {

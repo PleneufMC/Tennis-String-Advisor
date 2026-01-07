@@ -248,6 +248,46 @@ const RCS = {
   normalizeCordage(s) { return this._n2(s); },
   normalizeTension(t) { return this._n3(t); },
 
+  // Constantes pour calcul hybride
+  HYBRID_MAINS_WEIGHT: 0.60,  // Montants = 60% de l'impact
+  HYBRID_CROSS_WEIGHT: 0.40,  // Travers = 40% de l'impact
+
+  /**
+   * Calcule la rigidité équivalente d'un cordage hybride
+   * @param {number} mainsStiffness - Rigidité des montants (lb/in)
+   * @param {number} crossStiffness - Rigidité des travers (lb/in)
+   * @returns {number} Rigidité équivalente combinée
+   */
+  calculateHybridStiffness(mainsStiffness, crossStiffness) {
+    return (mainsStiffness * this.HYBRID_MAINS_WEIGHT) + (crossStiffness * this.HYBRID_CROSS_WEIGHT);
+  },
+
+  /**
+   * Calcul RCS pour configuration hybride
+   * @param {number} ra - Rigidité raquette (RA)
+   * @param {number} mainsStiffness - Rigidité cordage montants (lb/in)
+   * @param {number} crossStiffness - Rigidité cordage travers (lb/in)
+   * @param {number} tension - Tension (kg)
+   * @returns {object} Résultat RCS avec détails hybrides
+   */
+  calculateHybrid(ra, mainsStiffness, crossStiffness, tension) {
+    const hybridStiffness = this.calculateHybridStiffness(mainsStiffness, crossStiffness);
+    const result = this.calculate(ra, hybridStiffness, tension);
+    
+    // Ajouter les détails hybrides au résultat
+    result.hybrid = {
+      isHybrid: true,
+      mainsStiffness: mainsStiffness,
+      crossStiffness: crossStiffness,
+      combinedStiffness: Math.round(hybridStiffness * 10) / 10,
+      mainsContribution: Math.round(mainsStiffness * this.HYBRID_MAINS_WEIGHT * 10) / 10,
+      crossContribution: Math.round(crossStiffness * this.HYBRID_CROSS_WEIGHT * 10) / 10,
+      formula: `(${mainsStiffness} × ${this.HYBRID_MAINS_WEIGHT}) + (${crossStiffness} × ${this.HYBRID_CROSS_WEIGHT}) = ${Math.round(hybridStiffness * 10) / 10} lb/in`
+    };
+    
+    return result;
+  },
+
   calculate(ra, cordageStiffness, tension) {
     const a = this._n1(ra);
     const b = this._n2(cordageStiffness);

@@ -522,6 +522,17 @@
 
       <h2 class="text-xl font-bold text-gray-900 mb-6">Quel est votre budget pour le cordage ?</h2>
       
+      <!-- Hybrid Toggle -->
+      <div class="mb-6 p-4 bg-purple-50 rounded-xl border border-purple-200">
+        <label class="flex items-center gap-3 cursor-pointer">
+          <input type="checkbox" id="hybridToggle" onchange="toggleHybridMode()"
+            class="w-5 h-5 text-purple-600 rounded focus:ring-purple-500">
+          <span class="font-semibold text-purple-900">🔀 Configuration Hybride</span>
+          <span class="text-sm text-purple-600">(montants et travers différents)</span>
+        </label>
+        <p class="text-xs text-purple-500 mt-2 ml-8">Recommandé pour optimiser puissance ET confort</p>
+      </div>
+      
       <div id="budget-string-group" class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
 
@@ -632,10 +643,12 @@
       <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
         <div class="flex items-center gap-2 mb-4">
           <span class="text-2xl">🧵</span>
-          <h3 class="text-xl font-bold text-gray-900">Cordage Recommandé</h3>
+          <h3 class="text-xl font-bold text-gray-900" id="string-section-title">Cordage Recommandé</h3>
+          <span id="hybrid-badge" class="hidden bg-purple-100 text-purple-800 text-xs font-medium px-2 py-1 rounded-full">🔀 HYBRIDE</span>
         </div>
         
-        <div class="bg-gray-50 rounded-lg p-6" id="recommended-string">
+        <!-- Single String (non-hybrid) -->
+        <div id="single-string-section" class="bg-gray-50 rounded-lg p-6">
           <div class="flex justify-between items-start">
             <div>
               <span class="text-sm text-blue-600 font-medium" id="rec-string-brand">Babolat</span>
@@ -662,6 +675,65 @@
             </div>
           </div>
           <p class="text-gray-600 mt-4" id="rec-string-reason">Parfait pour générer du spin et du contrôle.</p>
+        </div>
+        
+        <!-- Hybrid Strings Section -->
+        <div id="hybrid-string-section" class="hidden space-y-4">
+          <!-- Mains String -->
+          <div class="bg-blue-50 rounded-lg p-4 border-l-4 border-blue-500">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-lg">↕️</span>
+              <span class="font-bold text-blue-900">MONTANTS</span>
+              <span class="text-xs text-blue-600 bg-blue-100 px-2 py-0.5 rounded">60% de l'impact</span>
+            </div>
+            <div class="flex justify-between items-start">
+              <div>
+                <span class="text-sm text-blue-600 font-medium" id="rec-mains-brand">Luxilon</span>
+                <h4 class="text-lg font-bold text-gray-900" id="rec-mains-name">ALU Power</h4>
+              </div>
+              <span class="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full" id="rec-mains-type">Polyester</span>
+            </div>
+            <div class="grid grid-cols-3 gap-4 mt-3 text-sm">
+              <div><span class="text-gray-500">Rigidité:</span> <span class="font-semibold" id="rec-mains-stiffness">230 lb/in</span></div>
+              <div><span class="text-gray-500">Contrôle:</span> <span class="font-semibold" id="rec-mains-control">9/10</span></div>
+              <div><span class="text-gray-500">Prix:</span> <span class="font-semibold text-green-600" id="rec-mains-price">19€</span></div>
+            </div>
+          </div>
+          
+          <!-- Cross String -->
+          <div class="bg-green-50 rounded-lg p-4 border-l-4 border-green-500">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-lg">↔️</span>
+              <span class="font-bold text-green-900">TRAVERS</span>
+              <span class="text-xs text-green-600 bg-green-100 px-2 py-0.5 rounded">40% de l'impact</span>
+            </div>
+            <div class="flex justify-between items-start">
+              <div>
+                <span class="text-sm text-green-600 font-medium" id="rec-cross-brand">Babolat</span>
+                <h4 class="text-lg font-bold text-gray-900" id="rec-cross-name">VS Touch</h4>
+              </div>
+              <span class="bg-green-100 text-green-800 text-sm font-medium px-3 py-1 rounded-full" id="rec-cross-type">Boyau</span>
+            </div>
+            <div class="grid grid-cols-3 gap-4 mt-3 text-sm">
+              <div><span class="text-gray-500">Rigidité:</span> <span class="font-semibold" id="rec-cross-stiffness">150 lb/in</span></div>
+              <div><span class="text-gray-500">Confort:</span> <span class="font-semibold" id="rec-cross-comfort">10/10</span></div>
+              <div><span class="text-gray-500">Prix:</span> <span class="font-semibold text-green-600" id="rec-cross-price">45€</span></div>
+            </div>
+          </div>
+          
+          <!-- Hybrid Formula -->
+          <div class="bg-purple-50 rounded-lg p-4 border border-purple-200">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-lg">🧮</span>
+              <span class="font-bold text-purple-900">Rigidité Équivalente</span>
+            </div>
+            <p class="text-sm text-purple-700" id="hybrid-formula">
+              (230 × 0.60) + (150 × 0.40) = <strong>198 lb/in</strong>
+            </p>
+            <p class="text-xs text-purple-500 mt-1">Cette valeur est utilisée pour calculer votre score RCS</p>
+          </div>
+          
+          <p class="text-gray-600" id="rec-hybrid-reason">Configuration hybride optimale : puissance des polyesters en montants, confort du boyau en travers.</p>
         </div>
       </div>
 
@@ -925,8 +997,21 @@
         style: document.querySelector('input[name="style"]:checked')?.value || null,
         physical: document.querySelector('input[name="physical"]:checked')?.value || null,
         'budget-racquet': document.querySelector('input[name="budget-racquet"]:checked')?.value || null,
-        'budget-string': document.querySelector('input[name="budget-string"]:checked')?.value || null
+        'budget-string': document.querySelector('input[name="budget-string"]:checked')?.value || null,
+        isHybrid: document.getElementById('hybridToggle')?.checked || false
       };
+    }
+    
+    // Toggle hybrid mode display
+    function toggleHybridMode() {
+      const isHybrid = document.getElementById('hybridToggle')?.checked || false;
+      console.log('🔀 Hybrid mode:', isHybrid);
+      // Visual feedback that hybrid is selected
+      const toggle = document.getElementById('hybridToggle');
+      if (toggle) {
+        toggle.parentElement.parentElement.classList.toggle('ring-2', isHybrid);
+        toggle.parentElement.parentElement.classList.toggle('ring-purple-500', isHybrid);
+      }
     }
     
     // Legacy selections object for compatibility (read from radio buttons)
@@ -1293,6 +1378,61 @@
       console.log(`✅ Picked string: ${picked ? picked.brand + ' ' + picked.model : 'null'}`);
       return picked;
     }
+    
+    // Pick a cross string for hybrid setup (softer string for comfort)
+    function pickCrossString(selections) {
+      console.log('🔀 pickCrossString called for hybrid setup');
+      
+      // Default cross string (multifilament or natural gut for comfort)
+      const defaultCrossString = {
+        brand: 'Wilson',
+        name: 'NXT',
+        type: 'Multifilament',
+        stiffness: 145,
+        comfort: '9/10',
+        price: '18€'
+      };
+      
+      if (typeof stringsDB === 'undefined' || !stringsDB || stringsDB.length === 0) {
+        console.log('❌ stringsDB not loaded, returning default');
+        return defaultCrossString;
+      }
+      
+      // Filter for comfortable strings (multifilament, natural gut, soft poly)
+      let candidates = stringsDB.filter(s => {
+        const type = (s.type || '').toLowerCase();
+        return type.includes('multifilament') || 
+               type.includes('boyau') || 
+               type.includes('gut') ||
+               type.includes('synthetic') ||
+               (s.comfort && s.comfort >= 7);
+      });
+      
+      // If no candidates, take strings with highest comfort
+      if (candidates.length === 0) {
+        candidates = [...stringsDB].sort((a, b) => (b.comfort || 5) - (a.comfort || 5)).slice(0, 10);
+      }
+      
+      // Sort by comfort (highest first)
+      candidates.sort((a, b) => (b.comfort || 5) - (a.comfort || 5));
+      
+      // Pick from top 3
+      const topCandidates = candidates.slice(0, Math.min(3, candidates.length));
+      const picked = topCandidates[Math.floor(Math.random() * topCandidates.length)];
+      
+      if (picked) {
+        return {
+          brand: picked.brand,
+          name: picked.model,
+          type: picked.type,
+          stiffness: picked.stiffness || 150,
+          comfort: `${picked.comfort || 8}/10`,
+          price: `${picked.price_eur || 18}€`
+        };
+      }
+      
+      return defaultCrossString;
+    }
 
     // Generate result
     function generateResult() {
@@ -1635,22 +1775,70 @@
       document.getElementById('rec-racquet-price').textContent = racquet.price;
       document.getElementById('rec-racquet-reason').textContent = racquet.reason;
 
-      // Update UI - String
-      document.getElementById('rec-string-brand').textContent = string.brand;
-      document.getElementById('rec-string-name').textContent = string.name;
-      document.getElementById('rec-string-type').textContent = string.type;
-      document.getElementById('rec-string-spin').textContent = string.spin;
-      document.getElementById('rec-string-control').textContent = string.control;
-      document.getElementById('rec-string-comfort').textContent = string.comfort;
-      document.getElementById('rec-string-price').textContent = string.price;
-      document.getElementById('rec-string-reason').textContent = string.reason;
+      // Update UI - String (handle hybrid)
+      const isHybrid = currentSelections.isHybrid;
+      
+      if (isHybrid) {
+        // Show hybrid section, hide single string
+        document.getElementById('single-string-section').classList.add('hidden');
+        document.getElementById('hybrid-string-section').classList.remove('hidden');
+        document.getElementById('hybrid-badge').classList.remove('hidden');
+        document.getElementById('string-section-title').textContent = 'Cordages Hybrides Recommandés';
+        
+        // Pick a cross string (softer, for comfort)
+        const crossString = pickCrossString(currentSelections);
+        
+        // Update mains string
+        document.getElementById('rec-mains-brand').textContent = string.brand;
+        document.getElementById('rec-mains-name').textContent = string.name;
+        document.getElementById('rec-mains-type').textContent = string.type;
+        document.getElementById('rec-mains-stiffness').textContent = `${string.stiffness || 230} lb/in`;
+        document.getElementById('rec-mains-control').textContent = string.control;
+        document.getElementById('rec-mains-price').textContent = string.price;
+        
+        // Update cross string
+        document.getElementById('rec-cross-brand').textContent = crossString.brand;
+        document.getElementById('rec-cross-name').textContent = crossString.name;
+        document.getElementById('rec-cross-type').textContent = crossString.type;
+        document.getElementById('rec-cross-stiffness').textContent = `${crossString.stiffness || 150} lb/in`;
+        document.getElementById('rec-cross-comfort').textContent = crossString.comfort;
+        document.getElementById('rec-cross-price').textContent = crossString.price;
+        
+        // Calculate hybrid stiffness and update formula display
+        const hybridStiffness = RCS.calculateHybridStiffness(string.stiffness || 230, crossString.stiffness || 150);
+        document.getElementById('hybrid-formula').innerHTML = 
+          `(${string.stiffness || 230} × 0.60) + (${crossString.stiffness || 150} × 0.40) = <strong>${Math.round(hybridStiffness)} lb/in</strong>`;
+        document.getElementById('rec-hybrid-reason').textContent = 
+          `Configuration hybride optimale : ${string.type} en montants pour le contrôle et spin, ${crossString.type} en travers pour le confort.`;
+        
+        // Store hybrid stiffness for RCS calculation
+        string.hybridStiffness = hybridStiffness;
+        string.crossString = crossString;
+      } else {
+        // Show single string section, hide hybrid
+        document.getElementById('single-string-section').classList.remove('hidden');
+        document.getElementById('hybrid-string-section').classList.add('hidden');
+        document.getElementById('hybrid-badge').classList.add('hidden');
+        document.getElementById('string-section-title').textContent = 'Cordage Recommandé';
+        
+        // Update single string display
+        document.getElementById('rec-string-brand').textContent = string.brand;
+        document.getElementById('rec-string-name').textContent = string.name;
+        document.getElementById('rec-string-type').textContent = string.type;
+        document.getElementById('rec-string-spin').textContent = string.spin;
+        document.getElementById('rec-string-control').textContent = string.control;
+        document.getElementById('rec-string-comfort').textContent = string.comfort;
+        document.getElementById('rec-string-price').textContent = string.price;
+        document.getElementById('rec-string-reason').textContent = string.reason;
+      }
 
       // Update UI - Tension
       document.getElementById('rec-tension').textContent = tension.value;
       document.getElementById('rec-tension-reason').textContent = tension.reason;
 
-      // Calculate and display RCS
-      updateRCSDisplay(racquet.stiffness, string.stiffness, tension.numValue, rcsProfile);
+      // Calculate and display RCS (use hybrid stiffness if applicable)
+      const effectiveStiffness = isHybrid ? string.hybridStiffness : string.stiffness;
+      updateRCSDisplay(racquet.stiffness, effectiveStiffness, tension.numValue, rcsProfile, isHybrid, string);
 
       // Record usage
       recordConfigurationUsage();
@@ -1667,14 +1855,21 @@
       goToStep(4);
     }
 
-    // Update RCS Display
-    function updateRCSDisplay(ra, stringStiffness, tensionKg, profile) {
+    // Update RCS Display (supports hybrid strings)
+    function updateRCSDisplay(ra, stringStiffness, tensionKg, profile, isHybrid = false, stringData = null) {
       if (typeof RCS === 'undefined') {
         console.error('RCS calculator not loaded');
         return;
       }
 
-      const result = RCS.calculate(ra, stringStiffness, tensionKg);
+      let result;
+      if (isHybrid && stringData && stringData.crossString) {
+        // Use hybrid calculation
+        result = RCS.calculateHybrid(ra, stringData.stiffness || 230, stringData.crossString.stiffness || 150, tensionKg);
+        console.log('🔀 Hybrid RCS calculation:', result);
+      } else {
+        result = RCS.calculate(ra, stringStiffness, tensionKg);
+      }
       const { rcs, decile, quintile } = result;
 
       // Update score display

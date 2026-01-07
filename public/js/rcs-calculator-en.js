@@ -248,6 +248,46 @@ const RCS = {
   normalizeCordage(s) { return this._n2(s); },
   normalizeTension(t) { return this._n3(t); },
 
+  // Constants for hybrid calculation
+  HYBRID_MAINS_WEIGHT: 0.60,  // Mains = 60% of impact
+  HYBRID_CROSS_WEIGHT: 0.40,  // Crosses = 40% of impact
+
+  /**
+   * Calculate equivalent stiffness for hybrid string setup
+   * @param {number} mainsStiffness - Mains string stiffness (lb/in)
+   * @param {number} crossStiffness - Cross string stiffness (lb/in)
+   * @returns {number} Combined equivalent stiffness
+   */
+  calculateHybridStiffness(mainsStiffness, crossStiffness) {
+    return (mainsStiffness * this.HYBRID_MAINS_WEIGHT) + (crossStiffness * this.HYBRID_CROSS_WEIGHT);
+  },
+
+  /**
+   * RCS calculation for hybrid string configuration
+   * @param {number} ra - Racquet stiffness (RA)
+   * @param {number} mainsStiffness - Mains string stiffness (lb/in)
+   * @param {number} crossStiffness - Cross string stiffness (lb/in)
+   * @param {number} tension - Tension (kg)
+   * @returns {object} RCS result with hybrid details
+   */
+  calculateHybrid(ra, mainsStiffness, crossStiffness, tension) {
+    const hybridStiffness = this.calculateHybridStiffness(mainsStiffness, crossStiffness);
+    const result = this.calculate(ra, hybridStiffness, tension);
+    
+    // Add hybrid details to result
+    result.hybrid = {
+      isHybrid: true,
+      mainsStiffness: mainsStiffness,
+      crossStiffness: crossStiffness,
+      combinedStiffness: Math.round(hybridStiffness * 10) / 10,
+      mainsContribution: Math.round(mainsStiffness * this.HYBRID_MAINS_WEIGHT * 10) / 10,
+      crossContribution: Math.round(crossStiffness * this.HYBRID_CROSS_WEIGHT * 10) / 10,
+      formula: `(${mainsStiffness} × ${this.HYBRID_MAINS_WEIGHT}) + (${crossStiffness} × ${this.HYBRID_CROSS_WEIGHT}) = ${Math.round(hybridStiffness * 10) / 10} lb/in`
+    };
+    
+    return result;
+  },
+
   calculate(ra, cordageStiffness, tension) {
     const a = this._n1(ra);
     const b = this._n2(cordageStiffness);
