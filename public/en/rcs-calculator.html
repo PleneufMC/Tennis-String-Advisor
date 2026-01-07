@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RCS Calculator - Tennis String Advisor</title>
+  <meta name="description" content="Calculate your joint comfort score (RCS) to optimize your tennis setup and prevent injuries.">
+  <link rel="canonical" href="https://tennisstringadvisor.org/en/rcs-calculator.html">
+  <link rel="alternate" hreflang="fr" href="https://tennisstringadvisor.org/rcs-calculator.html">
+  <link rel="alternate" hreflang="en" href="https://tennisstringadvisor.org/en/rcs-calculator.html">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/js/rcs-calculator.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            tennis: { green: '#16a34a', dark: '#0d1117', light: '#f0fdf4' }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .rcs-gauge { 
+      background: linear-gradient(to right, #006400, #228B22, #32CD32, #9ACD32, #FFD700, #FFC000, #FF8C00, #FF6600, #FF4444, #CC0000);
+      height: 16px;
+      border-radius: 8px;
+      position: relative;
+    }
+    .rcs-indicator {
+      position: absolute;
+      top: -6px;
+      width: 28px;
+      height: 28px;
+      background: white;
+      border: 4px solid #333;
+      border-radius: 50%;
+      transform: translateX(-50%);
+      transition: left 0.3s ease;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    .decile-bar {
+      transition: all 0.3s ease;
+    }
+    .decile-bar.active {
+      transform: scale(1.02);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      border: 2px solid currentColor;
+    }
+    .quintile-card {
+      transition: all 0.3s ease;
+    }
+    .quintile-card.active {
+      transform: scale(1.03);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    }
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 10px;
+      border-radius: 5px;
+      background: #e5e7eb;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #16a34a;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+    .tab-active {
+      border-bottom: 3px solid #16a34a;
+      color: #16a34a;
+    }
+  </style>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-YSSLHJ5WYD"></script>
+  <script src="/js/analytics.js"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <!-- Header -->
+  <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 py-4">
+      <div class="flex items-center justify-between">
+        <a href="/en/" class="flex items-center gap-2">
+          <span class="text-2xl">🎾</span>
+          <span class="font-bold text-xl text-gray-900">Tennis String Advisor</span>
+        </a>
+        <nav class="hidden md:flex items-center gap-6">
+          <a href="/en/" class="text-gray-600 hover:text-green-600 transition">Home</a>
+          <a href="/en/configurator.html" class="text-gray-600 hover:text-green-600 transition">Configurator</a>
+          <a href="/en/racquets.html" class="text-gray-600 hover:text-green-600 transition">Racquets</a>
+          <a href="/en/strings.html" class="text-gray-600 hover:text-green-600 transition">Strings</a>
+          <a href="/en/compare.html" class="text-gray-600 hover:text-green-600 transition">Compare</a>
+          <a href="/en/rcs-calculator.html" class="text-green-600 font-semibold border-b-2 border-green-600 pb-1">RCS Calculator</a>
+          <a href="/rcs-calculator.html" class="text-blue-600 hover:text-blue-700 transition">🇫🇷 FR</a>
+        </nav>
+        <button class="md:hidden p-2" onclick="toggleMobileMenu()">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+          </svg>
+        </button>
+      </div>
+      <div id="mobileMenu" class="hidden md:hidden mt-4 pb-4 border-t pt-4">
+        <div class="flex flex-col gap-3">
+          <a href="/en/" class="text-gray-600 hover:text-green-600">Home</a>
+          <a href="/en/configurator.html" class="text-gray-600 hover:text-green-600">Configurator</a>
+          <a href="/en/racquets.html" class="text-gray-600 hover:text-green-600">Racquets</a>
+          <a href="/en/strings.html" class="text-gray-600 hover:text-green-600">Strings</a>
+          <a href="/en/compare.html" class="text-gray-600 hover:text-green-600">Compare</a>
+          <a href="/en/rcs-calculator.html" class="text-green-600 font-semibold">RCS Calculator</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto px-4 py-8">
+    <!-- Page Header -->
+    <div class="text-center mb-8">
+      <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-3">🩺 RCS Calculator</h1>
+      <p class="text-gray-600 text-lg">Racquet Comfort Score - Evaluate the joint stress of your configuration</p>
+      <p class="text-sm text-gray-500 mt-2">Based on research by Brody (1987), Hennig (1992), Kawazoe (1997)</p>
+    </div>
+
+    <!-- Info Banner -->
+    <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-8">
+      <div class="flex items-start gap-3">
+        <span class="text-2xl">ℹ️</span>
+        <div>
+          <h3 class="font-semibold text-blue-800">What is RCS?</h3>
+          <p class="text-sm text-blue-700 mt-1">The RCS score (0-100) evaluates the stress on your joints (elbow, shoulder, wrist) based on your equipment. A <strong>low score = more comfort</strong>, a <strong>high score = more performance but more joint stress</strong>.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <!-- Left Column: Inputs -->
+      <div class="space-y-6">
+        <!-- Racquet Selection -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <span class="text-2xl">🎾</span> Racquet Stiffness (RA)
+          </h3>
+          
+          <div class="mb-4">
+            <label class="text-sm text-gray-600 mb-1 block">Select a racquet:</label>
+            <select id="racquetSelect" class="w-full rounded-lg border-gray-300 border p-3 focus:ring-green-500 focus:border-green-500">
+              <option value="">-- Choose from database --</option>
+            </select>
+          </div>
+          
+          <div class="flex items-center gap-4">
+            <input type="range" id="raSlider" min="54" max="72" value="63" class="flex-1">
+            <div class="w-24 text-center">
+              <span id="raValue" class="text-3xl font-bold text-blue-600">63</span>
+              <div class="text-xs text-gray-500">RA Index</div>
+            </div>
+          </div>
+          
+          <div class="flex justify-between text-xs text-gray-500 mt-2 px-1">
+            <span>54 (Flexible)</span>
+            <span>63 (Medium)</span>
+            <span>72 (Stiff)</span>
+          </div>
+          
+          <div id="raWarning" class="hidden mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-700 text-sm">
+            ⚠️ RA not available for this racquet. Default value (63) used.
+          </div>
+        </div>
+
+        <!-- String Selection -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <span class="text-2xl">🧵</span> String Stiffness
+          </h3>
+          
+          <div class="mb-4">
+            <label class="text-sm text-gray-600 mb-1 block">Select a string:</label>
+            <select id="stringSelect" class="w-full rounded-lg border-gray-300 border p-3 focus:ring-green-500 focus:border-green-500">
+              <option value="">-- Choose from database --</option>
+            </select>
+          </div>
+          
+          <div class="flex items-center gap-4">
+            <input type="range" id="cordageSlider" min="88" max="275" value="180" class="flex-1">
+            <div class="w-24 text-center">
+              <span id="cordageValue" class="text-3xl font-bold text-green-600">180</span>
+              <div class="text-xs text-gray-500">lb/in</div>
+            </div>
+          </div>
+          
+          <div class="flex justify-between text-xs text-gray-500 mt-2 px-1">
+            <span>88 (Gut)</span>
+            <span>180 (Multi)</span>
+            <span>275 (Stiff Poly)</span>
+          </div>
+          
+          <div class="mt-4">
+            <label class="text-sm text-gray-600 mb-2 block">Quick presets by type:</label>
+            <div class="grid grid-cols-4 gap-2">
+              <button onclick="setCordageType(95)" class="p-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 text-sm font-medium transition">
+                🥩 Gut
+              </button>
+              <button onclick="setCordageType(155)" class="p-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 text-sm font-medium transition">
+                🧶 Multi
+              </button>
+              <button onclick="setCordageType(185)" class="p-2 bg-yellow-100 text-yellow-700 rounded-lg hover:bg-yellow-200 text-sm font-medium transition">
+                🔸 Synth
+              </button>
+              <button onclick="setCordageType(235)" class="p-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 text-sm font-medium transition">
+                ⬛ Poly
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tension -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <span class="text-2xl">⚡</span> String Tension
+          </h3>
+          
+          <div class="flex items-center gap-4">
+            <input type="range" id="tensionSlider" min="18" max="30" step="0.5" value="24" class="flex-1">
+            <div class="w-24 text-center">
+              <span id="tensionValue" class="text-3xl font-bold text-red-600">24</span>
+              <div class="text-xs text-gray-500">kg</div>
+            </div>
+          </div>
+          
+          <div class="flex justify-between text-xs text-gray-500 mt-2 px-1">
+            <span>18 kg (Low)</span>
+            <span>24 kg (Medium)</span>
+            <span>30 kg (High)</span>
+          </div>
+          
+          <div class="mt-4 p-3 bg-gray-50 rounded-lg text-sm text-gray-600">
+            💡 <strong>Tip:</strong> Low tension (18-22 kg) favors comfort, high tension (26-30 kg) favors control.
+          </div>
+        </div>
+
+        <!-- Player Profile -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <span class="text-2xl">👤</span> Your Profile (optional)
+          </h3>
+          
+          <select id="profileSelect" class="w-full rounded-lg border-gray-300 border p-3 focus:ring-green-500 focus:border-green-500">
+            <option value="">-- Evaluate for a specific profile --</option>
+            <option value="reeducation">🏥 Post-injury rehabilitation</option>
+            <option value="tennis_elbow">💪 Tennis elbow / Epicondylitis</option>
+            <option value="senior">👴 Senior / Sensitive arm</option>
+            <option value="debutant">🌱 Beginner / Recreational</option>
+            <option value="club">🎾 Club player</option>
+            <option value="confirme">⭐ Advanced club</option>
+            <option value="competiteur">🏆 Competitor</option>
+            <option value="expert">🔥 Expert / Semi-pro</option>
+            <option value="pro">👑 Pro / Elite</option>
+          </select>
+          
+          <p class="text-xs text-gray-500 mt-2">Select your profile for a personalized evaluation.</p>
+        </div>
+      </div>
+
+      <!-- Right Column: Results -->
+      <div class="space-y-6">
+        <!-- RCS Score Display -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div class="text-center">
+            <div id="rcsScoreDisplay" class="inline-flex items-center justify-center w-36 h-36 rounded-full text-white text-5xl font-bold mb-4 transition-all duration-500 shadow-lg" style="background: #FFD700;">
+              50
+            </div>
+            <div class="text-xl font-semibold text-gray-900">RCS Score</div>
+            <div id="decileLabel" class="inline-flex items-center gap-2 mt-3 px-5 py-2 rounded-full text-sm font-bold" style="background: #FFD700; color: #000;">
+              <span id="decileIcon">⚖️</span>
+              <span>D5 - Balanced Flexible</span>
+            </div>
+            <p id="decileDescription" class="text-gray-600 mt-2 text-sm">Average club level</p>
+          </div>
+          
+          <!-- RCS Gauge -->
+          <div class="mt-8">
+            <div class="rcs-gauge">
+              <div id="rcsIndicator" class="rcs-indicator" style="left: 50%;"></div>
+            </div>
+            <div class="flex justify-between text-xs text-gray-500 mt-3">
+              <span>0 - Maximum Comfort</span>
+              <span>50 - Balanced</span>
+              <span>100 - Maximum Performance</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Health Warning (if applicable) -->
+        <div id="healthWarning" class="hidden"></div>
+
+        <!-- Profile Evaluation -->
+        <div id="profileEvaluation" class="hidden bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <span class="text-xl">🎯</span> Evaluation for your profile
+          </h3>
+          <div id="profileEvalContent"></div>
+        </div>
+
+        <!-- Detailed Comment -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <span class="text-xl">📋</span> Detailed Analysis
+          </h3>
+          <div id="decileDetailContent">
+            <!-- Generated by JS -->
+          </div>
+        </div>
+
+        <!-- Contributions -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <span class="text-xl">📊</span> Score Contributions
+          </h3>
+          
+          <div class="space-y-4">
+            <div>
+              <div class="flex justify-between text-sm mb-1">
+                <span class="text-gray-600">🎾 Racquet (RA)</span>
+                <span id="contribRA" class="font-medium">14.0 pts</span>
+              </div>
+              <div class="h-3 bg-gray-200 rounded-full overflow-hidden">
+                <div id="contribRABar" class="h-full bg-blue-500 transition-all duration-300" style="width: 28%;"></div>
+              </div>
+            </div>
+            
+            <div>
+              <div class="flex justify-between text-sm mb-1">
+                <span class="text-gray-600">🧵 String</span>
+                <span id="contribCordage" class="font-medium">26.5 pts</span>
+              </div>
+              <div class="h-3 bg-gray-200 rounded-full overflow-hidden">
+                <div id="contribCordageBar" class="h-full bg-green-500 transition-all duration-300" style="width: 53%;"></div>
+              </div>
+            </div>
+            
+            <div>
+              <div class="flex justify-between text-sm mb-1">
+                <span class="text-gray-600">⚡ Tension</span>
+                <span id="contribTension" class="font-medium">11.0 pts</span>
+              </div>
+              <div class="h-3 bg-gray-200 rounded-full overflow-hidden">
+                <div id="contribTensionBar" class="h-full bg-red-500 transition-all duration-300" style="width: 22%;"></div>
+              </div>
+            </div>
+            
+            <div>
+              <div class="flex justify-between text-sm mb-1">
+                <span class="text-gray-600">🔗 Interaction</span>
+                <span id="contribInteraction" class="font-medium">1.3 pts</span>
+              </div>
+              <div class="h-3 bg-gray-200 rounded-full overflow-hidden">
+                <div id="contribInteractionBar" class="h-full bg-purple-500 transition-all duration-300" style="width: 3%;"></div>
+              </div>
+            </div>
+          </div>
+          
+          <p class="text-xs text-gray-500 mt-4">The string is generally the dominant factor (~42%), followed by the racquet (~28%) and tension (~22%).</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabs: Quintiles and Deciles Reference -->
+    <div class="mt-12 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      <div class="border-b border-gray-200">
+        <div class="flex">
+          <button onclick="showTab('quintiles')" id="tabQuintiles" class="flex-1 py-4 px-6 text-center font-semibold transition tab-active">
+            📊 The 5 RCS Zones (Quintiles)
+          </button>
+          <button onclick="showTab('deciles')" id="tabDeciles" class="flex-1 py-4 px-6 text-center font-semibold text-gray-500 transition hover:text-gray-700">
+            📈 Detailed Scale (10 Deciles)
+          </button>
+          <button onclick="showTab('matrix')" id="tabMatrix" class="flex-1 py-4 px-6 text-center font-semibold text-gray-500 transition hover:text-gray-700">
+            🔬 Simulation Matrix
+          </button>
+        </div>
+      </div>
+      
+      <!-- Quintiles Tab -->
+      <div id="contentQuintiles" class="p-6">
+        <p class="text-gray-600 mb-6">The RCS score is divided into 5 main zones for easier interpretation:</p>
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-4" id="quintilesGrid">
+          <!-- Generated by JS -->
+        </div>
+      </div>
+      
+      <!-- Deciles Tab -->
+      <div id="contentDeciles" class="p-6 hidden">
+        <p class="text-gray-600 mb-6">For finer analysis, the RCS breaks down into 10 deciles:</p>
+        <div class="space-y-3" id="decileScale">
+          <!-- Generated by JS -->
+        </div>
+      </div>
+      
+      <!-- Matrix Tab -->
+      <div id="contentMatrix" class="p-6 hidden">
+        <p class="text-gray-600 mb-4">Click on a cell to apply that configuration:</p>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm" id="simulationMatrix">
+            <thead>
+              <tr class="border-b bg-gray-50">
+                <th class="p-3 text-left font-semibold">RA \ String</th>
+                <th class="p-3 text-center">🥩 Gut (95)</th>
+                <th class="p-3 text-center">🧶 Multi (155)</th>
+                <th class="p-3 text-center">🔸 Synth (185)</th>
+                <th class="p-3 text-center">⬛ Poly (235)</th>
+              </tr>
+            </thead>
+            <tbody id="matrixBody">
+              <!-- Generated by JS -->
+            </tbody>
+          </table>
+        </div>
+        <p class="text-xs text-gray-500 mt-3">* Values calculated with average tension of 24 kg</p>
+      </div>
+    </div>
+
+    <!-- About RCS Section -->
+    <div class="mt-8 bg-gradient-to-r from-gray-800 to-gray-900 rounded-xl p-6 text-white">
+      <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
+        <span>🔬</span> About the RCS Score
+      </h3>
+      <div class="grid md:grid-cols-2 gap-6">
+        <div>
+          <h4 class="font-semibold text-green-400 mb-2">Methodology</h4>
+          <p class="text-gray-300 text-sm">The RCS score is calculated using a proprietary algorithm developed by Tennis String Advisor, integrating the latest research in tennis biomechanics.</p>
+        </div>
+        <div>
+          <h4 class="font-semibold text-green-400 mb-2">Scientific Validation</h4>
+          <p class="text-gray-300 text-sm">Our model is based on reference works in tennis science and has been calibrated on real data from players of all levels.</p>
+        </div>
+      </div>
+      <div class="mt-4 pt-4 border-t border-gray-700">
+        <p class="text-gray-400 text-xs">© 2025 Tennis String Advisor - A brand of Pleneuf Trading LLC. Proprietary protected algorithm. Reproduction prohibited.</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-gray-900 text-white mt-16">
+    <div class="max-w-7xl mx-auto px-4 py-12">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div>
+          <div class="flex items-center gap-2 mb-4">
+            <span class="text-2xl">🎾</span>
+            <span class="font-bold text-xl">Tennis String Advisor</span>
+          </div>
+          <p class="text-gray-400 text-sm">Expert in tennis strings and racquets.</p>
+        </div>
+        <div>
+          <h4 class="font-semibold mb-4">Catalog</h4>
+          <ul class="space-y-2 text-gray-400 text-sm">
+            <li><a href="/en/racquets.html" class="hover:text-white transition">Racquets (107+)</a></li>
+            <li><a href="/en/strings.html" class="hover:text-white transition">Strings (173+)</a></li>
+            <li><a href="/en/compare.html" class="hover:text-white transition">Compare</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-semibold mb-4">Tools</h4>
+          <ul class="space-y-2 text-gray-400 text-sm">
+            <li><a href="/en/configurator.html" class="hover:text-white transition">Configurator</a></li>
+            <li><a href="/en/rcs-calculator.html" class="hover:text-white transition">RCS Calculator</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-semibold mb-4">References</h4>
+          <ul class="space-y-2 text-gray-400 text-xs">
+            <li>Brody H. (1987) - Tennis Science</li>
+            <li>Hennig E. (1992) - Racket Vibration</li>
+            <li>Kawazoe Y. (1997) - Ball-Racket Impact</li>
+          </ul>
+        </div>
+      </div>
+      <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400 text-sm">
+        <p>© 2025 Tennis String Advisor. A brand of Pleneuf Trading LLC. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Premium Paywall Modal -->
+  <div id="premiumPaywall" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden animate-fade-in">
+      <div class="bg-gradient-to-r from-amber-500 to-orange-500 p-6 text-white text-center">
+        <span class="text-5xl block mb-3">🔒</span>
+        <h2 class="text-2xl font-bold">Free Trial Used</h2>
+        <p class="text-white/90 mt-2">You have used your free RCS calculation</p>
+      </div>
+      <div class="p-6">
+        <div class="bg-green-50 border border-green-200 rounded-xl p-4 mb-6">
+          <h3 class="font-semibold text-green-800 flex items-center gap-2">
+            <span>✨</span> Go Premium to continue
+          </h3>
+          <ul class="mt-3 space-y-2 text-sm text-green-700">
+            <li class="flex items-center gap-2"><span>✓</span> Unlimited RCS calculations</li>
+            <li class="flex items-center gap-2"><span>✓</span> Save your configurations</li>
+            <li class="flex items-center gap-2"><span>✓</span> Complete string journal</li>
+            <li class="flex items-center gap-2"><span>✓</span> Price alerts on your favorite products</li>
+            <li class="flex items-center gap-2"><span>✓</span> PDF export of your setups</li>
+          </ul>
+        </div>
+        <div class="text-center mb-4">
+          <span class="text-3xl font-bold text-gray-900">$2.99</span>
+          <span class="text-gray-600">/month</span>
+          <p class="text-sm text-gray-500 mt-1">or $24.99/year (2 months free)</p>
+        </div>
+        <div class="space-y-3">
+          <a href="/en/premium.html" class="block w-full py-3 px-6 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-xl text-center hover:from-amber-600 hover:to-orange-600 transition shadow-lg">
+            ✨ Go Premium
+          </a>
+          <a href="/en/auth.html" id="paywallAuthLink" class="block w-full py-3 px-6 border-2 border-gray-300 text-gray-700 font-medium rounded-xl text-center hover:bg-gray-50 transition">
+            Create a free account
+          </a>
+        </div>
+        <p class="text-xs text-gray-500 text-center mt-4">
+          Free account includes 1 RCS calculation. Premium = unlimited.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Free Trial Banner -->
+  <div id="freeTrialBanner" class="hidden bg-gradient-to-r from-green-500 to-green-600 text-white py-3 px-4 text-center">
+    <span class="font-medium">🎁 Free trial: <span id="remainingCalculations">1</span> RCS calculation remaining</span>
+    <span class="mx-2">|</span>
+    <a href="/en/premium.html" class="underline font-semibold hover:text-green-100">Go Premium for unlimited →</a>
+  </div>
+
+  <!-- Premium Banner -->
+  <div id="premiumBanner" class="hidden bg-gradient-to-r from-amber-500 to-orange-500 text-white py-2 px-4 text-center">
+    <span class="font-medium">✨ Premium Member - Unlimited calculations</span>
+  </div>
+
+  <script>
+    // Supabase config
+    const SUPABASE_URL = 'https://yhhdkllbaxuhwrfpsmev.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InloaGRrbGxiYXh1aHdyZnBzbWV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU3NjI0MDEsImV4cCI6MjA4MTMzODQwMX0.2aC_gYZf0xxz6MXi5zcaCH2S64RBaQvXU7a5qiuD0_k';
+    
+    let supabaseClient = null;
+    try {
+      if (window.supabase && window.supabase.createClient) {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        console.log('✅ Supabase initialized');
+      }
+    } catch (e) {
+      console.error('❌ Supabase init error:', e);
+    }
+    
+    let racquets = [];
+    let strings = [];
+    
+    // RCS Usage tracking
+    let currentUser = null;
+    let userProfile = null;
+    let hasUsedFreeCalculation = false;
+    let isPremium = false;
+    let calculationCount = 0;
+    const FREE_CALCULATIONS = 1;
+    const LOCAL_STORAGE_KEY = 'rcs_free_used';
+
+    // Mobile menu toggle
+    function toggleMobileMenu() {
+      document.getElementById('mobileMenu').classList.toggle('hidden');
+    }
+
+    // Tab switching
+    function showTab(tab) {
+      ['quintiles', 'deciles', 'matrix'].forEach(t => {
+        document.getElementById('content' + t.charAt(0).toUpperCase() + t.slice(1)).classList.add('hidden');
+        document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1)).classList.remove('tab-active');
+        document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1)).classList.add('text-gray-500');
+      });
+      document.getElementById('content' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.remove('hidden');
+      document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('tab-active');
+      document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.remove('text-gray-500');
+    }
+
+    // Check user auth and premium status
+    async function checkUserStatus() {
+      try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        
+        if (session) {
+          currentUser = session.user;
+          
+          const { data: profile } = await supabaseClient
+            .from('profiles')
+            .select('is_premium, rcs_calculations_used')
+            .eq('id', currentUser.id)
+            .single();
+          
+          if (profile) {
+            userProfile = profile;
+            isPremium = profile.is_premium === true;
+            calculationCount = profile.rcs_calculations_used || 0;
+            hasUsedFreeCalculation = calculationCount >= FREE_CALCULATIONS;
+          }
+          
+          document.getElementById('paywallAuthLink').textContent = 'Back to my account';
+          document.getElementById('paywallAuthLink').href = '/en/account.html';
+          
+        } else {
+          hasUsedFreeCalculation = localStorage.getItem(LOCAL_STORAGE_KEY) === 'true';
+        }
+        
+        updateUsageBanners();
+        
+      } catch (error) {
+        console.error('Error checking user status:', error);
+      }
+    }
+    
+    function updateUsageBanners() {
+      const freeTrialBanner = document.getElementById('freeTrialBanner');
+      const premiumBanner = document.getElementById('premiumBanner');
+      const remainingEl = document.getElementById('remainingCalculations');
+      
+      if (isPremium) {
+        freeTrialBanner.classList.add('hidden');
+        premiumBanner.classList.remove('hidden');
+      } else {
+        premiumBanner.classList.add('hidden');
+        const remaining = Math.max(0, FREE_CALCULATIONS - (currentUser ? calculationCount : (hasUsedFreeCalculation ? 1 : 0)));
+        remainingEl.textContent = remaining;
+        
+        if (remaining === 0) {
+          freeTrialBanner.innerHTML = `
+            <span class="font-medium">🔒 Free trial ended</span>
+            <span class="mx-2">|</span>
+            <a href="/en/premium.html" class="underline font-semibold hover:text-green-100">Go Premium to continue →</a>
+          `;
+          freeTrialBanner.classList.remove('from-green-500', 'to-green-600');
+          freeTrialBanner.classList.add('from-amber-500', 'to-orange-500');
+        }
+        freeTrialBanner.classList.remove('hidden');
+      }
+    }
+    
+    function showPaywall() {
+      const paywall = document.getElementById('premiumPaywall');
+      paywall.classList.remove('hidden');
+      paywall.classList.add('flex');
+      document.body.style.overflow = 'hidden';
+    }
+    
+    function canCalculate() {
+      if (isPremium) return true;
+      if (currentUser) {
+        return calculationCount < FREE_CALCULATIONS;
+      } else {
+        return !hasUsedFreeCalculation;
+      }
+    }
+    
+    async function recordCalculationUsage() {
+      if (isPremium) return;
+      
+      if (currentUser) {
+        calculationCount++;
+        await supabaseClient
+          .from('profiles')
+          .update({ rcs_calculations_used: calculationCount })
+          .eq('id', currentUser.id);
+        
+        hasUsedFreeCalculation = calculationCount >= FREE_CALCULATIONS;
+      } else {
+        localStorage.setItem(LOCAL_STORAGE_KEY, 'true');
+        hasUsedFreeCalculation = true;
+      }
+      
+      updateUsageBanners();
+    }
+
+    async function init() {
+      await checkUserStatus();
+      await loadData();
+      generateQuintilesGrid();
+      generateDecileScale();
+      generateMatrix();
+      
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.has('ra')) {
+        const ra = parseInt(urlParams.get('ra'));
+        if (ra >= 54 && ra <= 72) {
+          document.getElementById('raSlider').value = ra;
+        }
+      }
+      if (urlParams.has('cordage')) {
+        const cordage = parseInt(urlParams.get('cordage'));
+        if (cordage >= 88 && cordage <= 275) {
+          document.getElementById('cordageSlider').value = cordage;
+        }
+      }
+      if (urlParams.has('tension')) {
+        const tension = parseFloat(urlParams.get('tension'));
+        if (tension >= 18 && tension <= 30) {
+          document.getElementById('tensionSlider').value = tension;
+        }
+      }
+      
+      updateRCS();
+      
+      document.getElementById('raSlider').addEventListener('input', updateRCS);
+      document.getElementById('cordageSlider').addEventListener('input', updateRCS);
+      document.getElementById('tensionSlider').addEventListener('input', updateRCS);
+      document.getElementById('racquetSelect').addEventListener('change', onRacquetChange);
+      document.getElementById('stringSelect').addEventListener('change', onStringChange);
+      document.getElementById('profileSelect').addEventListener('change', updateRCS);
+    }
+
+    async function loadData() {
+      try {
+        const [racquetsRes, stringsRes] = await Promise.all([
+          supabaseClient.from('racquets').select('id, brand, model, variant, stiffness').order('brand, model'),
+          supabaseClient.from('strings').select('id, brand, model, stiffness, type').order('brand, model')
+        ]);
+        
+        racquets = racquetsRes.data || [];
+        strings = stringsRes.data || [];
+        
+        const racquetSelect = document.getElementById('racquetSelect');
+        let currentBrand = '';
+        racquets.forEach(r => {
+          if (r.brand !== currentBrand) {
+            const optgroup = document.createElement('optgroup');
+            optgroup.label = r.brand;
+            racquetSelect.appendChild(optgroup);
+            currentBrand = r.brand;
+          }
+          const opt = document.createElement('option');
+          opt.value = r.id;
+          opt.textContent = `${r.model} ${r.variant || ''} ${r.stiffness ? '(RA ' + r.stiffness + ')' : '(RA ?)'}`;
+          opt.dataset.stiffness = r.stiffness || '';
+          racquetSelect.lastChild.appendChild(opt);
+        });
+        
+        const stringSelect = document.getElementById('stringSelect');
+        currentBrand = '';
+        strings.forEach(s => {
+          if (s.brand !== currentBrand) {
+            const optgroup = document.createElement('optgroup');
+            optgroup.label = s.brand;
+            stringSelect.appendChild(optgroup);
+            currentBrand = s.brand;
+          }
+          const opt = document.createElement('option');
+          opt.value = s.id;
+          opt.textContent = `${s.model} (${s.stiffness} lb/in) - ${s.type}`;
+          opt.dataset.stiffness = s.stiffness;
+          stringSelect.lastChild.appendChild(opt);
+        });
+        
+      } catch (error) {
+        console.error('Error loading data:', error);
+      }
+    }
+
+    function onRacquetChange(e) {
+      const select = e.target;
+      const option = select.options[select.selectedIndex];
+      const stiffness = option.dataset.stiffness;
+      
+      const raWarning = document.getElementById('raWarning');
+      
+      if (stiffness && stiffness !== '') {
+        document.getElementById('raSlider').value = stiffness;
+        raWarning.classList.add('hidden');
+      } else {
+        document.getElementById('raSlider').value = 63;
+        raWarning.classList.remove('hidden');
+      }
+      
+      updateRCS();
+    }
+
+    function onStringChange(e) {
+      const select = e.target;
+      const option = select.options[select.selectedIndex];
+      const stiffness = option.dataset.stiffness;
+      
+      if (stiffness) {
+        document.getElementById('cordageSlider').value = stiffness;
+      }
+      
+      updateRCS();
+    }
+
+    function setCordageType(value) {
+      document.getElementById('cordageSlider').value = value;
+      document.getElementById('stringSelect').value = '';
+      updateRCS();
+    }
+
+    function generateQuintilesGrid() {
+      const container = document.getElementById('quintilesGrid');
+      container.innerHTML = RCS.QUINTILES.map((q, i) => `
+        <div class="quintile-card p-4 rounded-xl cursor-pointer" data-quintile="${i + 1}" style="background: ${q.color}15; border: 2px solid ${q.color};" onclick="setQuintilePreset(${i})">
+          <div class="text-center mb-2">
+            <span class="text-3xl">${q.icon}</span>
+          </div>
+          <h4 class="font-bold text-sm text-center" style="color: ${q.color};">${q.label}</h4>
+          <p class="text-xs text-gray-600 text-center mt-1">${q.summary}</p>
+          <p class="text-xs text-gray-500 text-center mt-2">RCS: ${q.targetRCS}</p>
+        </div>
+      `).join('');
+    }
+
+    function setQuintilePreset(index) {
+      const presets = [
+        { ra: 58, cordage: 95, tension: 20 },
+        { ra: 62, cordage: 155, tension: 22 },
+        { ra: 65, cordage: 185, tension: 24 },
+        { ra: 68, cordage: 220, tension: 26 },
+        { ra: 70, cordage: 250, tension: 28 }
+      ];
+      const p = presets[index];
+      document.getElementById('raSlider').value = p.ra;
+      document.getElementById('cordageSlider').value = p.cordage;
+      document.getElementById('tensionSlider').value = p.tension;
+      document.getElementById('racquetSelect').value = '';
+      document.getElementById('stringSelect').value = '';
+      document.getElementById('raWarning').classList.add('hidden');
+      updateRCS();
+    }
+
+    function generateDecileScale() {
+      const container = document.getElementById('decileScale');
+      container.innerHTML = RCS.DECILES.map((d, i) => `
+        <div class="decile-bar flex items-center gap-3 p-3 rounded-lg cursor-pointer" data-decile="${i + 1}" style="background: ${d.color}10; border-left: 4px solid ${d.color};" onclick="showDecileDetail(${i})">
+          <div class="w-10 h-10 rounded-lg flex items-center justify-center text-white text-sm font-bold shrink-0" style="background: ${d.color};">
+            D${i + 1}
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2">
+              <span class="text-lg">${d.icon}</span>
+              <span class="font-semibold text-sm" style="color: ${d.color};">${d.label}</span>
+            </div>
+            <div class="text-xs text-gray-500">${d.min}-${d.max} pts • ${d.description}</div>
+          </div>
+          <div class="text-xs text-gray-400 shrink-0">→</div>
+        </div>
+      `).join('');
+    }
+
+    function showDecileDetail(index) {
+      const decile = { number: index + 1, ...RCS.DECILES[index] };
+      document.getElementById('decileDetailContent').innerHTML = RCS.generateDecileDetailHTML(decile);
+      document.getElementById('decileDetailContent').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function generateMatrix() {
+      const raValues = [56, 62, 66, 70];
+      const cordageValues = [95, 155, 185, 235];
+      const tension = 24;
+      
+      const tbody = document.getElementById('matrixBody');
+      tbody.innerHTML = raValues.map(ra => {
+        const raLabel = ra <= 60 ? 'Flexible' : ra >= 67 ? 'Stiff' : 'Medium';
+        return `
+          <tr class="border-b hover:bg-gray-50">
+            <td class="p-3 font-medium bg-gray-50">${ra} (${raLabel})</td>
+            ${cordageValues.map(cordage => {
+              const result = RCS.calculate(ra, cordage, tension);
+              return `
+                <td class="p-3 text-center cursor-pointer hover:scale-105 transition-transform" 
+                    onclick="applyConfig(${ra}, ${cordage})"
+                    style="background: ${result.decile.color}15;">
+                  <div class="text-lg font-bold" style="color: ${result.decile.color};">${result.rcs}</div>
+                  <div class="text-xs text-gray-500">${result.decile.icon} D${result.decile.number}</div>
+                </td>
+              `;
+            }).join('')}
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function applyConfig(ra, cordage) {
+      document.getElementById('raSlider').value = ra;
+      document.getElementById('cordageSlider').value = cordage;
+      document.getElementById('racquetSelect').value = '';
+      document.getElementById('stringSelect').value = '';
+      document.getElementById('raWarning').classList.add('hidden');
+      updateRCS();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    let firstCalculationDone = false;
+    let lastCalculationParams = null;
+    
+    function updateRCS() {
+      const ra = parseInt(document.getElementById('raSlider').value);
+      const cordage = parseInt(document.getElementById('cordageSlider').value);
+      const tension = parseFloat(document.getElementById('tensionSlider').value);
+      const profile = document.getElementById('profileSelect').value;
+      
+      const currentParams = `${ra}-${cordage}-${tension}`;
+      const paramsChanged = lastCalculationParams !== null && lastCalculationParams !== currentParams;
+      
+      if (firstCalculationDone && paramsChanged && !canCalculate()) {
+        showPaywall();
+        return;
+      }
+      
+      if (firstCalculationDone && paramsChanged && !isPremium) {
+        recordCalculationUsage();
+      }
+      
+      if (!firstCalculationDone) {
+        setTimeout(() => {
+          firstCalculationDone = true;
+          lastCalculationParams = currentParams;
+        }, 500);
+      } else {
+        lastCalculationParams = currentParams;
+      }
+      
+      document.getElementById('raValue').textContent = ra;
+      document.getElementById('cordageValue').textContent = cordage;
+      document.getElementById('tensionValue').textContent = tension;
+      
+      const result = RCS.calculate(ra, cordage, tension);
+      const { rcs, decile, quintile, details } = result;
+      
+      const scoreDisplay = document.getElementById('rcsScoreDisplay');
+      scoreDisplay.textContent = rcs;
+      scoreDisplay.style.background = decile.color;
+      scoreDisplay.style.color = decile.textColor;
+      
+      const decileLabelEl = document.getElementById('decileLabel');
+      decileLabelEl.innerHTML = `<span>${decile.icon}</span><span>D${decile.number} - ${decile.label}</span>`;
+      decileLabelEl.style.background = decile.color;
+      decileLabelEl.style.color = decile.textColor;
+      
+      document.getElementById('decileDescription').textContent = decile.description;
+      document.getElementById('rcsIndicator').style.left = `${rcs}%`;
+      document.getElementById('decileDetailContent').innerHTML = RCS.generateDecileDetailHTML(decile);
+      
+      document.getElementById('contribRA').textContent = `${details.contributions.ra} pts`;
+      document.getElementById('contribCordage').textContent = `${details.contributions.cordage} pts`;
+      document.getElementById('contribTension').textContent = `${details.contributions.tension} pts`;
+      document.getElementById('contribInteraction').textContent = `${details.contributions.interaction} pts`;
+      
+      const total = details.contributions.ra + details.contributions.cordage + details.contributions.tension + details.contributions.interaction;
+      document.getElementById('contribRABar').style.width = `${(details.contributions.ra / Math.max(total, 1)) * 100}%`;
+      document.getElementById('contribCordageBar').style.width = `${(details.contributions.cordage / Math.max(total, 1)) * 100}%`;
+      document.getElementById('contribTensionBar').style.width = `${(details.contributions.tension / Math.max(total, 1)) * 100}%`;
+      document.getElementById('contribInteractionBar').style.width = `${(details.contributions.interaction / Math.max(total, 1)) * 100}%`;
+      
+      document.querySelectorAll('.decile-bar').forEach(bar => {
+        bar.classList.remove('active');
+        if (parseInt(bar.dataset.decile) === decile.number) {
+          bar.classList.add('active');
+        }
+      });
+      
+      document.querySelectorAll('.quintile-card').forEach(card => {
+        card.classList.remove('active');
+        if (parseInt(card.dataset.quintile) === quintile.number) {
+          card.classList.add('active');
+        }
+      });
+      
+      const warningContainer = document.getElementById('healthWarning');
+      const warning = RCS.getHealthWarning(rcs);
+      if (warning) {
+        warningContainer.classList.remove('hidden');
+        warningContainer.innerHTML = `
+          <div class="bg-white rounded-xl shadow-sm border ${warning.level === 'danger' ? 'border-red-300' : 'border-amber-300'} p-6">
+            <div class="flex items-start gap-3">
+              <span class="text-2xl">${warning.icon}</span>
+              <div>
+                <h3 class="font-bold ${warning.level === 'danger' ? 'text-red-700' : 'text-amber-700'}">${warning.title}</h3>
+                <p class="text-sm mt-1 ${warning.level === 'danger' ? 'text-red-600' : 'text-amber-600'}">${warning.message}</p>
+                <ul class="mt-3 space-y-1">
+                  ${warning.tips.map(t => `<li class="text-sm ${warning.level === 'danger' ? 'text-red-600' : 'text-amber-600'}">• ${t}</li>`).join('')}
+                </ul>
+              </div>
+            </div>
+          </div>
+        `;
+      } else {
+        warningContainer.classList.add('hidden');
+      }
+      
+      const profileEval = document.getElementById('profileEvaluation');
+      const profileContent = document.getElementById('profileEvalContent');
+      
+      if (profile) {
+        profileEval.classList.remove('hidden');
+        const evaluation = RCS.evaluateForProfile(rcs, profile);
+        
+        const statusColors = {
+          'optimal': 'bg-green-50 border-green-300',
+          'trop_souple': 'bg-blue-50 border-blue-300',
+          'trop_rigide': 'bg-red-50 border-red-300'
+        };
+        
+        const textColors = {
+          'optimal': 'text-green-800',
+          'trop_souple': 'text-blue-800',
+          'trop_rigide': 'text-red-800'
+        };
+        
+        profileContent.innerHTML = `
+          <div class="p-4 rounded-lg border-2 ${statusColors[evaluation.status]}">
+            <div class="flex items-center gap-2 font-semibold ${textColors[evaluation.status]}">
+              <span class="text-2xl">${evaluation.icon}</span>
+              <span>${evaluation.message}</span>
+            </div>
+            ${evaluation.suggestion ? `<p class="mt-3 text-sm ${textColors[evaluation.status]} opacity-80">${evaluation.suggestion}</p>` : ''}
+          </div>
+        `;
+      } else {
+        profileEval.classList.add('hidden');
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>

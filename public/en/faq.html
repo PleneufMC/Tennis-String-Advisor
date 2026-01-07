@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FAQ - Frequently Asked Questions | Tennis String Advisor</title>
+  <meta name="description" content="All answers to your questions about Tennis String Advisor: account, Premium subscription, RCS calculator, strings and racquets.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://tennisstringadvisor.org/en/faq.html">
+  <link rel="alternate" hreflang="fr" href="https://tennisstringadvisor.org/faq.html">
+  <link rel="alternate" hreflang="en" href="https://tennisstringadvisor.org/en/faq.html">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            tennis: { 500: '#22c55e', 600: '#16a34a', 700: '#15803d' }
+          }
+        }
+      }
+    }
+  </script>
+  <!-- FAQ Schema -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is the RCS score?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The RCS (Recommendation Comfort Score) is an indicator from 0 to 100 that evaluates the joint stress of your tennis setup. A low score means more comfort, a high score means more performance but more stress on your joints."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is registration free?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, registration is 100% free. It gives you access to the complete racquet and string catalog, the configurator, and 1 free RCS calculation."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What does the Premium subscription include?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The Premium subscription ($2.99/month or $24.99/year) includes: unlimited RCS calculations, unlimited setup saving, string journal, price alerts, and PDF export."
+        }
+      }
+    ]
+  }
+  </script>
+  <!-- Google Analytics 4 -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-YSSLHJ5WYD"></script>
+  <script src="/js/analytics.js"></script>
+</head>
+<body class="bg-gray-50 font-sans antialiased">
+  <!-- Header -->
+  <header class="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+    <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex h-16 items-center justify-between">
+        <a href="/en/" class="flex items-center space-x-2">
+          <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-green-700 rounded-xl flex items-center justify-center">
+            <span class="text-white text-xl">🎾</span>
+          </div>
+          <span class="text-lg font-bold text-gray-900">Tennis String <span class="text-green-600">Advisor</span></span>
+        </a>
+        <div class="hidden md:flex items-center gap-1">
+          <a href="/en/" class="px-4 py-2 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-100">Home</a>
+          <a href="/en/configurator.html" class="px-4 py-2 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-100">Configurator</a>
+          <a href="/en/racquets.html" class="px-4 py-2 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-100">Racquets</a>
+          <a href="/en/strings.html" class="px-4 py-2 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-100">Strings</a>
+          <a href="/en/faq.html" class="px-4 py-2 text-sm font-medium rounded-lg bg-green-100 text-green-700">FAQ</a>
+          <a href="/faq.html" class="px-4 py-2 text-sm font-medium rounded-lg text-blue-600 hover:bg-blue-50">🇫🇷 FR</a>
+        </div>
+        <a href="/auth.html" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-green-600 hover:bg-green-50 rounded-lg transition">
+          👤 My Account
+        </a>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Hero -->
+  <section class="bg-gradient-to-br from-green-600 to-green-800 text-white py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <h1 class="text-3xl md:text-4xl font-bold mb-3">❓ Frequently Asked Questions</h1>
+      <p class="text-lg text-white/90">All answers to your questions</p>
+    </div>
+  </section>
+
+  <!-- Breadcrumb -->
+  <div class="bg-white border-b">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+      <nav class="flex text-sm text-gray-500">
+        <a href="/en/" class="hover:text-green-600">Home</a>
+        <span class="mx-2">/</span>
+        <span class="text-gray-900">FAQ</span>
+      </nav>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    
+    <!-- Search -->
+    <div class="mb-8">
+      <input type="text" id="faqSearch" placeholder="🔍 Search for a question..." 
+             class="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500"
+             onkeyup="filterFAQ()">
+    </div>
+
+    <!-- Categories -->
+    <div class="flex flex-wrap gap-2 mb-8">
+      <button onclick="filterCategory('all')" class="faq-cat-btn px-4 py-2 rounded-full text-sm font-medium bg-green-600 text-white">All</button>
+      <button onclick="filterCategory('general')" class="faq-cat-btn px-4 py-2 rounded-full text-sm font-medium bg-gray-200 text-gray-700 hover:bg-gray-300">General</button>
+      <button onclick="filterCategory('account')" class="faq-cat-btn px-4 py-2 rounded-full text-sm font-medium bg-gray-200 text-gray-700 hover:bg-gray-300">Account</button>
+      <button onclick="filterCategory('premium')" class="faq-cat-btn px-4 py-2 rounded-full text-sm font-medium bg-gray-200 text-gray-700 hover:bg-gray-300">Premium</button>
+      <button onclick="filterCategory('rcs')" class="faq-cat-btn px-4 py-2 rounded-full text-sm font-medium bg-gray-200 text-gray-700 hover:bg-gray-300">RCS Calculator</button>
+      <button onclick="filterCategory('equipment')" class="faq-cat-btn px-4 py-2 rounded-full text-sm font-medium bg-gray-200 text-gray-700 hover:bg-gray-300">Equipment</button>
+    </div>
+
+    <!-- FAQ Items -->
+    <div id="faqContainer" class="space-y-4">
+      
+      <!-- General -->
+      <div class="faq-item" data-category="general">
+        <button class="faq-question w-full flex items-center justify-between p-5 bg-white rounded-xl border border-gray-200 hover:border-green-300 transition text-left" onclick="toggleFAQ(this)">
+          <span class="font-semibold text-gray-900">What is Tennis String Advisor?</span>
+          <span class="faq-icon text-green-600 text-xl">+</span>
+        </button>
+        <div class="faq-answer hidden px-5 pb-5 bg-white border-x border-b border-gray-200 rounded-b-xl -mt-2">
+          <p class="text-gray-700">
+            Tennis String Advisor is an online platform dedicated to tennis enthusiasts. It offers:
+          </p>
+          <ul class="list-disc list-inside text-gray-700 mt-2 space-y-1">
+            <li>A catalog of <strong>104 racquets</strong> and <strong>165+ strings</strong></li>
+            <li>A configurator to find your ideal setup</li>
+            <li>An RCS calculator to evaluate joint comfort</li>
+            <li>Expert guides and articles</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="faq-item" data-category="general">
+        <button class="faq-question w-full flex items-center justify-between p-5 bg-white rounded-xl border border-gray-200 hover:border-green-300 transition text-left" onclick="toggleFAQ(this)">
+          <span class="font-semibold text-gray-900">Is the website free?</span>
+          <span class="faq-icon text-green-600 text-xl">+</span>
+        </button>
+        <div class="faq-answer hidden px-5 pb-5 bg-white border-x border-b border-gray-200 rounded-b-xl -mt-2">
+          <p class="text-gray-700">
+            Yes! Access to the catalog, configurator and blog is completely free. 
+            Only the RCS calculator is limited to 1 free use. For unlimited calculations 
+            and advanced features, a Premium subscription is available.
+          </p>
+        </div>
+      </div>
+
+      <!-- Account -->
+      <div class="faq-item" data-category="account">
+        <button class="faq-question w-full flex items-center justify-between p-5 bg-white rounded-xl border border-gray-200 hover:border-green-300 transition text-left" onclick="toggleFAQ(this)">
+          <span class="font-semibold text-gray-900">How do I create an account?</span>
+          <span class="faq-icon text-green-600 text-xl">+</span>
+        </button>
+        <div class="faq-answer hidden px-5 pb-5 bg-white border-x border-b border-gray-200 rounded-b-xl -mt-2">
+          <p class="text-gray-700">
+            Go to the <a href="/auth.html" class="text-green-600 underline">registration page</a>. 
+            You can sign up with:
+          </p>
+          <ul class="list-disc list-inside text-gray-700 mt-2 space-y-1">
+            <li>Your email address</li>
+            <li>Your Google account</li>
+            <li>Your Facebook account</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="faq-item" data-category="account">
+        <button class="faq-question w-full flex items-center justify-between p-5 bg-white rounded-xl border border-gray-200 hover:border-green-300 transition text-left" onclick="toggleFAQ(this)">
+          <span class="font-semibold text-gray-900">How do I delete my account?</span>
+          <span class="faq-icon text-green-600 text-xl">+</span>
+        </button>
+        <div class="faq-answer hidden px-5 pb-5 bg-white border-x border-b border-gray-200 rounded-b-xl -mt-2">
+          <p class="text-gray-700">
+            You can delete your account from your "My Account" area or by contacting us 
+            at pleneuftrading@gmail.com. Deletion is permanent and results in the loss of all your data.
+          </p>
+        </div>
+      </div>
+
+      <div class="faq-item" data-category="account">
+        <button class="faq-question w-full flex items-center justify-between p-5 bg-white rounded-xl border border-gray-200 hover:border-green-300 transition text-left" onclick="toggleFAQ(this)">
+          <span class="font-semibold text-gray-900">I forgot my password</span>
+          <span class="faq-icon text-green-600 text-xl">+</span>
+        </button>
+        <div class="faq-answer hidden px-5 pb-5 bg-white border-x border-b border-gray-200 rounded-b-xl -mt-2">
+          <p class="text-gray-700">
+            On the login page, click "Forgot password?". 
+            You will receive an email with a link to reset your password.
+          </p>
+        </div>
+      </div>
+
+      <!-- Premium -->
+      <div class="faq-item" data-category="premium">
+        <button class="faq-question w-full flex items-center justify-between p-5 bg-white rounded-xl border border-gray-200 hover:border-green-300 transition text-left" onclick="toggleFAQ(this)">
+          <span class="font-semibold text-gray-900">What does the Premium subscription include?</span>
+          <span class="faq-icon text-green-600 text-xl">+</span>
+        </button>
+        <div class="faq-answer hidden px-5 pb-5 bg-white border-x border-b border-gray-200 rounded-b-xl -mt-2">
+          <p class="text-gray-700 mb-3">The Premium subscription includes:</p>
+          <ul class="list-disc list-inside text-gray-700 space-y-1">
+            <li>✅ Unlimited RCS calculations</li>
+            <li>✅ Unlimited setup saving</li>
+            <li>✅ String journal for stringers</li>
+            <li>✅ Price alerts on your favorite products</li>
+            <li>✅ PDF export of your setups</li>
+            <li>✅ Priority support</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="faq-item" data-category="premium">
+        <button class="faq-question w-full flex items-center justify-between p-5 bg-white rounded-xl border border-gray-200 hover:border-green-300 transition text-left" onclick="toggleFAQ(this)">
+          <span class="font-semibold text-gray-900">What are the Premium prices?</span>
+          <span class="faq-icon text-green-600 text-xl">+</span>
+        </button>
+        <div class="faq-answer hidden px-5 pb-5 bg-white border-x border-b border-gray-200 rounded-b-xl -mt-2">
+          <div class="grid grid-cols-3 gap-4 mt-2">
+            <div class="text-center p-3 bg-gray-50 rounded-lg">
+              <div class="text-xl font-bold text-gray-900">$2.99</div>
+              <div class="text-sm text-gray-600">/month</div>
+            </div>
+            <div class="text-center p-3 bg-green-50 rounded-lg border-2 border-green-500">
+              <div class="text-xl font-bold text-green-700">$24.99</div>
+              <div class="text-sm text-green-600">/year</div>
+              <div class="text-xs text-green-600 mt-1">2 months free</div>
+            </div>
+            <div class="text-center p-3 bg-amber-50 rounded-lg">
+              <div class="text-xl font-bold text-amber-700">$19.99</div>
+              <div class="text-sm text-amber-600">Lifetime</div>
+              <div class="text-xs text-amber-600 mt-1">Limited spots</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="faq-item" data-category="premium">
+        <button class="faq-question w-full flex items-center justify-between p-5 bg-white rounded-xl border border-gray-200 hover:border-green-300 transition text-left" onclick="toggleFAQ(this)">
+          <span class="font-semibold text-gray-900">How do I cancel my subscription?</span>
+          <span class="faq-icon text-green-600 text-xl">+</span>
+        </button>
+        <div class="faq-answer hidden px-5 pb-5 bg-white border-x border-b border-gray-200 rounded-b-xl -mt-2">
+          <p class="text-gray-700">
+            You can cancel at any time from your "My Account" → "Subscription" area. 
+            Cancellation takes effect at the end of the current period. You keep Premium access until that date.
+          </p>
+        </div>
+      </div>
+
+      <!-- RCS -->
+      <div class="faq-item" data-category="rcs">
+        <button class="faq-question w-full flex items-center justify-between p-5 bg-white rounded-xl border border-gray-200 hover:border-green-300 transition text-left" onclick="toggleFAQ(this)">
+          <span class="font-semibold text-gray-900">What is the RCS score?</span>
+          <span class="faq-icon text-green-600 text-xl">+</span>
+        </button>
+        <div class="faq-answer hidden px-5 pb-5 bg-white border-x border-b border-gray-200 rounded-b-xl -mt-2">
+          <p class="text-gray-700">
+            The RCS (Recommendation Comfort Score) is an indicator from 0 to 100 that evaluates 
+            joint stress of your tennis setup (racquet + string + tension).
+          </p>
+          <ul class="list-disc list-inside text-gray-700 mt-2 space-y-1">
+            <li><strong>Low score (0-30):</strong> Maximum comfort, ideal for sensitive arms</li>
+            <li><strong>Medium score (30-60):</strong> Balance of comfort/performance</li>
+            <li><strong>High score (60-100):</strong> Maximum performance, more joint stress</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="faq-item" data-category="rcs">
+        <button class="faq-question w-full flex items-center justify-between p-5 bg-white rounded-xl border border-gray-200 hover:border-green-300 transition text-left" onclick="toggleFAQ(this)">
+          <span class="font-semibold text-gray-900">Is RCS medical advice?</span>
+          <span class="faq-icon text-green-600 text-xl">+</span>
+        </button>
+        <div class="faq-answer hidden px-5 pb-5 bg-white border-x border-b border-gray-200 rounded-b-xl -mt-2">
+          <p class="text-gray-700">
+            <strong>No.</strong> The RCS score is a decision-support tool based on technical data. 
+            It does not replace medical advice. In case of pain or injury (tennis elbow, etc.), 
+            consult a healthcare professional.
+          </p>
+        </div>
+      </div>
+
+      <div class="faq-item" data-category="rcs">
+        <button class="faq-question w-full flex items-center justify-between p-5 bg-white rounded-xl border border-gray-200 hover:border-green-300 transition text-left" onclick="toggleFAQ(this)">
+          <span class="font-semibold text-gray-900">Why is the RCS calculator limited?</span>
+          <span class="faq-icon text-green-600 text-xl">+</span>
+        </button>
+        <div class="faq-answer hidden px-5 pb-5 bg-white border-x border-b border-gray-200 rounded-b-xl -mt-2">
+          <p class="text-gray-700">
+            Developing the RCS calculator required significant research work. 
+            The free version allows you to test the tool, while the Premium subscription 
+            funds its continuous improvement and provides unlimited calculations.
+          </p>
+        </div>
+      </div>
+
+      <!-- Equipment -->
+      <div class="faq-item" data-category="equipment">
+        <button class="faq-question w-full flex items-center justify-between p-5 bg-white rounded-xl border border-gray-200 hover:border-green-300 transition text-left" onclick="toggleFAQ(this)">
+          <span class="font-semibold text-gray-900">How do I choose my racquet?</span>
+          <span class="faq-icon text-green-600 text-xl">+</span>
+        </button>
+        <div class="faq-answer hidden px-5 pb-5 bg-white border-x border-b border-gray-200 rounded-b-xl -mt-2">
+          <p class="text-gray-700">
+            The choice depends on your level and playing style. Check out our 
+            <a href="/en/racquets.html" class="text-green-600 underline">racquet catalog</a> 
+            or use our <a href="/en/configurator.html" class="text-green-600 underline">configurator</a> 
+            for personalized recommendations.
+          </p>
+        </div>
+      </div>
+
+      <div class="faq-item" data-category="equipment">
+        <button class="faq-question w-full flex items-center justify-between p-5 bg-white rounded-xl border border-gray-200 hover:border-green-300 transition text-left" onclick="toggleFAQ(this)">
+          <span class="font-semibold text-gray-900">What tension for my strings?</span>
+          <span class="faq-icon text-green-600 text-xl">+</span>
+        </button>
+        <div class="faq-answer hidden px-5 pb-5 bg-white border-x border-b border-gray-200 rounded-b-xl -mt-2">
+          <p class="text-gray-700">Tension depends on several factors:</p>
+          <ul class="list-disc list-inside text-gray-700 mt-2 space-y-1">
+            <li><strong>Low (40-48 lbs / 18-22 kg):</strong> More power and comfort</li>
+            <li><strong>Medium (48-55 lbs / 22-25 kg):</strong> Balance</li>
+            <li><strong>High (55-65 lbs / 25-30 kg):</strong> More control</li>
+          </ul>
+          <p class="text-gray-700 mt-2">
+            Use the <a href="/en/rcs-calculator.html" class="text-green-600 underline">RCS calculator</a> 
+            to evaluate tension's impact on comfort.
+          </p>
+        </div>
+      </div>
+
+      <div class="faq-item" data-category="equipment">
+        <button class="faq-question w-full flex items-center justify-between p-5 bg-white rounded-xl border border-gray-200 hover:border-green-300 transition text-left" onclick="toggleFAQ(this)">
+          <span class="font-semibold text-gray-900">Polyester or multifilament?</span>
+          <span class="faq-icon text-green-600 text-xl">+</span>
+        </button>
+        <div class="faq-answer hidden px-5 pb-5 bg-white border-x border-b border-gray-200 rounded-b-xl -mt-2">
+          <div class="grid md:grid-cols-2 gap-4 mt-2">
+            <div class="p-3 bg-red-50 rounded-lg">
+              <h4 class="font-semibold text-red-800">Polyester</h4>
+              <ul class="text-sm text-red-700 mt-1 space-y-1">
+                <li>+ Control and spin</li>
+                <li>+ Durability</li>
+                <li>- Stiffer</li>
+                <li>- Faster tension loss</li>
+              </ul>
+            </div>
+            <div class="p-3 bg-blue-50 rounded-lg">
+              <h4 class="font-semibold text-blue-800">Multifilament</h4>
+              <ul class="text-sm text-blue-700 mt-1 space-y-1">
+                <li>+ Comfort</li>
+                <li>+ Tension maintenance</li>
+                <li>- Less durable</li>
+                <li>- Less control</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Contact CTA -->
+    <div class="mt-12 bg-gradient-to-br from-green-600 to-green-800 rounded-2xl p-8 text-white text-center">
+      <h2 class="text-2xl font-bold mb-3">Didn't find your answer?</h2>
+      <p class="text-white/90 mb-6">Our team is here to help you</p>
+      <a href="mailto:pleneuftrading@gmail.com" class="inline-flex items-center px-6 py-3 bg-white text-green-700 font-bold rounded-lg hover:bg-gray-100 transition">
+        📧 Contact Us
+      </a>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-gray-900 text-white py-12 mt-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid md:grid-cols-4 gap-8">
+        <div>
+          <div class="flex items-center gap-2 mb-4">
+            <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-green-700 rounded-xl flex items-center justify-center">
+              <span class="text-white text-xl">🎾</span>
+            </div>
+            <span class="text-lg font-bold">Tennis String Advisor</span>
+          </div>
+          <p class="text-gray-400 text-sm">Your expert in tennis strings and racquets.</p>
+        </div>
+        <div>
+          <h4 class="font-semibold mb-4">Products</h4>
+          <ul class="space-y-2 text-sm text-gray-400">
+            <li><a href="/en/configurator.html" class="hover:text-white">Configurator</a></li>
+            <li><a href="/en/racquets.html" class="hover:text-white">Racquets</a></li>
+            <li><a href="/en/strings.html" class="hover:text-white">Strings</a></li>
+            <li><a href="/en/rcs-calculator.html" class="hover:text-white">RCS Calculator</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-semibold mb-4">Resources</h4>
+          <ul class="space-y-2 text-sm text-gray-400">
+            <li><a href="/en/faq.html" class="hover:text-white">FAQ</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-semibold mb-4">Legal</h4>
+          <ul class="space-y-2 text-sm text-gray-400">
+            <li><a href="/confidentialite.html" class="hover:text-white">Privacy</a></li>
+            <li><a href="/cgu.html" class="hover:text-white">Terms</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-500">
+        © 2025 Tennis String Advisor. A brand of Pleneuf Trading LLC. All rights reserved.
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    function toggleFAQ(btn) {
+      const answer = btn.nextElementSibling;
+      const icon = btn.querySelector('.faq-icon');
+      
+      answer.classList.toggle('hidden');
+      icon.textContent = answer.classList.contains('hidden') ? '+' : '−';
+      
+      if (!answer.classList.contains('hidden')) {
+        btn.classList.add('rounded-b-none');
+      } else {
+        btn.classList.remove('rounded-b-none');
+      }
+    }
+
+    function filterFAQ() {
+      const search = document.getElementById('faqSearch').value.toLowerCase();
+      const items = document.querySelectorAll('.faq-item');
+      
+      items.forEach(item => {
+        const text = item.textContent.toLowerCase();
+        item.style.display = text.includes(search) ? 'block' : 'none';
+      });
+    }
+
+    function filterCategory(category) {
+      const items = document.querySelectorAll('.faq-item');
+      const buttons = document.querySelectorAll('.faq-cat-btn');
+      
+      buttons.forEach(btn => {
+        btn.classList.remove('bg-green-600', 'text-white');
+        btn.classList.add('bg-gray-200', 'text-gray-700');
+      });
+      
+      event.target.classList.remove('bg-gray-200', 'text-gray-700');
+      event.target.classList.add('bg-green-600', 'text-white');
+      
+      items.forEach(item => {
+        if (category === 'all' || item.dataset.category === category) {
+          item.style.display = 'block';
+        } else {
+          item.style.display = 'none';
+        }
+      });
+    }
+  </script>
+</body>
+</html>

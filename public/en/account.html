@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Account - Tennis String Advisor</title>
+  <meta name="description" content="Manage your profile and personalized tennis setups.">
+  <link rel="canonical" href="https://tennisstringadvisor.org/en/account.html">
+  <link rel="alternate" hreflang="fr" href="https://tennisstringadvisor.org/account.html">
+  <link rel="alternate" hreflang="en" href="https://tennisstringadvisor.org/en/account.html">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            tennis: { green: '#16a34a', dark: '#0d1117', light: '#f0fdf4' }
+          }
+        }
+      }
+    }
+  </script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-YSSLHJ5WYD"></script>
+  <script src="/js/analytics.js"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <!-- Header -->
+  <header class="bg-white border-b border-gray-200 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 py-4">
+      <div class="flex items-center justify-between">
+        <a href="/en/" class="flex items-center gap-2">
+          <span class="text-2xl">🎾</span>
+          <span class="font-bold text-xl text-gray-900">Tennis String Advisor</span>
+        </a>
+        <nav class="hidden md:flex items-center gap-6">
+          <a href="/en/" class="text-gray-600 hover:text-green-600 transition">Home</a>
+          <a href="/en/configurator.html" class="text-gray-600 hover:text-green-600 transition">Configurator</a>
+          <a href="/en/racquets.html" class="text-gray-600 hover:text-green-600 transition">Racquets</a>
+          <a href="/en/strings.html" class="text-gray-600 hover:text-green-600 transition">Strings</a>
+          <a href="/en/rcs-calculator.html" class="text-gray-600 hover:text-green-600 transition">🩺 RCS</a>
+          <a href="/account.html" class="text-blue-600 hover:text-blue-700 transition">🇫🇷 FR</a>
+        </nav>
+        <div class="flex items-center gap-4">
+          <span id="userEmail" class="text-sm text-gray-600 hidden md:block"></span>
+          <button onclick="handleLogout()" class="px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition">
+            Sign Out
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-6xl mx-auto px-4 py-8">
+    <!-- Loading State -->
+    <div id="loadingState" class="text-center py-16">
+      <div class="inline-block animate-spin text-4xl mb-4">🎾</div>
+      <p class="text-gray-600">Loading your account...</p>
+    </div>
+
+    <!-- Account Content -->
+    <div id="accountContent" class="hidden">
+      <!-- User Welcome Section -->
+      <div class="bg-gradient-to-r from-green-600 to-green-500 rounded-2xl p-8 text-white mb-8">
+        <div class="flex flex-col md:flex-row items-center gap-6">
+          <div class="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center">
+            <span class="text-4xl">👤</span>
+          </div>
+          <div class="text-center md:text-left">
+            <h1 class="text-2xl font-bold" id="welcomeName">Welcome!</h1>
+            <p class="text-green-100 mt-1" id="memberSince">Member since...</p>
+            <div class="flex items-center gap-2 mt-2">
+              <span class="px-3 py-1 bg-white/20 rounded-full text-sm font-medium" id="memberBadge">Free Member</span>
+            </div>
+          </div>
+          <div class="md:ml-auto">
+            <a href="/en/setups.html" class="inline-flex items-center gap-2 px-6 py-3 bg-white text-green-700 font-semibold rounded-xl hover:bg-green-50 transition">
+              🎾 My Setups
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats & Quick Actions -->
+      <div class="grid md:grid-cols-4 gap-6 mb-8">
+        <!-- Premium Setup Stats (only for premium) -->
+        <div id="premiumStats" class="hidden bg-white rounded-xl border border-gray-200 p-6 text-center">
+          <div class="text-3xl font-bold text-green-600" id="setupCount">0</div>
+          <div class="text-gray-600 text-sm mt-1">Saved setups</div>
+          <div class="text-xs text-amber-500 mt-2">⭐ Premium</div>
+        </div>
+        <!-- Free user - Premium CTA -->
+        <div id="freeUserCta" class="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl border border-amber-200 p-6 text-center">
+          <div class="text-3xl mb-2">⭐</div>
+          <div class="text-amber-800 font-semibold">My Setups</div>
+          <div class="text-xs text-amber-600 mt-2">Premium Feature</div>
+          <a href="/en/premium.html" class="inline-block mt-3 text-xs bg-amber-500 text-white px-3 py-1 rounded-full hover:bg-amber-600">Discover</a>
+        </div>
+        <div class="bg-white rounded-xl border border-gray-200 p-6 text-center">
+          <a href="/en/rcs-calculator.html" class="block">
+            <div class="text-3xl mb-2">🩺</div>
+            <div class="text-gray-900 font-semibold">RCS Calculator</div>
+            <div class="text-xs text-green-600 mt-2">→ Free</div>
+          </a>
+        </div>
+        <div class="bg-white rounded-xl border border-gray-200 p-6 text-center">
+          <a href="/en/compare.html" class="block">
+            <div class="text-3xl mb-2">📊</div>
+            <div class="text-gray-900 font-semibold">Compare</div>
+            <div class="text-xs text-green-600 mt-2">→ Free</div>
+          </a>
+        </div>
+        <div class="bg-white rounded-xl border border-gray-200 p-6 text-center">
+          <a href="/en/configurator.html" class="block">
+            <div class="text-3xl mb-2">⚙️</div>
+            <div class="text-gray-900 font-semibold">Configurator</div>
+            <div class="text-xs text-green-600 mt-2">→ Free</div>
+          </a>
+        </div>
+      </div>
+
+      <!-- Main Sections -->
+      <div class="grid lg:grid-cols-3 gap-8">
+        <!-- Profile Section -->
+        <div class="lg:col-span-2">
+          <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+              <h2 class="font-bold text-gray-900 flex items-center gap-2">
+                👤 My Player Profile
+              </h2>
+            </div>
+            <div class="p-6">
+              <form id="profileForm" onsubmit="handleProfileUpdate(event)">
+                <div class="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Playing Level</label>
+                    <select id="level" class="w-full rounded-lg border-gray-300 border p-3 focus:ring-green-500 focus:border-green-500">
+                      <option value="">Select...</option>
+                      <option value="debutant">Beginner (NTRP 1.0-2.5)</option>
+                      <option value="intermediaire">Intermediate (NTRP 3.0-3.5)</option>
+                      <option value="avance">Advanced (NTRP 4.0-4.5)</option>
+                      <option value="competiteur">Competitor (NTRP 5.0-5.5)</option>
+                      <option value="pro">Pro / Semi-Pro (NTRP 6.0+)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Playing Frequency</label>
+                    <select id="frequency" class="w-full rounded-lg border-gray-300 border p-3 focus:ring-green-500 focus:border-green-500">
+                      <option value="">Select...</option>
+                      <option value="occasionnel">Occasional (1-2x/month)</option>
+                      <option value="regulier">Regular (1-2x/week)</option>
+                      <option value="intensif">Intensive (3-4x/week)</option>
+                      <option value="quotidien">Daily (5+/week)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Playing Style</label>
+                    <select id="playingStyle" class="w-full rounded-lg border-gray-300 border p-3 focus:ring-green-500 focus:border-green-500">
+                      <option value="">Select...</option>
+                      <option value="polyvalent">All-court</option>
+                      <option value="puissance">Power (heavy hitters)</option>
+                      <option value="controle">Control (placement)</option>
+                      <option value="spin">Spin (topspin/slice)</option>
+                      <option value="service_volee">Serve-and-Volley</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Physical Issues</label>
+                    <select id="physicalIssues" class="w-full rounded-lg border-gray-300 border p-3 focus:ring-green-500 focus:border-green-500">
+                      <option value="">None</option>
+                      <option value="bras">Tennis elbow / Arm pain</option>
+                      <option value="epaule">Shoulder pain</option>
+                      <option value="poignet">Wrist pain</option>
+                      <option value="dos">Back problems</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="mt-6 flex items-center gap-4">
+                  <button type="submit" id="profileBtn"
+                    class="px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition flex items-center gap-2">
+                    <span>💾 Save Profile</span>
+                    <span id="profileSpinner" class="hidden">⏳</span>
+                  </button>
+                  <span id="profileMessage" class="text-sm hidden"></span>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Recent Setups Preview (Premium only) -->
+          <div id="recentSetupsSection" class="hidden bg-white rounded-xl border border-gray-200 overflow-hidden mt-6">
+            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
+              <h2 class="font-bold text-gray-900 flex items-center gap-2">
+                🎾 My Recent Setups <span class="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">⭐ Premium</span>
+              </h2>
+              <a href="/en/setups.html" class="text-sm text-green-600 hover:underline">View all →</a>
+            </div>
+            <div id="recentSetups" class="p-6">
+              <div class="text-center text-gray-500 py-8">
+                <span class="text-4xl mb-4 block">📦</span>
+                <p>No setups saved yet.</p>
+                <a href="/en/configurator.html" class="inline-block mt-4 text-green-600 hover:underline">Create my first setup →</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="space-y-6">
+          <!-- Premium Upgrade -->
+          <div class="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl border border-amber-200 p-6">
+            <div class="flex items-center gap-3 mb-4">
+              <span class="text-2xl">⭐</span>
+              <h3 class="font-bold text-amber-900">Go Premium</h3>
+            </div>
+            <ul class="space-y-2 text-sm text-amber-800 mb-4">
+              <li class="flex items-center gap-2">
+                <span class="text-amber-500">✓</span>
+                Unlimited setups
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="text-amber-500">✓</span>
+                Complete history
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="text-amber-500">✓</span>
+                Price alerts
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="text-amber-500">✓</span>
+                PDF export
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="text-amber-500">✓</span>
+                Priority support
+              </li>
+            </ul>
+            <a href="/en/premium.html" class="block w-full text-center px-4 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-lg hover:from-amber-600 hover:to-orange-600 transition">
+              Discover Premium
+            </a>
+          </div>
+
+          <!-- Quick Links -->
+          <div class="bg-white rounded-xl border border-gray-200 p-6">
+            <h3 class="font-bold text-gray-900 mb-4">⚡ Quick Access</h3>
+            <div class="space-y-2">
+              <a href="/en/setups.html" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-amber-50 transition text-amber-700 border border-amber-200">
+                <span>🎾</span> My Setups <span class="ml-auto text-xs bg-amber-100 px-2 py-0.5 rounded-full">⭐ Premium</span>
+              </a>
+              <a href="/en/rcs-calculator.html" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-50 transition text-gray-700">
+                <span>🩺</span> RCS Calculator
+              </a>
+              <a href="/en/configurator.html" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-50 transition text-gray-700">
+                <span>⚙️</span> Configurator
+              </a>
+              <a href="/en/compare.html" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-50 transition text-gray-700">
+                <span>📊</span> Compare
+              </a>
+            </div>
+          </div>
+
+          <!-- Account Settings -->
+          <div class="bg-white rounded-xl border border-gray-200 p-6">
+            <h3 class="font-bold text-gray-900 mb-4">⚙️ Settings</h3>
+            <div class="space-y-2">
+              <button onclick="handleChangePassword()" class="w-full text-left flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-50 transition text-gray-700">
+                <span>🔐</span> Change password
+              </button>
+              <button onclick="handleDeleteAccount()" class="w-full text-left flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-red-50 transition text-red-600">
+                <span>🗑️</span> Delete my account
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-gray-900 text-white mt-16">
+    <div class="max-w-7xl mx-auto px-4 py-8">
+      <div class="text-center text-gray-400 text-sm">
+        <p>© 2025 Tennis String Advisor. A brand of Pleneuf Trading LLC. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const SUPABASE_URL = 'https://yhhdkllbaxuhwrfpsmev.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InloaGRrbGxiYXh1aHdyZnBzbWV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU3NjI0MDEsImV4cCI6MjA4MTMzODQwMX0.2aC_gYZf0xxz6MXi5zcaCH2S64RBaQvXU7a5qiuD0_k';
+    
+    let supabaseClient = null;
+    try {
+      if (window.supabase && window.supabase.createClient) {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        console.log('✅ Supabase initialized');
+      }
+    } catch (e) {
+      console.error('❌ Supabase init error:', e);
+    }
+
+    let currentUser = null;
+    let userProfile = null;
+
+    async function checkAuth() {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      
+      if (!session) {
+        window.location.href = '/en/auth.html';
+        return;
+      }
+      
+      currentUser = session.user;
+      await loadAccount();
+    }
+
+    async function loadAccount() {
+      try {
+        document.getElementById('userEmail').textContent = currentUser.email;
+        
+        const displayName = currentUser.user_metadata?.full_name || currentUser.email.split('@')[0];
+        document.getElementById('welcomeName').textContent = `Welcome, ${displayName}!`;
+        
+        const createdAt = new Date(currentUser.created_at);
+        document.getElementById('memberSince').textContent = `Member since ${createdAt.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`;
+
+        try {
+          const { data: profile, error } = await supabaseClient
+            .from('profiles')
+            .select('*')
+            .eq('id', currentUser.id)
+            .single();
+          
+          if (profile && !error) {
+            userProfile = profile;
+            if (profile.level) document.getElementById('level').value = profile.level;
+            if (profile.frequency) document.getElementById('frequency').value = profile.frequency;
+            if (profile.playing_style) document.getElementById('playingStyle').value = profile.playing_style;
+            if (profile.physical_issues) document.getElementById('physicalIssues').value = profile.physical_issues;
+            
+            if (profile.is_premium) {
+              document.getElementById('memberBadge').textContent = '⭐ Premium Member';
+              document.getElementById('memberBadge').className = 'px-3 py-1 bg-amber-500/30 rounded-full text-sm font-medium text-amber-100';
+              document.getElementById('premiumStats').classList.remove('hidden');
+              document.getElementById('freeUserCta').classList.add('hidden');
+              document.getElementById('recentSetupsSection').classList.remove('hidden');
+              
+              await loadPremiumSetups();
+            }
+          }
+        } catch (e) {
+          const isPremiumDemo = localStorage.getItem('tsa_premium_demo') === 'true';
+          if (isPremiumDemo) {
+            document.getElementById('memberBadge').textContent = '⭐ Premium Member';
+            document.getElementById('memberBadge').className = 'px-3 py-1 bg-amber-500/30 rounded-full text-sm font-medium text-amber-100';
+            document.getElementById('premiumStats').classList.remove('hidden');
+            document.getElementById('freeUserCta').classList.add('hidden');
+            document.getElementById('recentSetupsSection').classList.remove('hidden');
+          }
+          console.log('Profile table not yet available');
+        }
+
+        document.getElementById('loadingState').classList.add('hidden');
+        document.getElementById('accountContent').classList.remove('hidden');
+        
+      } catch (error) {
+        console.error('Error loading account:', error);
+        document.getElementById('loadingState').innerHTML = `
+          <div class="text-red-500 text-4xl mb-4">❌</div>
+          <p class="text-gray-600">Error loading account.</p>
+          <a href="/en/auth.html" class="inline-block mt-4 text-green-600 hover:underline">Sign in again</a>
+        `;
+      }
+    }
+
+    async function loadPremiumSetups() {
+      try {
+        const { data: setups, error } = await supabaseClient
+          .from('user_setups')
+          .select('*, racquets(*), strings(*)')
+          .eq('user_id', currentUser.id)
+          .order('created_at', { ascending: false })
+          .limit(3);
+        
+        if (setups && !error) {
+          document.getElementById('setupCount').textContent = setups.length;
+          if (setups.length > 0) {
+            renderRecentSetups(setups);
+          }
+        }
+      } catch (e) {
+        console.log('Setups table not yet available');
+      }
+    }
+
+    function renderRecentSetups(setups) {
+      const container = document.getElementById('recentSetups');
+      
+      if (!setups || setups.length === 0) {
+        return;
+      }
+      
+      container.innerHTML = setups.map(setup => `
+        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg mb-3 last:mb-0">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+              <span class="text-2xl">🎾</span>
+            </div>
+            <div>
+              <div class="font-semibold text-gray-900">${setup.name || 'Unnamed setup'}</div>
+              <div class="text-sm text-gray-500">
+                ${setup.racquets?.brand || ''} ${setup.racquets?.model || 'Racquet'} • 
+                ${setup.strings?.brand || ''} ${setup.strings?.model || 'String'} • 
+                ${setup.tension || '?'} kg
+              </div>
+            </div>
+          </div>
+          <div class="text-right">
+            <div class="font-bold ${setup.rcs_score < 50 ? 'text-green-600' : setup.rcs_score < 70 ? 'text-amber-600' : 'text-red-600'}">
+              RCS ${setup.rcs_score || '--'}
+            </div>
+            <div class="text-xs text-gray-400">
+              ${new Date(setup.created_at).toLocaleDateString('en-US')}
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function handleProfileUpdate(e) {
+      e.preventDefault();
+      
+      const profileData = {
+        id: currentUser.id,
+        level: document.getElementById('level').value || null,
+        frequency: document.getElementById('frequency').value || null,
+        playing_style: document.getElementById('playingStyle').value || null,
+        physical_issues: document.getElementById('physicalIssues').value || null,
+        updated_at: new Date().toISOString()
+      };
+      
+      document.getElementById('profileSpinner').classList.remove('hidden');
+      document.getElementById('profileBtn').disabled = true;
+      
+      try {
+        const { error } = await supabaseClient
+          .from('profiles')
+          .upsert(profileData, { onConflict: 'id' });
+        
+        if (error) throw error;
+        
+        showProfileMessage('Profile updated successfully!', 'success');
+        
+      } catch (error) {
+        console.error('Profile update error:', error);
+        if (error.message.includes('relation') || error.code === '42P01') {
+          showProfileMessage('Tables not configured. Check developer console for SQL.', 'info');
+        } else {
+          showProfileMessage('Error: ' + error.message, 'error');
+        }
+      } finally {
+        document.getElementById('profileSpinner').classList.add('hidden');
+        document.getElementById('profileBtn').disabled = false;
+      }
+    }
+
+    function showProfileMessage(message, type) {
+      const el = document.getElementById('profileMessage');
+      el.classList.remove('hidden', 'text-green-600', 'text-red-600', 'text-blue-600');
+      
+      if (type === 'success') el.classList.add('text-green-600');
+      else if (type === 'error') el.classList.add('text-red-600');
+      else el.classList.add('text-blue-600');
+      
+      el.textContent = message;
+      
+      setTimeout(() => el.classList.add('hidden'), 5000);
+    }
+
+    async function handleLogout() {
+      await supabaseClient.auth.signOut();
+      window.location.href = '/en/auth.html';
+    }
+
+    async function handleChangePassword() {
+      const email = currentUser.email;
+      
+      if (confirm(`Send a password reset email to ${email}?`)) {
+        try {
+          const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+            redirectTo: window.location.origin + '/reset-password.html'
+          });
+          
+          if (error) throw error;
+          
+          alert('Reset email sent! Check your inbox.');
+          
+        } catch (error) {
+          alert('Error: ' + error.message);
+        }
+      }
+    }
+
+    async function handleDeleteAccount() {
+      if (confirm('⚠️ WARNING: This action is irreversible. All your setups will be deleted. Are you sure you want to delete your account?')) {
+        if (confirm('Final confirmation: Do you really want to permanently delete your account?')) {
+          try {
+            await supabaseClient.from('user_setups').delete().eq('user_id', currentUser.id);
+            await supabaseClient.from('profiles').delete().eq('id', currentUser.id);
+            
+            await supabaseClient.auth.signOut();
+            
+            alert('Your account has been marked for deletion. You will be signed out.');
+            window.location.href = '/en/';
+            
+          } catch (error) {
+            alert('Error deleting account: ' + error.message);
+          }
+        }
+      }
+    }
+
+    checkAuth();
+  </script>
+</body>
+</html>

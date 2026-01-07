@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In - Tennis String Advisor</title>
+  <meta name="description" content="Sign in to save your setups and access exclusive features.">
+  <link rel="canonical" href="https://tennisstringadvisor.org/en/auth.html">
+  <link rel="alternate" hreflang="fr" href="https://tennisstringadvisor.org/auth.html">
+  <link rel="alternate" hreflang="en" href="https://tennisstringadvisor.org/en/auth.html">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            tennis: { green: '#16a34a', dark: '#0d1117', light: '#f0fdf4' }
+          }
+        }
+      }
+    }
+  </script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-YSSLHJ5WYD"></script>
+  <script src="/js/analytics.js"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <!-- Header -->
+  <header class="bg-white border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 py-4">
+      <div class="flex items-center justify-between">
+        <a href="/en/" class="flex items-center gap-2">
+          <span class="text-2xl">🎾</span>
+          <span class="font-bold text-xl text-gray-900">Tennis String Advisor</span>
+        </a>
+        <nav class="hidden md:flex items-center gap-6">
+          <a href="/en/" class="text-gray-600 hover:text-green-600 transition">Home</a>
+          <a href="/en/racquets.html" class="text-gray-600 hover:text-green-600 transition">Racquets</a>
+          <a href="/en/strings.html" class="text-gray-600 hover:text-green-600 transition">Strings</a>
+          <a href="/auth.html" class="text-blue-600 hover:text-blue-700 transition">🇫🇷 FR</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-md mx-auto px-4 py-12">
+    <!-- Auth Card -->
+    <div class="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
+      <!-- Header -->
+      <div class="bg-gradient-to-r from-green-600 to-green-500 px-6 py-8 text-center text-white">
+        <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+          <span class="text-3xl">🎾</span>
+        </div>
+        <h1 class="text-2xl font-bold">Member Area</h1>
+        <p class="text-green-100 mt-2">Save your setups and access exclusive tools</p>
+      </div>
+
+      <!-- Tabs -->
+      <div class="flex border-b border-gray-200">
+        <button onclick="showAuthTab('login')" id="loginTab" class="flex-1 py-4 text-center font-semibold text-green-600 border-b-2 border-green-600">
+          Sign In
+        </button>
+        <button onclick="showAuthTab('register')" id="registerTab" class="flex-1 py-4 text-center font-semibold text-gray-500 hover:text-gray-700">
+          Sign Up
+        </button>
+      </div>
+
+      <!-- Login Form -->
+      <div id="loginForm" class="p-6">
+        <form onsubmit="handleLogin(event)">
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <input type="email" id="loginEmail" required
+                class="w-full rounded-lg border-gray-300 border p-3 focus:ring-green-500 focus:border-green-500"
+                placeholder="your@email.com">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+              <input type="password" id="loginPassword" required
+                class="w-full rounded-lg border-gray-300 border p-3 focus:ring-green-500 focus:border-green-500"
+                placeholder="••••••••">
+            </div>
+          </div>
+
+          <button type="submit" id="loginBtn"
+            class="w-full mt-6 bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition flex items-center justify-center gap-2">
+            <span>Sign In</span>
+            <span id="loginSpinner" class="hidden">⏳</span>
+          </button>
+        </form>
+
+        <div class="mt-4 text-center">
+          <button onclick="handleForgotPassword()" class="text-sm text-green-600 hover:underline">
+            Forgot password?
+          </button>
+        </div>
+
+        <!-- Divider -->
+        <div class="relative my-6">
+          <div class="absolute inset-0 flex items-center">
+            <div class="w-full border-t border-gray-300"></div>
+          </div>
+          <div class="relative flex justify-center text-sm">
+            <span class="px-2 bg-white text-gray-500">or continue with</span>
+          </div>
+        </div>
+
+        <!-- Social Login -->
+        <div class="space-y-3">
+          <button onclick="handleGoogleLogin()" id="googleLoginBtn"
+            class="w-full flex items-center justify-center gap-3 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+            <svg class="w-5 h-5" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+            </svg>
+            <span class="font-medium text-gray-700">Google</span>
+          </button>
+          
+          <button onclick="handleFacebookLogin()" id="facebookLoginBtn"
+            class="w-full flex items-center justify-center gap-3 py-3 rounded-lg hover:opacity-90 transition bg-[#1877F2] text-white">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+            </svg>
+            <span class="font-medium">Facebook</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Register Form -->
+      <div id="registerForm" class="p-6 hidden">
+        <form onsubmit="handleRegister(event)">
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+              <input type="text" id="registerName" required
+                class="w-full rounded-lg border-gray-300 border p-3 focus:ring-green-500 focus:border-green-500"
+                placeholder="John Doe">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <input type="email" id="registerEmail" required
+                class="w-full rounded-lg border-gray-300 border p-3 focus:ring-green-500 focus:border-green-500"
+                placeholder="your@email.com">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+              <input type="password" id="registerPassword" required minlength="6"
+                class="w-full rounded-lg border-gray-300 border p-3 focus:ring-green-500 focus:border-green-500"
+                placeholder="Minimum 6 characters">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+              <input type="password" id="registerPasswordConfirm" required
+                class="w-full rounded-lg border-gray-300 border p-3 focus:ring-green-500 focus:border-green-500"
+                placeholder="••••••••">
+            </div>
+          </div>
+
+          <div class="mt-4">
+            <label class="flex items-start gap-2">
+              <input type="checkbox" id="acceptTerms" required class="mt-1 rounded border-gray-300 text-green-600 focus:ring-green-500">
+              <span class="text-sm text-gray-600">
+                I accept the <a href="#" class="text-green-600 hover:underline">terms of use</a> and <a href="#" class="text-green-600 hover:underline">privacy policy</a>
+              </span>
+            </label>
+          </div>
+
+          <button type="submit" id="registerBtn"
+            class="w-full mt-6 bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition flex items-center justify-center gap-2">
+            <span>Create my account</span>
+            <span id="registerSpinner" class="hidden">⏳</span>
+          </button>
+        </form>
+
+        <!-- Divider -->
+        <div class="relative my-6">
+          <div class="absolute inset-0 flex items-center">
+            <div class="w-full border-t border-gray-300"></div>
+          </div>
+          <div class="relative flex justify-center text-sm">
+            <span class="px-2 bg-white text-gray-500">or continue with</span>
+          </div>
+        </div>
+
+        <!-- Social Login -->
+        <div class="space-y-3">
+          <button onclick="handleGoogleLogin()" id="googleRegisterBtn"
+            class="w-full flex items-center justify-center gap-3 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+            <svg class="w-5 h-5" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+            </svg>
+            <span class="font-medium text-gray-700">Google</span>
+          </button>
+          
+          <button onclick="handleFacebookLogin()" id="facebookRegisterBtn"
+            class="w-full flex items-center justify-center gap-3 py-3 rounded-lg hover:opacity-90 transition bg-[#1877F2] text-white">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+            </svg>
+            <span class="font-medium">Facebook</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Messages -->
+      <div id="authMessage" class="hidden px-6 pb-6">
+        <div id="authMessageContent" class="p-4 rounded-lg"></div>
+      </div>
+    </div>
+
+    <!-- Free Benefits -->
+    <div class="mt-8 bg-white rounded-xl border border-gray-200 p-6">
+      <h3 class="font-bold text-gray-900 mb-4">✅ Free access with an account</h3>
+      <ul class="space-y-3 text-sm text-gray-600">
+        <li class="flex items-center gap-2">
+          <span class="text-green-500">✓</span>
+          Personalized player profile (level, style, frequency)
+        </li>
+        <li class="flex items-center gap-2">
+          <span class="text-green-500">✓</span>
+          Full catalog access (107+ racquets, 173+ strings)
+        </li>
+        <li class="flex items-center gap-2">
+          <span class="text-green-500">✓</span>
+          RCS Calculator (joint comfort score)
+        </li>
+        <li class="flex items-center gap-2">
+          <span class="text-green-500">✓</span>
+          Expert configurator and comparator
+        </li>
+      </ul>
+    </div>
+    
+    <!-- Premium Benefits -->
+    <div class="mt-4 bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl border border-amber-200 p-6">
+      <h3 class="font-bold text-amber-900 mb-4 flex items-center gap-2">
+        ⭐ Premium Benefits
+        <span class="text-xs bg-amber-200 text-amber-800 px-2 py-0.5 rounded-full">$2.99/month</span>
+      </h3>
+      <ul class="space-y-3 text-sm text-amber-800">
+        <li class="flex items-center gap-2">
+          <span class="text-amber-500">⭐</span>
+          Unlimited setup saving (racquet + string + tension)
+        </li>
+        <li class="flex items-center gap-2">
+          <span class="text-amber-500">⭐</span>
+          Complete string history
+        </li>
+        <li class="flex items-center gap-2">
+          <span class="text-amber-500">⭐</span>
+          Price alerts on your favorite products
+        </li>
+        <li class="flex items-center gap-2">
+          <span class="text-amber-500">⭐</span>
+          PDF export of your setups
+        </li>
+        <li class="flex items-center gap-2">
+          <span class="text-amber-500">⭐</span>
+          Priority support
+        </li>
+      </ul>
+      <a href="/en/premium.html" class="inline-block mt-4 text-amber-700 font-semibold hover:underline">
+        Learn more about Premium →
+      </a>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-gray-900 text-white mt-16">
+    <div class="max-w-7xl mx-auto px-4 py-8">
+      <div class="text-center text-gray-400 text-sm">
+        <p>© 2025 Tennis String Advisor. A brand of Pleneuf Trading LLC. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const SUPABASE_URL = 'https://yhhdkllbaxuhwrfpsmev.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InloaGRrbGxiYXh1aHdyZnBzbWV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU3NjI0MDEsImV4cCI6MjA4MTMzODQwMX0.2aC_gYZf0xxz6MXi5zcaCH2S64RBaQvXU7a5qiuD0_k';
+    
+    let supabaseClient = null;
+    try {
+      if (window.supabase && window.supabase.createClient) {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        console.log('✅ Supabase initialized');
+      }
+    } catch (e) {
+      console.error('❌ Supabase init error:', e);
+    }
+
+    async function checkAuth() {
+      const queryParams = new URLSearchParams(window.location.search);
+      
+      if (queryParams.get('error')) {
+        const errorDescription = queryParams.get('error_description') || 'Unknown error';
+        showMessage('Authentication error: ' + decodeURIComponent(errorDescription));
+        window.history.replaceState({}, document.title, window.location.pathname);
+        return;
+      }
+      
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      
+      if (session) {
+        showMessage('Login successful! Redirecting...', 'success');
+        setTimeout(() => {
+          window.location.href = '/en/account.html';
+        }, 1000);
+      }
+    }
+    
+    supabaseClient.auth.onAuthStateChange((event, session) => {
+      console.log('Auth event:', event);
+      if (event === 'SIGNED_IN' && session) {
+        showMessage('Login successful! Redirecting...', 'success');
+        setTimeout(() => {
+          window.location.href = '/en/account.html';
+        }, 1000);
+      }
+    });
+    
+    checkAuth();
+
+    function showAuthTab(tab) {
+      if (tab === 'login') {
+        document.getElementById('loginForm').classList.remove('hidden');
+        document.getElementById('registerForm').classList.add('hidden');
+        document.getElementById('loginTab').classList.add('text-green-600', 'border-b-2', 'border-green-600');
+        document.getElementById('loginTab').classList.remove('text-gray-500');
+        document.getElementById('registerTab').classList.remove('text-green-600', 'border-b-2', 'border-green-600');
+        document.getElementById('registerTab').classList.add('text-gray-500');
+      } else {
+        document.getElementById('loginForm').classList.add('hidden');
+        document.getElementById('registerForm').classList.remove('hidden');
+        document.getElementById('registerTab').classList.add('text-green-600', 'border-b-2', 'border-green-600');
+        document.getElementById('registerTab').classList.remove('text-gray-500');
+        document.getElementById('loginTab').classList.remove('text-green-600', 'border-b-2', 'border-green-600');
+        document.getElementById('loginTab').classList.add('text-gray-500');
+      }
+      hideMessage();
+    }
+
+    function showMessage(message, type = 'error') {
+      const container = document.getElementById('authMessage');
+      const content = document.getElementById('authMessageContent');
+      container.classList.remove('hidden');
+      
+      if (type === 'error') {
+        content.className = 'p-4 rounded-lg bg-red-50 border border-red-200 text-red-700';
+      } else if (type === 'success') {
+        content.className = 'p-4 rounded-lg bg-green-50 border border-green-200 text-green-700';
+      } else {
+        content.className = 'p-4 rounded-lg bg-blue-50 border border-blue-200 text-blue-700';
+      }
+      
+      content.textContent = message;
+    }
+
+    function hideMessage() {
+      document.getElementById('authMessage').classList.add('hidden');
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+      
+      document.getElementById('loginSpinner').classList.remove('hidden');
+      document.getElementById('loginBtn').disabled = true;
+      
+      try {
+        const { data, error } = await supabaseClient.auth.signInWithPassword({
+          email,
+          password
+        });
+        
+        if (error) throw error;
+        
+        showMessage('Login successful! Redirecting...', 'success');
+        setTimeout(() => {
+          window.location.href = '/en/account.html';
+        }, 1000);
+        
+      } catch (error) {
+        showMessage(error.message === 'Invalid login credentials' 
+          ? 'Incorrect email or password' 
+          : error.message);
+      } finally {
+        document.getElementById('loginSpinner').classList.add('hidden');
+        document.getElementById('loginBtn').disabled = false;
+      }
+    }
+
+    async function handleRegister(e) {
+      e.preventDefault();
+      const name = document.getElementById('registerName').value;
+      const email = document.getElementById('registerEmail').value;
+      const password = document.getElementById('registerPassword').value;
+      const passwordConfirm = document.getElementById('registerPasswordConfirm').value;
+      
+      if (password !== passwordConfirm) {
+        showMessage('Passwords do not match');
+        return;
+      }
+      
+      document.getElementById('registerSpinner').classList.remove('hidden');
+      document.getElementById('registerBtn').disabled = true;
+      
+      try {
+        const { data, error } = await supabaseClient.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              full_name: name
+            }
+          }
+        });
+        
+        if (error) throw error;
+        
+        if (data.user && !data.session) {
+          showMessage('Account created! Check your email to confirm your registration.', 'success');
+        } else {
+          showMessage('Account created successfully! Redirecting...', 'success');
+          setTimeout(() => {
+            window.location.href = '/en/account.html';
+          }, 1000);
+        }
+        
+      } catch (error) {
+        if (error.message.includes('already registered')) {
+          showMessage('This email is already in use');
+        } else {
+          showMessage(error.message);
+        }
+      } finally {
+        document.getElementById('registerSpinner').classList.add('hidden');
+        document.getElementById('registerBtn').disabled = false;
+      }
+    }
+
+    async function handleGoogleLogin() {
+      try {
+        const siteUrl = window.location.origin;
+        
+        const { data, error } = await supabaseClient.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: siteUrl + '/en/auth.html',
+            queryParams: {
+              access_type: 'offline',
+              prompt: 'consent'
+            }
+          }
+        });
+        
+        if (error) throw error;
+        
+      } catch (error) {
+        console.error('Google OAuth error:', error);
+        showMessage('Google login error: ' + error.message);
+      }
+    }
+    
+    async function handleFacebookLogin() {
+      try {
+        const siteUrl = window.location.origin;
+        
+        const { data, error } = await supabaseClient.auth.signInWithOAuth({
+          provider: 'facebook',
+          options: {
+            redirectTo: siteUrl + '/en/auth.html',
+            scopes: 'email,public_profile'
+          }
+        });
+        
+        if (error) throw error;
+        
+      } catch (error) {
+        console.error('Facebook OAuth error:', error);
+        showMessage('Facebook login error: ' + error.message);
+      }
+    }
+
+    async function handleForgotPassword() {
+      const email = document.getElementById('loginEmail').value;
+      
+      if (!email) {
+        showMessage('Enter your email to reset your password', 'info');
+        return;
+      }
+      
+      try {
+        const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+          redirectTo: window.location.origin + '/reset-password.html'
+        });
+        
+        if (error) throw error;
+        
+        showMessage('Reset email sent! Check your inbox.', 'success');
+        
+      } catch (error) {
+        showMessage(error.message);
+      }
+    }
+  </script>
+</body>
+</html>
