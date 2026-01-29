@@ -284,12 +284,50 @@ CREATE POLICY "Users can delete own price alerts" ON public.price_alerts
   FOR DELETE USING (auth.uid() = user_id);
 
 -- ============================================
--- 6. AUTOMATIC PROFILE CREATION TRIGGER
+-- 6. NEWSLETTER SUBSCRIBERS TABLE
+-- ============================================
+-- Stores newsletter subscriptions
+
+CREATE TABLE IF NOT EXISTS public.newsletter_subscribers (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  email TEXT UNIQUE NOT NULL,
+  subscribed_at TIMESTAMPTZ DEFAULT NOW(),
+  is_active BOOLEAN DEFAULT TRUE,
+  source TEXT DEFAULT 'website'
+);
+
+-- Enable Row Level Security
+ALTER TABLE public.newsletter_subscribers ENABLE ROW LEVEL SECURITY;
+
+-- Policy: Anyone can subscribe (insert their email)
+CREATE POLICY "Anyone can subscribe to newsletter" ON public.newsletter_subscribers
+  FOR INSERT WITH CHECK (true);
+
+-- Policy: Only authenticated users can view their own subscription
+CREATE POLICY "Users can view own subscription" ON public.newsletter_subscribers
+  FOR SELECT USING (
+    auth.jwt() IS NOT NULL 
+    AND email = (auth.jwt()->>'email')
+  );
+
+-- Policy: Only authenticated users can unsubscribe (update their own)
+CREATE POLICY "Users can update own subscription" ON public.newsletter_subscribers
+  FOR UPDATE USING (
+    auth.jwt() IS NOT NULL 
+    AND email = (auth.jwt()->>'email')
+  );
+
+-- ============================================
+-- 7. AUTOMATIC PROFILE CREATION TRIGGER
 -- ============================================
 -- Automatically creates a profile when a new user signs up
 
 CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER 
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
 BEGIN
   INSERT INTO public.profiles (id, email, full_name, avatar_url)
   VALUES (
@@ -300,7 +338,7 @@ BEGIN
   );
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$;
 
 -- Drop trigger if exists and recreate
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
@@ -309,17 +347,21 @@ CREATE TRIGGER on_auth_user_created
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
 -- ============================================
--- 7. UPDATE TIMESTAMP TRIGGER
+-- 8. UPDATE TIMESTAMP TRIGGER
 -- ============================================
 -- Automatically updates the updated_at column
 
 CREATE OR REPLACE FUNCTION public.handle_updated_at()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER 
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
 BEGIN
   NEW.updated_at = NOW();
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$;
 
 -- Apply to profiles
 DROP TRIGGER IF EXISTS profiles_updated_at ON public.profiles;
@@ -340,12 +382,16 @@ CREATE TRIGGER stringing_journal_updated_at
   FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 
 -- ============================================
--- 8. HELPER FUNCTION: Decrement Lifetime Counter
+-- 9. HELPER FUNCTION: Decrement Lifetime Counter
 -- ============================================
 -- Call this function when a lifetime purchase is made
 
 CREATE OR REPLACE FUNCTION public.decrement_lifetime_counter()
-RETURNS INTEGER AS $$
+RETURNS INTEGER 
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
 DECLARE
   current_count INTEGER;
 BEGIN
@@ -364,10 +410,10 @@ BEGIN
   
   RETURN 0;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$;
 
 -- ============================================
--- 9. HELPER FUNCTION: Activate Premium
+-- 10. HELPER FUNCTION: Activate Premium
 -- ============================================
 -- Call this function after successful payment
 
@@ -377,7 +423,11 @@ CREATE OR REPLACE FUNCTION public.activate_premium(
   p_stripe_customer_id TEXT DEFAULT NULL,
   p_stripe_subscription_id TEXT DEFAULT NULL
 )
-RETURNS BOOLEAN AS $$
+RETURNS BOOLEAN 
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
 DECLARE
   expiry_date TIMESTAMPTZ;
 BEGIN
@@ -408,10 +458,10 @@ BEGIN
   
   RETURN FOUND;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$;
 
 -- ============================================
--- 10. INDEXES FOR PERFORMANCE
+-- 11. INDEXES FOR PERFORMANCE
 -- ============================================
 
 -- Index on user_setups for faster queries
@@ -433,17 +483,45 @@ CREATE INDEX IF NOT EXISTS idx_stringing_journal_status ON public.stringing_jour
 CREATE INDEX IF NOT EXISTS idx_stringing_journal_client_name ON public.stringing_journal(client_name);
 
 -- ============================================
+-- 12. SECURITY NOTES FOR RACQUETS AND STRINGS TABLES
+-- ============================================
+-- The racquets and strings tables should have:
+-- - RLS enabled
+-- - Read-only public access (SELECT with USING (true))
+-- - No public INSERT/UPDATE/DELETE (admin only via service role)
+--
+-- Example policies (apply after creating racquets/strings tables):
+--
+-- ALTER TABLE public.racquets ENABLE ROW LEVEL SECURITY;
+-- CREATE POLICY "Anyone can read racquets" ON public.racquets
+--   FOR SELECT USING (true);
+--
+-- ALTER TABLE public.strings ENABLE ROW LEVEL SECURITY;
+-- CREATE POLICY "Anyone can read strings" ON public.strings
+--   FOR SELECT USING (true);
+
+-- ============================================
 -- VERIFICATION QUERIES (Run after setup)
 -- ============================================
 
 -- Check tables exist:
 -- SELECT table_name FROM information_schema.tables WHERE table_schema = 'public';
 
+-- Check RLS is enabled on all public tables:
+-- SELECT tablename, rowsecurity FROM pg_tables WHERE schemaname = 'public';
+
 -- Check profiles table:
 -- SELECT * FROM public.profiles LIMIT 5;
 
 -- Check settings:
 -- SELECT * FROM public.settings;
+
+-- Check functions have search_path set:
+-- SELECT proname, proconfig FROM pg_proc 
+-- WHERE proname IN ('handle_updated_at', 'handle_new_user', 'decrement_lifetime_counter', 'activate_premium');
+
+-- Check policies on tables:
+-- SELECT schemaname, tablename, policyname, cmd, qual FROM pg_policies WHERE schemaname = 'public';
 
 -- Test trigger by inserting a test user (will auto-create profile):
 -- This happens automatically when users sign up

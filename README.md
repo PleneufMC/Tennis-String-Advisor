@@ -207,7 +207,32 @@ npm start
 - **SEO** : Meta tags optimisés
 - **Accessibilité** : WCAG 2.1 AA
 
-## 🛣️ Roadmap Future
+## 🔒 Sécurité
+
+### Base de données Supabase
+- [x] **RLS (Row Level Security)** activé sur toutes les tables
+- [x] **Politiques RLS sécurisées** : lecture seule pour données publiques (racquets, strings)
+- [x] **Functions sécurisées** : `search_path` défini sur toutes les fonctions
+- [x] **Mot de passe minimum** : 8 caractères requis
+
+### Authentification
+- [x] **Google OAuth** : Connexion sécurisée
+- [x] **Secure email change** : Double confirmation requise
+- [ ] **Leaked Password Protection** : Disponible sur plan Pro uniquement
+
+### Application
+- [x] **Headers de sécurité** : X-Frame-Options, X-Content-Type-Options, Referrer-Policy
+- [x] **CORS configuré** : Origines autorisées définies
+- [x] **Stripe Payment Links** : Paiements sécurisés PCI-DSS
+
+## 🛣️ Roadmap
+
+### ✅ Complété (Janvier 2025)
+- [x] Configurateur RCS avancé
+- [x] Base de données 72 raquettes + 50 cordages
+- [x] Intégration Stripe (paiements)
+- [x] Authentification Google OAuth
+- [x] **Corrections sécurité Supabase** (RLS, fonctions, politiques)
 
 ### Court terme
 - [ ] Mode sombre
@@ -257,4 +282,4 @@ Ce projet est propriétaire. Tous droits réservés.
 
 **Développé avec ❤️ pour les passionnés de tennis**
 
-*Dernière mise à jour : Janvier 2025*
+*Dernière mise à jour : 29 Janvier 2025*

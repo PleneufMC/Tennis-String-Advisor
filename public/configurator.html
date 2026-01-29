@@ -3,70 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Configurateur expert Tennis String Advisor. Trouvez votre setup idéal raquette + cordage + tension en quelques clics. Recommandations personnalisées selon votre niveau et style.">
-  <meta name="keywords" content="configurateur tennis, setup, raquette, cordage, tension, recommandation personnalisée">
-  <meta property="og:title" content="Configurateur Expert - Tennis String Advisor">
-  <meta property="og:description" content="Trouvez votre setup tennis parfait en quelques clics. Recommandations personnalisées.">
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://tennisstringadvisor.org/configurator.html">
-  <link rel="canonical" href="https://tennisstringadvisor.org/configurator.html">
-  <link rel="alternate" hreflang="fr" href="https://tennisstringadvisor.org/configurator.html">
-  <link rel="alternate" hreflang="en" href="https://tennisstringadvisor.org/en/configurator.html">
-  <link rel="alternate" hreflang="x-default" href="https://tennisstringadvisor.org/configurator.html">
   <title>Configurateur Expert - Tennis String Advisor</title>
-  
-  <!-- Schema.org WebApplication -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "WebApplication",
-    "name": "Tennis String Advisor Configurateur",
-    "description": "Configurateur expert pour trouver votre setup tennis idéal (raquette, cordage, tension)",
-    "url": "https://tennisstringadvisor.org/configurator.html",
-    "applicationCategory": "SportsApplication",
-    "operatingSystem": "Web Browser",
-    "offers": {
-      "@type": "Offer",
-      "price": "0",
-      "priceCurrency": "EUR",
-      "description": "2 configurations gratuites, puis Premium à 19,99€ à vie"
-    },
-    "featureList": [
-      "Recommandations de raquettes personnalisées",
-      "Recommandations de cordages personnalisées",
-      "Calcul de tension optimale",
-      "Score RCS (Confort Articulaire)"
-    ]
-  }
-  </script>
-  
-  <!-- Schema.org BreadcrumbList -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    "itemListElement": [
-      {
-        "@type": "ListItem",
-        "position": 1,
-        "name": "Accueil",
-        "item": "https://tennisstringadvisor.org/"
-      },
-      {
-        "@type": "ListItem",
-        "position": 2,
-        "name": "Configurateur",
-        "item": "https://tennisstringadvisor.org/configurator.html"
-      }
-    ]
-  }
-  </script>
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- DEFER external scripts to prevent interference with event listeners -->
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script defer src="/js/rcs-calculator.js"></script>
-  <link rel="stylesheet" href="/css/dark-mode.css">
-  <script src="/js/theme.js"></script>
   <style>
     .animate-fade-in { animation: fadeIn 0.3s ease-in; }
     @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
@@ -79,8 +20,7 @@
             tennis: { green: '#16a34a', dark: '#0d1117', light: '#f0fdf4' }
           }
         }
-      },
-      darkMode: 'class'
+      }
     }
   </script>
   <style>
@@ -147,9 +87,9 @@
           </ul>
         </div>
         <div class="text-center mb-4">
-          <span class="text-3xl font-bold text-gray-900">19,99€</span>
-          <span class="text-gray-600 ml-1">une seule fois</span>
-          <p class="text-sm text-green-600 font-medium mt-1">🎉 Accès à vie - Pas d'abonnement !</p>
+          <span class="text-3xl font-bold text-gray-900">2,99€</span>
+          <span class="text-gray-600">/mois</span>
+          <p class="text-sm text-gray-500 mt-1">ou 24,99€/an (2 mois offerts)</p>
         </div>
         <div class="space-y-3">
           <a href="/premium.html" class="block w-full py-3 px-6 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-xl text-center hover:from-amber-600 hover:to-orange-600 transition shadow-lg">
@@ -158,12 +98,9 @@
           <a href="/auth.html" id="paywallAuthLink" class="block w-full py-3 px-6 border-2 border-gray-300 text-gray-700 font-medium rounded-xl text-center hover:bg-gray-50 transition">
             Créer un compte gratuit
           </a>
-          <a href="/auth.html?mode=login" class="block w-full py-2 px-6 text-green-600 font-medium text-center hover:text-green-700 hover:underline transition">
-            🔑 Déjà membre ? Se connecter
-          </a>
         </div>
         <p class="text-xs text-gray-500 text-center mt-4">
-          Le compte gratuit inclut 2 configurations. Premium = illimité à vie.
+          Le compte gratuit inclut 1 configuration. Premium = illimité.
         </p>
       </div>
     </div>
@@ -171,9 +108,9 @@
 
   <!-- Free Trial Banner -->
   <div id="freeTrialBanner" class="hidden bg-gradient-to-r from-green-500 to-green-600 text-white py-3 px-4 text-center">
-    <span class="font-medium">🎁 Essai gratuit : <span id="remainingConfigurations">2</span> configuration(s) restante(s)</span>
+    <span class="font-medium">🎁 Essai gratuit : <span id="remainingConfigurations">1</span> configuration restante</span>
     <span class="mx-2">|</span>
-    <a href="/premium.html" class="underline font-semibold hover:text-green-100">Premium à vie pour 19,99€ →</a>
+    <a href="/premium.html" class="underline font-semibold hover:text-green-100">Passer Premium pour illimité →</a>
   </div>
 
   <!-- Premium Banner -->
@@ -196,54 +133,12 @@
           <a href="/compare.html" class="text-gray-600 hover:text-green-600 transition">Comparateur</a>
           <a href="/rcs-calculator.html" class="text-gray-600 hover:text-green-600 transition">🩺 RCS</a>
         </nav>
-        <div class="flex items-center gap-3">
-          <!-- Language Selector (desktop) -->
-          <a href="/en/configurator.html" class="hidden md:flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition" title="English version">
-            🇬🇧 EN
-          </a>
-          <button onclick="toggleDarkMode()" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition" aria-label="Toggle dark mode">
-            <span class="theme-icon text-xl">🌙</span>
-          </button>
-          <a href="/auth.html" id="authLink" class="hidden md:flex items-center gap-2 px-4 py-2 text-sm font-medium text-green-600 hover:bg-green-50 dark:text-green-400 dark:hover:bg-gray-700 rounded-lg transition">
-            👤 Mon Compte
-          </a>
-          <!-- Mobile menu button -->
-          <button class="md:hidden p-2 rounded-lg hover:bg-gray-100" onclick="document.getElementById('mobileMenu').classList.toggle('hidden')">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-            </svg>
-          </button>
-        </div>
-      </div>
-      <!-- Mobile menu -->
-      <div id="mobileMenu" class="hidden md:hidden pb-4 px-4">
-        <div class="flex flex-col space-y-2 pt-2 border-t border-gray-200 dark:border-gray-700">
-          <a href="/" class="px-4 py-2 text-sm font-medium rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">Accueil</a>
-          <a href="/configurator.html" class="px-4 py-2 text-sm font-medium rounded-lg bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300">Configurateur</a>
-          <a href="/racquets.html" class="px-4 py-2 text-sm font-medium rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">Raquettes</a>
-          <a href="/strings.html" class="px-4 py-2 text-sm font-medium rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">Cordages</a>
-          <a href="/compare.html" class="px-4 py-2 text-sm font-medium rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">Comparateur</a>
-          <a href="/rcs-calculator.html" class="px-4 py-2 text-sm font-medium rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">🩺 RCS</a>
-          <a href="/auth.html" class="px-4 py-2 text-sm font-medium text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-lg">👤 Mon Compte</a>
-          <div class="border-t border-gray-200 dark:border-gray-700 my-2"></div>
-          <a href="/en/configurator.html" class="px-4 py-2 text-sm font-medium rounded-lg text-blue-500 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 flex items-center gap-2">
-            🇬🇧 English Version
-          </a>
-        </div>
+        <a href="/auth.html" id="authLink" class="hidden md:flex items-center gap-2 px-4 py-2 text-sm font-medium text-green-600 hover:bg-green-50 rounded-lg transition">
+          👤 Mon Compte
+        </a>
       </div>
     </div>
   </header>
-
-  <!-- Breadcrumbs -->
-  <nav class="bg-gray-100 dark:bg-gray-800 py-3 border-b border-gray-200 dark:border-gray-700">
-    <div class="max-w-4xl mx-auto px-4">
-      <ol class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-        <li><a href="/" class="hover:text-green-600 dark:hover:text-green-400">Accueil</a></li>
-        <li><span class="mx-2">/</span></li>
-        <li class="text-gray-900 dark:text-white font-medium">Configurateur</li>
-      </ol>
-    </div>
-  </nav>
 
   <!-- Main Content -->
   <main class="max-w-4xl mx-auto px-4 py-8">
@@ -522,17 +417,6 @@
 
       <h2 class="text-xl font-bold text-gray-900 mb-6">Quel est votre budget pour le cordage ?</h2>
       
-      <!-- Hybrid Toggle -->
-      <div class="mb-6 p-4 bg-purple-50 rounded-xl border border-purple-200">
-        <label class="flex items-center gap-3 cursor-pointer">
-          <input type="checkbox" id="hybridToggle" onchange="toggleHybridMode()"
-            class="w-5 h-5 text-purple-600 rounded focus:ring-purple-500">
-          <span class="font-semibold text-purple-900">🔀 Configuration Hybride</span>
-          <span class="text-sm text-purple-600">(montants et travers différents)</span>
-        </label>
-        <p class="text-xs text-purple-500 mt-2 ml-8">Recommandé pour optimiser puissance ET confort</p>
-      </div>
-      
       <div id="budget-string-group" class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
 
@@ -643,12 +527,10 @@
       <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
         <div class="flex items-center gap-2 mb-4">
           <span class="text-2xl">🧵</span>
-          <h3 class="text-xl font-bold text-gray-900" id="string-section-title">Cordage Recommandé</h3>
-          <span id="hybrid-badge" class="hidden bg-purple-100 text-purple-800 text-xs font-medium px-2 py-1 rounded-full">🔀 HYBRIDE</span>
+          <h3 class="text-xl font-bold text-gray-900">Cordage Recommandé</h3>
         </div>
         
-        <!-- Single String (non-hybrid) -->
-        <div id="single-string-section" class="bg-gray-50 rounded-lg p-6">
+        <div class="bg-gray-50 rounded-lg p-6" id="recommended-string">
           <div class="flex justify-between items-start">
             <div>
               <span class="text-sm text-blue-600 font-medium" id="rec-string-brand">Babolat</span>
@@ -675,65 +557,6 @@
             </div>
           </div>
           <p class="text-gray-600 mt-4" id="rec-string-reason">Parfait pour générer du spin et du contrôle.</p>
-        </div>
-        
-        <!-- Hybrid Strings Section -->
-        <div id="hybrid-string-section" class="hidden space-y-4">
-          <!-- Mains String -->
-          <div class="bg-blue-50 rounded-lg p-4 border-l-4 border-blue-500">
-            <div class="flex items-center gap-2 mb-2">
-              <span class="text-lg">↕️</span>
-              <span class="font-bold text-blue-900">MONTANTS</span>
-              <span class="text-xs text-blue-600 bg-blue-100 px-2 py-0.5 rounded">60% de l'impact</span>
-            </div>
-            <div class="flex justify-between items-start">
-              <div>
-                <span class="text-sm text-blue-600 font-medium" id="rec-mains-brand">Luxilon</span>
-                <h4 class="text-lg font-bold text-gray-900" id="rec-mains-name">ALU Power</h4>
-              </div>
-              <span class="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full" id="rec-mains-type">Polyester</span>
-            </div>
-            <div class="grid grid-cols-3 gap-4 mt-3 text-sm">
-              <div><span class="text-gray-500">Rigidité:</span> <span class="font-semibold" id="rec-mains-stiffness">230 lb/in</span></div>
-              <div><span class="text-gray-500">Contrôle:</span> <span class="font-semibold" id="rec-mains-control">9/10</span></div>
-              <div><span class="text-gray-500">Prix:</span> <span class="font-semibold text-green-600" id="rec-mains-price">19€</span></div>
-            </div>
-          </div>
-          
-          <!-- Cross String -->
-          <div class="bg-green-50 rounded-lg p-4 border-l-4 border-green-500">
-            <div class="flex items-center gap-2 mb-2">
-              <span class="text-lg">↔️</span>
-              <span class="font-bold text-green-900">TRAVERS</span>
-              <span class="text-xs text-green-600 bg-green-100 px-2 py-0.5 rounded">40% de l'impact</span>
-            </div>
-            <div class="flex justify-between items-start">
-              <div>
-                <span class="text-sm text-green-600 font-medium" id="rec-cross-brand">Babolat</span>
-                <h4 class="text-lg font-bold text-gray-900" id="rec-cross-name">VS Touch</h4>
-              </div>
-              <span class="bg-green-100 text-green-800 text-sm font-medium px-3 py-1 rounded-full" id="rec-cross-type">Boyau</span>
-            </div>
-            <div class="grid grid-cols-3 gap-4 mt-3 text-sm">
-              <div><span class="text-gray-500">Rigidité:</span> <span class="font-semibold" id="rec-cross-stiffness">150 lb/in</span></div>
-              <div><span class="text-gray-500">Confort:</span> <span class="font-semibold" id="rec-cross-comfort">10/10</span></div>
-              <div><span class="text-gray-500">Prix:</span> <span class="font-semibold text-green-600" id="rec-cross-price">45€</span></div>
-            </div>
-          </div>
-          
-          <!-- Hybrid Formula -->
-          <div class="bg-purple-50 rounded-lg p-4 border border-purple-200">
-            <div class="flex items-center gap-2 mb-2">
-              <span class="text-lg">🧮</span>
-              <span class="font-bold text-purple-900">Rigidité Équivalente</span>
-            </div>
-            <p class="text-sm text-purple-700" id="hybrid-formula">
-              (230 × 0.60) + (150 × 0.40) = <strong>198 lb/in</strong>
-            </p>
-            <p class="text-xs text-purple-500 mt-1">Cette valeur est utilisée pour calculer votre score RCS</p>
-          </div>
-          
-          <p class="text-gray-600" id="rec-hybrid-reason">Configuration hybride optimale : puissance des polyesters en montants, confort du boyau en travers.</p>
         </div>
       </div>
 
@@ -814,100 +637,8 @@
           🔄 Recommencer
         </button>
       </div>
-
-      <!-- Share Results Section -->
-      <div class="mt-8 bg-white rounded-xl border border-gray-200 p-6">
-        <div class="flex items-center justify-between flex-wrap gap-4">
-          <div class="flex items-center gap-3">
-            <span class="text-2xl">📤</span>
-            <div>
-              <h4 class="font-semibold text-gray-900">Partagez votre setup</h4>
-              <p class="text-sm text-gray-500">Montrez vos recommandations à vos partenaires de tennis</p>
-            </div>
-          </div>
-          <div class="flex items-center gap-2">
-            <button onclick="shareResult('copy')" class="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition text-sm font-medium">
-              📋 Copier
-            </button>
-            <button onclick="shareResult('whatsapp')" class="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition text-sm font-medium">
-              💬 WhatsApp
-            </button>
-            <button onclick="shareResult('twitter')" class="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition text-sm font-medium">
-              𝕏 Twitter
-            </button>
-          </div>
-        </div>
-        <div id="shareConfirmation" class="hidden mt-3 p-3 bg-green-100 text-green-700 rounded-lg text-sm text-center">
-          ✅ Lien copié dans le presse-papier !
-        </div>
-      </div>
-
-      <!-- CTA Premium Section -->
-      <div id="ctaPremiumSection" class="hidden mt-10 bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl border-2 border-amber-200 p-8">
-        <div class="text-center mb-6">
-          <span class="text-4xl mb-3 block">🎾</span>
-          <h3 class="text-2xl font-bold text-gray-900 mb-2">Votre setup personnalisé vous plaît ?</h3>
-          <p class="text-gray-600">Passez Premium pour en profiter pleinement</p>
-        </div>
-        
-        <div class="grid md:grid-cols-3 gap-4 mb-6">
-          <div class="bg-white rounded-xl p-4 text-center shadow-sm">
-            <span class="text-2xl mb-2 block">♾️</span>
-            <h4 class="font-semibold text-gray-900">Configurations illimitées</h4>
-            <p class="text-sm text-gray-500 mt-1">Testez autant de profils que vous voulez</p>
-          </div>
-          <div class="bg-white rounded-xl p-4 text-center shadow-sm">
-            <span class="text-2xl mb-2 block">📔</span>
-            <h4 class="font-semibold text-gray-900">Journal de cordage</h4>
-            <p class="text-sm text-gray-500 mt-1">Suivez vos cordages et recevez des rappels</p>
-          </div>
-          <div class="bg-white rounded-xl p-4 text-center shadow-sm">
-            <span class="text-2xl mb-2 block">💾</span>
-            <h4 class="font-semibold text-gray-900">Sauvegarde setups</h4>
-            <p class="text-sm text-gray-500 mt-1">Retrouvez vos configurations favorites</p>
-          </div>
-        </div>
-
-        <div class="text-center">
-          <div class="mb-4">
-            <span class="text-3xl font-bold text-gray-900">19,99€</span>
-            <span class="text-gray-600 ml-1">une seule fois</span>
-            <p class="text-sm text-green-600 font-medium mt-1">🎉 Accès à vie - Pas d'abonnement !</p>
-          </div>
-          <a href="/premium.html" class="inline-block px-8 py-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-xl hover:from-amber-600 hover:to-orange-600 transition shadow-lg text-lg">
-            ✨ Débloquer Premium
-          </a>
-          <p class="text-xs text-gray-500 mt-4">Déjà <span id="userCount">70</span>+ joueurs nous font confiance</p>
-        </div>
-      </div>
     </div>
   </main>
-
-  <!-- Sticky Bottom Bar (visible only on results) -->
-  <div id="stickyBottomBar" class="hidden fixed bottom-0 left-0 right-0 bg-white border-t-2 border-gray-200 shadow-lg z-50 transform translate-y-full transition-transform duration-300">
-    <div class="max-w-4xl mx-auto px-4 py-3">
-      <div class="flex items-center justify-between gap-4">
-        <div class="hidden sm:flex items-center gap-3">
-          <span class="text-2xl">🎾</span>
-          <div>
-            <p class="font-semibold text-gray-900 text-sm">Votre setup est prêt !</p>
-            <p class="text-xs text-gray-500">Sauvegardez-le avec Premium</p>
-          </div>
-        </div>
-        <div class="flex items-center gap-3 flex-1 sm:flex-none justify-end">
-          <span class="text-lg font-bold text-gray-900">19,99€ <span class="text-sm font-normal text-gray-500">à vie</span></span>
-          <a href="/premium.html" class="px-6 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-lg hover:from-amber-600 hover:to-orange-600 transition shadow text-sm whitespace-nowrap">
-            ✨ Premium
-          </a>
-          <button onclick="closeStickyBar()" class="p-2 text-gray-400 hover:text-gray-600 transition" aria-label="Fermer">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
 
   <!-- Footer -->
   <footer class="bg-gray-900 text-white mt-16">
@@ -980,14 +711,12 @@
     let hasUsedFreeConfiguration = false;
     let isPremium = false;
     let configurationCount = 0;
-    const FREE_CONFIGURATIONS = 2;
+    const FREE_CONFIGURATIONS = 1;
     const LOCAL_STORAGE_KEY = 'configurator_free_used';
     
     // Database cache
-    // SOLUTION B: Use 'var' instead of 'let' to avoid Temporal Dead Zone
-    // 'var' is hoisted and initialized to undefined, preventing TDZ errors
-    var racquetsDB = [];
-    var stringsDB = [];
+    let racquetsDB = [];
+    let stringsDB = [];
 
     // SOLUTION 8: Read state from radio buttons instead of tracking in JS
     function getSelections() {
@@ -997,21 +726,8 @@
         style: document.querySelector('input[name="style"]:checked')?.value || null,
         physical: document.querySelector('input[name="physical"]:checked')?.value || null,
         'budget-racquet': document.querySelector('input[name="budget-racquet"]:checked')?.value || null,
-        'budget-string': document.querySelector('input[name="budget-string"]:checked')?.value || null,
-        isHybrid: document.getElementById('hybridToggle')?.checked || false
+        'budget-string': document.querySelector('input[name="budget-string"]:checked')?.value || null
       };
-    }
-    
-    // Toggle hybrid mode display
-    function toggleHybridMode() {
-      const isHybrid = document.getElementById('hybridToggle')?.checked || false;
-      console.log('🔀 Hybrid mode:', isHybrid);
-      // Visual feedback that hybrid is selected
-      const toggle = document.getElementById('hybridToggle');
-      if (toggle) {
-        toggle.parentElement.parentElement.classList.toggle('ring-2', isHybrid);
-        toggle.parentElement.parentElement.classList.toggle('ring-purple-500', isHybrid);
-      }
     }
     
     // Legacy selections object for compatibility (read from radio buttons)
@@ -1033,16 +749,7 @@
     // We just read values with querySelector when needed.
 
     // Navigate steps
-    // Sticky bar state
-    let stickyBarClosed = false;
-
     function goToStep(step) {
-      // Track step navigation
-      const stepNames = { 1: 'level', 2: 'style', 3: 'budget', 4: 'results' };
-      if (typeof trackConfiguratorStep === 'function') {
-        trackConfiguratorStep(step, stepNames[step] || 'unknown');
-      }
-
       // Hide all steps
       document.querySelectorAll('[id^="step"]').forEach(el => {
         if (!el.id.includes('indicator')) el.classList.add('hidden');
@@ -1078,42 +785,7 @@
           progress.classList.remove('bg-green-500');
         }
       }
-
-      // Handle sticky bar and CTA visibility on step 4 (results)
-      const stickyBar = document.getElementById('stickyBottomBar');
-      const ctaSection = document.getElementById('ctaPremiumSection');
-      
-      if (step === 4 && !isPremium) {
-        // Show CTA section for non-premium users
-        if (ctaSection) ctaSection.classList.remove('hidden');
-        
-        // Show sticky bar after a delay (if not manually closed)
-        if (stickyBar && !stickyBarClosed) {
-          stickyBar.classList.remove('hidden');
-          setTimeout(() => {
-            stickyBar.classList.remove('translate-y-full');
-          }, 1500); // Show after 1.5 seconds
-        }
-      } else {
-        // Hide for premium users or other steps
-        if (ctaSection) ctaSection.classList.add('hidden');
-        if (stickyBar) {
-          stickyBar.classList.add('translate-y-full');
-          setTimeout(() => stickyBar.classList.add('hidden'), 300);
-        }
-      }
     }
-
-    // Close sticky bar
-    function closeStickyBar() {
-      stickyBarClosed = true;
-      const stickyBar = document.getElementById('stickyBottomBar');
-      if (stickyBar) {
-        stickyBar.classList.add('translate-y-full');
-        setTimeout(() => stickyBar.classList.add('hidden'), 300);
-      }
-    }
-    window.closeStickyBar = closeStickyBar;
 
     // Check if user can configure
     function canConfigure() {
@@ -1132,8 +804,6 @@
       paywall.classList.remove('hidden');
       paywall.classList.add('flex');
       document.body.style.overflow = 'hidden';
-      // Track paywall shown event
-      if (typeof trackPaywallShown === 'function') trackPaywallShown();
     }
 
     // Record configuration usage
@@ -1377,61 +1047,6 @@
       const picked = topCandidates[Math.floor(Math.random() * topCandidates.length)] || candidates[0];
       console.log(`✅ Picked string: ${picked ? picked.brand + ' ' + picked.model : 'null'}`);
       return picked;
-    }
-    
-    // Pick a cross string for hybrid setup (softer string for comfort)
-    function pickCrossString(selections) {
-      console.log('🔀 pickCrossString called for hybrid setup');
-      
-      // Default cross string (multifilament or natural gut for comfort)
-      const defaultCrossString = {
-        brand: 'Wilson',
-        name: 'NXT',
-        type: 'Multifilament',
-        stiffness: 145,
-        comfort: '9/10',
-        price: '18€'
-      };
-      
-      if (typeof stringsDB === 'undefined' || !stringsDB || stringsDB.length === 0) {
-        console.log('❌ stringsDB not loaded, returning default');
-        return defaultCrossString;
-      }
-      
-      // Filter for comfortable strings (multifilament, natural gut, soft poly)
-      let candidates = stringsDB.filter(s => {
-        const type = (s.type || '').toLowerCase();
-        return type.includes('multifilament') || 
-               type.includes('boyau') || 
-               type.includes('gut') ||
-               type.includes('synthetic') ||
-               (s.comfort && s.comfort >= 7);
-      });
-      
-      // If no candidates, take strings with highest comfort
-      if (candidates.length === 0) {
-        candidates = [...stringsDB].sort((a, b) => (b.comfort || 5) - (a.comfort || 5)).slice(0, 10);
-      }
-      
-      // Sort by comfort (highest first)
-      candidates.sort((a, b) => (b.comfort || 5) - (a.comfort || 5));
-      
-      // Pick from top 3
-      const topCandidates = candidates.slice(0, Math.min(3, candidates.length));
-      const picked = topCandidates[Math.floor(Math.random() * topCandidates.length)];
-      
-      if (picked) {
-        return {
-          brand: picked.brand,
-          name: picked.model,
-          type: picked.type,
-          stiffness: picked.stiffness || 150,
-          comfort: `${picked.comfort || 8}/10`,
-          price: `${picked.price_eur || 18}€`
-        };
-      }
-      
-      return defaultCrossString;
     }
 
     // Generate result
@@ -1775,101 +1390,37 @@
       document.getElementById('rec-racquet-price').textContent = racquet.price;
       document.getElementById('rec-racquet-reason').textContent = racquet.reason;
 
-      // Update UI - String (handle hybrid)
-      const isHybrid = currentSelections.isHybrid;
-      
-      if (isHybrid) {
-        // Show hybrid section, hide single string
-        document.getElementById('single-string-section').classList.add('hidden');
-        document.getElementById('hybrid-string-section').classList.remove('hidden');
-        document.getElementById('hybrid-badge').classList.remove('hidden');
-        document.getElementById('string-section-title').textContent = 'Cordages Hybrides Recommandés';
-        
-        // Pick a cross string (softer, for comfort)
-        const crossString = pickCrossString(currentSelections);
-        
-        // Update mains string
-        document.getElementById('rec-mains-brand').textContent = string.brand;
-        document.getElementById('rec-mains-name').textContent = string.name;
-        document.getElementById('rec-mains-type').textContent = string.type;
-        document.getElementById('rec-mains-stiffness').textContent = `${string.stiffness || 230} lb/in`;
-        document.getElementById('rec-mains-control').textContent = string.control;
-        document.getElementById('rec-mains-price').textContent = string.price;
-        
-        // Update cross string
-        document.getElementById('rec-cross-brand').textContent = crossString.brand;
-        document.getElementById('rec-cross-name').textContent = crossString.name;
-        document.getElementById('rec-cross-type').textContent = crossString.type;
-        document.getElementById('rec-cross-stiffness').textContent = `${crossString.stiffness || 150} lb/in`;
-        document.getElementById('rec-cross-comfort').textContent = crossString.comfort;
-        document.getElementById('rec-cross-price').textContent = crossString.price;
-        
-        // Calculate hybrid stiffness and update formula display
-        const hybridStiffness = RCS.calculateHybridStiffness(string.stiffness || 230, crossString.stiffness || 150);
-        document.getElementById('hybrid-formula').innerHTML = 
-          `(${string.stiffness || 230} × 0.60) + (${crossString.stiffness || 150} × 0.40) = <strong>${Math.round(hybridStiffness)} lb/in</strong>`;
-        document.getElementById('rec-hybrid-reason').textContent = 
-          `Configuration hybride optimale : ${string.type} en montants pour le contrôle et spin, ${crossString.type} en travers pour le confort.`;
-        
-        // Store hybrid stiffness for RCS calculation
-        string.hybridStiffness = hybridStiffness;
-        string.crossString = crossString;
-      } else {
-        // Show single string section, hide hybrid
-        document.getElementById('single-string-section').classList.remove('hidden');
-        document.getElementById('hybrid-string-section').classList.add('hidden');
-        document.getElementById('hybrid-badge').classList.add('hidden');
-        document.getElementById('string-section-title').textContent = 'Cordage Recommandé';
-        
-        // Update single string display
-        document.getElementById('rec-string-brand').textContent = string.brand;
-        document.getElementById('rec-string-name').textContent = string.name;
-        document.getElementById('rec-string-type').textContent = string.type;
-        document.getElementById('rec-string-spin').textContent = string.spin;
-        document.getElementById('rec-string-control').textContent = string.control;
-        document.getElementById('rec-string-comfort').textContent = string.comfort;
-        document.getElementById('rec-string-price').textContent = string.price;
-        document.getElementById('rec-string-reason').textContent = string.reason;
-      }
+      // Update UI - String
+      document.getElementById('rec-string-brand').textContent = string.brand;
+      document.getElementById('rec-string-name').textContent = string.name;
+      document.getElementById('rec-string-type').textContent = string.type;
+      document.getElementById('rec-string-spin').textContent = string.spin;
+      document.getElementById('rec-string-control').textContent = string.control;
+      document.getElementById('rec-string-comfort').textContent = string.comfort;
+      document.getElementById('rec-string-price').textContent = string.price;
+      document.getElementById('rec-string-reason').textContent = string.reason;
 
       // Update UI - Tension
       document.getElementById('rec-tension').textContent = tension.value;
       document.getElementById('rec-tension-reason').textContent = tension.reason;
 
-      // Calculate and display RCS (use hybrid stiffness if applicable)
-      const effectiveStiffness = isHybrid ? string.hybridStiffness : string.stiffness;
-      updateRCSDisplay(racquet.stiffness, effectiveStiffness, tension.numValue, rcsProfile, isHybrid, string);
+      // Calculate and display RCS
+      updateRCSDisplay(racquet.stiffness, string.stiffness, tension.numValue, rcsProfile);
 
       // Record usage
       recordConfigurationUsage();
 
-      // Track configurator completion
-      if (typeof trackConfiguratorComplete === 'function') {
-        trackConfiguratorComplete(
-          racquet.brand + ' ' + racquet.name,
-          string.brand + ' ' + string.name,
-          tension.value
-        );
-      }
-
       goToStep(4);
     }
 
-    // Update RCS Display (supports hybrid strings)
-    function updateRCSDisplay(ra, stringStiffness, tensionKg, profile, isHybrid = false, stringData = null) {
+    // Update RCS Display
+    function updateRCSDisplay(ra, stringStiffness, tensionKg, profile) {
       if (typeof RCS === 'undefined') {
         console.error('RCS calculator not loaded');
         return;
       }
 
-      let result;
-      if (isHybrid && stringData && stringData.crossString) {
-        // Use hybrid calculation
-        result = RCS.calculateHybrid(ra, stringData.stiffness || 230, stringData.crossString.stiffness || 150, tensionKg);
-        console.log('🔀 Hybrid RCS calculation:', result);
-      } else {
-        result = RCS.calculate(ra, stringStiffness, tensionKg);
-      }
+      const result = RCS.calculate(ra, stringStiffness, tensionKg);
       const { rcs, decile, quintile } = result;
 
       // Update score display
@@ -1975,32 +1526,6 @@
       return false; // Prevent form submission
     }
     
-    // Share result function
-    function shareResult(method) {
-      const racquet = document.getElementById('rec-racquet-brand').textContent + ' ' + document.getElementById('rec-racquet-name').textContent;
-      const string = document.getElementById('rec-string-brand').textContent + ' ' + document.getElementById('rec-string-name').textContent;
-      const tension = document.getElementById('rec-tension').textContent;
-      
-      const text = `🎾 Mon setup Tennis String Advisor:\n\n🎾 Raquette: ${racquet}\n🧵 Cordage: ${string}\n⚙️ Tension: ${tension}\n\nTrouve ton setup idéal sur:`;
-      const url = 'https://tennisstringadvisor.org/configurator.html';
-      
-      if (method === 'copy') {
-        navigator.clipboard.writeText(text + '\n' + url).then(() => {
-          const confirmation = document.getElementById('shareConfirmation');
-          confirmation.classList.remove('hidden');
-          setTimeout(() => confirmation.classList.add('hidden'), 3000);
-        });
-        if (typeof trackShare === 'function') trackShare('copy_link', 'configurator_result');
-      } else if (method === 'whatsapp') {
-        window.open(`https://wa.me/?text=${encodeURIComponent(text + '\n' + url)}`, '_blank');
-        if (typeof trackShare === 'function') trackShare('whatsapp', 'configurator_result');
-      } else if (method === 'twitter') {
-        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
-        if (typeof trackShare === 'function') trackShare('twitter', 'configurator_result');
-      }
-    }
-    window.shareResult = shareResult;
-
     // Make functions globally accessible
     window.goToStep = goToStep;
     window.restartConfigurator = restartConfigurator;
