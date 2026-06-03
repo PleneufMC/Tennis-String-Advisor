@@ -6,14 +6,16 @@
   # 'autoprefixer'". On purge node_modules et on réinstalle strictement depuis
   # package-lock.json (npm ci) pour garantir toutes les deps de build.
   command = "rm -rf node_modules .next && npm ci --legacy-peer-deps && node -e \"require.resolve('autoprefixer'); console.log('autoprefixer OK')\" && npm run build"
-  # PAS de "publish" ici : l'adaptateur Next.js ci-dessous configure lui-même
-  # le répertoire de publication (et le surcharge par rapport au réglage UI).
+  # IMPORTANT : l'UI Netlify force "publish = public" (publishOrigin: ui), or
+  # l'adaptateur Next.js attend la sortie de build (.next) et échoue sinon
+  # ("publish directory does not contain expected Next.js build output").
+  # On surcharge donc l'UI en pointant explicitement publish sur .next.
+  publish = ".next"
 
 # Active explicitement l'adaptateur Next.js de Netlify (OpenNext).
-# Indispensable : sans cette déclaration, l'adaptateur ne s'exécutait pas, et
-# Netlify publiait le dossier public/ (vide depuis la suppression des HTML
-# statiques) -> 404 sur toutes les routes. Le déclarer ici force Netlify à
-# l'installer + l'exécuter et à surcharger le "publish: public" figé dans l'UI.
+# Indispensable : sans cette déclaration, l'adaptateur ne s'exécutait pas.
+# L'adaptateur lit la sortie .next (publish ci-dessus) et génère les fonctions
+# SSR/edge + les pages statiques pour le routing Next.js.
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
@@ -22,7 +24,7 @@
   # Empêche Netlify de réutiliser un node_modules en cache périmé.
   NETLIFY_USE_YARN = "false"
   # Cache-bust : changer cette valeur force un environnement d'install propre.
-  CACHE_BUST = "2026-06-03-c"
+  CACHE_BUST = "2026-06-03-d"
 
 # En-têtes de sécurité (ceux de next.config.js s'appliquent aussi)
 [[headers]]
