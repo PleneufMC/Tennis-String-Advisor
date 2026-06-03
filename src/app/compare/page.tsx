@@ -17,8 +17,6 @@ import {
   Zap,
   TrendingUp,
   Shield,
-  Star,
-  ChevronDown,
   Trash2,
   ArrowLeftRight
 } from 'lucide-react';

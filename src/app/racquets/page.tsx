@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useMemo, useCallback } from 'react';
-import { racquetsDatabase, TennisRacquet } from '@/data/racquets-database';
-import { RacquetCard, RacquetCardSkeleton } from '@/components/product/racquet-card';
+import { racquetsDatabase } from '@/data/racquets-database';
+import { RacquetCard } from '@/components/product/racquet-card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
