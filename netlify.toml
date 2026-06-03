@@ -4,13 +4,18 @@
 # définit PAS de "publish" — l'adaptateur s'en charge).
 
 [build]
-  command = "npm run build"
-  # Surcharge le réglage "public" figé dans l'UI Netlify : on publie le build Next.js
-  publish = ".next"
+  # Install propre et déterministe AVANT le build.
+  # Le cache Netlify réutilisait un node_modules périmé (issu d'une ancienne
+  # config avec @netlify/plugin-nextjs figé) -> "Cannot find module 'autoprefixer'".
+  # On purge node_modules et on réinstalle strictement depuis package-lock.json
+  # (npm ci) pour garantir que TOUTES les dépendances de build sont présentes.
+  command = "rm -rf node_modules && npm ci --legacy-peer-deps && npm run build"
+  # PAS de "publish" : l'adaptateur Next.js de Netlify (OpenNext) configure
+  # lui-même le répertoire de publication. Le forcer (.next ou public) casse
+  # le routing (toutes les routes en 404).
 
 [build.environment]
   NODE_VERSION = "20"
-  NPM_FLAGS = "--legacy-peer-deps"
 
 # En-têtes de sécurité (ceux de next.config.js s'appliquent aussi)
 [[headers]]
