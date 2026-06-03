@@ -1,6 +1,10 @@
 import type { Metadata, Viewport } from 'next';
 import { Header, Footer } from '@/components/layout';
+import { AppProviders } from '@/components/providers/app-providers';
 import './globals.css';
+
+// Script anti-flash : applique le thème (clair/sombre) avant le premier paint.
+const themeInitScript = `(function(){try{var k='tennis-advisor-theme';var t=localStorage.getItem(k)||'system';var m=window.matchMedia('(prefers-color-scheme: dark)').matches;var d=(t==='dark')||(t==='system'&&m);var r=document.documentElement;r.classList.remove('light','dark');r.classList.add(d?'dark':'light');var l=localStorage.getItem('tennis-advisor-locale');if(l){r.lang=l;}}catch(e){}})();`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://tennisstringadvisor.org'),
@@ -77,7 +81,7 @@ export const metadata: Metadata = {
     ],
     apple: [{ url: '/apple-touch-icon.png' }],
   },
-  manifest: '/manifest.json',
+  manifest: '/manifest.webmanifest',
 };
 
 export const viewport: Viewport = {
@@ -98,6 +102,8 @@ export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="fr" suppressHydrationWarning>
       <head>
+        {/* Anti-flash thème : doit s'exécuter avant le rendu */}
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         {/* Structured data for SEO */}
         <script
           type="application/ld+json"
@@ -120,23 +126,25 @@ export default function RootLayout({ children }: RootLayoutProps) {
           }}
         />
       </head>
-      <body className="antialiased font-sans">
-        {/* Skip to main content for accessibility */}
-        <a
-          href="#main-content"
-          className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-4 focus:bg-white focus:text-green-700"
-        >
-          Aller au contenu principal
-        </a>
-        
-        {/* Main application */}
-        <div className="flex min-h-screen flex-col">
-          <Header />
-          <main id="main-content" className="flex-1">
-            {children}
-          </main>
-          <Footer />
-        </div>
+      <body className="antialiased font-sans bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors">
+        <AppProviders>
+          {/* Skip to main content for accessibility */}
+          <a
+            href="#main-content"
+            className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-4 focus:bg-white focus:text-green-700"
+          >
+            Aller au contenu principal
+          </a>
+
+          {/* Main application */}
+          <div className="flex min-h-screen flex-col">
+            <Header />
+            <main id="main-content" className="flex-1">
+              {children}
+            </main>
+            <Footer />
+          </div>
+        </AppProviders>
       </body>
     </html>
   );
