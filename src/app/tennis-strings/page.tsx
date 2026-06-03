@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useMemo, useCallback } from 'react';
-import { stringsDatabase, TennisString } from '@/data/strings-database';
-import { StringCard, StringCardSkeleton } from '@/components/product/string-card';
+import { stringsDatabase } from '@/data/strings-database';
+import { StringCard } from '@/components/product/string-card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';

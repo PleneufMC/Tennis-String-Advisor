@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { 
   Scale, 
-  Ruler, 
   Zap, 
   Target, 
   TrendingUp, 
