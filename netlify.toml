@@ -5,7 +5,7 @@
   # Le cache Netlify réutilisait un node_modules périmé -> "Cannot find module
   # 'autoprefixer'". On purge node_modules et on réinstalle strictement depuis
   # package-lock.json (npm ci) pour garantir toutes les deps de build.
-  command = "rm -rf node_modules && npm ci --legacy-peer-deps && npm run build"
+  command = "rm -rf node_modules .next && npm ci --legacy-peer-deps && node -e \"require.resolve('autoprefixer'); console.log('autoprefixer OK')\" && npm run build"
   # PAS de "publish" ici : l'adaptateur Next.js ci-dessous configure lui-même
   # le répertoire de publication (et le surcharge par rapport au réglage UI).
 
@@ -19,6 +19,10 @@
 
 [build.environment]
   NODE_VERSION = "20"
+  # Empêche Netlify de réutiliser un node_modules en cache périmé.
+  NETLIFY_USE_YARN = "false"
+  # Cache-bust : changer cette valeur force un environnement d'install propre.
+  CACHE_BUST = "2026-06-03-c"
 
 # En-têtes de sécurité (ceux de next.config.js s'appliquent aussi)
 [[headers]]
