@@ -4,19 +4,22 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import { useLanguage, type TranslationKey } from '@/lib/i18n';
+import { ThemeToggle } from './theme-toggle';
+import { LanguageToggle } from './language-toggle';
 
-// Navigation items
-const navigation = [
-  { name: 'Accueil', href: '/' },
-  { name: 'Configurateur', href: '/configurator' },
-  { name: 'Raquettes', href: '/racquets' },
-  { name: 'Cordages', href: '/tennis-strings' },
-  { name: 'Comparateur', href: '/compare' },
+// Navigation items (libellés via clés i18n)
+const navigation: { key: TranslationKey; href: string }[] = [
+  { key: 'nav.home', href: '/' },
+  { key: 'nav.configurator', href: '/configurator' },
+  { key: 'nav.racquets', href: '/racquets' },
+  { key: 'nav.strings', href: '/tennis-strings' },
+  { key: 'nav.compare', href: '/compare' },
 ];
 
-const secondaryNavigation = [
-  { name: 'Guides', href: '/guides' },
-  { name: 'FAQ', href: '/faq' },
+const secondaryNavigation: { key: TranslationKey; href: string }[] = [
+  { key: 'nav.guides', href: '/guides' },
+  { key: 'nav.faq', href: '/faq' },
 ];
 
 // Icons
@@ -85,6 +88,7 @@ function SparklesIcon({ className }: { className?: string }) {
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
+  const { t } = useLanguage();
 
   const isActive = (href: string) => {
     if (href === '/') return pathname === '/';
@@ -92,7 +96,7 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
+    <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 dark:border-slate-800 dark:bg-slate-950/95 dark:supports-[backdrop-filter]:bg-slate-950/80">
       <nav className="container-tennis" aria-label="Navigation principale">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
@@ -102,8 +106,8 @@ export function Header() {
                 <TennisIcon className="w-6 h-6 text-white" />
               </div>
               <div className="hidden sm:block">
-                <span className="text-lg font-bold text-gray-900">Tennis String</span>
-                <span className="text-lg font-bold text-green-600"> Advisor</span>
+                <span className="text-lg font-bold text-gray-900 dark:text-white">Tennis String</span>
+                <span className="text-lg font-bold text-green-600 dark:text-tennis-green-400"> Advisor</span>
               </div>
             </Link>
           </div>
@@ -112,54 +116,58 @@ export function Header() {
           <div className="hidden lg:flex lg:items-center lg:gap-x-1">
             {navigation.map((item) => (
               <Link
-                key={item.name}
+                key={item.key}
                 href={item.href}
                 className={cn(
                   'px-4 py-2 text-sm font-medium rounded-lg transition-colors',
                   isActive(item.href)
-                    ? 'bg-green-100 text-green-700'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                    ? 'bg-green-100 text-green-700 dark:bg-tennis-green-500/15 dark:text-tennis-green-400'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-800'
                 )}
               >
-                {item.name}
+                {t(item.key)}
               </Link>
             ))}
             
             {/* Separator */}
-            <div className="w-px h-6 bg-gray-200 mx-2" />
+            <div className="w-px h-6 bg-gray-200 mx-2 dark:bg-slate-700" />
             
             {secondaryNavigation.map((item) => (
               <Link
-                key={item.name}
+                key={item.key}
                 href={item.href}
                 className={cn(
                   'px-3 py-2 text-sm font-medium rounded-lg transition-colors',
                   isActive(item.href)
-                    ? 'text-green-700'
-                    : 'text-gray-500 hover:text-gray-700'
+                    ? 'text-green-700 dark:text-tennis-green-400'
+                    : 'text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-200'
                 )}
               >
-                {item.name}
+                {t(item.key)}
               </Link>
             ))}
           </div>
 
           {/* Right side - CTA & User */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            {/* Toggles langue + thème */}
+            <LanguageToggle />
+            <ThemeToggle />
+
             {/* Premium CTA - Hidden on mobile */}
             <Link
               href="/premium"
-              className="hidden md:inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-amber-700 bg-amber-100 rounded-lg hover:bg-amber-200 transition-colors"
+              className="hidden md:inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-amber-700 bg-amber-100 rounded-lg hover:bg-amber-200 transition-colors dark:bg-amber-400/15 dark:text-amber-300 dark:hover:bg-amber-400/25"
             >
               <SparklesIcon className="w-4 h-4" />
-              Premium
+              {t('nav.premium')}
             </Link>
 
             {/* User/Login button */}
             <Link
               href="/auth/signin"
-              className="inline-flex items-center justify-center w-10 h-10 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
-              aria-label="Se connecter"
+              className="inline-flex items-center justify-center w-10 h-10 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-800"
+              aria-label={t('nav.signin')}
             >
               <UserIcon className="w-5 h-5" />
             </Link>
@@ -167,10 +175,10 @@ export function Header() {
             {/* Mobile menu button */}
             <button
               type="button"
-              className="lg:hidden inline-flex items-center justify-center w-10 h-10 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+              className="lg:hidden inline-flex items-center justify-center w-10 h-10 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-800"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               aria-expanded={mobileMenuOpen}
-              aria-label="Ouvrir le menu"
+              aria-label={t('nav.openMenu')}
             >
               {mobileMenuOpen ? (
                 <CloseIcon className="w-6 h-6" />
@@ -183,62 +191,62 @@ export function Header() {
 
         {/* Mobile Navigation */}
         {mobileMenuOpen && (
-          <div className="lg:hidden border-t border-gray-200 py-4 animate-slide-down">
+          <div className="lg:hidden border-t border-gray-200 py-4 animate-slide-down dark:border-slate-800">
             <div className="space-y-1">
               {navigation.map((item) => (
                 <Link
-                  key={item.name}
+                  key={item.key}
                   href={item.href}
                   onClick={() => setMobileMenuOpen(false)}
                   className={cn(
                     'block px-4 py-3 text-base font-medium rounded-lg transition-colors',
                     isActive(item.href)
-                      ? 'bg-green-100 text-green-700'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                      ? 'bg-green-100 text-green-700 dark:bg-tennis-green-500/15 dark:text-tennis-green-400'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-800'
                   )}
                 >
-                  {item.name}
+                  {t(item.key)}
                 </Link>
               ))}
               
-              <div className="my-3 border-t border-gray-200" />
+              <div className="my-3 border-t border-gray-200 dark:border-slate-800" />
               
               {secondaryNavigation.map((item) => (
                 <Link
-                  key={item.name}
+                  key={item.key}
                   href={item.href}
                   onClick={() => setMobileMenuOpen(false)}
                   className={cn(
                     'block px-4 py-3 text-base font-medium rounded-lg transition-colors',
                     isActive(item.href)
-                      ? 'text-green-700'
-                      : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                      ? 'text-green-700 dark:text-tennis-green-400'
+                      : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-800'
                   )}
                 >
-                  {item.name}
+                  {t(item.key)}
                 </Link>
               ))}
               
-              <div className="my-3 border-t border-gray-200" />
+              <div className="my-3 border-t border-gray-200 dark:border-slate-800" />
               
               {/* Mobile Premium CTA */}
               <Link
                 href="/premium"
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center gap-2 px-4 py-3 text-base font-semibold text-amber-700 bg-amber-50 rounded-lg"
+                className="flex items-center gap-2 px-4 py-3 text-base font-semibold text-amber-700 bg-amber-50 rounded-lg dark:bg-amber-400/10 dark:text-amber-300"
               >
                 <SparklesIcon className="w-5 h-5" />
-                Découvrir Premium
+                {t('nav.discoverPremium')}
               </Link>
               
               {/* Mobile Sign In */}
               <Link
                 href="/auth/signin"
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center gap-2 px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg"
+                className="flex items-center gap-2 px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg dark:text-slate-200 dark:hover:bg-slate-800"
               >
                 <UserIcon className="w-5 h-5" />
-                Se connecter
+                {t('nav.signin')}
               </Link>
             </div>
           </div>

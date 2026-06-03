@@ -1,31 +1,34 @@
-import Link from 'next/link';
+'use client';
 
-// Footer navigation
+import Link from 'next/link';
+import { useLanguage, type TranslationKey } from '@/lib/i18n';
+
+// Footer navigation (labels are translation keys resolved at render time)
 const footerNavigation = {
   product: [
-    { name: 'Configurateur', href: '/configurator' },
-    { name: 'Raquettes', href: '/racquets' },
-    { name: 'Cordages', href: '/tennis-strings' },
-    { name: 'Comparateur', href: '/compare' },
-    { name: 'Recommandations', href: '/recommendations' },
+    { key: 'footer.link.configurator' as TranslationKey, href: '/configurator' },
+    { key: 'footer.link.racquets' as TranslationKey, href: '/racquets' },
+    { key: 'footer.link.strings' as TranslationKey, href: '/tennis-strings' },
+    { key: 'footer.link.compare' as TranslationKey, href: '/compare' },
+    { key: 'footer.link.recommendations' as TranslationKey, href: '/recommendations' },
   ],
   resources: [
-    { name: 'Guides', href: '/guides' },
-    { name: 'Blog', href: '/blog' },
-    { name: 'FAQ', href: '/faq' },
-    { name: 'Glossaire', href: '/glossary' },
+    { key: 'footer.link.guides' as TranslationKey, href: '/guides' },
+    { key: 'footer.link.blog' as TranslationKey, href: '/blog' },
+    { key: 'footer.link.faq' as TranslationKey, href: '/faq' },
+    { key: 'footer.link.glossary' as TranslationKey, href: '/glossary' },
   ],
   company: [
-    { name: 'À propos', href: '/about' },
-    { name: 'Contact', href: '/contact' },
-    { name: 'Presse', href: '/press' },
-    { name: 'Carrières', href: '/careers' },
+    { key: 'footer.link.about' as TranslationKey, href: '/about' },
+    { key: 'footer.link.contact' as TranslationKey, href: '/contact' },
+    { key: 'footer.link.press' as TranslationKey, href: '/press' },
+    { key: 'footer.link.careers' as TranslationKey, href: '/careers' },
   ],
   legal: [
-    { name: 'Confidentialité', href: '/privacy' },
-    { name: 'CGU', href: '/terms' },
-    { name: 'Cookies', href: '/cookies' },
-    { name: 'Mentions légales', href: '/legal' },
+    { key: 'footer.link.privacy' as TranslationKey, href: '/privacy' },
+    { key: 'footer.link.terms' as TranslationKey, href: '/terms' },
+    { key: 'footer.link.cookies' as TranslationKey, href: '/cookies' },
+    { key: 'footer.link.legal' as TranslationKey, href: '/legal' },
   ],
 };
 
@@ -101,10 +104,11 @@ function TennisIcon({ className }: { className?: string }) {
 }
 
 export function Footer() {
+  const { t } = useLanguage();
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-gray-900" aria-labelledby="footer-heading">
+    <footer className="bg-gray-900 dark:bg-slate-950 border-t border-transparent dark:border-slate-800" aria-labelledby="footer-heading">
       <h2 id="footer-heading" className="sr-only">
         Footer
       </h2>
@@ -123,7 +127,7 @@ export function Footer() {
               </div>
             </Link>
             <p className="text-sm leading-6 text-gray-400 max-w-xs">
-              Votre expert en cordages et raquettes de tennis. Trouvez l&apos;équipement parfait pour votre style de jeu.
+              {t('footer.tagline')}
             </p>
             
             {/* Social links */}
@@ -147,30 +151,30 @@ export function Footer() {
           <div className="mt-16 grid grid-cols-2 gap-8 xl:col-span-2 xl:mt-0">
             <div className="md:grid md:grid-cols-2 md:gap-8">
               <div>
-                <h3 className="text-sm font-semibold leading-6 text-white">Produits</h3>
+                <h3 className="text-sm font-semibold leading-6 text-white">{t('footer.col.product')}</h3>
                 <ul role="list" className="mt-6 space-y-4">
                   {footerNavigation.product.map((item) => (
-                    <li key={item.name}>
+                    <li key={item.href}>
                       <Link
                         href={item.href}
                         className="text-sm leading-6 text-gray-400 hover:text-white transition-colors"
                       >
-                        {item.name}
+                        {t(item.key)}
                       </Link>
                     </li>
                   ))}
                 </ul>
               </div>
               <div className="mt-10 md:mt-0">
-                <h3 className="text-sm font-semibold leading-6 text-white">Ressources</h3>
+                <h3 className="text-sm font-semibold leading-6 text-white">{t('footer.col.resources')}</h3>
                 <ul role="list" className="mt-6 space-y-4">
                   {footerNavigation.resources.map((item) => (
-                    <li key={item.name}>
+                    <li key={item.href}>
                       <Link
                         href={item.href}
                         className="text-sm leading-6 text-gray-400 hover:text-white transition-colors"
                       >
-                        {item.name}
+                        {t(item.key)}
                       </Link>
                     </li>
                   ))}
@@ -179,30 +183,30 @@ export function Footer() {
             </div>
             <div className="md:grid md:grid-cols-2 md:gap-8">
               <div>
-                <h3 className="text-sm font-semibold leading-6 text-white">Entreprise</h3>
+                <h3 className="text-sm font-semibold leading-6 text-white">{t('footer.col.company')}</h3>
                 <ul role="list" className="mt-6 space-y-4">
                   {footerNavigation.company.map((item) => (
-                    <li key={item.name}>
+                    <li key={item.href}>
                       <Link
                         href={item.href}
                         className="text-sm leading-6 text-gray-400 hover:text-white transition-colors"
                       >
-                        {item.name}
+                        {t(item.key)}
                       </Link>
                     </li>
                   ))}
                 </ul>
               </div>
               <div className="mt-10 md:mt-0">
-                <h3 className="text-sm font-semibold leading-6 text-white">Légal</h3>
+                <h3 className="text-sm font-semibold leading-6 text-white">{t('footer.col.legal')}</h3>
                 <ul role="list" className="mt-6 space-y-4">
                   {footerNavigation.legal.map((item) => (
-                    <li key={item.name}>
+                    <li key={item.href}>
                       <Link
                         href={item.href}
                         className="text-sm leading-6 text-gray-400 hover:text-white transition-colors"
                       >
-                        {item.name}
+                        {t(item.key)}
                       </Link>
                     </li>
                   ))}
@@ -217,15 +221,15 @@ export function Footer() {
           <div className="md:flex md:items-center md:justify-between">
             <div className="max-w-md">
               <h3 className="text-sm font-semibold leading-6 text-white">
-                Inscrivez-vous à notre newsletter
+                {t('footer.newsletter.title')}
               </h3>
               <p className="mt-2 text-sm leading-6 text-gray-400">
-                Recevez les dernières actualités tennis, guides et offres exclusives.
+                {t('footer.newsletter.desc')}
               </p>
             </div>
             <form className="mt-6 sm:flex sm:max-w-md md:mt-0">
               <label htmlFor="email-address" className="sr-only">
-                Adresse email
+                {t('footer.newsletter.emailLabel')}
               </label>
               <input
                 type="email"
@@ -234,14 +238,14 @@ export function Footer() {
                 autoComplete="email"
                 required
                 className="w-full min-w-0 appearance-none rounded-lg border-0 bg-white/5 px-3 py-2 text-base text-white shadow-sm ring-1 ring-inset ring-white/10 placeholder:text-gray-500 focus:ring-2 focus:ring-inset focus:ring-green-500 sm:w-64 sm:text-sm sm:leading-6 xl:w-full"
-                placeholder="Votre email"
+                placeholder={t('footer.newsletter.placeholder')}
               />
               <div className="mt-4 sm:ml-4 sm:mt-0 sm:flex-shrink-0">
                 <button
                   type="submit"
                   className="flex w-full items-center justify-center rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-500 transition-colors"
                 >
-                  S&apos;inscrire
+                  {t('footer.newsletter.submit')}
                 </button>
               </div>
             </form>
@@ -251,10 +255,10 @@ export function Footer() {
         {/* Bottom bar */}
         <div className="mt-8 border-t border-gray-800 pt-8 md:flex md:items-center md:justify-between">
           <p className="text-xs leading-5 text-gray-500">
-            &copy; {currentYear} Tennis String Advisor. Tous droits réservés.
+            &copy; {currentYear} Tennis String Advisor. {t('footer.rights')}
           </p>
           <p className="mt-4 text-xs leading-5 text-gray-500 md:mt-0">
-            Fait avec ❤️ pour la communauté tennis
+            {t('footer.madeWith')}
           </p>
         </div>
       </div>
