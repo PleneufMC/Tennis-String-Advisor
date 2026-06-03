@@ -5,6 +5,8 @@
 
 [build]
   command = "npm run build"
+  # Surcharge le réglage "public" figé dans l'UI Netlify : on publie le build Next.js
+  publish = ".next"
 
 [build.environment]
   NODE_VERSION = "20"
