@@ -1,18 +1,21 @@
 # Netlify configuration — Next.js (App Router, SSR)
-# Netlify détecte Next.js automatiquement et provisionne l'adaptateur OpenNext
-# (zéro config recommandée par Netlify : on NE fige PAS l'adaptateur, on NE
-# définit PAS de "publish" — l'adaptateur s'en charge).
 
 [build]
   # Install propre et déterministe AVANT le build.
-  # Le cache Netlify réutilisait un node_modules périmé (issu d'une ancienne
-  # config avec @netlify/plugin-nextjs figé) -> "Cannot find module 'autoprefixer'".
-  # On purge node_modules et on réinstalle strictement depuis package-lock.json
-  # (npm ci) pour garantir que TOUTES les dépendances de build sont présentes.
+  # Le cache Netlify réutilisait un node_modules périmé -> "Cannot find module
+  # 'autoprefixer'". On purge node_modules et on réinstalle strictement depuis
+  # package-lock.json (npm ci) pour garantir toutes les deps de build.
   command = "rm -rf node_modules && npm ci --legacy-peer-deps && npm run build"
-  # PAS de "publish" : l'adaptateur Next.js de Netlify (OpenNext) configure
-  # lui-même le répertoire de publication. Le forcer (.next ou public) casse
-  # le routing (toutes les routes en 404).
+  # PAS de "publish" ici : l'adaptateur Next.js ci-dessous configure lui-même
+  # le répertoire de publication (et le surcharge par rapport au réglage UI).
+
+# Active explicitement l'adaptateur Next.js de Netlify (OpenNext).
+# Indispensable : sans cette déclaration, l'adaptateur ne s'exécutait pas, et
+# Netlify publiait le dossier public/ (vide depuis la suppression des HTML
+# statiques) -> 404 sur toutes les routes. Le déclarer ici force Netlify à
+# l'installer + l'exécuter et à surcharger le "publish: public" figé dans l'UI.
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
 
 [build.environment]
   NODE_VERSION = "20"
