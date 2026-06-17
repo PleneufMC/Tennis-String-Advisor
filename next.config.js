@@ -95,6 +95,36 @@ const nextConfig = {
         destination: '/racquets',
         permanent: true,
       },
+      // --- 301 : anciennes URL `.html` du site statique historique vers les
+      // routes Next réelles. Filet de sécurité SEO : ces URL sont déjà
+      // indexées (Bing/Google) et présentes dans des liens externes/sitemap.
+      // On préserve l'autorité en redirigeant au lieu de servir des 404.
+      // (cf. Audit v1.1 §1.1 / §1.2)
+      { source: '/configurator.html', destination: '/configurator', permanent: true },
+      { source: '/rcs-calculator.html', destination: '/configurator', permanent: true },
+      { source: '/rcs.html', destination: '/configurator', permanent: true },
+      { source: '/strings.html', destination: '/tennis-strings', permanent: true },
+      { source: '/cordages.html', destination: '/tennis-strings', permanent: true },
+      { source: '/racquets.html', destination: '/racquets', permanent: true },
+      { source: '/raquettes.html', destination: '/racquets', permanent: true },
+      { source: '/compare.html', destination: '/compare', permanent: true },
+      { source: '/comparateur.html', destination: '/compare', permanent: true },
+      { source: '/setups.html', destination: '/configurator', permanent: true },
+      { source: '/premium.html', destination: '/pricing', permanent: true },
+      { source: '/index.html', destination: '/', permanent: true },
+      // Auth/compte désactivés (cf. Audit §3.2) -> home en attendant réactivation.
+      { source: '/auth.html', destination: '/', permanent: true },
+      { source: '/account.html', destination: '/', permanent: true },
+      { source: '/journal-cordage.html', destination: '/', permanent: true },
+      // Pages légales non encore implémentées -> home (à remplacer par de
+      // vraies pages /cgu, /confidentialite quand elles existeront).
+      { source: '/cgu.html', destination: '/', permanent: true },
+      { source: '/confidentialite.html', destination: '/', permanent: true },
+      { source: '/privacy.html', destination: '/', permanent: true },
+      { source: '/faq.html', destination: '/', permanent: true },
+      // Pages de test résiduelles (cf. Audit §4.5) -> home, pour ne plus les exposer.
+      { source: '/configurator-fixed.html', destination: '/configurator', permanent: true },
+      { source: '/configurator-radio.html', destination: '/configurator', permanent: true },
       // Redirect old Expo routes if any
       {
         source: '/expo-router/:path*',
@@ -104,19 +134,11 @@ const nextConfig = {
     ];
   },
 
-  // Rewrites for API and static content
-  async rewrites() {
-    return [
-      {
-        source: '/robots.txt',
-        destination: '/api/robots',
-      },
-      {
-        source: '/sitemap.xml',
-        destination: '/api/sitemap',
-      },
-    ];
-  },
+  // NB : plus aucun rewrite vers /api/sitemap ni /api/robots.
+  // Ces routes API n'existaient pas -> /sitemap.xml et /robots.txt étaient
+  // cassés (cf. Audit v1.1 §1.2). Désormais :
+  //  - /sitemap.xml est généré nativement par `src/app/sitemap.ts`
+  //  - /robots.txt est servi par le fichier statique `public/robots.txt`
 
   // Experimental features for better performance
   experimental: {
