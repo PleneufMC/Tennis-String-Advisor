@@ -100,6 +100,13 @@ const nextConfig = {
       // indexées (Bing/Google) et présentes dans des liens externes/sitemap.
       // On préserve l'autorité en redirigeant au lieu de servir des 404.
       // (cf. Audit v1.1 §1.1 / §1.2)
+      // Liens de navigation de l'app vers des routes inexistantes (404 en
+      // prod). On redirige vers la cible réelle pour ne plus exposer de 404
+      // et préserver d'éventuels partages/indexations.
+      { source: '/premium', destination: '/pricing', permanent: true },
+      { source: '/guides', destination: '/blog/', permanent: true },
+      { source: '/recommendations', destination: '/configurator', permanent: true },
+      // --- 301 : anciennes URL `.html` ---
       { source: '/configurator.html', destination: '/configurator', permanent: true },
       { source: '/rcs-calculator.html', destination: '/configurator', permanent: true },
       { source: '/rcs.html', destination: '/configurator', permanent: true },

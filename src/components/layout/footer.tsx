@@ -4,31 +4,33 @@ import Link from 'next/link';
 import { useLanguage, type TranslationKey } from '@/lib/i18n';
 
 // Footer navigation (labels are translation keys resolved at render time)
+//
+// Règle (cf. Audit v1.1 §1.1/§1.2) : on ne référence QUE des liens qui
+// résolvent réellement, pour ne plus exposer de 404.
+//  - Routes Next réelles : /configurator, /racquets, /tennis-strings, /compare,
+//    /pricing, /statistics.
+//  - "Recommandations" -> /configurator (la reco RCS s'y trouve).
+//  - "Guides" -> /blog/ (les guides vivent dans le blog statique).
+//
+// Liens RETIRÉS car les pages n'existent pas encore : /faq, /glossary,
+// /about, /contact, /press, /careers (colonne "company"), et les pages
+// légales /privacy, /terms, /cookies, /legal.
+// ⚠️ Les pages légales (confidentialité / CGU / cookies) DOIVENT être
+// recréées et réintégrées ici — prérequis RGPD (cf. Audit §0.4), surtout
+// avant la pose de cookies tiers d'affiliation.
 const footerNavigation = {
   product: [
     { key: 'footer.link.configurator' as TranslationKey, href: '/configurator' },
     { key: 'footer.link.racquets' as TranslationKey, href: '/racquets' },
     { key: 'footer.link.strings' as TranslationKey, href: '/tennis-strings' },
     { key: 'footer.link.compare' as TranslationKey, href: '/compare' },
-    { key: 'footer.link.recommendations' as TranslationKey, href: '/recommendations' },
+    { key: 'footer.link.recommendations' as TranslationKey, href: '/configurator' },
   ],
   resources: [
-    { key: 'footer.link.guides' as TranslationKey, href: '/guides' },
-    { key: 'footer.link.blog' as TranslationKey, href: '/blog' },
-    { key: 'footer.link.faq' as TranslationKey, href: '/faq' },
-    { key: 'footer.link.glossary' as TranslationKey, href: '/glossary' },
-  ],
-  company: [
-    { key: 'footer.link.about' as TranslationKey, href: '/about' },
-    { key: 'footer.link.contact' as TranslationKey, href: '/contact' },
-    { key: 'footer.link.press' as TranslationKey, href: '/press' },
-    { key: 'footer.link.careers' as TranslationKey, href: '/careers' },
-  ],
-  legal: [
-    { key: 'footer.link.privacy' as TranslationKey, href: '/privacy' },
-    { key: 'footer.link.terms' as TranslationKey, href: '/terms' },
-    { key: 'footer.link.cookies' as TranslationKey, href: '/cookies' },
-    { key: 'footer.link.legal' as TranslationKey, href: '/legal' },
+    { key: 'footer.link.guides' as TranslationKey, href: '/blog/' },
+    { key: 'footer.link.blog' as TranslationKey, href: '/blog/' },
+    { key: 'footer.link.pricing' as TranslationKey, href: '/pricing' },
+    { key: 'footer.link.statistics' as TranslationKey, href: '/statistics' },
   ],
 };
 
@@ -169,38 +171,6 @@ export function Footer() {
                 <h3 className="text-sm font-semibold leading-6 text-white">{t('footer.col.resources')}</h3>
                 <ul role="list" className="mt-6 space-y-4">
                   {footerNavigation.resources.map((item) => (
-                    <li key={item.href}>
-                      <Link
-                        href={item.href}
-                        className="text-sm leading-6 text-gray-400 hover:text-white transition-colors"
-                      >
-                        {t(item.key)}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-            <div className="md:grid md:grid-cols-2 md:gap-8">
-              <div>
-                <h3 className="text-sm font-semibold leading-6 text-white">{t('footer.col.company')}</h3>
-                <ul role="list" className="mt-6 space-y-4">
-                  {footerNavigation.company.map((item) => (
-                    <li key={item.href}>
-                      <Link
-                        href={item.href}
-                        className="text-sm leading-6 text-gray-400 hover:text-white transition-colors"
-                      >
-                        {t(item.key)}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="mt-10 md:mt-0">
-                <h3 className="text-sm font-semibold leading-6 text-white">{t('footer.col.legal')}</h3>
-                <ul role="list" className="mt-6 space-y-4">
-                  {footerNavigation.legal.map((item) => (
                     <li key={item.href}>
                       <Link
                         href={item.href}
