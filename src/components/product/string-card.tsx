@@ -6,6 +6,7 @@ import { TennisString } from '@/data/strings-database';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { BuyButton } from '@/components/product/buy-button';
 import { cn } from '@/lib/utils';
 import { 
   Target, 
@@ -239,6 +240,15 @@ export function StringCard({
             </Link>
           )}
         </div>
+
+        {/* Affiliate CTA — « Où acheter » (Audit #3.0) */}
+        {showActions && (
+          <BuyButton
+            brand={string.brand}
+            model={string.model}
+            className="w-full mt-3"
+          />
+        )}
       </CardContent>
     </Card>
   );

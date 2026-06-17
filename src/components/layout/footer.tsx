@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useLanguage, type TranslationKey } from '@/lib/i18n';
+import { AffiliateDisclosure } from '@/components/product/affiliate-disclosure';
 
 // Footer navigation (labels are translation keys resolved at render time)
 //
@@ -222,8 +223,13 @@ export function Footer() {
           </div>
         </div>
 
+        {/* Affiliate disclosure (Audit #3.0) */}
+        <div className="mt-8 border-t border-gray-800 pt-8">
+          <AffiliateDisclosure className="text-gray-500 max-w-3xl" />
+        </div>
+
         {/* Bottom bar */}
-        <div className="mt-8 border-t border-gray-800 pt-8 md:flex md:items-center md:justify-between">
+        <div className="mt-6 md:flex md:items-center md:justify-between">
           <p className="text-xs leading-5 text-gray-500">
             &copy; {currentYear} Tennis String Advisor. {t('footer.rights')}
           </p>
