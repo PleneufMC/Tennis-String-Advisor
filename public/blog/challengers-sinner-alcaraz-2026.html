@@ -53,14 +53,47 @@
   <script src="/js/analytics.js"></script>
   
   <style>
-    .article-content h2 { @apply text-2xl font-bold text-gray-900 mt-10 mb-4 pb-2 border-b border-gray-200; }
-    .article-content h3 { @apply text-xl font-semibold text-gray-800 mt-8 mb-3; }
-    .article-content p { @apply text-gray-700 leading-relaxed mb-4; }
-    .article-content blockquote { @apply border-l-4 border-green-500 pl-4 italic text-gray-600 my-6; }
-    .article-content ul, .article-content ol { @apply my-4 ml-6; }
-    .article-content li { @apply mb-2 text-gray-700; }
-    .player-card { @apply bg-white rounded-xl border border-gray-200 p-6 mb-6 hover:shadow-lg transition; }
-    .stat-badge { @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium; }
+    /* CSS standard : le CDN Tailwind runtime ne compile pas les directives utilitaires en bloc style. */
+    .prose { font-size: 1.0625rem; line-height: 1.75; color: #374151; }
+    .prose h2 { font-size: 1.75rem; line-height: 1.25; font-weight: 700; color: #111827; margin-top: 2.75rem; margin-bottom: 1rem; scroll-margin-top: 5rem; }
+    .prose h3 { font-size: 1.3125rem; line-height: 1.35; font-weight: 600; color: #1f2937; margin-top: 2rem; margin-bottom: 0.75rem; scroll-margin-top: 5rem; }
+    .prose p { color: #374151; line-height: 1.8; margin-bottom: 1.25rem; }
+    .prose ul { list-style: disc; padding-left: 1.5rem; margin-bottom: 1.5rem; }
+    .prose ol { list-style: decimal; padding-left: 1.5rem; margin-bottom: 1.5rem; }
+    .prose li { color: #374151; margin-bottom: 0.5rem; line-height: 1.7; }
+    .prose strong { font-weight: 600; color: #111827; }
+    .prose a { color: #059669; text-decoration: underline; text-underline-offset: 2px; }
+    .prose a:hover { color: #047857; }
+    .prose em { font-style: italic; }
+    .prose sup { font-size: 0.7em; vertical-align: super; }
+    .prose table { width: 100%; border-collapse: collapse; margin: 1.5rem 0 2rem; font-size: 0.95rem; }
+    .prose thead th { background-color: #059669; color: #fff; font-weight: 600; padding: 0.75rem 1rem; text-align: left; }
+    .prose tbody td { border-bottom: 1px solid #e5e7eb; padding: 0.75rem 1rem; vertical-align: top; }
+    .prose tbody tr:nth-child(even) { background-color: #f9fafb; }
+    .prose tbody tr:hover { background-color: #ecfdf5; }
+    .expert-box { background-color: #fffbeb; border-left: 4px solid #f59e0b; padding: 1.25rem 1.5rem; margin: 1.75rem 0; border-radius: 0 0.5rem 0.5rem 0; }
+    .expert-box p { margin-bottom: 0; }
+    .product-card { background-color: #fff; border-radius: 0.75rem; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1); padding: 1.5rem; margin-bottom: 2rem; border: 1px solid #f3f4f6; }
+    .trend-badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; margin-right: 0.5rem; }
+    .player-card { background-color: #fff; border-radius: 0.75rem; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1); padding: 1.5rem; margin-bottom: 2rem; border: 1px solid #f3f4f6; }
+    .stat-badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; margin-right: 0.5rem; background-color: #f3f4f6; color: #374151; }
+
+    /* Dark mode */
+    html.dark .prose,
+    html.dark .prose p,
+    html.dark .prose li { color: #d1d5db; }
+    html.dark .prose h2,
+    html.dark .prose h3,
+    html.dark .prose strong { color: #f9fafb; }
+    html.dark .prose a { color: #6ee7b7; }
+    html.dark .prose a:hover { color: #a7f3d0; }
+    html.dark .prose tbody td { border-bottom-color: #374151; }
+    html.dark .prose tbody tr:nth-child(even) { background-color: #1f2937; }
+    html.dark .prose tbody tr:hover { background-color: #064e3b; }
+    html.dark .expert-box { background-color: rgba(120,53,15,0.25); border-left-color: #f59e0b; }
+    html.dark .product-card,
+    html.dark .player-card { background-color: #1f2937; border-color: #374151; }
+    html.dark .stat-badge { background-color: #374151; color: #e5e7eb; }
   </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
