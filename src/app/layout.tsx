@@ -9,11 +9,31 @@ import './globals.css';
 // fallback sur l'ID historique du site (cf. public/js/analytics.js).
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_ID || 'G-YSSLHJ5WYD';
 
+// URL canonique du site (production). Sert de base aux balises Open Graph /
+// Twitter (og:image, twitter:image, etc.).
+const CANONICAL_SITE_URL = 'https://tennisstringadvisor.org';
+
+// Résout l'URL de base de manière robuste (cf. Audit #2.1).
+// Bug historique : NEXT_PUBLIC_APP_URL="http://localhost:3000" (héritée de
+// .env.example) était utilisée telle quelle en prod, produisant des
+// og:image/twitter:image pointant vers localhost → previews de partage cassées.
+// Règle : on n'utilise NEXT_PUBLIC_APP_URL que si elle est définie ET qu'elle
+// ne pointe pas vers localhost / 127.0.0.1 ; sinon on retombe sur l'URL canonique.
+function resolveSiteUrl(): string {
+  const envUrl = process.env.NEXT_PUBLIC_APP_URL?.trim();
+  if (envUrl && !/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/i.test(envUrl)) {
+    return envUrl;
+  }
+  return CANONICAL_SITE_URL;
+}
+
+const SITE_URL = resolveSiteUrl();
+
 // Script anti-flash : applique le thème (clair/sombre) avant le premier paint.
 const themeInitScript = `(function(){try{var k='tennis-advisor-theme';var t=localStorage.getItem(k)||'system';var m=window.matchMedia('(prefers-color-scheme: dark)').matches;var d=(t==='dark')||(t==='system'&&m);var r=document.documentElement;r.classList.remove('light','dark');r.classList.add(d?'dark':'light');var l=localStorage.getItem('tennis-advisor-locale');if(l){r.lang=l;}}catch(e){}})();`;
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://tennisstringadvisor.org'),
+  metadataBase: new URL(SITE_URL),
   title: {
     default: 'Tennis String Advisor - Expert en Cordages et Raquettes de Tennis',
     template: '%s | Tennis String Advisor',
@@ -49,7 +69,7 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'fr_FR',
     alternateLocale: 'en_US',
-    url: 'https://tennisstringadvisor.org',
+    url: SITE_URL,
     siteName: 'Tennis String Advisor',
     title: 'Tennis String Advisor - Expert en Cordages et Raquettes',
     description:
