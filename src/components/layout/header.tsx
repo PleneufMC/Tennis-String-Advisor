@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { useLanguage, type TranslationKey } from '@/lib/i18n';
 import { ThemeToggle } from './theme-toggle';
 import { LanguageToggle } from './language-toggle';
+import { trackPremiumCtaClick } from '@/components/analytics/analytics';
 
 // Navigation items (libellés via clés i18n)
 const navigation: { key: TranslationKey; href: string }[] = [
@@ -149,6 +150,7 @@ export function Header() {
             {/* Premium CTA - Hidden on mobile */}
             <Link
               href="/pricing"
+              onClick={() => trackPremiumCtaClick('header_desktop')}
               className="hidden md:inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-amber-700 bg-amber-100 rounded-lg hover:bg-amber-200 transition-colors dark:bg-amber-400/15 dark:text-amber-300 dark:hover:bg-amber-400/25"
             >
               <SparklesIcon className="w-4 h-4" />
@@ -219,7 +221,10 @@ export function Header() {
               {/* Mobile Premium CTA */}
               <Link
                 href="/pricing"
-                onClick={() => setMobileMenuOpen(false)}
+                onClick={() => {
+                  trackPremiumCtaClick('header_mobile');
+                  setMobileMenuOpen(false);
+                }}
                 className="flex items-center gap-2 px-4 py-3 text-base font-semibold text-amber-700 bg-amber-50 rounded-lg dark:bg-amber-400/10 dark:text-amber-300"
               >
                 <SparklesIcon className="w-5 h-5" />

@@ -1,7 +1,13 @@
 import type { Metadata, Viewport } from 'next';
+import Script from 'next/script';
 import { Header, Footer } from '@/components/layout';
 import { AppProviders } from '@/components/providers/app-providers';
+import { Analytics } from '@/components/analytics/analytics';
 import './globals.css';
+
+// ID de mesure GA4. Surchargé par NEXT_PUBLIC_GA_ID en prod ;
+// fallback sur l'ID historique du site (cf. public/js/analytics.js).
+const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_ID || 'G-YSSLHJ5WYD';
 
 // Script anti-flash : applique le thème (clair/sombre) avant le premier paint.
 const themeInitScript = `(function(){try{var k='tennis-advisor-theme';var t=localStorage.getItem(k)||'system';var m=window.matchMedia('(prefers-color-scheme: dark)').matches;var d=(t==='dark')||(t==='system'&&m);var r=document.documentElement;r.classList.remove('light','dark');r.classList.add(d?'dark':'light');var l=localStorage.getItem('tennis-advisor-locale');if(l){r.lang=l;}}catch(e){}})();`;
@@ -127,6 +133,25 @@ export default function RootLayout({ children }: RootLayoutProps) {
         />
       </head>
       <body className="antialiased font-sans bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors">
+        {/* Google Analytics 4 — chargé après l'hydratation (perf), IP anonymisée (RGPD). */}
+        {GA_MEASUREMENT_ID && (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+              strategy="afterInteractive"
+            />
+            <Script id="ga4-init" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${GA_MEASUREMENT_ID}', { anonymize_ip: true });
+              `}
+            </Script>
+            <Analytics measurementId={GA_MEASUREMENT_ID} />
+          </>
+        )}
+
         <AppProviders>
           {/* Skip to main content for accessibility */}
           <a
