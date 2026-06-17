@@ -45,6 +45,7 @@ const BLOG_SLUGS: string[] = [
   'nouveautes-equipement-tennis-2025-2026.html',
   'cordage-terre-battue.html',
   'challengers-sinner-alcaraz-2026.html',
+  'actualite-materiel-tennis-2026-guerre-du-spin.html',
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
