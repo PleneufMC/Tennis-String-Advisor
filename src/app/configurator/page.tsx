@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { stringsDatabase, calculateRCS, getStringRecommendation } from '@/data/strings-database';
 import { racquetsDatabase, calculateCompatibility } from '@/data/racquets-database';
 import { ConfigurationStorage, SavedConfiguration } from '@/lib/storage';
+import { trackConfiguratorComplete } from '@/components/analytics/analytics';
 
 export default function ConfiguratorPage() {
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
@@ -104,6 +105,33 @@ export default function ConfiguratorPage() {
       compatibility
     };
   }, [selectedRacquet, selectedMainString, selectedCrossString, formData.mainTension, formData.crossTension]);
+
+  // GA4 : émettre `configurator_complete` quand une reco RCS valide est produite.
+  // Dédupliqué par combinaison (raquette + cordages + tensions) pour ne pas
+  // spammer l'event à chaque interaction sur une même configuration.
+  const lastTrackedConfig = useRef<string | null>(null);
+  useEffect(() => {
+    if (!rcsData || !selectedRacquet || !selectedMainString) return;
+    const signature = [
+      formData.racquet,
+      formData.mainString,
+      formData.crossString,
+      formData.mainTension,
+      formData.crossTension,
+    ].join('|');
+    if (lastTrackedConfig.current === signature) return;
+    lastTrackedConfig.current = signature;
+    trackConfiguratorComplete(rcsData.avgRCS, rcsData.compatibility);
+  }, [
+    rcsData,
+    selectedRacquet,
+    selectedMainString,
+    formData.racquet,
+    formData.mainString,
+    formData.crossString,
+    formData.mainTension,
+    formData.crossTension,
+  ]);
 
   // Filtered lists based on search
   const filteredRacquets = useMemo(() => {

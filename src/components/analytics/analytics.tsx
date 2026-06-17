@@ -81,3 +81,32 @@ export const trackSignUp = (method: string) => {
 export const trackLogin = (method: string) => {
   trackEvent('login', 'engagement', method);
 };
+
+// --- Events du funnel (nomenclature GA4 de l'audit #0.3) ---------------------
+// Envoi bas-niveau d'un event GA4 avec des paramètres nommés (recommandé GA4),
+// plutôt que la convention event_category/label de l'ancien helper.
+const gaEvent = (name: string, params: Record<string, unknown> = {}) => {
+  if (typeof window !== 'undefined' && window.gtag) {
+    window.gtag('event', name, params);
+  }
+};
+
+// Recommandation RCS calculée / configurateur complété.
+// À marquer comme « key event » (conversion) dans GA4.
+export const trackConfiguratorComplete = (rcsScore: number, compatibility?: number) => {
+  gaEvent('configurator_complete', {
+    rcs_score: Math.round(rcsScore),
+    compatibility: compatibility !== undefined ? Math.round(compatibility) : undefined,
+  });
+};
+
+// Clic sur un lien d'affiliation « où acheter » (cf. ticket #3 / audit #3.0).
+// À marquer comme « key event » (conversion) dans GA4.
+export const trackAffiliateClick = (merchant: string, product?: string) => {
+  gaEvent('affiliate_click', { merchant, product });
+};
+
+// Clic sur un CTA Premium (audit #0.3).
+export const trackPremiumCtaClick = (location: string) => {
+  gaEvent('premium_cta_click', { cta_location: location });
+};
