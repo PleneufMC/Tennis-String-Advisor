@@ -6,6 +6,7 @@ import { TennisRacquet } from '@/data/racquets-database';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { BuyButton } from '@/components/product/buy-button';
 import { cn } from '@/lib/utils';
 import { 
   Scale, 
@@ -264,6 +265,15 @@ export function RacquetCard({
             </Link>
           )}
         </div>
+
+        {/* Affiliate CTA — « Où acheter » (Audit #3.0) */}
+        {showActions && (
+          <BuyButton
+            brand={racquet.brand}
+            model={`${racquet.model}${racquet.variant && racquet.variant !== 'Standard' ? ' ' + racquet.variant : ''}`}
+            className="w-full mt-3"
+          />
+        )}
       </CardContent>
     </Card>
   );
