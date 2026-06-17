@@ -17,9 +17,11 @@ const navigation: { key: TranslationKey; href: string }[] = [
   { key: 'nav.compare', href: '/compare' },
 ];
 
+// NB : on ne référence que des routes qui résolvent réellement.
+// - "Guides" pointe vers le blog (les guides y vivent en `public/blog/*.html`).
+// - "FAQ" est retiré tant qu'aucune page /faq n'existe (évite un 404).
 const secondaryNavigation: { key: TranslationKey; href: string }[] = [
-  { key: 'nav.guides', href: '/guides' },
-  { key: 'nav.faq', href: '/faq' },
+  { key: 'nav.guides', href: '/blog/' },
 ];
 
 // Icons
@@ -59,18 +61,8 @@ function TennisIcon({ className }: { className?: string }) {
   );
 }
 
-function UserIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-      />
-    </svg>
-  );
-}
+// UserIcon retiré : le bouton de connexion est masqué tant que l'auth est
+// désactivée (cf. Audit v1.1 §3.2). À restaurer avec le chantier abonnement.
 
 function SparklesIcon({ className }: { className?: string }) {
   return (
@@ -156,21 +148,16 @@ export function Header() {
 
             {/* Premium CTA - Hidden on mobile */}
             <Link
-              href="/premium"
+              href="/pricing"
               className="hidden md:inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-amber-700 bg-amber-100 rounded-lg hover:bg-amber-200 transition-colors dark:bg-amber-400/15 dark:text-amber-300 dark:hover:bg-amber-400/25"
             >
               <SparklesIcon className="w-4 h-4" />
               {t('nav.premium')}
             </Link>
 
-            {/* User/Login button */}
-            <Link
-              href="/auth/signin"
-              className="inline-flex items-center justify-center w-10 h-10 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-800"
-              aria-label={t('nav.signin')}
-            >
-              <UserIcon className="w-5 h-5" />
-            </Link>
+            {/* User/Login button : masqué tant que l'auth est désactivée
+                (cf. Audit v1.1 §3.2 — auth/checkout en .disabled, route
+                /auth/signin -> 404). À réactiver avec le chantier abonnement. */}
 
             {/* Mobile menu button */}
             <button
@@ -231,7 +218,7 @@ export function Header() {
               
               {/* Mobile Premium CTA */}
               <Link
-                href="/premium"
+                href="/pricing"
                 onClick={() => setMobileMenuOpen(false)}
                 className="flex items-center gap-2 px-4 py-3 text-base font-semibold text-amber-700 bg-amber-50 rounded-lg dark:bg-amber-400/10 dark:text-amber-300"
               >
@@ -239,15 +226,7 @@ export function Header() {
                 {t('nav.discoverPremium')}
               </Link>
               
-              {/* Mobile Sign In */}
-              <Link
-                href="/auth/signin"
-                onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center gap-2 px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg dark:text-slate-200 dark:hover:bg-slate-800"
-              >
-                <UserIcon className="w-5 h-5" />
-                {t('nav.signin')}
-              </Link>
+              {/* Sign In mobile masqué : auth désactivée (cf. Audit §3.2). */}
             </div>
           </div>
         )}
