@@ -240,6 +240,13 @@ export default function ConfiguratorPage() {
         });
         if (res.ok) {
           setSaveMessage('Configuration enregistrée dans votre compte avec succès!');
+        } else if (res.status === 403) {
+          // Quota du plan gratuit atteint (3 configurations).
+          const data = await res.json().catch(() => null);
+          setSaveMessage(
+            (data?.error as string) ||
+              'Plan gratuit limité à 3 configurations enregistrées. Passez Premium pour un journal illimité.'
+          );
         } else {
           setSaveMessage('Enregistrée localement (échec de la sauvegarde dans le compte).');
         }
@@ -249,7 +256,7 @@ export default function ConfiguratorPage() {
     } else {
       setSaveMessage('Configuration enregistrée localement avec succès!');
     }
-    setTimeout(() => setSaveMessage(''), 4000);
+    setTimeout(() => setSaveMessage(''), 6000);
 
     // Refresh saved configs and stats
     const configs = ConfigurationStorage.getRecent(3);
