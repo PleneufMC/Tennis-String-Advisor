@@ -5,7 +5,7 @@
   # Le cache Netlify réutilisait un node_modules périmé -> "Cannot find module
   # 'autoprefixer'". On purge node_modules et on réinstalle strictement depuis
   # package-lock.json (npm ci) pour garantir toutes les deps de build.
-  command = "rm -rf node_modules .next && npm ci --legacy-peer-deps && node -e \"require.resolve('autoprefixer'); console.log('autoprefixer OK')\" && npm run build"
+  command = "rm -rf node_modules .next && npm ci --legacy-peer-deps && node -e \"require.resolve('autoprefixer'); console.log('autoprefixer OK')\" && npx prisma generate && npm run build"
   # IMPORTANT : l'UI Netlify force "publish = public" (publishOrigin: ui), or
   # l'adaptateur Next.js attend la sortie de build (.next) et échoue sinon
   # ("publish directory does not contain expected Next.js build output").

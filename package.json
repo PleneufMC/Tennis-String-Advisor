@@ -1,6 +1,6 @@
 {
   "name": "tennis-string-advisor",
-  "version": "2.6.2",
+  "version": "2.6.3",
   "description": "Tennis String Advisor - Modernized platform for racquet and string recommendations",
   "private": true,
   "scripts": {
@@ -10,6 +10,7 @@
     "lint": "next lint",
     "lint:fix": "next lint --fix",
     "type-check": "tsc --noEmit",
+    "postinstall": "prisma generate",
     "audit:security": "npm audit && npm run audit:dependencies",
     "audit:dependencies": "node scripts/audit-dependencies.js",
     "audit:performance": "node scripts/audit-performance.js",
