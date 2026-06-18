@@ -1,6 +1,6 @@
 {
   "name": "tennis-string-advisor",
-  "version": "2.6.4",
+  "version": "2.6.5",
   "description": "Tennis String Advisor - Modernized platform for racquet and string recommendations",
   "private": true,
   "scripts": {
