@@ -12,6 +12,7 @@ import {
   Target, 
   Shield, 
   TrendingUp,
+  Zap,
   Star,
   ChevronRight,
   Heart,
@@ -111,6 +112,10 @@ export function StringCard({
                 <span className="flex items-center gap-1">
                   <TrendingUp className="h-3.5 w-3.5" />
                   {string.spin.toFixed(1)}
+                </span>
+                <span className="flex items-center gap-1">
+                  <Zap className="h-3.5 w-3.5" />
+                  {string.power.toFixed(1)}
                 </span>
               </div>
             </div>
@@ -212,6 +217,7 @@ export function StringCard({
           <RatingBar label="Contrôle" value={string.control} color="blue" />
           <RatingBar label="Confort" value={string.comfort} color="green" />
           <RatingBar label="Spin" value={string.spin} color="amber" />
+          <RatingBar label="Puissance" value={string.power} color="red" />
           <RatingBar label="Durabilité" value={string.durability} color="purple" />
         </div>
 
