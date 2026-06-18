@@ -1,18 +1,21 @@
 'use client';
 
 import * as React from 'react';
+import { SessionProvider } from 'next-auth/react';
 import { ThemeProvider } from '@/components/providers/theme-provider';
 import { LanguageProvider } from '@/lib/i18n';
 
 /**
- * Providers légers nécessaires au thème (clair/sombre) et à la langue (FR/EN).
- * Volontairement isolé de SessionProvider/QueryProvider pour ne dépendre que
- * de ce qui est requis par le lifting UI.
+ * Providers globaux : session (NextAuth), thème (clair/sombre) et langue (FR/EN).
+ * SessionProvider est placé en racine pour que useSession() soit disponible
+ * partout (header, pages compte, configurateur sauvegardé…).
  */
 export function AppProviders({ children }: { children: React.ReactNode }) {
   return (
-    <ThemeProvider defaultTheme="system" storageKey="tennis-advisor-theme">
-      <LanguageProvider>{children}</LanguageProvider>
-    </ThemeProvider>
+    <SessionProvider>
+      <ThemeProvider defaultTheme="system" storageKey="tennis-advisor-theme">
+        <LanguageProvider>{children}</LanguageProvider>
+      </ThemeProvider>
+    </SessionProvider>
   );
 }
