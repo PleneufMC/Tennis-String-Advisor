@@ -2,6 +2,11 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
+import {
+  isPremiumActive,
+  maxConfigsFor,
+  FREE_PLAN_MAX_CONFIGS,
+} from '@/lib/premium';
 
 /**
  * Journal de cordage — configurations sauvegardées côté serveur (Supabase).
@@ -16,9 +21,9 @@ import { prisma } from '@/lib/db';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const MAX_CONFIGS_PER_USER = 200;
-
 // GET /api/configurations — liste les configurations de l'utilisateur connecté.
+// Renvoie aussi le quota applicable (utilisé/limite + statut premium) pour
+// que l'interface puisse afficher « X/3 » et un CTA de mise à niveau.
 export async function GET() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
@@ -30,7 +35,21 @@ export async function GET() {
       where: { userId: session.user.id },
       orderBy: { createdAt: 'desc' },
     });
-    return NextResponse.json({ configurations });
+
+    const premium = isPremiumActive(session.user);
+    const limit = maxConfigsFor(session.user);
+
+    return NextResponse.json({
+      configurations,
+      quota: {
+        used: configurations.length,
+        limit,
+        isPremium: premium,
+        // Limite « affichable » : sur le plan gratuit on montre 3 ;
+        // en premium le plafond anti-abus reste interne.
+        freeLimit: FREE_PLAN_MAX_CONFIGS,
+      },
+    });
   } catch (error) {
     console.error('[configurations][GET]', error);
     return NextResponse.json({ error: 'Erreur serveur.' }, { status: 500 });
@@ -64,11 +83,34 @@ export async function POST(request: Request) {
   }
 
   try {
-    // Quota anti-abus par utilisateur.
+    // Quota différencié gratuit / premium.
+    // - Gratuit : FREE_PLAN_MAX_CONFIGS (3) configurations (aligné sur /pricing).
+    // - Premium actif : plafond anti-abus interne (PREMIUM_MAX_CONFIGS).
+    const premium = isPremiumActive(session.user);
+    const limit = maxConfigsFor(session.user);
     const count = await prisma.configuration.count({ where: { userId: session.user.id } });
-    if (count >= MAX_CONFIGS_PER_USER) {
+
+    if (count >= limit) {
+      // Gratuit ayant atteint sa limite → 403 + indices pour proposer Premium.
+      if (!premium) {
+        return NextResponse.json(
+          {
+            error: `Le plan gratuit est limité à ${FREE_PLAN_MAX_CONFIGS} configurations. Passez Premium pour un journal de cordage illimité.`,
+            quotaReached: true,
+            limit: FREE_PLAN_MAX_CONFIGS,
+            isPremium: false,
+          },
+          { status: 403 }
+        );
+      }
+      // Premium ayant atteint le plafond anti-abus (cas extrême) → 409.
       return NextResponse.json(
-        { error: `Limite de ${MAX_CONFIGS_PER_USER} configurations atteinte.` },
+        {
+          error: `Limite de ${limit} configurations atteinte.`,
+          quotaReached: true,
+          limit,
+          isPremium: true,
+        },
         { status: 409 }
       );
     }

@@ -32,7 +32,8 @@
 | 9 | **Magic link e-mail** activé en prod (SMTP **Resend**) + fix doc port 5432 | #3.1 | #38 | `76b4605` | 2.6.5 |
 | 10 | **Connexion e-mail/mot de passe** (`CredentialsProvider` + migration session `database`→`jwt` + `/auth/signup` + `/api/auth/register` + `User.passwordHash`) | #3.1 | #39 | `cd45fd6` | **2.7.0** |
 | — | **Documentation** (ROADMAP + AUTH-SETUP à jour, diagnostic premium) | — | #40 | `e6ac6c7` | 2.7.1 |
-| 11 | **Journal de cordage synchronisé** (1ʳᵉ vraie fonctionnalité réservée aux connectés) : API CRUD `/api/configurations` (GET/POST/DELETE) protégée par session + scoping strict `userId`, page `/account/configurations`, sauvegarde serveur depuis le configurateur, lien « Mon journal » dans le menu compte, i18n FR/EN | #2.2 / #3.1 | _en cours_ | _en cours_ | **2.8.0** |
+| 11 | **Journal de cordage synchronisé** (1ʳᵉ vraie fonctionnalité réservée aux connectés) : API CRUD `/api/configurations` (GET/POST/DELETE) protégée par session + scoping strict `userId`, page `/account/configurations`, sauvegarde serveur depuis le configurateur, lien « Mon journal » dans le menu compte, i18n FR/EN | #2.2 / #3.1 | #41 | `2c3161f` | **2.8.0** |
+| 12 | **Honnêteté offre — quota gratuit appliqué** : `src/lib/premium.ts` (`isPremiumActive` + `maxConfigsFor`), **limite 3 configs/gratuit, illimité premium** (vérifiée en base : 4ᵉ → HTTP 403), jauge quota + CTA Premium sur `/account/configurations`, message dédié dans le configurateur, suppression du composant mort `premium-features.tsx` (fake features `$9.99`) | Option A | _en cours_ | _en cours_ | **2.8.1** |
 
 ### Détails utiles sur l'acquis récent
 
@@ -88,8 +89,8 @@
 |----------|--------|-------------|------|
 | Moyenne | **Vérifier le domaine Resend** | Resend → Domains → ajouter `tennisstringadvisor.org` + DNS (SPF/DKIM) chez le registrar, puis passer `EMAIL_FROM=noreply@tennisstringadvisor.org` sur Netlify + redeploy. Ouvre le **magic link à TOUS les visiteurs** (aujourd'hui limité au compte Resend). | À faire |
 | Moyenne | **CTA « Premium » conditionnel** | Le bouton « Premium » du header pointe **toujours** vers `/pricing`, même pour un compte déjà premium. À adapter (masquer / rediriger vers un espace compte) une fois le premium réellement exploité. | À faire |
-| Moyenne | **Audit du contenu réellement « gated »** | ✅ Diagnostiqué : `isPremium` était purement cosmétique. **Première vraie valeur livrée** = journal de cordage synchronisé (ticket #11, réservé aux connectés). Reste à décider du gating *premium payant* (au-delà du simple « connecté »). | Partiel |
-| Moyenne | **Honnêteté de l'offre `/pricing`** (Option A) | `src/components/sections/premium-features.tsx` : 6 fonctionnalités factices en anglais, prix `$9.99`/`$99` incohérents avec les €4.99/€49.90 du reste, bouton « Start Free Trial » mort (sans `onClick`). À nettoyer/traduire/aligner avant toute promesse payante. | À faire |
+| Moyenne | **Audit du contenu réellement « gated »** | ✅ Diagnostiqué : `isPremium` était purement cosmétique. **Première vraie valeur livrée** = journal de cordage (ticket #11). ✅ **Premier vrai gating premium livré** = quota 3 configs/gratuit vs illimité premium (ticket #12). Reste : autres promesses de `/pricing` à implémenter ou marquer « à venir ». | Partiel |
+| ✅ Fait | **Honnêteté de l'offre `/pricing`** (Option A — 1er volet) | ✅ Quota gratuit (3) **réellement appliqué** côté serveur (ticket #12). ✅ Composant mort `premium-features.tsx` (fake features `$9.99`/`$99`, bouton mort) **supprimé**. Reste (2ᵉ volet) : implémenter ou marquer « à venir » les autres promesses Premium de `/pricing` (Export PDF, Rappels recordage, RCS avancé). | Partiel |
 | Basse | **Notion d'admin/owner (optionnel)** | Créer un vrai rôle admin (champ `role` ou liste d'e-mails) → premium auto + futur back-office (gestion abonnés, stats). Décision design en attente. | Idée |
 | Basse | **Régénérer secrets exposés** | Le `GOOGLE_CLIENT_SECRET` et la clé Resend `re_…` ont transité en clair dans le chat → à régénérer par prudence. | À faire (utilisateur) |
 
