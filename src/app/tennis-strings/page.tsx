@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 
 // Types for filters
-type SortOption = 'name' | 'price-asc' | 'price-desc' | 'control' | 'comfort' | 'spin' | 'durability' | 'rating';
+type SortOption = 'name' | 'price-asc' | 'price-desc' | 'control' | 'comfort' | 'spin' | 'power' | 'durability' | 'rating';
 type ViewMode = 'grid' | 'list';
 
 interface Filters {
@@ -31,6 +31,7 @@ interface Filters {
   controlMin: number;
   comfortMin: number;
   spinMin: number;
+  powerMin: number;
 }
 
 // Extract unique values from database
@@ -49,6 +50,7 @@ const defaultFilters: Filters = {
   controlMin: 0,
   comfortMin: 0,
   spinMin: 0,
+  powerMin: 0,
 };
 
 // Type translation
@@ -107,6 +109,7 @@ export default function StringsPage() {
       if (stringItem.control < filters.controlMin) return false;
       if (stringItem.comfort < filters.comfortMin) return false;
       if (stringItem.spin < filters.spinMin) return false;
+      if (stringItem.power < filters.powerMin) return false;
 
       return true;
     });
@@ -126,6 +129,8 @@ export default function StringsPage() {
           return b.comfort - a.comfort;
         case 'spin':
           return b.spin - a.spin;
+        case 'power':
+          return b.power - a.power;
         case 'durability':
           return b.durability - a.durability;
         case 'rating':
@@ -150,7 +155,8 @@ export default function StringsPage() {
       filters.priceRange[1] !== maxPrice ||
       filters.controlMin > 0 ||
       filters.comfortMin > 0 ||
-      filters.spinMin > 0
+      filters.spinMin > 0 ||
+      filters.powerMin > 0
     );
   }, [filters]);
 
@@ -250,6 +256,7 @@ export default function StringsPage() {
                 <option value="control">Contrôle</option>
                 <option value="comfort">Confort</option>
                 <option value="spin">Spin</option>
+                <option value="power">Puissance</option>
                 <option value="durability">Durabilité</option>
               </select>
             </div>
@@ -319,6 +326,11 @@ export default function StringsPage() {
                   Spin ≥ {filters.spinMin}
                 </Badge>
               )}
+              {filters.powerMin > 0 && (
+                <Badge variant="secondary" className="gap-1">
+                  Puissance ≥ {filters.powerMin}
+                </Badge>
+              )}
               <Button variant="ghost" size="sm" onClick={resetFilters} className="text-red-600 hover:text-red-700">
                 <RotateCcw className="h-3 w-3 mr-1" />
                 Réinitialiser
@@ -334,9 +346,9 @@ export default function StringsPage() {
             'w-72 flex-shrink-0 transition-all duration-300',
             showFilters ? 'block' : 'hidden lg:block'
           )}>
-            <div className="bg-white rounded-2xl shadow-lg p-6 sticky top-24">
+            <div className="bg-white rounded-2xl shadow-lg p-6 sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="font-bold text-lg flex items-center gap-2">
+                <h2 className="font-bold text-lg flex items-center gap-2 text-gray-900">
                   <Filter className="h-5 w-5 text-purple-600" />
                   Filtres
                 </h2>
@@ -472,6 +484,25 @@ export default function StringsPage() {
                         onChange={(e) => setFilters(prev => ({
                           ...prev,
                           spinMin: Number(e.target.value)
+                        }))}
+                        className="w-full accent-purple-600"
+                      />
+                    </div>
+
+                    {/* Power */}
+                    <div>
+                      <label className="text-sm text-gray-600 mb-2 block">
+                        Puissance: {filters.powerMin}+
+                      </label>
+                      <input
+                        type="range"
+                        min={0}
+                        max={10}
+                        step={0.5}
+                        value={filters.powerMin}
+                        onChange={(e) => setFilters(prev => ({
+                          ...prev,
+                          powerMin: Number(e.target.value)
                         }))}
                         className="w-full accent-purple-600"
                       />
