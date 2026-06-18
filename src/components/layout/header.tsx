@@ -158,7 +158,7 @@ export function Header() {
               {t('nav.premium')}
             </Link>
 
-            {/* Connexion / menu compte (NextAuth + Prisma/Neon) */}
+            {/* Connexion / menu compte (NextAuth + Prisma/Supabase) */}
             <AuthButton />
 
             {/* Mobile menu button */}
