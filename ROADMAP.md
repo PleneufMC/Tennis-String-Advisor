@@ -3,7 +3,7 @@
 > Document de pilotage. Stratégie issue de l'audit (`Audit-Full.md`) :
 > **réparer → mesurer → monétiser**, une amélioration mesurée à la fois.
 >
-> **Dernière mise à jour** : 2026-06-17 · **Version courante** : `2.4.0`
+> **Dernière mise à jour** : 2026-06-18 · **Version courante** : `2.7.0`
 
 ---
 
@@ -27,6 +27,10 @@
 | 4 | **Fix CSS blog** — `@apply` non compilé par le CDN Tailwind → CSS standard sur 4 articles | — | #25 | `067390b` | 2.3.2 |
 | 5 | **Fix images Open Graph** (URL `localhost` en prod) + favicon vide régénéré | #2.1 | #26 | `3541a35` | 2.3.3 |
 | 6 | **Affiliation Tennis-Point (Awin)** — infra paramétrable + `BuyButton` + disclosure | #3.0 | #27 | `3d1854d` | **2.4.0** |
+| 7 | **Auth réelle** NextAuth + Prisma (Google + e-mail), docs ciblant Supabase | #3.1 | #33, #34 | `8135149`, `a688bda` | 2.5.x |
+| 8 | **Mise en service auth** : fix build (ERESOLVE), génération Prisma sur Netlify CI, cleanup commentaires Neon→Supabase | — | #35, #36, #37 | `e5f8823` | 2.6.4 |
+| 9 | **Magic link e-mail** activé en prod (SMTP **Resend**) + fix doc port 5432 | #3.1 | #38 | `76b4605` | 2.6.5 |
+| 10 | **Connexion e-mail/mot de passe** (`CredentialsProvider` + migration session `database`→`jwt` + `/auth/signup` + `/api/auth/register` + `User.passwordHash`) | #3.1 | #39 | `cd45fd6` | **2.7.0** |
 
 ### Détails utiles sur l'acquis récent
 
@@ -42,6 +46,26 @@
   - Bascule **automatique** en deep-links Awin trackés dès que les 2 variables sont définies.
   - Architecture **multi-marchands** (ajout futur = 1 entrée dans `MERCHANTS`).
 
+- **Authentification** (`src/lib/auth.ts`, `src/app/auth/*`, `src/app/api/auth/*`) — **3 modes actifs en prod** :
+  1. 🔵 **Google OAuth** — fonctionnel de bout en bout (testé).
+  2. ✉️ **Magic link e-mail** (Resend) — fonctionnel **mais limité** : tant que le domaine
+     `tennisstringadvisor.org` n'est pas vérifié dans Resend, `EMAIL_FROM=onboarding@resend.dev`
+     n'envoie qu'à l'adresse du compte Resend (`pleneuftrading@gmail.com`).
+  3. 🔑 **E-mail / mot de passe** (`CredentialsProvider` + bcrypt) — fonctionnel pour tous (testé : inscription OK).
+  - **Session : stratégie `jwt`** (et non plus `database`) — imposée par `CredentialsProvider`.
+    Le callback `jwt()` recharge `isPremium`/`premiumUntil` depuis la DB à chaque rafraîchissement.
+    ⚠️ **Conséquence** : un changement de premium en base n'est visible qu'après **reconnexion**.
+  - **Premium** : piloté **uniquement** par `User.isPremium` / `User.premiumUntil`.
+    **Il n'existe PAS de notion de compte admin/master** dans le code. Pour passer un compte
+    premium aujourd'hui : modifier `isPremium=true` en base (Supabase) puis se reconnecter.
+  - **⚠️ FINDINGS CRITIQUES Supabase (à ne pas oublier)** :
+    - **Port `5432` (session pooler) FONCTIONNE** ; port `6543` (transaction pooler) **TIMEOUT**
+      dans la région `aws-1-eu-west-2`. → `DATABASE_URL` doit utiliser le **5432**.
+    - Username **doit** inclure le ref projet : `postgres.yhhdkllbaxuhwrfpsmev`
+      (sinon `ENOIDENTIFIER: no tenant identifier provided`).
+    - Génération du client Prisma sur Netlify CI via hook `postinstall: prisma generate`
+      + `npx prisma generate` dans la commande de build (`netlify.toml`).
+
 ---
 
 ## ⏳ À FAIRE — Reprise
@@ -55,6 +79,16 @@
 4. Marquer **`affiliate_click`** comme *key event* dans l'admin GA4.
 
 > ⚠️ Tant que ces IDs ne sont pas posés, les boutons « Voir le prix » restent en lien direct (fonctionnels, mais sans commission).
+
+### 🔐 Reliquat AUTH (suite directe de la session du 2026-06-18)
+
+| Priorité | Ticket | Description | État |
+|----------|--------|-------------|------|
+| Moyenne | **Vérifier le domaine Resend** | Resend → Domains → ajouter `tennisstringadvisor.org` + DNS (SPF/DKIM) chez le registrar, puis passer `EMAIL_FROM=noreply@tennisstringadvisor.org` sur Netlify + redeploy. Ouvre le **magic link à TOUS les visiteurs** (aujourd'hui limité au compte Resend). | À faire |
+| Moyenne | **CTA « Premium » conditionnel** | Le bouton « Premium » du header pointe **toujours** vers `/pricing`, même pour un compte déjà premium. À adapter (masquer / rediriger vers un espace compte) une fois le premium réellement exploité. | À faire |
+| Moyenne | **Audit du contenu réellement « gated »** | Vérifier ce que `isPremium` débloque concrètement dans l'app. Si rien n'est protégé, le badge premium est cosmétique → décider quelles fonctionnalités réserver avant de monétiser. | À faire |
+| Basse | **Notion d'admin/owner (optionnel)** | Créer un vrai rôle admin (champ `role` ou liste d'e-mails) → premium auto + futur back-office (gestion abonnés, stats). Décision design en attente. | Idée |
+| Basse | **Régénérer secrets exposés** | Le `GOOGLE_CLIENT_SECRET` et la clé Resend `re_…` ont transité en clair dans le chat → à régénérer par prudence. | À faire (utilisateur) |
 
 ### 🟢 Prochains tickets candidats (à prioriser ensemble)
 
@@ -79,9 +113,14 @@
 ## 🧭 Point de reprise pour demain
 
 - **Branche de travail** : repartir de `main` à jour (`git checkout main && git pull origin main --ff-only`).
-- **Dernier état** : `main` = `3d1854d`, `genspark_ai_developer` synchronisée, version `2.4.0`.
+- **Dernier état** : `main` = `cd45fd6`, `genspark_ai_developer` synchronisée, version `2.7.0`.
+- **Auth** : ✅ **terminée et opérationnelle** (Google + magic link + e-mail/mot de passe).
+  Compte owner `pfermanian@gmail.com` passé **premium** manuellement en base (`isPremium=true`, permanent).
+- **Reliquat auth immédiat** (non bloquant) : vérifier le domaine Resend pour ouvrir le magic
+  link à tous ; adapter le CTA « Premium » ; auditer le contenu réellement gated.
 - **Décision en attente** : choisir le prochain ticket (recommandation : **affiliation in-article**, fort levier de revenu).
 - **Suivi monétisation** : dès réception des IDs Awin → vérifier ensemble que les deep-links se génèrent et que `affiliate_click` remonte dans GA4 (DebugView).
+- **⚠️ Rappel technique critique** : `DATABASE_URL` = **port 5432** + user `postgres.<ref>` (le 6543 timeout dans cette région). `~/.git-credentials` se vide → relancer `setup_github_environment` avant chaque push/`gh`.
 
 ---
 
