@@ -1,10 +1,38 @@
 # Audit Qualité des Données — Tennis String Advisor
 
-> Audit complet des bases de données `racquets-database.ts` (127 raquettes) et
+> Audit complet des bases de données `racquets-database.ts` (**120 raquettes**) et
 > `strings-database.ts` (47 cordages). Référence générationnelle : **modèles 2025**.
 >
 > Outil : `scripts/qa-database.mjs` (exécuter `node scripts/qa-database.mjs`).
 > Dernière exécution : **0 problème HIGH / 0 MEDIUM / 0 LOW** après corrections.
+
+---
+
+## 0. Retraits commercialisation (v2.4.2)
+
+Politique : **retirer les modèles introuvables à l'achat neuf** (pertinence affiliation —
+inutile de lier vers un produit que le visiteur ne peut pas acheter neuf). Vérification
+croisée via catalogues fabricants + grands revendeurs (Tennis Warehouse, Tennis-Point).
+
+**7 raquettes retirées** (générations 2019-2021 non renouvelées, plus distribuées neuf en France) :
+
+| ID retiré | Modèle | Motif |
+|-----------|--------|-------|
+| `tecnifibre-tflash-300` | Tecnifibre TFlash 300 | Gamme 2019 (CES), arrêtée — remplacée par Tempo/TFight |
+| `tecnifibre-tflash-285` | Tecnifibre TFlash 285 | idem |
+| `volkl-v-cell-v1-pro` | Völkl V-Cell V1 Pro | Modèle 2021, gamme remplacée (V8/V-Feel), quasi absent du marché FR |
+| `prince-twistpower-x100` | Prince Twistpower X100 | Modèle 2021, ligne non renouvelée (déstockage résiduel US) |
+| `prince-twistpower-x105` | Prince Twistpower X105 | idem |
+| `prokennex-ki-q-tour-pro` | ProKennex Ki Q+ Tour Pro | Modèle 2021, remplacé par Black Ace 2025/26 ; introuvable neuf FR |
+| `prokennex-ki-q-5` | ProKennex Ki Q+ 5 | idem |
+
+**Conservés** (vérifiés encore vendus neuf, malgré leur ancienneté) :
+Wilson Hyper Hammer 5.3 (vendu par Wilson), Head Ti.S6 (catalogue TW),
+Head Prestige Classic (trouvable), Wilson Burn 100LS (v5/v6 actifs).
+
+> Impact technique : aucun ID raquette n'est hardcodé dans les pages dynamiques
+> (configurateur, comparateur, listing, stats consomment la base par filtres/`.find`).
+> Les compteurs et filtres s'ajustent automatiquement. Base 127 → **120 raquettes**.
 
 ---
 
@@ -99,11 +127,13 @@ modèles phares (meilleure pertinence des recommandations cordage/tension).
 | Wilson | 26 |
 | Babolat | 21 |
 | Yonex | 17 |
-| Tecnifibre | 11 |
-| Prince | 7 |
+| Tecnifibre | 9 |
+| Prince | 5 |
 | Dunlop | 6 |
-| Völkl | 2 |
-| ProKennex | 2 |
+| Völkl | 1 |
+| ProKennex | 0 (marque retirée) |
+
+*(Après retrait des 7 modèles introuvables neuf — cf. §0.)*
 
 ---
 

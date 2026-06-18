@@ -567,34 +567,6 @@ export const racquetsDatabase: TennisRacquet[] = [
     description: 'Grand tamis pour puissance et tolérance.',
     price: { europe: 180, usa: 180 }
   },
-  {
-    id: 'prince-twistpower-x100',
-    brand: 'Prince',
-    model: 'Twistpower',
-    variant: 'X100',
-    stiffness: 66,
-    weight: 290,
-    headSize: 100,
-    stringPattern: '16x18',
-    category: 'Modern Player',
-    playerLevel: ['Intermediate', 'Advanced'],
-    description: 'Technologie Twist Weight pour stabilité.',
-    price: { europe: 210, usa: 210 }
-  },
-  {
-    id: 'prince-twistpower-x105',
-    brand: 'Prince',
-    model: 'Twistpower',
-    variant: 'X105',
-    stiffness: 67,
-    weight: 290,
-    headSize: 105,
-    stringPattern: '16x19',
-    category: 'Power',
-    playerLevel: ['Intermediate'],
-    description: 'Plus de puissance avec grand tamis.',
-    price: { europe: 210, usa: 210 }
-  },
 
   // TECNIFIBRE
   {
@@ -624,34 +596,6 @@ export const racquetsDatabase: TennisRacquet[] = [
     playerLevel: ['Pro'],
     description: 'Version lourde pour stabilité maximale.',
     price: { europe: 250, usa: 250 }
-  },
-  {
-    id: 'tecnifibre-tflash-300',
-    brand: 'Tecnifibre',
-    model: 'TFlash',
-    variant: '300',
-    stiffness: 68,
-    weight: 300,
-    headSize: 100,
-    stringPattern: '16x19',
-    category: 'Power',
-    playerLevel: ['Intermediate', 'Advanced'],
-    description: 'Puissance et vitesse de balle.',
-    price: { europe: 220, usa: 220 }
-  },
-  {
-    id: 'tecnifibre-tflash-285',
-    brand: 'Tecnifibre',
-    model: 'TFlash',
-    variant: '285',
-    stiffness: 68,
-    weight: 285,
-    headSize: 100,
-    stringPattern: '16x19',
-    category: 'Tweener',
-    playerLevel: ['Intermediate'],
-    description: 'Version allégée du TFlash.',
-    price: { europe: 210, usa: 210 }
   },
   {
     id: 'tecnifibre-tfight-305s-id',
@@ -1448,21 +1392,7 @@ export const racquetsDatabase: TennisRacquet[] = [
     price: { europe: 230, usa: 219 }
   },
 
-  // VÖLKL - V-Cell / V8
-  {
-    id: 'volkl-v-cell-v1-pro',
-    brand: 'Völkl',
-    model: 'V-Cell',
-    variant: 'V1 Pro',
-    stiffness: 62,
-    weight: 305,
-    headSize: 100,
-    stringPattern: '16x19',
-    category: 'Modern Player',
-    playerLevel: ['Intermediate', 'Advanced'],
-    description: 'V-Cell V1 Pro, polyvalence et confort réputés de la marque allemande Völkl.',
-    price: { europe: 200, usa: 199 }
-  },
+  // VÖLKL - V8
   {
     id: 'volkl-v8-pro',
     brand: 'Völkl',
@@ -1475,36 +1405,6 @@ export const racquetsDatabase: TennisRacquet[] = [
     category: 'Modern Player',
     playerLevel: ['Advanced'],
     description: 'Völkl V8 Pro, all-court équilibré avec toucher et stabilité.',
-    price: { europe: 210, usa: 199 }
-  },
-
-  // PROKENNEX - Ki Q+ (technologie Kinetic anti-vibrations)
-  {
-    id: 'prokennex-ki-q-tour-pro',
-    brand: 'ProKennex',
-    model: 'Ki Q+',
-    variant: 'Tour Pro',
-    stiffness: 62,
-    weight: 325,
-    headSize: 97,
-    stringPattern: '18x20',
-    category: 'Classic Player',
-    playerLevel: ['Advanced', 'Pro'],
-    description: 'Ki Q+ Tour Pro avec technologie Kinetic, idéal pour bras sensibles et joueurs touchés par le tennis elbow.',
-    price: { europe: 230, usa: 219 }
-  },
-  {
-    id: 'prokennex-ki-q-5',
-    brand: 'ProKennex',
-    model: 'Ki Q+',
-    variant: '5 (300)',
-    stiffness: 63,
-    weight: 300,
-    headSize: 100,
-    stringPattern: '16x19',
-    category: 'Modern Player',
-    playerLevel: ['Intermediate', 'Advanced'],
-    description: 'Ki Q+ 5 avec masses kinétiques, confort maximal et protection articulaire.',
     price: { europe: 210, usa: 199 }
   },
 
