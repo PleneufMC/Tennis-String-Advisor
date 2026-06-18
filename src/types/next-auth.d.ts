@@ -15,3 +15,11 @@ declare module 'next-auth' {
     premiumUntil?: Date | null;
   }
 }
+
+declare module 'next-auth/jwt' {
+  interface JWT {
+    id?: string;
+    isPremium?: boolean;
+    premiumUntil?: Date | null;
+  }
+}

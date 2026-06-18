@@ -17,6 +17,9 @@ model User {
   emailVerified   DateTime?
   name            String?
   image           String?
+  // Hash bcrypt du mot de passe (connexion e-mail/mot de passe via
+  // CredentialsProvider). Nullable : les comptes Google/magic link n'en ont pas.
+  passwordHash    String?
   isPremium       Boolean   @default(false)
   premiumUntil    DateTime?
   stripeCustomerId String?  @unique

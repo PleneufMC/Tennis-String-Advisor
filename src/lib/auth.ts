@@ -2,6 +2,8 @@ import type { NextAuthOptions } from 'next-auth';
 import { PrismaAdapter } from '@next-auth/prisma-adapter';
 import GoogleProvider from 'next-auth/providers/google';
 import EmailProvider from 'next-auth/providers/email';
+import CredentialsProvider from 'next-auth/providers/credentials';
+import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/db';
 
 /**
@@ -9,11 +11,16 @@ import { prisma } from '@/lib/db';
  *
  * Providers activés conditionnellement selon les variables d'environnement
  * disponibles, pour que le build n'échoue jamais si une clé manque :
- *  - Google OAuth   : GOOGLE_CLIENT_ID + GOOGLE_CLIENT_SECRET
- *  - E-mail (magic) : EMAIL_SERVER_* + EMAIL_FROM
+ *  - Google OAuth        : GOOGLE_CLIENT_ID + GOOGLE_CLIENT_SECRET
+ *  - E-mail (magic link) : EMAIL_SERVER_* + EMAIL_FROM
+ *  - E-mail / mot de passe (Credentials) : toujours actif (table User.passwordHash)
  *
  * Persistance : tables User/Account/Session/VerificationToken sur Supabase
- * (Postgres) via l'adaptateur Prisma. Stratégie de session : "database".
+ * (Postgres) via l'adaptateur Prisma.
+ *
+ * Stratégie de session : "jwt" (OBLIGATOIRE car CredentialsProvider ne
+ * supporte PAS la stratégie "database"). Les champs métier (id, isPremium,
+ * premiumUntil) sont propagés via les callbacks jwt() puis session().
  *
  * Variables requises en production (Netlify) :
  *  - DATABASE_URL          (Supabase, session pooler port 5432, user postgres.<ref>)
@@ -55,11 +62,60 @@ if (
   );
 }
 
+// Connexion e-mail / mot de passe classique (toujours active).
+// Vérifie le hash bcrypt stocké sur User.passwordHash. Les comptes créés via
+// Google ou magic link n'ont pas de passwordHash : on refuse alors la connexion
+// par mot de passe (l'utilisateur doit passer par son provider d'origine).
+providers.push(
+  CredentialsProvider({
+    id: 'credentials',
+    name: 'E-mail et mot de passe',
+    credentials: {
+      email: { label: 'E-mail', type: 'email' },
+      password: { label: 'Mot de passe', type: 'password' },
+    },
+    async authorize(credentials) {
+      const email = credentials?.email?.trim().toLowerCase();
+      const password = credentials?.password;
+      if (!email || !password) return null;
+
+      const user = await prisma.user.findUnique({
+        where: { email },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          image: true,
+          passwordHash: true,
+          isPremium: true,
+          premiumUntil: true,
+        },
+      });
+
+      if (!user || !user.passwordHash) return null;
+
+      const valid = await bcrypt.compare(password, user.passwordHash);
+      if (!valid) return null;
+
+      return {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        image: user.image,
+        isPremium: user.isPremium,
+        premiumUntil: user.premiumUntil,
+      };
+    },
+  })
+);
+
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers,
   session: {
-    strategy: 'database',
+    // "jwt" requis par CredentialsProvider. Google et magic link fonctionnent
+    // aussi en jwt (l'adaptateur Prisma persiste toujours User/Account).
+    strategy: 'jwt',
     maxAge: 30 * 24 * 60 * 60, // 30 jours
   },
   pages: {
@@ -68,14 +124,37 @@ export const authOptions: NextAuthOptions = {
     verifyRequest: '/auth/verify-request',
   },
   callbacks: {
-    async session({ session, user }) {
-      // Stratégie "database" : `user` provient de la table User (Prisma).
-      if (session.user && user) {
-        session.user.id = user.id;
-        // Champs métier (chantier abonnement) exposés à la session client.
-        session.user.isPremium = (user as { isPremium?: boolean }).isPremium ?? false;
-        session.user.premiumUntil =
+    // Stratégie "jwt" : le token est la source de vérité.
+    // À la connexion (`user` présent), on initialise le token. Sinon, on
+    // recharge les champs métier depuis la base pour rester à jour (premium).
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+        token.isPremium = (user as { isPremium?: boolean }).isPremium ?? false;
+        token.premiumUntil =
           (user as { premiumUntil?: Date | null }).premiumUntil ?? null;
+        return token;
+      }
+
+      // Rafraîchissement : recharge isPremium/premiumUntil depuis la DB.
+      if (token.id) {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: token.id as string },
+          select: { isPremium: true, premiumUntil: true },
+        });
+        if (dbUser) {
+          token.isPremium = dbUser.isPremium;
+          token.premiumUntil = dbUser.premiumUntil;
+        }
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (session.user) {
+        session.user.id = (token.id as string) ?? '';
+        session.user.isPremium = (token.isPremium as boolean) ?? false;
+        session.user.premiumUntil =
+          (token.premiumUntil as Date | null) ?? null;
       }
       return session;
     },
