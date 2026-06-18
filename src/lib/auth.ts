@@ -12,11 +12,11 @@ import { prisma } from '@/lib/db';
  *  - Google OAuth   : GOOGLE_CLIENT_ID + GOOGLE_CLIENT_SECRET
  *  - E-mail (magic) : EMAIL_SERVER_* + EMAIL_FROM
  *
- * Persistance : tables User/Account/Session/VerificationToken sur Neon
+ * Persistance : tables User/Account/Session/VerificationToken sur Supabase
  * (Postgres) via l'adaptateur Prisma. Stratégie de session : "database".
  *
  * Variables requises en production (Netlify) :
- *  - DATABASE_URL          (Neon, URL -pooler recommandée)
+ *  - DATABASE_URL          (Supabase, transaction pooler port 6543, pgbouncer=true)
  *  - NEXTAUTH_URL          (https://tennisstringadvisor.org)
  *  - NEXTAUTH_SECRET       (openssl rand -base64 32)
  *  - GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET (optionnel mais recommandé)
