@@ -3,7 +3,7 @@
 > Document de pilotage. Stratégie issue de l'audit (`Audit-Full.md`) :
 > **réparer → mesurer → monétiser**, une amélioration mesurée à la fois.
 >
-> **Dernière mise à jour** : 2026-06-18 · **Version courante** : `2.7.0`
+> **Dernière mise à jour** : 2026-06-18 · **Version courante** : `2.8.0`
 
 ---
 
@@ -31,6 +31,8 @@
 | 8 | **Mise en service auth** : fix build (ERESOLVE), génération Prisma sur Netlify CI, cleanup commentaires Neon→Supabase | — | #35, #36, #37 | `e5f8823` | 2.6.4 |
 | 9 | **Magic link e-mail** activé en prod (SMTP **Resend**) + fix doc port 5432 | #3.1 | #38 | `76b4605` | 2.6.5 |
 | 10 | **Connexion e-mail/mot de passe** (`CredentialsProvider` + migration session `database`→`jwt` + `/auth/signup` + `/api/auth/register` + `User.passwordHash`) | #3.1 | #39 | `cd45fd6` | **2.7.0** |
+| — | **Documentation** (ROADMAP + AUTH-SETUP à jour, diagnostic premium) | — | #40 | `e6ac6c7` | 2.7.1 |
+| 11 | **Journal de cordage synchronisé** (1ʳᵉ vraie fonctionnalité réservée aux connectés) : API CRUD `/api/configurations` (GET/POST/DELETE) protégée par session + scoping strict `userId`, page `/account/configurations`, sauvegarde serveur depuis le configurateur, lien « Mon journal » dans le menu compte, i18n FR/EN | #2.2 / #3.1 | _en cours_ | _en cours_ | **2.8.0** |
 
 ### Détails utiles sur l'acquis récent
 
@@ -86,7 +88,8 @@
 |----------|--------|-------------|------|
 | Moyenne | **Vérifier le domaine Resend** | Resend → Domains → ajouter `tennisstringadvisor.org` + DNS (SPF/DKIM) chez le registrar, puis passer `EMAIL_FROM=noreply@tennisstringadvisor.org` sur Netlify + redeploy. Ouvre le **magic link à TOUS les visiteurs** (aujourd'hui limité au compte Resend). | À faire |
 | Moyenne | **CTA « Premium » conditionnel** | Le bouton « Premium » du header pointe **toujours** vers `/pricing`, même pour un compte déjà premium. À adapter (masquer / rediriger vers un espace compte) une fois le premium réellement exploité. | À faire |
-| Moyenne | **Audit du contenu réellement « gated »** | Vérifier ce que `isPremium` débloque concrètement dans l'app. Si rien n'est protégé, le badge premium est cosmétique → décider quelles fonctionnalités réserver avant de monétiser. | À faire |
+| Moyenne | **Audit du contenu réellement « gated »** | ✅ Diagnostiqué : `isPremium` était purement cosmétique. **Première vraie valeur livrée** = journal de cordage synchronisé (ticket #11, réservé aux connectés). Reste à décider du gating *premium payant* (au-delà du simple « connecté »). | Partiel |
+| Moyenne | **Honnêteté de l'offre `/pricing`** (Option A) | `src/components/sections/premium-features.tsx` : 6 fonctionnalités factices en anglais, prix `$9.99`/`$99` incohérents avec les €4.99/€49.90 du reste, bouton « Start Free Trial » mort (sans `onClick`). À nettoyer/traduire/aligner avant toute promesse payante. | À faire |
 | Basse | **Notion d'admin/owner (optionnel)** | Créer un vrai rôle admin (champ `role` ou liste d'e-mails) → premium auto + futur back-office (gestion abonnés, stats). Décision design en attente. | Idée |
 | Basse | **Régénérer secrets exposés** | Le `GOOGLE_CLIENT_SECRET` et la clé Resend `re_…` ont transité en clair dans le chat → à régénérer par prudence. | À faire (utilisateur) |
 
@@ -104,7 +107,7 @@
 ### 🔵 Chantiers de fond (différés par l'audit)
 - **#4.1 / #2.4** — Unifier l'architecture de rendu (tout Next, supprimer le statique parallèle `public/blog/*.html` + `public/en/*.html`).
 - **#4.2** — Source unique de l'algo RCS, testée.
-- **#2.2 / #3.1 / #3.2** — *(Différé)* Rétention (journal, rappels, historique) → puis réactivation abonnement (auth + persistance + paywall).
+- **#2.2 / #3.1 / #3.2** — Rétention : ✅ **journal/historique synchronisé livré** (ticket #11). Reste **rappels** (re-cordage) + réactivation abonnement (paywall payant au-dessus du simple « connecté »).
 - **#4.3** — Décider du sort du « moat » (calcul serveur ou retrait de la mention).
 - **#3.3** — B2B cordeurs (landing `/pro`) — plus tard.
 
@@ -113,12 +116,15 @@
 ## 🧭 Point de reprise pour demain
 
 - **Branche de travail** : repartir de `main` à jour (`git checkout main && git pull origin main --ff-only`).
-- **Dernier état** : `main` = `cd45fd6`, `genspark_ai_developer` synchronisée, version `2.7.0`.
+- **Dernier état** : `main` = `e6ac6c7` (avant Feature B), `genspark_ai_developer` synchronisée, version `2.8.0` (journal de cordage).
 - **Auth** : ✅ **terminée et opérationnelle** (Google + magic link + e-mail/mot de passe).
   Compte owner `pfermanian@gmail.com` passé **premium** manuellement en base (`isPremium=true`, permanent).
+- **Journal de cordage (ticket #11)** : ✅ livré — API `/api/configurations` (GET/POST/DELETE, scoping `userId`),
+  page `/account/configurations`, sauvegarde serveur depuis le configurateur, lien « Mon journal ».
+  Testé en local : API → **401** non authentifié, page → **redirect** vers signin. ✅
 - **Reliquat auth immédiat** (non bloquant) : vérifier le domaine Resend pour ouvrir le magic
-  link à tous ; adapter le CTA « Premium » ; auditer le contenu réellement gated.
-- **Décision en attente** : choisir le prochain ticket (recommandation : **affiliation in-article**, fort levier de revenu).
+  link à tous ; adapter le CTA « Premium » ; **honnêteté `/pricing`** (Option A).
+- **Décision en attente** : choisir le prochain ticket (candidats : **Option A** honnêteté pricing, **affiliation in-article**, **rappels de re-cordage**).
 - **Suivi monétisation** : dès réception des IDs Awin → vérifier ensemble que les deep-links se génèrent et que `affiliate_click` remonte dans GA4 (DebugView).
 - **⚠️ Rappel technique critique** : `DATABASE_URL` = **port 5432** + user `postgres.<ref>` (le 6543 timeout dans cette région). `~/.git-credentials` se vide → relancer `setup_github_environment` avant chaque push/`gh`.
 
