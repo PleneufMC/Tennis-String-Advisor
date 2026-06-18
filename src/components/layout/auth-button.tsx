@@ -85,6 +85,13 @@ export function AuthButton({ mobile = false, onNavigate }: { mobile?: boolean; o
           <Avatar image={session.user.image} initial={initial} />
           <span className="text-sm font-medium text-gray-900 dark:text-white truncate">{displayName}</span>
         </div>
+        <Link
+          href="/account/configurations"
+          onClick={onNavigate}
+          className="block w-full px-0 py-2 text-base font-medium text-gray-700 hover:text-green-700 dark:text-slate-200"
+        >
+          {t('nav.myConfigurations')}
+        </Link>
         <button
           type="button"
           onClick={() => { onNavigate?.(); signOut({ callbackUrl: '/' }); }}
@@ -122,6 +129,14 @@ export function AuthButton({ mobile = false, onNavigate }: { mobile?: boolean; o
               </span>
             )}
           </div>
+          <Link
+            href="/account/configurations"
+            role="menuitem"
+            onClick={() => setOpen(false)}
+            className="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 dark:text-slate-200 dark:hover:bg-slate-800"
+          >
+            {t('nav.myConfigurations')}
+          </Link>
           <button
             type="button"
             role="menuitem"

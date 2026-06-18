@@ -2,12 +2,14 @@
 
 import { useState, useMemo, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { useSession } from 'next-auth/react';
 import { stringsDatabase, calculateRCS, getStringRecommendation } from '@/data/strings-database';
 import { racquetsDatabase, calculateCompatibility } from '@/data/racquets-database';
 import { ConfigurationStorage, SavedConfiguration } from '@/lib/storage';
 import { trackConfiguratorComplete } from '@/components/analytics/analytics';
 
 export default function ConfiguratorPage() {
+  const { data: session } = useSession();
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     config: true,
     racquet: false,
@@ -199,15 +201,19 @@ export default function ConfiguratorPage() {
     setStats(configStats);
   }, []);
 
-  // Save configuration function
-  const saveConfiguration = () => {
+  // Save configuration function.
+  // Sauvegarde TOUJOURS en localStorage (compat existante). En plus, si
+  // l'utilisateur est connecté, persiste la configuration dans son compte
+  // (Supabase) → journal synchronisé entre appareils, accessible via
+  // /account/configurations.
+  const saveConfiguration = async () => {
     if (!formData.configName || !selectedRacquet || !selectedMainString || !rcsData) {
       setSaveMessage('Veuillez remplir tous les champs requis');
       setTimeout(() => setSaveMessage(''), 3000);
       return;
     }
 
-    ConfigurationStorage.save({
+    const payload = {
       name: formData.configName,
       racquetId: formData.racquet,
       mainStringId: formData.mainString,
@@ -219,11 +225,31 @@ export default function ConfiguratorPage() {
       rating: formData.rating,
       notes: formData.notes,
       rcsScore: rcsData.avgRCS,
-      compatibility: rcsData.compatibility
-    });
+      compatibility: rcsData.compatibility,
+    };
 
-    setSaveMessage('Configuration enregistrée avec succès!');
-    setTimeout(() => setSaveMessage(''), 3000);
+    ConfigurationStorage.save(payload);
+
+    // Persistance serveur pour les utilisateurs connectés.
+    if (session?.user) {
+      try {
+        const res = await fetch('/api/configurations', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        if (res.ok) {
+          setSaveMessage('Configuration enregistrée dans votre compte avec succès!');
+        } else {
+          setSaveMessage('Enregistrée localement (échec de la sauvegarde dans le compte).');
+        }
+      } catch {
+        setSaveMessage('Enregistrée localement (hors ligne).');
+      }
+    } else {
+      setSaveMessage('Configuration enregistrée localement avec succès!');
+    }
+    setTimeout(() => setSaveMessage(''), 4000);
 
     // Refresh saved configs and stats
     const configs = ConfigurationStorage.getRecent(3);
@@ -1056,53 +1082,95 @@ export default function ConfiguratorPage() {
             </span>
           </h2>
 
-          {/* Premium Feature Box */}
-          <div style={{
-            background: 'linear-gradient(135deg, #fef3c7, #fde68a)',
-            borderRadius: '8px',
-            padding: '1rem',
-            marginBottom: '1.5rem'
-          }}>
-            <h3 style={{
-              fontWeight: 'bold',
-              color: '#78350f',
-              marginBottom: '0.5rem',
-              display: 'flex',
-              alignItems: 'center'
+          {/* Journal Box — varie selon l'état de connexion */}
+          {session?.user ? (
+            <div style={{
+              background: 'linear-gradient(135deg, #dcfce7, #bbf7d0)',
+              borderRadius: '8px',
+              padding: '1rem',
+              marginBottom: '1.5rem'
             }}>
-              🔒 Fonctionnalité Premium
-            </h3>
-            <p style={{ fontSize: '0.875rem', color: '#92400e', marginBottom: '0.75rem' }}>
-              Le journal de cordage complet est réservé aux membres Premium.
-            </p>
-            <ul style={{ fontSize: '0.875rem', color: '#92400e', marginBottom: '1rem', listStyle: 'none', padding: 0 }}>
-              <li>✓ Historique illimité de configurations</li>
-              <li>✓ Suivi des performances dans le temps</li>
-              <li>✓ Statistiques et analyses avancées</li>
-              <li>✓ Export PDF de vos données</li>
-              <li>✓ Rappels de reordage</li>
-            </ul>
-            <Link 
-              href="/pricing"
-              style={{
-                display: 'block',
-                width: '100%',
-                padding: '0.75rem',
-                backgroundColor: '#fbbf24',
-                color: '#78350f',
+              <h3 style={{
                 fontWeight: 'bold',
-                borderRadius: '8px',
-                border: 'none',
-                cursor: 'pointer',
-                transition: 'background-color 0.2s',
-                fontSize: '1rem',
-                textAlign: 'center',
-                textDecoration: 'none'
-              }}
-            >
-              Débloquer le Journal Premium
-            </Link>
-          </div>
+                color: '#166534',
+                marginBottom: '0.5rem',
+                display: 'flex',
+                alignItems: 'center'
+              }}>
+                ✅ Journal synchronisé activé
+              </h3>
+              <p style={{ fontSize: '0.875rem', color: '#15803d', marginBottom: '0.75rem' }}>
+                Vos configurations enregistrées sont sauvegardées dans votre
+                compte et accessibles depuis tous vos appareils.
+              </p>
+              <Link
+                href="/account/configurations"
+                style={{
+                  display: 'block',
+                  width: '100%',
+                  padding: '0.75rem',
+                  backgroundColor: '#16a34a',
+                  color: 'white',
+                  fontWeight: 'bold',
+                  borderRadius: '8px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s',
+                  fontSize: '1rem',
+                  textAlign: 'center',
+                  textDecoration: 'none'
+                }}
+              >
+                📚 Voir mon journal de cordage
+              </Link>
+            </div>
+          ) : (
+            <div style={{
+              background: 'linear-gradient(135deg, #fef3c7, #fde68a)',
+              borderRadius: '8px',
+              padding: '1rem',
+              marginBottom: '1.5rem'
+            }}>
+              <h3 style={{
+                fontWeight: 'bold',
+                color: '#78350f',
+                marginBottom: '0.5rem',
+                display: 'flex',
+                alignItems: 'center'
+              }}>
+                🔒 Journal synchronisé
+              </h3>
+              <p style={{ fontSize: '0.875rem', color: '#92400e', marginBottom: '0.75rem' }}>
+                Connectez-vous pour sauvegarder vos configurations dans votre
+                compte et les retrouver sur tous vos appareils.
+              </p>
+              <ul style={{ fontSize: '0.875rem', color: '#92400e', marginBottom: '1rem', listStyle: 'none', padding: 0 }}>
+                <li>✓ Historique de configurations dans votre compte</li>
+                <li>✓ Synchronisation entre tous vos appareils</li>
+                <li>✓ Notes et évaluations conservées</li>
+              </ul>
+              <Link
+                href="/auth/signin?callbackUrl=/configurator"
+                style={{
+                  display: 'block',
+                  width: '100%',
+                  padding: '0.75rem',
+                  backgroundColor: '#fbbf24',
+                  color: '#78350f',
+                  fontWeight: 'bold',
+                  borderRadius: '8px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s',
+                  fontSize: '1rem',
+                  textAlign: 'center',
+                  textDecoration: 'none'
+                }}
+              >
+                Se connecter pour activer
+              </Link>
+            </div>
+          )}
 
           {/* Configuration Preview */}
           <div style={{
