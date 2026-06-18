@@ -51,6 +51,16 @@ model Session {
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+// Table requise par NextAuth pour les liens magiques (EmailProvider) et la
+// vérification d'e-mail. Sans elle, la connexion par e-mail échoue.
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
 model Configuration {
   id              String   @id @default(cuid())
   userId          String

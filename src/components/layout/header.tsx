@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { useLanguage, type TranslationKey } from '@/lib/i18n';
 import { ThemeToggle } from './theme-toggle';
 import { LanguageToggle } from './language-toggle';
+import { AuthButton } from './auth-button';
 import { trackPremiumCtaClick } from '@/components/analytics/analytics';
 
 // Navigation items (libellés via clés i18n)
@@ -157,9 +158,8 @@ export function Header() {
               {t('nav.premium')}
             </Link>
 
-            {/* User/Login button : masqué tant que l'auth est désactivée
-                (cf. Audit v1.1 §3.2 — auth/checkout en .disabled, route
-                /auth/signin -> 404). À réactiver avec le chantier abonnement. */}
+            {/* Connexion / menu compte (NextAuth + Prisma/Neon) */}
+            <AuthButton />
 
             {/* Mobile menu button */}
             <button
@@ -231,7 +231,10 @@ export function Header() {
                 {t('nav.discoverPremium')}
               </Link>
               
-              {/* Sign In mobile masqué : auth désactivée (cf. Audit §3.2). */}
+              <div className="my-3 border-t border-gray-200 dark:border-slate-800" />
+
+              {/* Connexion / compte (mobile) */}
+              <AuthButton mobile onNavigate={() => setMobileMenuOpen(false)} />
             </div>
           </div>
         )}
