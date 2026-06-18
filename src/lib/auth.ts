@@ -16,11 +16,11 @@ import { prisma } from '@/lib/db';
  * (Postgres) via l'adaptateur Prisma. Stratégie de session : "database".
  *
  * Variables requises en production (Netlify) :
- *  - DATABASE_URL          (Supabase, transaction pooler port 6543, pgbouncer=true)
+ *  - DATABASE_URL          (Supabase, session pooler port 5432, user postgres.<ref>)
  *  - NEXTAUTH_URL          (https://tennisstringadvisor.org)
  *  - NEXTAUTH_SECRET       (openssl rand -base64 32)
- *  - GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET (optionnel mais recommandé)
- *  - EMAIL_SERVER_HOST/PORT/USER/PASSWORD + EMAIL_FROM (optionnel)
+ *  - GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET (Google OAuth — actif)
+ *  - EMAIL_SERVER_HOST/PORT/USER/PASSWORD + EMAIL_FROM (magic link — actif via Resend)
  */
 
 const providers: NextAuthOptions['providers'] = [];
