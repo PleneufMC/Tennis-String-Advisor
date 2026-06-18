@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 
 interface SignInFormProps {
   hasGoogle: boolean;
@@ -32,35 +33,60 @@ function GoogleIcon({ className }: { className?: string }) {
   );
 }
 
+type LoadingState = 'google' | 'credentials' | 'magic' | null;
+
 export function SignInForm({ hasGoogle, hasEmail }: SignInFormProps) {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get('callbackUrl') || '/';
   const [email, setEmail] = useState('');
-  const [loading, setLoading] = useState<'google' | 'email' | null>(null);
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState<LoadingState>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const handleGoogle = async () => {
     setLoading('google');
     await signIn('google', { callbackUrl });
   };
 
-  const handleEmail = async (e: React.FormEvent) => {
+  // Connexion e-mail / mot de passe (CredentialsProvider).
+  const handleCredentials = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
-    setLoading('email');
+    setError(null);
+    if (!email || !password) return;
+    setLoading('credentials');
+    const res = await signIn('credentials', {
+      email,
+      password,
+      redirect: false,
+      callbackUrl,
+    });
+    if (res?.error) {
+      setError('E-mail ou mot de passe incorrect.');
+      setLoading(null);
+      return;
+    }
+    window.location.href = callbackUrl;
+  };
+
+  // Connexion par lien magique (EmailProvider) — réutilise l'e-mail saisi.
+  const handleMagicLink = async () => {
+    setError(null);
+    if (!email) {
+      setError('Saisissez votre adresse e-mail pour recevoir un lien.');
+      return;
+    }
+    setLoading('magic');
     await signIn('email', { email, callbackUrl });
   };
 
-  if (!hasGoogle && !hasEmail) {
-    return (
-      <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-200">
-        La connexion sera disponible très prochainement. Aucun fournisseur
-        d&apos;authentification n&apos;est encore configuré.
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-4">
+      {error && (
+        <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-400/30 dark:bg-red-400/10 dark:text-red-300">
+          {error}
+        </div>
+      )}
+
       {hasGoogle && (
         <button
           type="button"
@@ -73,7 +99,7 @@ export function SignInForm({ hasGoogle, hasEmail }: SignInFormProps) {
         </button>
       )}
 
-      {hasGoogle && hasEmail && (
+      {hasGoogle && (
         <div className="flex items-center gap-3">
           <div className="h-px flex-1 bg-gray-200 dark:bg-slate-700" />
           <span className="text-xs text-gray-400 dark:text-slate-500">ou</span>
@@ -81,8 +107,9 @@ export function SignInForm({ hasGoogle, hasEmail }: SignInFormProps) {
         </div>
       )}
 
-      {hasEmail && (
-        <form onSubmit={handleEmail} className="space-y-3">
+      {/* Connexion e-mail / mot de passe (toujours disponible) */}
+      <form onSubmit={handleCredentials} className="space-y-3">
+        <div className="space-y-1">
           <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-slate-200">
             Adresse e-mail
           </label>
@@ -95,15 +122,47 @@ export function SignInForm({ hasGoogle, hasEmail }: SignInFormProps) {
             placeholder="vous@exemple.com"
             className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/30 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
           />
-          <button
-            type="submit"
-            disabled={loading !== null}
-            className="w-full rounded-xl bg-green-600 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-green-700 disabled:opacity-60"
-          >
-            {loading === 'email' ? 'Envoi du lien…' : 'Recevoir un lien de connexion'}
-          </button>
-        </form>
+        </div>
+        <div className="space-y-1">
+          <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-slate-200">
+            Mot de passe
+          </label>
+          <input
+            id="password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Votre mot de passe"
+            className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/30 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+          />
+        </div>
+        <button
+          type="submit"
+          disabled={loading !== null}
+          className="w-full rounded-xl bg-green-600 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-green-700 disabled:opacity-60"
+        >
+          {loading === 'credentials' ? 'Connexion…' : 'Se connecter'}
+        </button>
+      </form>
+
+      {/* Lien magique (si SMTP configuré) — réutilise l'e-mail saisi ci-dessus */}
+      {hasEmail && (
+        <button
+          type="button"
+          onClick={handleMagicLink}
+          disabled={loading !== null}
+          className="w-full rounded-xl border border-green-600 px-4 py-3 text-sm font-semibold text-green-700 transition-colors hover:bg-green-50 disabled:opacity-60 dark:border-green-500/60 dark:text-green-400 dark:hover:bg-green-400/10"
+        >
+          {loading === 'magic' ? 'Envoi du lien…' : 'Recevoir un lien de connexion par e-mail'}
+        </button>
       )}
+
+      <p className="text-center text-sm text-gray-500 dark:text-slate-400">
+        Pas encore de compte ?{' '}
+        <Link href="/auth/signup" className="font-medium text-green-600 hover:text-green-700 dark:text-tennis-green-400">
+          Créer un compte
+        </Link>
+      </p>
     </div>
   );
 }
