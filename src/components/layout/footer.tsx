@@ -90,7 +90,7 @@ export function Footer() {
                 <h3 className="text-sm font-semibold leading-6 text-white">{t('footer.col.product')}</h3>
                 <ul role="list" className="mt-6 space-y-4">
                   {footerNavigation.product.map((item) => (
-                    <li key={item.href}>
+                    <li key={item.key}>
                       <Link
                         href={item.href}
                         className="text-sm leading-6 text-gray-400 hover:text-white transition-colors"
@@ -105,7 +105,7 @@ export function Footer() {
                 <h3 className="text-sm font-semibold leading-6 text-white">{t('footer.col.resources')}</h3>
                 <ul role="list" className="mt-6 space-y-4">
                   {footerNavigation.resources.map((item) => (
-                    <li key={item.href}>
+                    <li key={item.key}>
                       <Link
                         href={item.href}
                         className="text-sm leading-6 text-gray-400 hover:text-white transition-colors"
@@ -114,6 +114,14 @@ export function Footer() {
                       </Link>
                     </li>
                   ))}
+                  <li>
+                    <a
+                      href="/en/"
+                      className="text-sm leading-6 text-gray-400 hover:text-white transition-colors inline-flex items-center gap-1"
+                    >
+                      🇬🇧 English
+                    </a>
+                  </li>
                 </ul>
               </div>
             </div>
