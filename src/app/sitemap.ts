@@ -48,6 +48,12 @@ const BLOG_SLUGS: string[] = [
   'actualite-materiel-tennis-2026-guerre-du-spin.html',
 ];
 
+// Articles de blog anglais réellement présents dans `public/en/blog/*.html`.
+const EN_BLOG_SLUGS: string[] = [
+  'challengers-sinner-alcaraz-2026.html',
+  'next-gen-tennis-racquets-fonseca-mensik-cobolli-jodar.html',
+];
+
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
 
@@ -74,5 +80,27 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.6,
   }));
 
-  return [...appEntries, ...blogIndex, ...blogEntries];
+  const enBlogIndex: MetadataRoute.Sitemap = [
+    {
+      url: `${BASE_URL}/en/blog/`,
+      lastModified: now,
+      changeFrequency: 'weekly',
+      priority: 0.6,
+    },
+  ];
+
+  const enBlogEntries: MetadataRoute.Sitemap = EN_BLOG_SLUGS.map((slug) => ({
+    url: `${BASE_URL}/en/blog/${slug}`,
+    lastModified: now,
+    changeFrequency: 'monthly',
+    priority: 0.6,
+  }));
+
+  return [
+    ...appEntries,
+    ...blogIndex,
+    ...blogEntries,
+    ...enBlogIndex,
+    ...enBlogEntries,
+  ];
 }
