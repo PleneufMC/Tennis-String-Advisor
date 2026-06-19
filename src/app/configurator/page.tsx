@@ -7,6 +7,13 @@ import { stringsDatabase, calculateRCS, getStringRecommendation } from '@/data/s
 import { racquetsDatabase, calculateCompatibility } from '@/data/racquets-database';
 import { ConfigurationStorage, SavedConfiguration } from '@/lib/storage';
 import { trackConfiguratorComplete } from '@/components/analytics/analytics';
+import { isPremiumActive } from '@/lib/premium';
+import {
+  calculateAdvancedRcs,
+  stringTypeToFamily,
+  parseGaugeMm,
+  type AdvancedRcsResult,
+} from '@/lib/advanced-rcs';
 
 export default function ConfiguratorPage() {
   const { data: session } = useSession();
@@ -107,6 +114,56 @@ export default function ConfiguratorPage() {
       compatibility
     };
   }, [selectedRacquet, selectedMainString, selectedCrossString, formData.mainTension, formData.crossTension]);
+
+  // Statut Premium (l'analyse RCS avancée est réservée aux abonnés).
+  const isPremium = useMemo(
+    () => isPremiumActive(session?.user as any),
+    [session?.user]
+  );
+
+  // RCS Avancé : analyse multi-facteurs + sous-scores + recommandations.
+  const advancedRcs: AdvancedRcsResult | null = useMemo(() => {
+    if (!selectedRacquet || !selectedMainString) return null;
+    return calculateAdvancedRcs({
+      racquetStiffness: selectedRacquet.stiffness ?? 63,
+      racquetWeight: selectedRacquet.weight,
+      racquetHeadSize: selectedRacquet.headSize,
+      mainStringStiffness: selectedMainString.stiffness,
+      mainStringFamily: stringTypeToFamily(selectedMainString.type),
+      mainRatings: {
+        control: selectedMainString.control,
+        comfort: selectedMainString.comfort,
+        spin: selectedMainString.spin,
+        power: selectedMainString.power,
+        durability: selectedMainString.durability,
+      },
+      mainGaugeMm: parseGaugeMm(formData.mainGauge),
+      crossStringStiffness: selectedCrossString?.stiffness,
+      crossStringFamily: selectedCrossString
+        ? stringTypeToFamily(selectedCrossString.type)
+        : undefined,
+      crossRatings: selectedCrossString
+        ? {
+            control: selectedCrossString.control,
+            comfort: selectedCrossString.comfort,
+            spin: selectedCrossString.spin,
+            power: selectedCrossString.power,
+            durability: selectedCrossString.durability,
+          }
+        : undefined,
+      crossGaugeMm: selectedCrossString ? parseGaugeMm(formData.crossGauge) : undefined,
+      mainTension: formData.mainTension,
+      crossTension: formData.crossTension,
+    });
+  }, [
+    selectedRacquet,
+    selectedMainString,
+    selectedCrossString,
+    formData.mainGauge,
+    formData.crossGauge,
+    formData.mainTension,
+    formData.crossTension,
+  ]);
 
   // GA4 : émettre `configurator_complete` quand une reco RCS valide est produite.
   // Dédupliqué par combinaison (raquette + cordages + tensions) pour ne pas
@@ -1004,6 +1061,203 @@ export default function ConfiguratorPage() {
                     {rcsData.compatibility.toFixed(0)}%
                   </span>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* RCS Avancé (Premium) */}
+          {advancedRcs && (
+            <div
+              style={{
+                marginTop: '1rem',
+                padding: '1.25rem',
+                borderRadius: '12px',
+                border: '1px solid #d1d5db',
+                background: 'linear-gradient(135deg,#f8fafc 0%,#eef2ff 100%)',
+                position: 'relative',
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginBottom: '0.75rem',
+                }}
+              >
+                <span style={{ fontWeight: 700, color: '#1f2937' }}>
+                  🔬 Analyse RCS Avancée
+                </span>
+                <span
+                  style={{
+                    fontSize: '0.7rem',
+                    fontWeight: 700,
+                    color: '#92400e',
+                    background: '#fde68a',
+                    padding: '2px 8px',
+                    borderRadius: '999px',
+                  }}
+                >
+                  PREMIUM
+                </span>
+              </div>
+
+              {/* Contenu : flouté + verrouillé pour les non-premium */}
+              <div style={{ position: 'relative' }}>
+                <div
+                  style={{
+                    filter: isPremium ? 'none' : 'blur(5px)',
+                    userSelect: isPremium ? 'auto' : 'none',
+                    pointerEvents: isPremium ? 'auto' : 'none',
+                  }}
+                  aria-hidden={!isPremium}
+                >
+                  {/* Score global */}
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'baseline',
+                      gap: '0.5rem',
+                      marginBottom: '0.75rem',
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: '2rem',
+                        fontWeight: 800,
+                        color:
+                          advancedRcs.level === 'excellent'
+                            ? '#059669'
+                            : advancedRcs.level === 'good'
+                            ? '#2563eb'
+                            : advancedRcs.level === 'moderate'
+                            ? '#eab308'
+                            : '#dc2626',
+                      }}
+                    >
+                      {advancedRcs.overall}
+                      <span style={{ fontSize: '1rem', color: '#6b7280' }}>/100</span>
+                    </span>
+                    <span style={{ color: '#374151', fontSize: '0.9rem' }}>
+                      {advancedRcs.summary}
+                    </span>
+                  </div>
+
+                  {/* Sous-scores */}
+                  {(
+                    [
+                      ['Puissance', advancedRcs.subScores.power],
+                      ['Contrôle', advancedRcs.subScores.control],
+                      ['Confort', advancedRcs.subScores.comfort],
+                      ['Spin', advancedRcs.subScores.spin],
+                      ['Durabilité', advancedRcs.subScores.durability],
+                    ] as [string, number][]
+                  ).map(([label, value]) => (
+                    <div key={label} style={{ marginBottom: '0.5rem' }}>
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          fontSize: '0.8rem',
+                          color: '#374151',
+                          marginBottom: '2px',
+                        }}
+                      >
+                        <span>{label}</span>
+                        <span style={{ fontWeight: 600 }}>{value}</span>
+                      </div>
+                      <div
+                        style={{
+                          height: '6px',
+                          background: '#e5e7eb',
+                          borderRadius: '999px',
+                          overflow: 'hidden',
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: `${value}%`,
+                            height: '100%',
+                            background:
+                              value >= 75 ? '#059669' : value >= 50 ? '#2563eb' : '#f59e0b',
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* Alertes */}
+                  {advancedRcs.warnings.map((w, i) => (
+                    <div
+                      key={i}
+                      style={{
+                        marginTop: '0.6rem',
+                        padding: '0.5rem 0.75rem',
+                        background: '#fef2f2',
+                        border: '1px solid #fecaca',
+                        borderRadius: '8px',
+                        fontSize: '0.8rem',
+                        color: '#991b1b',
+                      }}
+                    >
+                      ⚠️ {w}
+                    </div>
+                  ))}
+
+                  {/* Recommandations */}
+                  {advancedRcs.recommendations.map((rec, i) => (
+                    <div
+                      key={i}
+                      style={{
+                        marginTop: '0.5rem',
+                        padding: '0.5rem 0.75rem',
+                        background: '#eff6ff',
+                        border: '1px solid #bfdbfe',
+                        borderRadius: '8px',
+                        fontSize: '0.8rem',
+                        color: '#1e40af',
+                      }}
+                    >
+                      💡 {rec}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Overlay CTA pour les non-premium */}
+                {!isPremium && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      textAlign: 'center',
+                      gap: '0.6rem',
+                      padding: '1rem',
+                    }}
+                  >
+                    <span style={{ fontSize: '1.5rem' }}>🔒</span>
+                    <span style={{ fontWeight: 600, color: '#1f2937', fontSize: '0.9rem' }}>
+                      Sous-scores détaillés &amp; recommandations personnalisées
+                    </span>
+                    <Link
+                      href="/pricing"
+                      style={{
+                        background: '#f59e0b',
+                        color: '#1f2937',
+                        fontWeight: 700,
+                        padding: '0.5rem 1rem',
+                        borderRadius: '8px',
+                        textDecoration: 'none',
+                        fontSize: '0.85rem',
+                      }}
+                    >
+                      Passer Premium
+                    </Link>
+                  </div>
+                )}
               </div>
             </div>
           )}
