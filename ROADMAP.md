@@ -3,7 +3,7 @@
 > Document de pilotage. Stratégie issue de l'audit (`Audit-Full.md`) :
 > **réparer → mesurer → monétiser**, une amélioration mesurée à la fois.
 >
-> **Dernière mise à jour** : 2026-06-18 · **Version courante** : `2.8.0`
+> **Dernière mise à jour** : 2026-06-19 · **Version courante** : `2.9.0`
 
 ---
 
@@ -33,7 +33,8 @@
 | 10 | **Connexion e-mail/mot de passe** (`CredentialsProvider` + migration session `database`→`jwt` + `/auth/signup` + `/api/auth/register` + `User.passwordHash`) | #3.1 | #39 | `cd45fd6` | **2.7.0** |
 | — | **Documentation** (ROADMAP + AUTH-SETUP à jour, diagnostic premium) | — | #40 | `e6ac6c7` | 2.7.1 |
 | 11 | **Journal de cordage synchronisé** (1ʳᵉ vraie fonctionnalité réservée aux connectés) : API CRUD `/api/configurations` (GET/POST/DELETE) protégée par session + scoping strict `userId`, page `/account/configurations`, sauvegarde serveur depuis le configurateur, lien « Mon journal » dans le menu compte, i18n FR/EN | #2.2 / #3.1 | #41 | `2c3161f` | **2.8.0** |
-| 12 | **Honnêteté offre — quota gratuit appliqué** : `src/lib/premium.ts` (`isPremiumActive` + `maxConfigsFor`), **limite 3 configs/gratuit, illimité premium** (vérifiée en base : 4ᵉ → HTTP 403), jauge quota + CTA Premium sur `/account/configurations`, message dédié dans le configurateur, suppression du composant mort `premium-features.tsx` (fake features `$9.99`) | Option A | _en cours_ | _en cours_ | **2.8.1** |
+| 12 | **Honnêteté offre — quota gratuit appliqué** : `src/lib/premium.ts` (`isPremiumActive` + `maxConfigsFor`), **limite 3 configs/gratuit, illimité premium** (vérifiée en base : 4ᵉ → HTTP 403), jauge quota + CTA Premium sur `/account/configurations`, message dédié dans le configurateur, suppression du composant mort `premium-features.tsx` (fake features `$9.99`) | Option A | #42 | `8cae3c0` | **2.8.1** |
+| 13 | **Export PDF Premium** : `src/lib/pdf-export.ts` (jsPDF chargé via CDN, 0 ajout au bundle, génération 100 % navigateur), bouton « 📄 Export PDF » par configuration sur `/account/configurations` — **réservé aux premium** (gratuit → 🔒 redirige `/pricing`). Fiche PDF de marque (en-tête vert, tableau raquette/cordages/tensions/RCS/compat, notes, pied de page). Rendu vérifié visuellement. | Option A / #3.2 | _en cours_ | _en cours_ | **2.9.0** |
 
 ### Détails utiles sur l'acquis récent
 
@@ -90,7 +91,7 @@
 | Moyenne | **Vérifier le domaine Resend** | Resend → Domains → ajouter `tennisstringadvisor.org` + DNS (SPF/DKIM) chez le registrar, puis passer `EMAIL_FROM=noreply@tennisstringadvisor.org` sur Netlify + redeploy. Ouvre le **magic link à TOUS les visiteurs** (aujourd'hui limité au compte Resend). | À faire |
 | Moyenne | **CTA « Premium » conditionnel** | Le bouton « Premium » du header pointe **toujours** vers `/pricing`, même pour un compte déjà premium. À adapter (masquer / rediriger vers un espace compte) une fois le premium réellement exploité. | À faire |
 | Moyenne | **Audit du contenu réellement « gated »** | ✅ Diagnostiqué : `isPremium` était purement cosmétique. **Première vraie valeur livrée** = journal de cordage (ticket #11). ✅ **Premier vrai gating premium livré** = quota 3 configs/gratuit vs illimité premium (ticket #12). Reste : autres promesses de `/pricing` à implémenter ou marquer « à venir ». | Partiel |
-| ✅ Fait | **Honnêteté de l'offre `/pricing`** (Option A — 1er volet) | ✅ Quota gratuit (3) **réellement appliqué** côté serveur (ticket #12). ✅ Composant mort `premium-features.tsx` (fake features `$9.99`/`$99`, bouton mort) **supprimé**. Reste (2ᵉ volet) : implémenter ou marquer « à venir » les autres promesses Premium de `/pricing` (Export PDF, Rappels recordage, RCS avancé). | Partiel |
+| ✅ Fait | **Honnêteté de l'offre `/pricing`** (Option A) | ✅ Quota gratuit (3) **réellement appliqué** (ticket #12). ✅ Composant mort `premium-features.tsx` **supprimé**. ✅ **Export PDF Premium livré** (ticket #13). Reste à implémenter ou marquer « à venir » : **Rappels de recordage**, **RCS avancé / reco perso** (encore promis sur `/pricing` mais non implémentés). | Partiel |
 | Basse | **Notion d'admin/owner (optionnel)** | Créer un vrai rôle admin (champ `role` ou liste d'e-mails) → premium auto + futur back-office (gestion abonnés, stats). Décision design en attente. | Idée |
 | Basse | **Régénérer secrets exposés** | Le `GOOGLE_CLIENT_SECRET` et la clé Resend `re_…` ont transité en clair dans le chat → à régénérer par prudence. | À faire (utilisateur) |
 
@@ -117,7 +118,9 @@
 ## 🧭 Point de reprise pour demain
 
 - **Branche de travail** : repartir de `main` à jour (`git checkout main && git pull origin main --ff-only`).
-- **Dernier état** : `main` = `e6ac6c7` (avant Feature B), `genspark_ai_developer` synchronisée, version `2.8.0` (journal de cordage).
+- **Dernier état** : `main` = `8cae3c0` (avant Export PDF), `genspark_ai_developer` synchronisée. Version `2.9.0`.
+  Acquis premium : journal de cordage (#11), **quota gratuit appliqué** (#12), **export PDF Premium** (#13).
+  Prochaines vraies features premium candidates : **rappels de recordage**, **RCS avancé**.
 - **Auth** : ✅ **terminée et opérationnelle** (Google + magic link + e-mail/mot de passe).
   Compte owner `pfermanian@gmail.com` passé **premium** manuellement en base (`isPremium=true`, permanent).
 - **Journal de cordage (ticket #11)** : ✅ livré — API `/api/configurations` (GET/POST/DELETE, scoping `userId`),
