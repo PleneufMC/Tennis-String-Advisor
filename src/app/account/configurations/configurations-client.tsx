@@ -2,8 +2,10 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { racquetsDatabase } from '@/data/racquets-database';
 import { stringsDatabase } from '@/data/strings-database';
+import { exportConfigurationPdf } from '@/lib/pdf-export';
 
 interface ServerConfiguration {
   id: string;
@@ -98,11 +100,46 @@ function QuotaBanner({ quota }: { quota: Quota | null }) {
 }
 
 export function ConfigurationsClient() {
+  const router = useRouter();
   const [configs, setConfigs] = useState<ServerConfiguration[]>([]);
   const [quota, setQuota] = useState<Quota | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [exportingId, setExportingId] = useState<string | null>(null);
+
+  const isPremium = quota?.isPremium ?? false;
+
+  const handleExport = async (c: ServerConfiguration) => {
+    // Garde Premium : un compte gratuit est redirigé vers l'offre.
+    if (!isPremium) {
+      router.push('/pricing');
+      return;
+    }
+    setExportingId(c.id);
+    setError(null);
+    try {
+      await exportConfigurationPdf({
+        name: c.name,
+        racquetLabel: racquetLabel(c.racquetId),
+        mainStringLabel: stringLabel(c.mainStringId) ?? c.mainStringId,
+        crossStringLabel: stringLabel(c.crossStringId),
+        mainGauge: c.mainGauge,
+        crossGauge: c.crossGauge,
+        mainTension: c.mainTension,
+        crossTension: c.crossTension,
+        rating: c.rating,
+        notes: c.notes,
+        rcsScore: c.rcsScore,
+        compatibility: c.compatibility,
+        createdAt: c.createdAt,
+      });
+    } catch {
+      setError("L'export PDF a échoué. Réessayez.");
+    } finally {
+      setExportingId(null);
+    }
+  };
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -233,14 +270,37 @@ export function ConfigurationsClient() {
                     </p>
                   )}
                 </div>
-                <button
-                  type="button"
-                  onClick={() => handleDelete(c.id)}
-                  disabled={deletingId === c.id}
-                  className="shrink-0 rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50 dark:border-red-400/30 dark:text-red-400 dark:hover:bg-red-400/10"
-                >
-                  {deletingId === c.id ? 'Suppression…' : 'Supprimer'}
-                </button>
+                <div className="flex shrink-0 flex-col items-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleExport(c)}
+                    disabled={exportingId === c.id}
+                    title={
+                      isPremium
+                        ? 'Exporter cette configuration en PDF'
+                        : 'Export PDF réservé au plan Premium'
+                    }
+                    className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors disabled:opacity-50 ${
+                      isPremium
+                        ? 'border-green-200 text-green-700 hover:bg-green-50 dark:border-green-400/30 dark:text-green-400 dark:hover:bg-green-400/10'
+                        : 'border-gray-200 text-gray-500 hover:bg-gray-50 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800'
+                    }`}
+                  >
+                    {exportingId === c.id
+                      ? 'Export…'
+                      : isPremium
+                        ? '📄 Export PDF'
+                        : '🔒 Export PDF'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(c.id)}
+                    disabled={deletingId === c.id}
+                    className="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50 dark:border-red-400/30 dark:text-red-400 dark:hover:bg-red-400/10"
+                  >
+                    {deletingId === c.id ? 'Suppression…' : 'Supprimer'}
+                  </button>
+                </div>
               </div>
             </li>
           );
