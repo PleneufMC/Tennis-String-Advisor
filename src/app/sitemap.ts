@@ -46,6 +46,7 @@ const BLOG_SLUGS: string[] = [
   'cordage-terre-battue.html',
   'challengers-sinner-alcaraz-2026.html',
   'actualite-materiel-tennis-2026-guerre-du-spin.html',
+  'cordage-mono-vs-multifilament.html',
 ];
 
 // Articles de blog anglais réellement présents dans `public/en/blog/*.html`.
