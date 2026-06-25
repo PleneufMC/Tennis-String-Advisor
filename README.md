@@ -15,6 +15,9 @@ Un système avancé de configuration de cordage de tennis avec journal professio
 - **Configurateur** : `/configurator`
 - **Tarification** : `/pricing`
 - **Statistiques** : `/statistics`
+- **Blog** : `/blog/`
+- **Guide plan de cordage** : `/blog/plan-de-cordage-tennis.html`
+- **Guide jauge de cordage** : `/blog/jauge-cordage-tennis.html`
 
 ## ✨ Fonctionnalités Principales
 
@@ -108,7 +111,13 @@ RCS = (racquetStiffness/70 × 0.4) + (stringStiffness/220 × 0.4) + (tension/24 
 - **Statistiques globales** : Totaux et moyennes
 - **Tables visuelles** : Avec codes couleur
 
-### 6. 🛒 Affiliation (Tennis-Point via Awin)
+### 6. 📰 Blog & Guides
+
+- ✅ **Blog statique** avec articles experts et SEO
+- ✅ **Guide Plan de cordage** (ouvert vs dense, spectre 16×15 → 18×20)
+- ✅ **Guide Jauge de cordage** (1,15–1,40 mm, impacts spin/puissance/durabilité)
+
+### 7. 🛒 Affiliation (Tennis-Point via Awin)
 
 - **Boutons « Voir le prix sur Tennis-Point »** sur les fiches cordages et raquettes
 - **Liens partenaires trackés** via deep-links Awin (commission jusqu'à 9 %, cookie 30 j)
@@ -118,7 +127,7 @@ RCS = (racquetStiffness/70 × 0.4) + (stringStiffness/220 × 0.4) + (tension/24 
 - **Mention d'affiliation** affichée dans le footer (conformité FR / Google)
 - **Architecture multi-marchands** : ajout d'un futur marchand = une entrée de config (`src/lib/affiliate.ts`)
 
-### 7. 🔧 Technologies Utilisées
+### 8. 🔧 Technologies Utilisées
 
 #### Frontend
 - **Next.js 14** : Framework React avec App Router
