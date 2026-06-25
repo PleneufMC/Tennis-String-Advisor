@@ -114,6 +114,8 @@
   <style>
     .prose h2 { scroll-margin-top: 100px; }
     .prose h3 { scroll-margin-top: 100px; }
+    .toc-link { transition: all 0.2s; }
+    .toc-link:hover { padding-left: 8px; color: #16a34a; }
     .info-box { background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); }
     .expert-box { background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); }
   </style>
@@ -173,232 +175,225 @@
   <!-- Main Content -->
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="lg:grid lg:grid-cols-4 lg:gap-8">
-      <article class="lg:col-span-3">
-        <header class="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 mb-8">
-          <div class="flex flex-wrap gap-2 mb-4">
-            <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-semibold">🎾 Cordage</span>
-            <span class="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-sm">⏱️ 12 min de lecture</span>
-            <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-semibold">Guide expert</span>
+      <!-- Sidebar TOC -->
+      <aside class="hidden lg:block lg:col-span-1">
+        <div class="sticky top-24 bg-white rounded-xl shadow-sm p-6">
+          <h3 class="font-bold text-gray-900 mb-4">Sommaire</h3>
+          <nav class="space-y-2 text-sm">
+            <a href="#introduction" class="toc-link block text-gray-600 hover:text-tennis-600">Introduction</a>
+            <a href="#espacement" class="toc-link block text-gray-600 hover:text-tennis-600">1. Espacement avant chiffres</a>
+            <a href="#spectre" class="toc-link block text-gray-600 hover:text-tennis-600">2. Spectre des plans</a>
+            <a href="#effets" class="toc-link block text-gray-600 hover:text-tennis-600">3. Effets sur le jeu</a>
+            <a href="#pros" class="toc-link block text-gray-600 hover:text-tennis-600">4. Plans des pros</a>
+            <a href="#choisir" class="toc-link block text-gray-600 hover:text-tennis-600">5. Choisir son plan</a>
+            <a href="#faq" class="toc-link block text-gray-600 hover:text-tennis-600">FAQ</a>
+            <a href="#conclusion" class="toc-link block text-gray-600 hover:text-tennis-600">Conclusion</a>
+          </nav>
+          <div class="mt-6 pt-6 border-t">
+            <a href="/configurator" class="block w-full py-3 px-4 bg-tennis-600 text-white text-center rounded-lg hover:bg-tennis-700 transition font-semibold">
+              Lancer le configurateur
+            </a>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Article Content -->
+      <article class="lg:col-span-3 bg-white rounded-xl shadow-sm p-6 md:p-10">
+        <header class="mb-8">
+          <div class="flex items-center gap-2 text-sm text-gray-500 mb-4 flex-wrap">
+            <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full font-medium">🎾 Cordage</span>
+            <span>•</span>
+            <time datetime="2026-06-01">Juin 2026</time>
+            <span>•</span>
+            <span>~ 12 min de lecture</span>
+            <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full font-medium">Guide expert</span>
           </div>
           <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Plan de cordage au tennis : ouvert ou dense ?</h1>
-          <p class="text-xl text-gray-600 mb-6">
-            Le vrai levier n'est pas le choix entre deux configurations, mais la densité des cordes — l'espacement.
-            C'est la base matérielle de votre montage, et elle peut changer le ressenti plus que 1 à 2 kg de tension.
+          <p class="text-xl text-gray-600">
+            Le vrai levier n'est pas le choix entre 16×19 et 18×20, mais la densité des cordes — l'espacement. Cette base matérielle
+            change le ressenti plus qu'un ou deux kilos de tension.
           </p>
-          <div class="flex items-center gap-4 text-sm text-gray-500">
-            <span>📅 Juin 2026</span>
-            <span>•</span>
-            <span>✍️ Pierre Fermanian</span>
-            <span>•</span>
-            <span>Tennis String Advisor</span>
-          </div>
         </header>
 
         <div class="prose prose-lg max-w-none">
-          <p>
-            Le plan de cordage est l'une des caractéristiques les plus influentes d'une raquette — et l'une des plus réduites
-            à un cliché : « 16×19 pour le spin, 18×20 pour le contrôle ». Ce raccourci est commode, mais il masque le vrai paramètre
-            en jeu : la densité, c'est-à-dire l'espacement entre les cordes. Entre ces deux configurations s'étend tout un spectre,
-            des grilles ultra-ouvertes conçues pour le spin aux plans très serrés taillés pour la précision.
-          </p>
-
-          <h2>Qu'est-ce qu'un plan de cordage ? Une histoire d'espacement</h2>
-          <p>
-            Le plan de cordage décrit le nombre de cordes montantes (verticales) et traversantes (horizontales). On l'écrit
-            montants × travers, les montants en premier : un 16×19 compte 16 montants et 19 travers. Point important : ce plan est
-            fixé par le cadre (les œillets sont percés à l'usine). On ne peut pas le changer, au même titre que la taille du tamis.
-          </p>
-          <p>
-            La distinction ouvert / dense ne tient pas vraiment aux chiffres, mais à la taille des carrés — l'espacement entre les
-            cordes. Moins de cordes ou des cordes plus espacées = des trous plus grands. Et un même plan n'a pas la même densité d'une
-            raquette à l'autre : un 16×19 sur 100 pouces est plus ouvert que le même 16×19 sur 95 pouces.
-          </p>
-
-          <h2>Le spectre des plans de cordage</h2>
-          <div class="overflow-x-auto">
-            <table class="min-w-full border border-gray-200 text-sm">
-              <thead class="bg-gray-50">
-                <tr>
-                  <th class="border px-4 py-2 text-left">Plan</th>
-                  <th class="border px-4 py-2 text-left">Type</th>
-                  <th class="border px-4 py-2 text-left">Profil en bref</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td class="border px-4 py-2">16×15 / 18×16</td>
-                  <td class="border px-4 py-2">Ultra-ouvert</td>
-                  <td class="border px-4 py-2">Spin extrême, toucher doux, mais casse vite et contrôle réduit.</td>
-                </tr>
-                <tr>
-                  <td class="border px-4 py-2">16×18</td>
-                  <td class="border px-4 py-2">Très ouvert</td>
-                  <td class="border px-4 py-2">Spin et puissance énormes, tenue de tension et durabilité plus faibles.</td>
-                </tr>
-                <tr>
-                  <td class="border px-4 py-2">16×19</td>
-                  <td class="border px-4 py-2">Ouvert (standard)</td>
-                  <td class="border px-4 py-2">Spin, puissance, angle de balle haut, toucher doux, tolérant pour le bras.</td>
-                </tr>
-                <tr>
-                  <td class="border px-4 py-2">16×20</td>
-                  <td class="border px-4 py-2">Intermédiaire</td>
-                  <td class="border px-4 py-2">Entre mordant et contrôle, dense au cœur (Pure Aero 98, Gravity MP).</td>
-                </tr>
-                <tr>
-                  <td class="border px-4 py-2">18×19</td>
-                  <td class="border px-4 py-2">Intermédiaire</td>
-                  <td class="border px-4 py-2">Un 16×19 resserré, mais un travers de moins rouvre l'espacement.</td>
-                </tr>
-                <tr>
-                  <td class="border px-4 py-2">18×20</td>
-                  <td class="border px-4 py-2">Dense (contrôle)</td>
-                  <td class="border px-4 py-2">Contrôle, précision, durabilité, trajectoire basse, toucher ferme.</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <h2>Ce que la densité change vraiment</h2>
-          <div class="overflow-x-auto">
-            <table class="min-w-full border border-gray-200 text-sm">
-              <thead class="bg-gray-50">
-                <tr>
-                  <th class="border px-4 py-2 text-left">Critère</th>
-                  <th class="border px-4 py-2 text-left">Plan ouvert</th>
-                  <th class="border px-4 py-2 text-left">Plan dense</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td class="border px-4 py-2">Spin</td>
-                  <td class="border px-4 py-2">+</td>
-                  <td class="border px-4 py-2">–</td>
-                </tr>
-                <tr>
-                  <td class="border px-4 py-2">Puissance</td>
-                  <td class="border px-4 py-2">+</td>
-                  <td class="border px-4 py-2">–</td>
-                </tr>
-                <tr>
-                  <td class="border px-4 py-2">Angle de balle</td>
-                  <td class="border px-4 py-2">Haut (profondeur facile)</td>
-                  <td class="border px-4 py-2">Bas (trajectoire tendue)</td>
-                </tr>
-                <tr>
-                  <td class="border px-4 py-2">Contrôle / régularité</td>
-                  <td class="border px-4 py-2">–</td>
-                  <td class="border px-4 py-2">+</td>
-                </tr>
-                <tr>
-                  <td class="border px-4 py-2">Durabilité</td>
-                  <td class="border px-4 py-2">– (casse plus vite)</td>
-                  <td class="border px-4 py-2">+</td>
-                </tr>
-                <tr>
-                  <td class="border px-4 py-2">Confort (bras)</td>
-                  <td class="border px-4 py-2">+</td>
-                  <td class="border px-4 py-2">–</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <h3>Spin</h3>
-          <p>
-            Des espaces plus larges laissent la balle s'enfoncer davantage dans le tamis et offrent une meilleure « morsure ».
-            Les cordes bougent et reviennent plus librement en place (snapback), ce qui génère de la rotation. L'effet du plan
-            reste toutefois second par rapport au geste : le plan aide, il ne fait pas le spin à votre place.
-          </p>
-
-          <h3>Puissance et angle de balle</h3>
-          <p>
-            Un plan ouvert offre un plan de cordage plus élastique (effet trampoline) : plus de puissance et un angle de balle plus haut.
-            Un plan dense aplatit la trajectoire et donne le contrôle de la longueur.
-          </p>
-
-          <h3>Contrôle et régularité</h3>
-          <p>
-            Plus il y a de cordes et moins elles bougent, plus la réponse est prévisible et constante — y compris sur les frappes
-            décentrées et les coups de précision.
-          </p>
-
-          <h3>Durabilité et confort</h3>
-          <p>
-            Le plan dense répartit le choc sur davantage de cordes et limite leur mouvement : il s'use moins vite. À l'inverse,
-            un plan ouvert laisse les cordes se déplacer : elles s'entaillent et cassent plus tôt, et tiennent moins bien la tension.
-          </p>
-
-          <div class="info-box rounded-2xl p-6">
-            <h3 class="mt-0">Point expert : l'espacement prime sur les chiffres</h3>
+          <section id="introduction" class="mb-12">
             <p>
-              Deux raquettes affichant le même plan peuvent avoir des densités très différentes (taille de tamis, répartition de
-              l'espacement). Et vous pouvez ajuster un plan avec la jauge : une corde épaisse dans un plan ouvert referme les mailles,
-              tandis qu'une jauge fine dans un plan dense rouvre le tamis. Le plan et la jauge travaillent ensemble.
+              Le plan de cordage est l'une des caractéristiques les plus influentes d'une raquette — et l'une des plus réduites à un cliché :
+              « 16×19 pour le spin, 18×20 pour le contrôle ». Ce raccourci masque le vrai paramètre en jeu : la densité, c'est-à-dire l'espacement
+              entre les cordes. Entre ces deux configurations s'étend tout un spectre, des grilles ultra-ouvertes conçues pour le spin aux plans
+              très serrés taillés pour la précision.
             </p>
-          </div>
+          </section>
 
-          <h2>Plan, tension et type de cordage : un trio indissociable</h2>
-          <p>
-            Si le plan est le socle matériel, la tension est le réglage fin par-dessus. Premier réflexe utile : un plan dense se corde
-            souvent un peu plus bas, car il y a davantage de cordes pour amortir l'impact. Le type de cordage complète le tableau :
-            un poly glissant maximise le snapback d'un plan ouvert, tandis qu'un plan dense convient bien aux cordes plus souples
-            (boyau, multifilament) qu'il aide à canaliser.
-          </p>
-
-          <h2>Les plans des pros : quatre champions, quatre densités</h2>
-          <ul>
-            <li><strong>Rafael Nadal</strong> — 16×19 (Pure Aero). L'ouvert pur, au service d'un lift dévastateur.</li>
-            <li><strong>Carlos Alcaraz</strong> — 16×20 (Pure Aero 98). Compromis spin / contrôle.</li>
-            <li><strong>Novak Djokovic</strong> — 18×19 (cadre custom). Contrôle + un travers de moins pour récupérer du spin.</li>
-            <li><strong>Alexander Zverev</strong> — 18×20. Le dense assumé pour la précision.</li>
-          </ul>
-
-          <div class="expert-box rounded-2xl p-6">
-            <h3 class="mt-0">Point expert : pas de plan « miracle »</h3>
+          <section id="espacement" class="mb-12">
+            <h2>1. Espacement avant chiffres</h2>
             <p>
-              Le spectre est utilisé d'un bout à l'autre, y compris au plus haut niveau. Les plans intermédiaires (16×20, 18×19)
-              se sont imposés dans le jeu moderne. Ne copiez pas un chiffre — accordez la densité à votre jeu.
+              Le plan de cordage décrit le nombre de cordes montantes (verticales) et traversantes (horizontales). On l'écrit montants × travers :
+              un 16×19 compte 16 montants et 19 travers. Point important : ce plan est fixé par le cadre, au même titre que la taille du tamis.
             </p>
-          </div>
+            <p>
+              La distinction ouvert / dense ne tient pas vraiment aux chiffres, mais à la taille des carrés — l'espacement entre les cordes.
+              Moins de cordes ou des cordes plus espacées = des trous plus grands. Et un même plan n'a pas la même densité d'une raquette à l'autre :
+              un 16×19 sur 100 pouces est plus ouvert que le même 16×19 sur 95 pouces.
+            </p>
+            <div class="info-box rounded-xl p-6">
+              <p class="font-semibold mb-2">Point expert</p>
+              <p>
+                Un plan identique peut jouer différemment selon la taille du tamis et la répartition des œillets. Jugez l'espacement,
+                pas seulement les deux chiffres.
+              </p>
+            </div>
+          </section>
 
-          <h2>Quel plan de cordage pour vous ?</h2>
-          <ul>
-            <li><strong>Gros lifteur, jeu offensif :</strong> plan ouvert (16×19, voire 16×18 ou « spin effect »).</li>
-            <li><strong>Frappe plate, contrôle et durabilité :</strong> plan dense (18×20).</li>
-            <li><strong>Joueur polyvalent :</strong> 16×19 par défaut ; 16×20 ou 18×19 pour un compromis.</li>
-            <li><strong>Bras sensible :</strong> un plan plus ouvert, plus élastique, combiné à un cordage souple et une tension modérée.</li>
-          </ul>
+          <section id="spectre" class="mb-12">
+            <h2>2. Le spectre des plans de cordage</h2>
+            <div class="overflow-x-auto">
+              <table class="min-w-full border border-gray-200 text-sm">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="border px-4 py-2 text-left">Plan</th>
+                    <th class="border px-4 py-2 text-left">Type</th>
+                    <th class="border px-4 py-2 text-left">Profil en bref</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="border px-4 py-2">16×15 / 18×16</td>
+                    <td class="border px-4 py-2">Ultra-ouvert</td>
+                    <td class="border px-4 py-2">Spin extrême, toucher doux, mais casse vite et contrôle réduit.</td>
+                  </tr>
+                  <tr>
+                    <td class="border px-4 py-2">16×18</td>
+                    <td class="border px-4 py-2">Très ouvert</td>
+                    <td class="border px-4 py-2">Spin et puissance énormes, tenue de tension plus faible.</td>
+                  </tr>
+                  <tr>
+                    <td class="border px-4 py-2">16×19</td>
+                    <td class="border px-4 py-2">Ouvert (standard)</td>
+                    <td class="border px-4 py-2">Spin, puissance, angle de balle haut, tolérant pour le bras.</td>
+                  </tr>
+                  <tr>
+                    <td class="border px-4 py-2">16×20</td>
+                    <td class="border px-4 py-2">Intermédiaire</td>
+                    <td class="border px-4 py-2">Entre mordant et contrôle, dense au cœur.</td>
+                  </tr>
+                  <tr>
+                    <td class="border px-4 py-2">18×19</td>
+                    <td class="border px-4 py-2">Intermédiaire</td>
+                    <td class="border px-4 py-2">Un 16×19 resserré, mais un travers de moins rouvre l'espacement.</td>
+                  </tr>
+                  <tr>
+                    <td class="border px-4 py-2">18×20</td>
+                    <td class="border px-4 py-2">Dense (contrôle)</td>
+                    <td class="border px-4 py-2">Contrôle, précision, durabilité, trajectoire basse.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
 
-          <h2>Conclusion : choisissez la densité, pas le cliché</h2>
-          <p>
-            Le plan de cordage est le socle matériel de votre montage, et le vrai paramètre n'est pas le choix entre deux nombres
-            mais la densité — l'espacement des cordes. Ouvert : spin, puissance, confort et angle de balle haut, au prix du contrôle
-            et de la durabilité. Dense : contrôle, précision, durabilité et trajectoire tendue, au prix du spin et de la puissance.
-            Une fois le cadre choisi, ajustez avec la jauge, le type de corde et la tension pour affiner le ressenti.
-          </p>
+          <section id="effets" class="mb-12">
+            <h2>3. Ce que la densité change vraiment</h2>
+            <div class="overflow-x-auto">
+              <table class="min-w-full border border-gray-200 text-sm">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="border px-4 py-2 text-left">Critère</th>
+                    <th class="border px-4 py-2 text-left">Plan ouvert</th>
+                    <th class="border px-4 py-2 text-left">Plan dense</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="border px-4 py-2">Spin</td>
+                    <td class="border px-4 py-2">+</td>
+                    <td class="border px-4 py-2">–</td>
+                  </tr>
+                  <tr>
+                    <td class="border px-4 py-2">Puissance</td>
+                    <td class="border px-4 py-2">+</td>
+                    <td class="border px-4 py-2">–</td>
+                  </tr>
+                  <tr>
+                    <td class="border px-4 py-2">Angle de balle</td>
+                    <td class="border px-4 py-2">Haut</td>
+                    <td class="border px-4 py-2">Bas</td>
+                  </tr>
+                  <tr>
+                    <td class="border px-4 py-2">Contrôle / régularité</td>
+                    <td class="border px-4 py-2">–</td>
+                    <td class="border px-4 py-2">+</td>
+                  </tr>
+                  <tr>
+                    <td class="border px-4 py-2">Durabilité</td>
+                    <td class="border px-4 py-2">–</td>
+                    <td class="border px-4 py-2">+</td>
+                  </tr>
+                  <tr>
+                    <td class="border px-4 py-2">Confort</td>
+                    <td class="border px-4 py-2">+</td>
+                    <td class="border px-4 py-2">–</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p>
+              Un plan ouvert favorise le snapback et l'effet trampoline : plus de rotation et de puissance, mais une trajectoire plus haute.
+              Un plan dense stabilise le tamis : meilleure régularité, trajectoire plus tendue et durabilité accrue.
+            </p>
+            <div class="expert-box rounded-xl p-6">
+              <p class="font-semibold mb-2">Plan + jauge : le duo décisif</p>
+              <p>
+                Une corde épaisse dans un plan ouvert « referme » les mailles ; une jauge fine dans un plan dense rouvre le tamis.
+                Le plan et la jauge travaillent ensemble.
+              </p>
+            </div>
+          </section>
+
+          <section id="pros" class="mb-12">
+            <h2>4. Les plans des pros : quatre champions, quatre densités</h2>
+            <ul>
+              <li><strong>Rafael Nadal</strong> — 16×19 (Pure Aero). L'ouvert pur, au service d'un lift dévastateur.</li>
+              <li><strong>Carlos Alcaraz</strong> — 16×20 (Pure Aero 98). Compromis spin / contrôle.</li>
+              <li><strong>Novak Djokovic</strong> — 18×19 (cadre custom). Contrôle + un travers de moins pour récupérer du spin.</li>
+              <li><strong>Alexander Zverev</strong> — 18×20. Le dense assumé pour la précision.</li>
+            </ul>
+          </section>
+
+          <section id="choisir" class="mb-12">
+            <h2>5. Quel plan de cordage pour vous ?</h2>
+            <ul>
+              <li><strong>Gros lifteur, jeu offensif :</strong> plan ouvert (16×19, voire 16×18).</li>
+              <li><strong>Frappe plate, contrôle et durabilité :</strong> plan dense (18×20).</li>
+              <li><strong>Joueur polyvalent :</strong> 16×19 par défaut ; 16×20 ou 18×19 pour un compromis.</li>
+              <li><strong>Bras sensible :</strong> plan plus ouvert, cordage souple et tension modérée.</li>
+            </ul>
+            <div class="mt-6 rounded-xl border border-tennis-200 bg-tennis-50 p-6">
+              <p class="font-semibold mb-2">Besoin d'un réglage précis ?</p>
+              <p class="mb-4">Croisez plan, jauge et tension pour estimer la fermeté ressentie avec le configurateur.</p>
+              <a href="/configurator" class="inline-flex items-center justify-center px-4 py-2 bg-tennis-600 text-white rounded-lg hover:bg-tennis-700 transition font-semibold">
+                Accéder au configurateur
+              </a>
+            </div>
+          </section>
+
+          <section id="faq" class="mb-12">
+            <h2>FAQ — Plan de cordage</h2>
+            <p><strong>Quel plan de cordage choisir : ouvert ou dense ?</strong><br>Ouvert pour le spin et la puissance, dense pour le contrôle et la durabilité. Les plans intermédiaires offrent un compromis moderne.</p>
+            <p><strong>Peut-on changer le plan de cordage ?</strong><br>Non. Il est fixé par le cadre. Pour ajuster le ressenti, jouez sur la jauge, le type de corde et la tension.</p>
+            <p><strong>Le 16×19 donne-t-il vraiment plus de spin ?</strong><br>Oui, mais la technique et la vitesse de tête restent déterminantes.</p>
+          </section>
+
+          <section id="conclusion">
+            <h2>Conclusion</h2>
+            <p>
+              Le plan de cordage est le socle matériel de votre montage. Le vrai paramètre n'est pas le choix entre deux nombres,
+              mais la densité — l'espacement des cordes. Ouvert : spin, puissance et confort. Dense : contrôle et durabilité. Une fois
+              le cadre choisi, ajustez avec la jauge, le type de corde et la tension pour affiner le ressenti.
+            </p>
+          </section>
         </div>
       </article>
-
-      <aside class="lg:col-span-1 space-y-6">
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-          <h3 class="text-lg font-semibold text-gray-900 mb-4">Sommaire</h3>
-          <ul class="space-y-3 text-sm">
-            <li><a class="text-gray-600 hover:text-tennis-600" href="#">Plan de cordage et espacement</a></li>
-            <li><a class="text-gray-600 hover:text-tennis-600" href="#">Spectre des plans</a></li>
-            <li><a class="text-gray-600 hover:text-tennis-600" href="#">Effets sur le jeu</a></li>
-            <li><a class="text-gray-600 hover:text-tennis-600" href="#">Plans des pros</a></li>
-            <li><a class="text-gray-600 hover:text-tennis-600" href="#">Choisir son plan</a></li>
-          </ul>
-        </div>
-        <div class="bg-tennis-600 text-white rounded-2xl p-6">
-          <h3 class="text-lg font-semibold mb-3">Besoin d'un montage sur-mesure ?</h3>
-          <p class="text-sm text-white/90 mb-4">Essayez le configurateur RCS pour croiser plan, jauge et tension.</p>
-          <a href="/configurator" class="inline-flex items-center justify-center w-full px-4 py-2 bg-white text-tennis-700 font-semibold rounded-lg hover:bg-gray-100 transition">
-            Lancer le configurateur
-          </a>
-        </div>
-      </aside>
     </div>
   </main>
 </body>
