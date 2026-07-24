@@ -39,6 +39,8 @@ const APP_ROUTES: Array<{
 // (Liste explicite : pas d'accès filesystem au runtime sur l'edge.)
 const BLOG_SLUGS: string[] = [
   'head-gravity-mp-vs-gravity-tour-2025.html',
+  'plan-de-cordage-tennis.html',
+  'jauge-cordage-tennis.html',
   'guide-tension-cordage-tennis.html',
   'cordage-tennis-elbow.html',
   'guide-materiel-tennis.html',
