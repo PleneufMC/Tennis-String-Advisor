@@ -38,6 +38,7 @@ const APP_ROUTES: Array<{
 // Articles de blog réellement présents dans `public/blog/*.html`.
 // (Liste explicite : pas d'accès filesystem au runtime sur l'edge.)
 const BLOG_SLUGS: string[] = [
+  'head-gravity-mp-vs-gravity-tour-2025.html',
   'guide-tension-cordage-tennis.html',
   'cordage-tennis-elbow.html',
   'guide-materiel-tennis.html',
