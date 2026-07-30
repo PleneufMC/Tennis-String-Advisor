@@ -1,0 +1,148 @@
+{
+ "_run_id": "20260730-072613",
+ "_generated_at": "2026-07-30T07:32:16+00:00",
+ "entity": "strings",
+ "records": [
+  {
+   "code": "HIT",
+   "reason": "multi_segment_gauge_mains_crosses_not_representable_in_single_gauge_mm",
+   "raw": {
+    "raw_name": "Head IntelliTour 1.25 (17) String",
+    "raw_specs": {
+     "manufacturer name": "HEAD Sport GmbH",
+     "address": "Wuhrkopfweg 1, 6921 Kennelbach, Austria",
+     "contact": "www.head.com",
+     "gauge": "17 gauge mains (1.23mm)/17 gauge crosses (1.323mm)",
+     "length": "Mains/22 feet (6.7m), Crosses/18 feet (5.5m)",
+     "colours": "Yellow/Natural."
+    },
+    "gauge_mm": 1.23,
+    "gauge_label": null,
+    "construction_source_text": null,
+    "colors": [
+     "Yellow",
+     "Natural."
+    ],
+    "price_eur": 11.3,
+    "gauge_conflict": {
+     "title_mm": 1.25,
+     "spec_mm": 1.23
+    },
+    "gauge_segments": [
+     "1.23",
+     "1.323"
+    ],
+    "notes": [
+     "multi_segment_gauge_detected",
+     "gauge_precision_exceeds_numeric_4_2",
+     "gauge_contradiction_title_vs_spec"
+    ]
+   },
+   "source_url": "https://www.tenniswarehouse-europe.com/Head_IntelliTour_125_17_String/descpageACHEAD-HIT-EN.html"
+  },
+  {
+   "code": "X115",
+   "reason": "gauge_contradiction_between_title_and_spec_line",
+   "raw": {
+    "raw_name": "Tecnifibre X-One Biphase 1.34 String",
+    "raw_specs": {
+     "manufacturer name": "Tecnifibre S.A.",
+     "address": "RD 307, 78810 Feucherolles, France",
+     "contact": "contact@tecnifibre.com",
+     "gauge": "15L/1.35 mm",
+     "length": "40ft/12.2m",
+     "composition": "Multifilament (Polyurethane - PU 400, H2C fibers, Biphasic treatment)",
+     "colour": "Natural"
+    },
+    "gauge_mm": 1.35,
+    "gauge_label": "15L",
+    "construction_source_text": "Multifilament (Polyurethane - PU 400, H2C fibers, Biphasic treatment)",
+    "colors": [
+     "Natural"
+    ],
+    "price_eur": 21.9,
+    "gauge_conflict": {
+     "title_mm": 1.34,
+     "spec_mm": 1.35
+    },
+    "gauge_segments": null,
+    "notes": [
+     "gauge_contradiction_title_vs_spec"
+    ]
+   },
+   "source_url": "https://www.tenniswarehouse-europe.com/Tecnifibre_X-One_Biphase_134_String_/descpageACTECNIH-X115-EN.html"
+  },
+  {
+   "code": "WNXTC",
+   "reason": "gauge_contradiction_between_title_and_spec_line",
+   "raw": {
+    "raw_name": "Wilson NXT Control 16 (1.32) String",
+    "raw_specs": {
+     "manufacturer name": "Wilson Sporting Goods Co.",
+     "address": "130 E. Randolph Street, Suite 600 Chicago, IL 60601 USA",
+     "contact": "https://wilson.com",
+     "responsible person": "Amer Sports Europe Services GmbH",
+     "responsible person address": "Parkring 15-17 85748 Garching, Germany",
+     "responsible person contact": "https://www.amersports.com/brands/wilson/",
+     "gauge": "16/1.30mm",
+     "length": "40ft/12mm",
+     "composition": "Natural Gut",
+     "color": "Natural"
+    },
+    "gauge_mm": 1.3,
+    "gauge_label": "16",
+    "construction_source_text": "Natural Gut",
+    "colors": [
+     "Natural"
+    ],
+    "price_eur": 20.9,
+    "gauge_conflict": {
+     "title_mm": 1.32,
+     "spec_mm": 1.3
+    },
+    "gauge_segments": null,
+    "notes": [
+     "gauge_contradiction_title_vs_spec"
+    ]
+   },
+   "source_url": "https://www.tenniswarehouse-europe.com/Wilson_NXT_Control_16_132_String/descpageACWILSON-WNXTC-EN.html"
+  },
+  {
+   "code": "RCON16",
+   "reason": "construction_unpublished_on_every_sku_of_this_natural_key",
+   "raw": {
+    "raw_name": "Head RIP Control 1.30/16 String Set",
+    "key": "head/rip-control/1.3",
+    "raw_specs": {
+     "string color": "Black Stock # 281099-16BK",
+     "manufacturer name": "HEAD Sport GmbH",
+     "address": "Wuhrkopfweg 1, 6921 Kennelbach, Austria",
+     "contact": "www.head.com",
+     "gauge": "16/1.30 mm",
+     "length": "40ft/12m",
+     "colour": "Black, Natural"
+    }
+   },
+   "source_url": "https://www.tenniswarehouse-europe.com/Head_RIP_Control_130_16_String_Set/descpageACHEAD-RCON16-EN.html"
+  },
+  {
+   "code": "TTGV15S",
+   "reason": "construction_unpublished_on_every_sku_of_this_natural_key",
+   "raw": {
+    "raw_name": "Tecnifibre TGV 1.35/15L String",
+    "key": "tecnifibre/tgv/1.35",
+    "raw_specs": {
+     "string color": "Black Stock # 01GTG135XB",
+     "manufacturer name": "Tecnifibre S.A.",
+     "address": "RD 307, 78810 Feucherolles, France",
+     "contact": "contact@tecnifibre.com",
+     "gauge": "15L (1.35 mm)",
+     "length": "12.2m",
+     "construction": "PU 400 inner core with SPL Coating Silicone Pyrogene Lubritec: reduces elongation and improves durability by up to 40%",
+     "color": "Black"
+    }
+   },
+   "source_url": "https://www.tenniswarehouse-europe.com/Tecnifibre_TGV_135_15L_String/descpageACTECNIH-TTGV15S-EN.html"
+  }
+ ]
+}

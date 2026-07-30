@@ -1,0 +1,1589 @@
+{
+ "_schema_version": 1,
+ "_run_id": "20260730-072613",
+ "_generated_at": "2026-07-30T07:32:16+00:00",
+ "_mode": "bootstrap",
+ "_coverage_scope": {
+  "entity": "strings",
+  "source": "tenniswarehouse-europe.com",
+  "facets_with_detail_pages_collected": [
+   "catpage-MULTIFILSTR-EN"
+  ],
+  "facets_enumerated_counts_only": [
+   "catpage-POLYSTRING-EN",
+   "catpage-POLYSTST-EN",
+   "catpage-HYBRIDSTR-EN",
+   "catpage-SYNGUTSTR-EN",
+   "catpage-NATURALGUT-EN",
+   "catpage-ALLMULTIS-EN",
+   "catpage-VALUMULTI-EN"
+  ],
+  "facet_item_counts": {
+   "MULTIFILSTR": 64,
+   "ALLMULTIS": 62,
+   "VALUMULTI": 17,
+   "POLYSTRING": 314,
+   "POLYSTST": 42,
+   "HYBRIDSTR": 18,
+   "SYNGUTSTR": 16,
+   "NATURALGUT": 5
+  },
+  "absence_outside_scope_is_not_evidence_of_discontinuation": true
+ },
+ "_counts": {
+  "natural_key_rows": 52,
+  "skus_accepted": 61,
+  "quarantined": 5
+ },
+ "items": [
+  {
+   "brand_slug": "ashaway",
+   "model_slug": "dynamite-natural",
+   "family_slug": "dynamite-natural",
+   "brand_label": "Ashaway",
+   "model_label": "Dynamite Natural",
+   "gauge_mm": 1.25,
+   "gauge_label": "17",
+   "construction": "multifilament",
+   "core_material": "Zyex",
+   "wrap_material": null,
+   "colors": [
+    "Optic Green"
+   ],
+   "tension_min_lbs": null,
+   "tension_max_lbs": null,
+   "price_eur": 15.9,
+   "content_hash": "43a771e8d315e66ebe05c81079f75f6679672263c80b94a040d7bf32c2c97beb",
+   "source_url": "https://www.tenniswarehouse-europe.com/Ashaway_Dynamite_17_125_Natural_String_Optic_Green/descpageACASH-D17SOFT-EN.html",
+   "source_tier": 1,
+   "lifecycle_status": "current",
+   "absence_streak": 0,
+   "sku_codes": [
+    "D17SOFT"
+   ],
+   "source_field_notes": [
+    "coating_wording_present_multifilament_vs_gaine_ambiguous"
+   ],
+   "collected_at": "2026-07-30T07:32:16+00:00"
+  },
+  {
+   "brand_slug": "babolat",
+   "model_slug": "addixion",
+   "family_slug": "addixion",
+   "brand_label": "Babolat",
+   "model_label": "Addixion",
+   "gauge_mm": 1.25,
+   "gauge_label": "17",
+   "construction": "multifilament",
+   "core_material": null,
+   "wrap_material": null,
+   "colors": [
+    "Natural"
+   ],
+   "tension_min_lbs": null,
+   "tension_max_lbs": null,
+   "price_eur": 11.9,
+   "content_hash": "a3b19d8a7084011660eec832394f014eb9ef16e7f58a74264a285f57529b4e8f",
+   "source_url": "https://www.tenniswarehouse-europe.com/Babolat_Addixion__125_17_String/descpageACQBA-BADDSP125-EN.html",
+   "source_tier": 1,
+   "lifecycle_status": "current",
+   "absence_streak": 0,
+   "sku_codes": [
+    "BADDSP125"
+   ],
+   "source_field_notes": [],
+   "collected_at": "2026-07-30T07:32:16+00:00"
+  },
+  {
+   "brand_slug": "babolat",
+   "model_slug": "addixion",
+   "family_slug": "addixion",
+   "brand_label": "Babolat",
+   "model_label": "Addixion",
+   "gauge_mm": 1.3,
+   "gauge_label": "16",
+   "construction": "multifilament",
+   "core_material": null,
+   "wrap_material": null,
+   "colors": [
+    "Natural"
+   ],
+   "tension_min_lbs": null,
+   "tension_max_lbs": null,
+   "price_eur": 11.9,
+   "content_hash": "1520338d905a76475da3c1964d4624cbc0ea034f283538a7b8f641f44e8e310d",
+   "source_url": "https://www.tenniswarehouse-europe.com/Babolat_Addixion__130_16_String/descpageACQBA-BADDSP130-EN.html",
+   "source_tier": 1,
+   "lifecycle_status": "current",
+   "absence_streak": 0,
+   "sku_codes": [
+    "BADDSP130"
+   ],
+   "source_field_notes": [],
+   "collected_at": "2026-07-30T07:32:16+00:00"
+  },
+  {
+   "brand_slug": "babolat",
+   "model_slug": "xalt",
+   "family_slug": "xalt",
+   "brand_label": "Babolat",
+   "model_label": "Xalt",
+   "gauge_mm": 1.25,
+   "gauge_label": "17",
+   "construction": "multifilament",
+   "core_material": "polyamide",
+   "wrap_material": null,
+   "colors": [
+    "White"
+   ],
+   "tension_min_lbs": null,
+   "tension_max_lbs": null,
+   "price_eur": 15.9,
+   "content_hash": "088ceb93ff59550a1690ff033619b02bbab69606787a33adf3ca3027b90ba666",
+   "source_url": "https://www.tenniswarehouse-europe.com/Babolat_Xalt_125_17_String/descpageACQBA-BAXAL17-EN.html",
+   "source_tier": 1,
+   "lifecycle_status": "current",
+   "absence_streak": 0,
+   "sku_codes": [
+    "BAXAL17"
+   ],
+   "source_field_notes": [
+    "coating_wording_present_multifilament_vs_gaine_ambiguous"
+   ],
+   "collected_at": "2026-07-30T07:32:16+00:00"
+  },
+  {
+   "brand_slug": "babolat",
+   "model_slug": "xalt",
+   "family_slug": "xalt",
+   "brand_label": "Babolat",
+   "model_label": "Xalt",
+   "gauge_mm": 1.3,
+   "gauge_label": "16",
+   "construction": "multifilament",
+   "core_material": "polyamide",
+   "wrap_material": null,
+   "colors": [
+    "White"
+   ],
+   "tension_min_lbs": null,
+   "tension_max_lbs": null,
+   "price_eur": 15.9,
+   "content_hash": "28f89646e3773b4c0fab8a83f0c36a7d5922af07c27a8705d98f6a898cecfa99",
+   "source_url": "https://www.tenniswarehouse-europe.com/Babolat_Xalt_130_16_String/descpageACQBA-BAXAL16-EN.html",
+   "source_tier": 1,
+   "lifecycle_status": "current",
+   "absence_streak": 0,
+   "sku_codes": [
+    "BAXAL16"
+   ],
+   "source_field_notes": [
+    "coating_wording_present_multifilament_vs_gaine_ambiguous"
+   ],
+   "collected_at": "2026-07-30T07:32:16+00:00"
+  },
+  {
+   "brand_slug": "babolat",
+   "model_slug": "xcel",
+   "family_slug": "xcel",
+   "brand_label": "Babolat",
+   "model_label": "XCel",
+   "gauge_mm": 1.25,
+   "gauge_label": "17",
+   "construction": "multifilament",
+   "core_material": null,
+   "wrap_material": null,
+   "colors": [
+    "Blue",
+    "Natural"
+   ],
+   "tension_min_lbs": null,
+   "tension_max_lbs": null,
+   "price_eur": 13.9,
+   "content_hash": "49699f17ff6313e0927f0172f0fe244636d756183c53215e1bee78365bcf10fb",
+   "source_url": "https://www.tenniswarehouse-europe.com/Babolat_XCel_125_17_String_Set/descpageACQBA-XCEL17S-EN.html",
+   "source_tier": 1,
+   "lifecycle_status": "current",
+   "absence_streak": 0,
+   "sku_codes": [
+    "XCEL17S"
+   ],
+   "source_field_notes": [],
+   "collected_at": "2026-07-30T07:32:16+00:00"
+  },
+  {
+   "brand_slug": "babolat",
+   "model_slug": "xcel",
+   "family_slug": "xcel",
+   "brand_label": "Babolat",
+   "model_label": "XCel",
+   "gauge_mm": 1.3,
+   "gauge_label": "16",
+   "construction": "multifilament",
+   "core_material": null,
+   "wrap_material": null,
+   "colors": [
+    "Black",
+    "Blue"
+   ],
+   "tension_min_lbs": null,
+   "tension_max_lbs": null,
+   "price_eur": 13.9,
+   "content_hash": "32cac7dc2a1252ced3012c318abb4a391c919c5219e91f79b94e2e4628243257",
+   "source_url": "https://www.tenniswarehouse-europe.com/Babolat_XCel_130_16_String_Set/descpageACQBA-XCEL16S-EN.html",
+   "source_tier": 1,
+   "lifecycle_status": "current",
+   "absence_streak": 0,
+   "sku_codes": [
+    "XCEL16S"
+   ],
+   "source_field_notes": [],
+   "collected_at": "2026-07-30T07:32:16+00:00"
+  },
+  {
+   "brand_slug": "babolat",
+   "model_slug": "xplore",
+   "family_slug": "xplore",
+   "brand_label": "Babolat",
+   "model_label": "XPlore",
+   "gauge_mm": 1.25,
+   "gauge_label": "17",
+   "construction": "multifilament",
+   "core_material": null,
+   "wrap_material": null,
+   "colors": [
+    "Blue",
+    "Grey"
+   ],
+   "tension_min_lbs": null,
+   "tension_max_lbs": null,
+   "price_eur": 7.9,
+   "content_hash": "14d772313ff5ed3afb4201ca930ccf6977b61f5c89983ef210c171c98a3e86ae",
+   "source_url": "https://www.tenniswarehouse-europe.com/Babolat_XPlore_125_17_String_Blue/descpageACQBA-BXPLR25-EN.html",
+   "source_tier": 1,
+   "lifecycle_status": "current",
+   "absence_streak": 0,
+   "sku_codes": [
+    "BXPLG25",
+    "BXPLR25"
+   ],
+   "source_field_notes": [
+    "colour_from_title_tail"
+   ],
+   "collected_at": "2026-07-30T07:32:16+00:00"
+  },
+  {
+   "brand_slug": "babolat",
+   "model_slug": "xplore",
+   "family_slug": "xplore",
+   "brand_label": "Babolat",
+   "model_label": "XPlore",
+   "gauge_mm": 1.3,
+   "gauge_label": "16",
+   "construction": "multifilament",
+   "core_material": null,
+   "wrap_material": null,
+   "colors": [
+    "Blue",
+    "Grey"
+   ],
+   "tension_min_lbs": null,
+   "tension_max_lbs": null,
+   "price_eur": 7.9,
+   "content_hash": "b9ffe37b71970cb45ffa08c41f7f137af55146222dcc75a24229d71251921fe5",
+   "source_url": "https://www.tenniswarehouse-europe.com/Babolat_XPlore_130_16_String_Blue/descpageACQBA-BXPLR30-EN.html",
+   "source_tier": 1,
+   "lifecycle_status": "current",
+   "absence_streak": 0,
+   "sku_codes": [
+    "BXPLG30",
+    "BXPLR30"
+   ],
+   "source_field_notes": [
+    "colour_from_title_tail"
+   ],
+   "collected_at": "2026-07-30T07:32:16+00:00"
+  },
+  {
+   "brand_slug": "babolat",
+   "model_slug": "xplore",
+   "family_slug": "xplore",
+   "brand_label": "Babolat",
+   "model_label": "XPlore",
+   "gauge_mm": 1.35,
+   "gauge_label": "15L",
+   "construction": "multifilament",
+   "core_material": null,
+   "wrap_material": null,
+   "colors": [
+    "Blue",
+    "Grey"
+   ],
+   "tension_min_lbs": null,
+   "tension_max_lbs": null,
+   "price_eur": 7.9,
+   "content_hash": "c6348ce86b0467ed3f6df8dc0a4ddb1fef3934749f783963762ccd34bd403a9c",
+   "source_url": "https://www.tenniswarehouse-europe.com/Babolat_XPlore_135_15L_String_Blue/descpageACQBA-BXPLR35-EN.html",
+   "source_tier": 1,
+   "lifecycle_status": "current",
+   "absence_streak": 0,
+   "sku_codes": [
+    "BXPLG35",
+    "BXPLR35"
+   ],
+   "source_field_notes": [
+    "colour_from_title_tail"
+   ],
+   "collected_at": "2026-07-30T07:32:16+00:00"
+  },
+  {
+   "brand_slug": "head",
+   "model_slug": "reflex-mlt",
+   "family_slug": "reflex-mlt",
+   "brand_label": "Head",
+   "model_label": "Reflex MLT",
+   "gauge_mm": 1.25,
+   "gauge_label": "17",
+   "construction": "multifilament",
+   "core_material": null,
+   "wrap_material": null,
+   "colors": [],
+   "tension_min_lbs": null,
+   "tension_max_lbs": null,
+   "price_eur": 13.9,
+   "content_hash": "4aab3023d40cdda4d4b96eafc711242ba779feb467ba5ac0a743e8f9723cfff9",
+   "source_url": "https://www.tenniswarehouse-europe.com/Head_Reflex_MLT_17_125_String/descpageACHEAD-HRM17S-EN.html",
+   "source_tier": 1,
+   "lifecycle_status": "current",
+   "absence_streak": 0,
+   "sku_codes": [
+    "HRM17S"
+   ],
+   "source_field_notes": [
+    "construction_from_overview_prose",
+    "coating_wording_present_multifilament_vs_gaine_ambiguous"
+   ],
+   "collected_at": "2026-07-30T07:32:16+00:00"
+  },
+  {
+   "brand_slug": "head",
+   "model_slug": "reflex-mlt",
+   "family_slug": "reflex-mlt",
+   "brand_label": "Head",
+   "model_label": "Reflex MLT",
+   "gauge_mm": 1.3,
+   "gauge_label": "16",
+   "construction": "multifilament",
+   "core_material": null,
+   "wrap_material": null,
+   "colors": [
+    "Black",
+    "Natural"
+   ],
+   "tension_min_lbs": null,
+   "tension_max_lbs": null,
+   "price_eur": 13.9,
+   "content_hash": "3ef6d6b8e01d6a1fa09e42357872b9f90a7b1fe91079a15b798aec551e3118f0",
+   "source_url": "https://www.tenniswarehouse-europe.com/Head_Reflex_MLT_130_16_String/descpageACHEAD-HRM16S-EN.html",
+   "source_tier": 1,
+   "lifecycle_status": "current",
+   "absence_streak": 0,
+   "sku_codes": [
+    "HRM16S"
+   ],
+   "source_field_notes": [
+    "construction_from_overview_prose",
+    "coating_wording_present_multifilament_vs_gaine_ambiguous"
+   ],
+   "collected_at": "2026-07-30T07:32:16+00:00"
+  },
+  {
+   "brand_slug": "head",
+   "model_slug": "rip-control",
+   "family_slug": "rip-control",
+   "brand_label": "Head",
+   "model_label": "RIP Control",
+   "gauge_mm": 1.25,
+   "gauge_label": "17",
+   "construction": "multifilament",
+   "core_material": null,
+   "wrap_material": null,
+   "colors": [
+    "Black",
+    "Natural"
+   ],
+   "tension_min_lbs": null,
+   "tension_max_lbs": null,
+   "price_eur": 8.9,
+   "content_hash": "65c9d79d978b4fb116b686409156ac3beb6dac05de65facb089cd8ecdf13d7d9",
+   "source_url": "https://www.tenniswarehouse-europe.com/Head_RIP_Control_125_17_String_Set/descpageACHEAD-RCON17-EN.html",
+   "source_tier": 1,
+   "lifecycle_status": "current",
+   "absence_streak": 0,
+   "sku_codes": [
+    "RCON17"
+   ],
+   "source_field_notes": [
+    "construction_from_overview_prose"
+   ],
+   "collected_at": "2026-07-30T07:32:16+00:00"
+  },
+  {
+   "brand_slug": "head",
+   "model_slug": "velocity-mlt",
+   "family_slug": "velocity-mlt",
+   "brand_label": "Head",
+   "model_label": "Velocity MLT",
+   "gauge_mm": 1.25,
+   "gauge_label": "17",
+   "construction": "multifilament",
+   "core_material": null,
+   "wrap_material": null,
+   "colors": [
+    "Black",
+    "Natural"
+   ],
+   "tension_min_lbs": null,
+   "tension_max_lbs": null,
+   "price_eur": 8.1,
+   "content_hash": "e7177008d58439ed89c04dc1935cc62b3747ada7381f4053c2f308e0d04fb5f0",
+   "source_url": "https://www.tenniswarehouse-europe.com/Head_Velocity_MLT_125_17_String/descpageACHEAD-HVM17SX-EN.html",
+   "source_tier": 1,
+   "lifecycle_status": "current",
+   "absence_streak": 0,
+   "sku_codes": [
+    "HVM17SX"
+   ],
+   "source_field_notes": [
+    "construction_from_overview_prose",
+    "coating_wording_present_multifilament_vs_gaine_ambiguous"
+   ],
+   "collected_at": "2026-07-30T07:32:16+00:00"
+  },
+  {
+   "brand_slug": "head",
+   "model_slug": "velocity-mlt",
+   "family_slug": "velocity-mlt",
+   "brand_label": "Head",
+   "model_label": "Velocity MLT",
+   "gauge_mm": 1.3,
+   "gauge_label": "16",
+   "construction": "multifilament",
+   "core_material": null,
+   "wrap_material": null,
+   "colors": [
+    "Black",
+    "Natural"
+   ],
+   "tension_min_lbs": null,
+   "tension_max_lbs": null,
+   "price_eur": 7.9,
+   "content_hash": "5993d5c3d9324d5556320652b7850e5c80a73bf3669275a417007b4d2c038d6f",
+   "source_url": "https://www.tenniswarehouse-europe.com/Head_Velocity_MLT_130_16_String/descpageACHEAD-HVM16SX-EN.html",
+   "source_tier": 1,
+   "lifecycle_status": "current",
+   "absence_streak": 0,
+   "sku_codes": [
+    "HVM16SX"
+   ],
+   "source_field_notes": [
+    "construction_from_overview_prose",
+    "coating_wording_present_multifilament_vs_gaine_ambiguous"
+   ],
+   "collected_at": "2026-07-30T07:32:16+00:00"
+  },
+  {
+   "brand_slug": "head",
+   "model_slug": "velocity-power",
+   "family_slug": "velocity-power",
+   "brand_label": "Head",
+   "model_label": "Velocity Power",
+   "gauge_mm": 1.25,
+   "gauge_label": "17",
+   "construction": "multifilament",
+   "core_material": null,
+   "wrap_material": null,
+   "colors": [
+    "Black",
+    "Natural"
+   ],
+   "tension_min_lbs": null,
+   "tension_max_lbs": null,
+   "price_eur": 9.5,
+   "content_hash": "3c6979dcf88a2aa4ba818ad4df45f1c59cb4e13d69611b54953399c3282522f0",
+   "source_url": "https://www.tenniswarehouse-europe.com/Head_Velocity_Power_125_17_Black_String/descpageACHEAD-HVP17BK-EN.html",
+   "source_tier": 1,
+   "lifecycle_status": "current",
+   "absence_streak": 0,
+   "sku_codes": [
+    "HVP17BK",
+    "HVP17NT"
+   ],
+   "source_field_notes": [],
+   "collected_at": "2026-07-30T07:32:16+00:00"
+  },
+  {
+   "brand_slug": "head",
+   "model_slug": "velocity-power",
+   "family_slug": "velocity-power",
+   "brand_label": "Head",
+   "model_label": "Velocity Power",
+   "gauge_mm": 1.3,
+   "gauge_label": "16",
+   "construction": "multifilament",
+   "core_material": null,
+   "wrap_material": null,
+   "colors": [
+    "Black",
+    "Natural"
+   ],
+   "tension_min_lbs": null,
+   "tension_max_lbs": null,
+   "price_eur": 9.5,
+   "content_hash": "d85add600cde740cdb6b18c2e8b4ffe75ec82f70068bb1e56def625b6196b99a",
+   "source_url": "https://www.tenniswarehouse-europe.com/Head_Velocity_Power_130_16_Black_String/descpageACHEAD-HVP16BK-EN.html",
+   "source_tier": 1,
+   "lifecycle_status": "current",
+   "absence_streak": 0,
+   "sku_codes": [
+    "HVP16BK",
+    "HVP16NT"
+   ],
+   "source_field_notes": [],
+   "collected_at": "2026-07-30T07:32:16+00:00"
+  },
+  {
+   "brand_slug": "isospeed",
+   "model_slug": "control",
+   "family_slug": "control",
+   "brand_label": "Isospeed",
+   "model_label": "Control",
+   "gauge_mm": 1.3,
+   "gauge_label": "16",
+   "construction": "multifilament",
+   "core_material": null,
+   "wrap_material": null,
+   "colors": [],
+   "tension_min_lbs": null,
+   "tension_max_lbs": null,
+   "price_eur": 12.9,
+   "content_hash": "15ee5aefd8e1b1d65ad27c187875e539898e4c8108b2af0efb332856888f02af",
+   "source_url": "https://www.tenniswarehouse-europe.com/ISOSPEED_Control_130_16_String/descpageACISOH-ISOC16-EN.html",
+   "source_tier": 1,
+   "lifecycle_status": "current",
+   "absence_streak": 0,
+   "sku_codes": [
+    "ISOC16"
+   ],
+   "source_field_notes": [
+    "construction_from_overview_prose",
+    "coating_wording_present_multifilament_vs_gaine_ambiguous",
+    "brand_field_differs_from_title:IsoSpeed - FeRe"
+   ],
+   "collected_at": "2026-07-30T07:32:16+00:00"
+  },
+  {
+   "brand_slug": "isospeed",
+   "model_slug": "control-classic",
+   "family_slug": "control-classic",
+   "brand_label": "Isospeed",
+   "model_label": "Control Classic",
+   "gauge_mm": 1.3,
+   "gauge_label": null,
+   "construction": "multifilament",
+   "core_material": null,
+   "wrap_material": null,
+   "colors": [
+    "Natural"
+   ],
+   "tension_min_lbs": null,
+   "tension_max_lbs": null,
+   "price_eur": 12.9,
+   "content_hash": "2c56831f461f04fe5aadb8c5bb3ffa71490ed54de294409e8ce9c00a9b8c55dc",
+   "source_url": "https://www.tenniswarehouse-europe.com/ISOSPEED_Control_Classic_130_String/descpageACISOH-ISOCC16-EN.html",
+   "source_tier": 1,
+   "lifecycle_status": "current",
+   "absence_streak": 0,
+   "sku_codes": [
+    "ISOCC16"
+   ],
+   "source_field_notes": [
+    "construction_from_overview_prose",
+    "brand_field_differs_from_title:IsoSpeed - FeRe"
+   ],
+   "collected_at": "2026-07-30T07:32:16+00:00"
+  },
+  {
+   "brand_slug": "isospeed",
+   "model_slug": "professional-classic",
+   "family_slug": "professional-classic",
+   "brand_label": "Isospeed",
+   "model_label": "Professional Classic",
+   "gauge_mm": 1.2,
+   "gauge_label": "17",
+   "construction": "multifilament",
+   "core_material": null,
+   "wrap_material": null,
+   "colors": [],
+   "tension_min_lbs": null,
+   "tension_max_lbs": null,
+   "price_eur": 10.9,
+   "content_hash": "53ceb5f2915713750ab8115fc098a700360b3340f455ab08bf9b6a94b87d50de",
+   "source_url": "https://www.tenniswarehouse-europe.com/ISOSPEED_Professional_Classic_120_17_String/descpageACISOH-ISOPC120-EN.html",
+   "source_tier": 1,
+   "lifecycle_status": "current",
+   "absence_streak": 0,
+   "sku_codes": [
+    "ISOPC120"
+   ],
+   "source_field_notes": [
+    "construction_from_overview_prose",
+    "brand_field_differs_from_title:IsoSpeed - FeRe"
+   ],
+   "collected_at": "2026-07-30T07:32:16+00:00"
+  },
+  {
+   "brand_slug": "isospeed",
+   "model_slug": "professional-new",
+   "family_slug": "professional-new",
+   "brand_label": "Isospeed",
+   "model_label": "Professional New",
+   "gauge_mm": 1.2,
+   "gauge_label": "17",
+   "construction": "multifilament",
+   "core_material": null,
+   "wrap_material": null,
+   "colors": [],
+   "tension_min_lbs": null,
+   "tension_max_lbs": null,
+   "price_eur": 13.95,
+   "content_hash": "06ac015a44aac7cda6e3e6a86ceec496b12a585597e6006f94be94a06d91810c",
+   "source_url": "https://www.tenniswarehouse-europe.com/ISOSPEED_Professional_New_120_17_String/descpageACISOH-ISOP17-EN.html",
+   "source_tier": 1,
+   "lifecycle_status": "current",
+   "absence_streak": 0,
+   "sku_codes": [
+    "ISOP17"
+   ],
+   "source_field_notes": [
+    "construction_from_overview_prose",
+    "coating_wording_present_multifilament_vs_gaine_ambiguous",
+    "brand_field_differs_from_title:IsoSpeed - FeRe"
+   ],
+   "collected_at": "2026-07-30T07:32:16+00:00"
+  },
+  {
+   "brand_slug": "kirschbaum",
+   "model_slug": "touch-multifiber",
+   "family_slug": "touch-multifiber",
+   "brand_label": "Kirschbaum",
+   "model_label": "Touch Multifiber",
+   "gauge_mm": 1.3,
+   "gauge_label": "16",
+   "construction": "multifilament",
+   "core_material": null,
+   "wrap_material": null,
+   "colors": [],
+   "tension_min_lbs": null,
+   "tension_max_lbs": null,
+   "price_eur": 14.9,
+   "content_hash": "7b6ca2df7371f8626ec5ca0058727882f1767b1a5ff3cec8d2032ca33a36088b",
+   "source_url": "https://www.tenniswarehouse-europe.com/Kirschbaum_Touch_Multifiber_130_16_String/descpageACKIRSCHH-TMULTI16-EN.html",
+   "source_tier": 1,
+   "lifecycle_status": "current",
+   "absence_streak": 0,
+   "sku_codes": [
+    "TMULTI16"
+   ],
+   "source_field_notes": [
+    "construction_from_overview_prose",
+    "coating_wording_present_multifilament_vs_gaine_ambiguous"
+   ],
+   "collected_at": "2026-07-30T07:32:16+00:00"
+  },
+  {
+   "brand_slug": "prince",
+   "model_slug": "premier-control",
+   "family_slug": "premier-control",
+   "brand_label": "Prince",
+   "model_label": "Premier Control",
+   "gauge_mm": 1.4,
+   "gauge_label": "15",
+   "construction": "multifilament",
+   "core_material": null,
+   "wrap_material": null,
+   "colors": [
+    "Natural"
+   ],
+   "tension_min_lbs": null,
+   "tension_max_lbs": null,
+   "price_eur": 10.9,
+   "content_hash": "140fcd02b2d23e74fed6db4443c958c4b9fb9cf926eb828d86b7f7f4dca5c60c",
+   "source_url": "https://www.tenniswarehouse-europe.com/Prince_Premier_Control_15_140_String/descpageACPRINCEH-PPC15-EN.html",
+   "source_tier": 1,
+   "lifecycle_status": "current",
+   "absence_streak": 0,
+   "sku_codes": [
+    "PPC15"
+   ],
+   "source_field_notes": [],
+   "collected_at": "2026-07-30T07:32:16+00:00"
+  },
+  {
+   "brand_slug": "signum-pro",
+   "model_slug": "fibercore",
+   "family_slug": "fibercore",
+   "brand_label": "Signum Pro",
+   "model_label": "Fibercore",
+   "gauge_mm": 1.3,
+   "gauge_label": "16",
+   "construction": "multifilament",
+   "core_material": null,
+   "wrap_material": null,
+   "colors": [
+    "Natural"
+   ],
+   "tension_min_lbs": null,
+   "tension_max_lbs": null,
+   "price_eur": 8.5,
+   "content_hash": "8592a53547150deb7ee562b4562d1a9f6e5eedfbca5bd1395ed91aec5be38179",
+   "source_url": "https://www.tenniswarehouse-europe.com/Signum_Pro_Fibercore_130_String/descpageACSIGPROH-SPF130S-EN.html",
+   "source_tier": 1,
+   "lifecycle_status": "current",
+   "absence_streak": 0,
+   "sku_codes": [
+    "SPF130S"
+   ],
+   "source_field_notes": [
+    "coating_wording_present_multifilament_vs_gaine_ambiguous"
+   ],
+   "collected_at": "2026-07-30T07:32:16+00:00"
+  },
+  {
+   "brand_slug": "solinco",
+   "model_slug": "vanquish",
+   "family_slug": "vanquish",
+   "brand_label": "Solinco",
+   "model_label": "Vanquish",
+   "gauge_mm": 1.3,
+   "gauge_label": "16",
+   "construction": "multifilament",
+   "core_material": null,
+   "wrap_material": null,
+   "colors": [
+    "Natural"
+   ],
+   "tension_min_lbs": null,
+   "tension_max_lbs": null,
+   "price_eur": 10.9,
+   "content_hash": "304332812557a0a41a5a5135176170bfee8b77f8b0414fb3b1795be44963405c",
+   "source_url": "https://www.tenniswarehouse-europe.com/Solinco_Vanquish_130_16_String/descpageACNOASOLH-SVAN16-EN.html",
+   "source_tier": 1,
+   "lifecycle_status": "current",
+   "absence_streak": 0,
+   "sku_codes": [
+    "SVAN16"
+   ],
+   "source_field_notes": [
+    "brand_field_differs_from_title:Noa \\Solinco"
+   ],
+   "collected_at": "2026-07-30T07:32:16+00:00"
+  },
+  {
+   "brand_slug": "solinco",
+   "model_slug": "x-natural",
+   "family_slug": "x-natural",
+   "brand_label": "Solinco",
+   "model_label": "X-Natural",
+   "gauge_mm": 1.2,
+   "gauge_label": "17",
+   "construction": "multifilament",
+   "core_material": null,
+   "wrap_material": null,
+   "colors": [
+    "Black"
+   ],
+   "tension_min_lbs": null,
+   "tension_max_lbs": null,
+   "price_eur": 13.2,
+   "content_hash": "0fc0eb2f948086fabe9c0abfb12377265877f84b23e693cc4fda18147794b396",
+   "source_url": "https://www.tenniswarehouse-europe.com/Solinco_X-Natural_120_17_String/descpageACNOASOLH-SXN17-EN.html",
+   "source_tier": 1,
+   "lifecycle_status": "current",
+   "absence_streak": 0,
+   "sku_codes": [
+    "SXN17"
+   ],
+   "source_field_notes": [
+    "brand_field_differs_from_title:Noa \\Solinco"
+   ],
+   "collected_at": "2026-07-30T07:32:16+00:00"
+  },
+  {
+   "brand_slug": "solinco",
+   "model_slug": "x-natural",
+   "family_slug": "x-natural",
+   "brand_label": "Solinco",
+   "model_label": "X-Natural",
+   "gauge_mm": 1.3,
+   "gauge_label": "16",
+   "construction": "multifilament",
+   "core_material": null,
+   "wrap_material": null,
+   "colors": [],
+   "tension_min_lbs": null,
+   "tension_max_lbs": null,
+   "price_eur": 13.2,
+   "content_hash": "600ff5bbc3144f5c945ea82e755be59e638a34b0aae1560b9b52520b5b6d0389",
+   "source_url": "https://www.tenniswarehouse-europe.com/Solinco_X-Natural_130_16_String/descpageACNOASOLH-SXN16-EN.html",
+   "source_tier": 1,
+   "lifecycle_status": "current",
+   "absence_streak": 0,
+   "sku_codes": [
+    "SXN16"
+   ],
+   "source_field_notes": [
+    "construction_from_overview_prose",
+    "brand_field_differs_from_title:Noa \\Solinco"
+   ],
+   "collected_at": "2026-07-30T07:32:16+00:00"
+  },
+  {
+   "brand_slug": "tecnifibre",
+   "model_slug": "duramix-hd",
+   "family_slug": "duramix-hd",
+   "brand_label": "Tecnifibre",
+   "model_label": "Duramix HD",
+   "gauge_mm": 1.25,
+   "gauge_label": "17",
+   "construction": "multifilament",
+   "core_material": null,
+   "wrap_material": null,
+   "colors": [
+    "Black",
+    "Natural",
+    "Red"
+   ],
+   "tension_min_lbs": null,
+   "tension_max_lbs": null,
+   "price_eur": 12.7,
+   "content_hash": "0269c2dc34653c9180fe6f30c35307bc3e50854226852ff82d15fb60d40b6408",
+   "source_url": "https://www.tenniswarehouse-europe.com/Tecnifibre_Duramix_HD_125_17_String/descpageACTECNIH-TDM125-EN.html",
+   "source_tier": 1,
+   "lifecycle_status": "current",
+   "absence_streak": 0,
+   "sku_codes": [
+    "TDM125"
+   ],
+   "source_field_notes": [],
+   "collected_at": "2026-07-30T07:32:16+00:00"
+  },
+  {
+   "brand_slug": "tecnifibre",
+   "model_slug": "duramix-hd",
+   "family_slug": "duramix-hd",
+   "brand_label": "Tecnifibre",
+   "model_label": "Duramix HD",
+   "gauge_mm": 1.3,
+   "gauge_label": "16",
+   "construction": "multifilament",
+   "core_material": null,
+   "wrap_material": null,
+   "colors": [
+    "Black",
+    "Natural",
+    "Red"
+   ],
+   "tension_min_lbs": null,
+   "tension_max_lbs": null,
+   "price_eur": 12.75,
+   "content_hash": "0bb3c3cceacffc0a646bd5e63e0e9f7f822e992d975c2108492293585b1133dc",
+   "source_url": "https://www.tenniswarehouse-europe.com/Tecnifibre_Duramix_HD_130_16_String/descpageACTECNIH-TDM-EN.html",
+   "source_tier": 1,
+   "lifecycle_status": "current",
+   "absence_streak": 0,
+   "sku_codes": [
+    "TDM"
+   ],
+   "source_field_notes": [],
+   "collected_at": "2026-07-30T07:32:16+00:00"
+  },
+  {
+   "brand_slug": "tecnifibre",
+   "model_slug": "duramix-hd",
+   "family_slug": "duramix-hd",
+   "brand_label": "Tecnifibre",
+   "model_label": "Duramix HD",
+   "gauge_mm": 1.35,
+   "gauge_label": "15L",
+   "construction": "multifilament",
+   "core_material": null,
+   "wrap_material": null,
+   "colors": [
+    "Black",
+    "Natural",
+    "Red"
+   ],
+   "tension_min_lbs": null,
+   "tension_max_lbs": null,
+   "price_eur": 12.75,
+   "content_hash": "115fd50fe874c927e03d44b2cbdc10be430739d0192d6aa4b9037d190c580d8c",
+   "source_url": "https://www.tenniswarehouse-europe.com/Tecnifibre_Duramix_HD_135_15L_String/descpageACTECNIH-TDM135-EN.html",
+   "source_tier": 1,
+   "lifecycle_status": "current",
+   "absence_streak": 0,
+   "sku_codes": [
+    "TDM135"
+   ],
+   "source_field_notes": [],
+   "collected_at": "2026-07-30T07:32:16+00:00"
+  },
+  {
+   "brand_slug": "tecnifibre",
+   "model_slug": "multifeel",
+   "family_slug": "multifeel",
+   "brand_label": "Tecnifibre",
+   "model_label": "Multifeel",
+   "gauge_mm": 1.25,
+   "gauge_label": "17",
+   "construction": "multifilament",
+   "core_material": null,
+   "wrap_material": null,
+   "colors": [
+    "Black",
+    "Blue",
+    "Natural",
+    "Pink"
+   ],
+   "tension_min_lbs": null,
+   "tension_max_lbs": null,
+   "price_eur": 10.9,
+   "content_hash": "6676c98200b07a0537bac1642b5da9ce4e9d562139eb98e811a60c8ab6520447",
+   "source_url": "https://www.tenniswarehouse-europe.com/Tecnifibre_Multifeel_17_125_String/descpageACTECNIH-TMF17-EN.html",
+   "source_tier": 1,
+   "lifecycle_status": "current",
+   "absence_streak": 0,
+   "sku_codes": [
+    "TMF17"
+   ],
+   "source_field_notes": [
+    "coating_wording_present_multifilament_vs_gaine_ambiguous"
+   ],
+   "collected_at": "2026-07-30T07:32:16+00:00"
+  },
+  {
+   "brand_slug": "tecnifibre",
+   "model_slug": "multifeel",
+   "family_slug": "multifeel",
+   "brand_label": "Tecnifibre",
+   "model_label": "Multifeel",
+   "gauge_mm": 1.35,
+   "gauge_label": "15",
+   "construction": "multifilament",
+   "core_material": null,
+   "wrap_material": null,
+   "colors": [
+    "Natural"
+   ],
+   "tension_min_lbs": null,
+   "tension_max_lbs": null,
+   "price_eur": 11.2,
+   "content_hash": "ed45b54b0711c1b7dc460bced9cfd5896d43280e5a4f41a91684f996c4cf5337",
+   "source_url": "https://www.tenniswarehouse-europe.com/Tecnifibre_Multifeel_15L_135_String/descpageACTECNIH-TMF135-EN.html",
+   "source_tier": 1,
+   "lifecycle_status": "current",
+   "absence_streak": 0,
+   "sku_codes": [
+    "TMF135"
+   ],
+   "source_field_notes": [
+    "coating_wording_present_multifilament_vs_gaine_ambiguous"
+   ],
+   "collected_at": "2026-07-30T07:32:16+00:00"
+  },
+  {
+   "brand_slug": "tecnifibre",
+   "model_slug": "nrg2",
+   "family_slug": "nrg2",
+   "brand_label": "Tecnifibre",
+   "model_label": "NRG2",
+   "gauge_mm": 1.24,
+   "gauge_label": "17",
+   "construction": "multifilament",
+   "core_material": null,
+   "wrap_material": null,
+   "colors": [
+    "Natural"
+   ],
+   "tension_min_lbs": null,
+   "tension_max_lbs": null,
+   "price_eur": 17.9,
+   "content_hash": "5303051382c667ce9895beeaf6efc487185d71cb8657aa8961ee4df8722a8631",
+   "source_url": "https://www.tenniswarehouse-europe.com/Tecnifibre_NRG2_124_17_String/descpageACTECNIH-NRG17-EN.html",
+   "source_tier": 1,
+   "lifecycle_status": "current",
+   "absence_streak": 0,
+   "sku_codes": [
+    "NRG17"
+   ],
+   "source_field_notes": [],
+   "collected_at": "2026-07-30T07:32:16+00:00"
+  },
+  {
+   "brand_slug": "tecnifibre",
+   "model_slug": "nrg2",
+   "family_slug": "nrg2",
+   "brand_label": "Tecnifibre",
+   "model_label": "NRG2",
+   "gauge_mm": 1.32,
+   "gauge_label": "16",
+   "construction": "multifilament",
+   "core_material": null,
+   "wrap_material": null,
+   "colors": [
+    "Natural"
+   ],
+   "tension_min_lbs": null,
+   "tension_max_lbs": null,
+   "price_eur": 17.9,
+   "content_hash": "281c35fb0e6d9eb1bc1beb16236753aab2a05421553551b58ac3f65855795663",
+   "source_url": "https://www.tenniswarehouse-europe.com/Tecnifibre_NRG2_132_16_String/descpageACTECNIH-NRG16-EN.html",
+   "source_tier": 1,
+   "lifecycle_status": "current",
+   "absence_streak": 0,
+   "sku_codes": [
+    "NRG16"
+   ],
+   "source_field_notes": [],
+   "collected_at": "2026-07-30T07:32:16+00:00"
+  },
+  {
+   "brand_slug": "tecnifibre",
+   "model_slug": "tgv",
+   "family_slug": "tgv",
+   "brand_label": "Tecnifibre",
+   "model_label": "TGV",
+   "gauge_mm": 1.25,
+   "gauge_label": "17",
+   "construction": "multifilament",
+   "core_material": null,
+   "wrap_material": null,
+   "colors": [
+    "Black",
+    "Natural"
+   ],
+   "tension_min_lbs": null,
+   "tension_max_lbs": null,
+   "price_eur": 16.9,
+   "content_hash": "ba08a08795c7fc21aab29f07f50478c5f120f9b5b51fca0396a1abb4b839f88e",
+   "source_url": "https://www.tenniswarehouse-europe.com/Tecnifibre_TGV_125_17_String/descpageACTECNIH-TTGV17S-EN.html",
+   "source_tier": 1,
+   "lifecycle_status": "current",
+   "absence_streak": 0,
+   "sku_codes": [
+    "TTGV17S"
+   ],
+   "source_field_notes": [
+    "coating_wording_present_multifilament_vs_gaine_ambiguous"
+   ],
+   "collected_at": "2026-07-30T07:32:16+00:00"
+  },
+  {
+   "brand_slug": "tecnifibre",
+   "model_slug": "tgv",
+   "family_slug": "tgv",
+   "brand_label": "Tecnifibre",
+   "model_label": "TGV",
+   "gauge_mm": 1.3,
+   "gauge_label": "16",
+   "construction": "multifilament",
+   "core_material": null,
+   "wrap_material": null,
+   "colors": [
+    "Black",
+    "Natural"
+   ],
+   "tension_min_lbs": null,
+   "tension_max_lbs": null,
+   "price_eur": 16.9,
+   "content_hash": "a63c6f6c1978f3fa43de5efe26de99e23baa21fb711bffc6f7e764fae1f1166d",
+   "source_url": "https://www.tenniswarehouse-europe.com/Tecnifibre_TGV_130_16_String/descpageACTECNIH-TTGV16S-EN.html",
+   "source_tier": 1,
+   "lifecycle_status": "current",
+   "absence_streak": 0,
+   "sku_codes": [
+    "TTGV16S"
+   ],
+   "source_field_notes": [
+    "coating_wording_present_multifilament_vs_gaine_ambiguous"
+   ],
+   "collected_at": "2026-07-30T07:32:16+00:00"
+  },
+  {
+   "brand_slug": "tecnifibre",
+   "model_slug": "triax",
+   "family_slug": "triax",
+   "brand_label": "Tecnifibre",
+   "model_label": "Triax",
+   "gauge_mm": 1.28,
+   "gauge_label": "17",
+   "construction": "multifilament",
+   "core_material": null,
+   "wrap_material": null,
+   "colors": [
+    "Natural�"
+   ],
+   "tension_min_lbs": null,
+   "tension_max_lbs": null,
+   "price_eur": 17.24,
+   "content_hash": "9e34e6615fee3fc1547ae0690d489599d90540ef229a9aa5a2fbc6df2462dc51",
+   "source_url": "https://www.tenniswarehouse-europe.com/Tecnifibre_Triax_128_17_String_/descpageACTECNIH-TSTX28-EN.html",
+   "source_tier": 1,
+   "lifecycle_status": "current",
+   "absence_streak": 0,
+   "sku_codes": [
+    "TSTX28"
+   ],
+   "source_field_notes": [
+    "coating_wording_present_multifilament_vs_gaine_ambiguous"
+   ],
+   "collected_at": "2026-07-30T07:32:16+00:00"
+  },
+  {
+   "brand_slug": "tecnifibre",
+   "model_slug": "triax",
+   "family_slug": "triax",
+   "brand_label": "Tecnifibre",
+   "model_label": "Triax",
+   "gauge_mm": 1.33,
+   "gauge_label": "16",
+   "construction": "multifilament",
+   "core_material": null,
+   "wrap_material": null,
+   "colors": [
+    "Natural"
+   ],
+   "tension_min_lbs": null,
+   "tension_max_lbs": null,
+   "price_eur": 17.24,
+   "content_hash": "3425590def56b0829dda1ac223506e3cb180f27f27610bacdbe95d24de75271a",
+   "source_url": "https://www.tenniswarehouse-europe.com/Tecnifibre_Triax_133_16_String_/descpageACTECNIH-TSTX33-EN.html",
+   "source_tier": 1,
+   "lifecycle_status": "current",
+   "absence_streak": 0,
+   "sku_codes": [
+    "TSTX33"
+   ],
+   "source_field_notes": [
+    "coating_wording_present_multifilament_vs_gaine_ambiguous"
+   ],
+   "collected_at": "2026-07-30T07:32:16+00:00"
+  },
+  {
+   "brand_slug": "tecnifibre",
+   "model_slug": "triax",
+   "family_slug": "triax",
+   "brand_label": "Tecnifibre",
+   "model_label": "Triax",
+   "gauge_mm": 1.38,
+   "gauge_label": "15L",
+   "construction": "multifilament",
+   "core_material": null,
+   "wrap_material": null,
+   "colors": [
+    "Natural"
+   ],
+   "tension_min_lbs": null,
+   "tension_max_lbs": null,
+   "price_eur": 17.24,
+   "content_hash": "447575cbbaa4e863547ec01e4484d7f76c863dd0d644cd3508541c7490b3e817",
+   "source_url": "https://www.tenniswarehouse-europe.com/Tecnifibre_Triax_138_15L_String_/descpageACTECNIH-TSTX38-EN.html",
+   "source_tier": 1,
+   "lifecycle_status": "current",
+   "absence_streak": 0,
+   "sku_codes": [
+    "TSTX38"
+   ],
+   "source_field_notes": [
+    "coating_wording_present_multifilament_vs_gaine_ambiguous"
+   ],
+   "collected_at": "2026-07-30T07:32:16+00:00"
+  },
+  {
+   "brand_slug": "tecnifibre",
+   "model_slug": "x-one-biphase",
+   "family_slug": "x-one-biphase",
+   "brand_label": "Tecnifibre",
+   "model_label": "X-One Biphase",
+   "gauge_mm": 1.18,
+   "gauge_label": "18",
+   "construction": "multifilament",
+   "core_material": null,
+   "wrap_material": null,
+   "colors": [
+    "Natural"
+   ],
+   "tension_min_lbs": null,
+   "tension_max_lbs": null,
+   "price_eur": 21.9,
+   "content_hash": "de329115987196a8ce9ac4032af8138cb52efac9946a8e52e9c07214b43d2e65",
+   "source_url": "https://www.tenniswarehouse-europe.com/Tecnifibre_X-One_Biphase_118_String/descpageACTECNIH-X118NA-EN.html",
+   "source_tier": 1,
+   "lifecycle_status": "current",
+   "absence_streak": 0,
+   "sku_codes": [
+    "X118NA"
+   ],
+   "source_field_notes": [],
+   "collected_at": "2026-07-30T07:32:16+00:00"
+  },
+  {
+   "brand_slug": "tecnifibre",
+   "model_slug": "x-one-biphase",
+   "family_slug": "x-one-biphase",
+   "brand_label": "Tecnifibre",
+   "model_label": "X-One Biphase",
+   "gauge_mm": 1.24,
+   "gauge_label": "17",
+   "construction": "multifilament",
+   "core_material": null,
+   "wrap_material": null,
+   "colors": [
+    "Black",
+    "Natural"
+   ],
+   "tension_min_lbs": null,
+   "tension_max_lbs": null,
+   "price_eur": 21.9,
+   "content_hash": "7477fb2f1ddda88e3cd92c6c37c77feeb34abdc9c04d60a1940f2c3564d7837b",
+   "source_url": "https://www.tenniswarehouse-europe.com/Tecnifibre_X-One_Biphase_124_Black_17_String_/descpageACTECNIH-X117B-EN.html",
+   "source_tier": 1,
+   "lifecycle_status": "current",
+   "absence_streak": 0,
+   "sku_codes": [
+    "X117",
+    "X117B"
+   ],
+   "source_field_notes": [],
+   "collected_at": "2026-07-30T07:32:16+00:00"
+  },
+  {
+   "brand_slug": "tecnifibre",
+   "model_slug": "x-one-biphase",
+   "family_slug": "x-one-biphase",
+   "brand_label": "Tecnifibre",
+   "model_label": "X-One Biphase",
+   "gauge_mm": 1.3,
+   "gauge_label": "16",
+   "construction": "multifilament",
+   "core_material": null,
+   "wrap_material": null,
+   "colors": [
+    "Natural"
+   ],
+   "tension_min_lbs": null,
+   "tension_max_lbs": null,
+   "price_eur": 21.9,
+   "content_hash": "8ad55fcd88bb8c40d7731c49eb77802413ca4df3a66def36cab95b7969220368",
+   "source_url": "https://www.tenniswarehouse-europe.com/Tecnifibre_X-One_Biphase_130_16_String_/descpageACTECNIH-X116-EN.html",
+   "source_tier": 1,
+   "lifecycle_status": "current",
+   "absence_streak": 0,
+   "sku_codes": [
+    "X116"
+   ],
+   "source_field_notes": [],
+   "collected_at": "2026-07-30T07:32:16+00:00"
+  },
+  {
+   "brand_slug": "volkl",
+   "model_slug": "power-fiber-ii",
+   "family_slug": "power-fiber-ii",
+   "brand_label": "Volkl",
+   "model_label": "Power Fiber II",
+   "gauge_mm": 1.25,
+   "gauge_label": "17",
+   "construction": "multifilament",
+   "core_material": null,
+   "wrap_material": null,
+   "colors": [
+    "Natural"
+   ],
+   "tension_min_lbs": null,
+   "tension_max_lbs": null,
+   "price_eur": 13.9,
+   "content_hash": "3e290146c6be464e52163568a7cb0d6bc33a3e67a20dfae1911e7064dbda01a5",
+   "source_url": "https://www.tenniswarehouse-europe.com/Volkl_Power_Fiber_II_125_17_String_Natural/descpageACVOLKLGH-VPF217-EN.html",
+   "source_tier": 1,
+   "lifecycle_status": "current",
+   "absence_streak": 0,
+   "sku_codes": [
+    "VPF217"
+   ],
+   "source_field_notes": [],
+   "collected_at": "2026-07-30T07:32:16+00:00"
+  },
+  {
+   "brand_slug": "volkl",
+   "model_slug": "power-fiber-pro",
+   "family_slug": "power-fiber-pro",
+   "brand_label": "Volkl",
+   "model_label": "Power Fiber Pro",
+   "gauge_mm": 1.25,
+   "gauge_label": "17",
+   "construction": "multifilament",
+   "core_material": null,
+   "wrap_material": null,
+   "colors": [
+    "Red"
+   ],
+   "tension_min_lbs": null,
+   "tension_max_lbs": null,
+   "price_eur": 12.9,
+   "content_hash": "d7170b501849db8ccbff8c936f938332d02575ec8895701035848b0837f7d386",
+   "source_url": "https://www.tenniswarehouse-europe.com/Volkl_Power_Fiber_Pro_125_17_String_Set/descpageACVOLKLGH-VPF17SS-EN.html",
+   "source_tier": 1,
+   "lifecycle_status": "current",
+   "absence_streak": 0,
+   "sku_codes": [
+    "VPF17SS"
+   ],
+   "source_field_notes": [],
+   "collected_at": "2026-07-30T07:32:16+00:00"
+  },
+  {
+   "brand_slug": "wilson",
+   "model_slug": "nxt",
+   "family_slug": "nxt",
+   "brand_label": "Wilson",
+   "model_label": "NXT",
+   "gauge_mm": 1.24,
+   "gauge_label": "17",
+   "construction": "multifilament",
+   "core_material": null,
+   "wrap_material": null,
+   "colors": [
+    "Natural"
+   ],
+   "tension_min_lbs": null,
+   "tension_max_lbs": null,
+   "price_eur": 22.9,
+   "content_hash": "b5b64f843a781f342154fa7f51de2b2869e763a813d6b6f50a7bce1b97b1e305",
+   "source_url": "https://www.tenniswarehouse-europe.com/Wilson_NXT_124_17_String/descpageACWILSON-WNXTS-EN.html",
+   "source_tier": 1,
+   "lifecycle_status": "current",
+   "absence_streak": 0,
+   "sku_codes": [
+    "WNXTS"
+   ],
+   "source_field_notes": [],
+   "collected_at": "2026-07-30T07:32:16+00:00"
+  },
+  {
+   "brand_slug": "wilson",
+   "model_slug": "nxt",
+   "family_slug": "nxt",
+   "brand_label": "Wilson",
+   "model_label": "NXT",
+   "gauge_mm": 1.3,
+   "gauge_label": "16",
+   "construction": "multifilament",
+   "core_material": null,
+   "wrap_material": null,
+   "colors": [
+    "White"
+   ],
+   "tension_min_lbs": null,
+   "tension_max_lbs": null,
+   "price_eur": 22.9,
+   "content_hash": "948ccb7ea8f886be5237b4015d9257ef69a4db7f36ac965af700f8b9f2a3371c",
+   "source_url": "https://www.tenniswarehouse-europe.com/Wilson_NXT_130_16_String/descpageACWILSON-WNXT-EN.html",
+   "source_tier": 1,
+   "lifecycle_status": "current",
+   "absence_streak": 0,
+   "sku_codes": [
+    "WNXT"
+   ],
+   "source_field_notes": [
+    "coating_wording_present_multifilament_vs_gaine_ambiguous"
+   ],
+   "collected_at": "2026-07-30T07:32:16+00:00"
+  },
+  {
+   "brand_slug": "wilson",
+   "model_slug": "nxt-power",
+   "family_slug": "nxt-power",
+   "brand_label": "Wilson",
+   "model_label": "NXT Power",
+   "gauge_mm": 1.26,
+   "gauge_label": "17",
+   "construction": "multifilament",
+   "core_material": null,
+   "wrap_material": null,
+   "colors": [
+    "Natural"
+   ],
+   "tension_min_lbs": null,
+   "tension_max_lbs": null,
+   "price_eur": 23.9,
+   "content_hash": "f49a654343e2358ebae02c60230c48377c568f198f7aef3214c433e33e83b1fb",
+   "source_url": "https://www.tenniswarehouse-europe.com/Wilson_NXT_Power_126_17_String/descpageACWILSON-WNXT17-EN.html",
+   "source_tier": 1,
+   "lifecycle_status": "current",
+   "absence_streak": 0,
+   "sku_codes": [
+    "WNXT17"
+   ],
+   "source_field_notes": [],
+   "collected_at": "2026-07-30T07:32:16+00:00"
+  },
+  {
+   "brand_slug": "wilson",
+   "model_slug": "nxt-power",
+   "family_slug": "nxt-power",
+   "brand_label": "Wilson",
+   "model_label": "NXT Power",
+   "gauge_mm": 1.3,
+   "gauge_label": "16",
+   "construction": "multifilament",
+   "core_material": null,
+   "wrap_material": null,
+   "colors": [
+    "Natural"
+   ],
+   "tension_min_lbs": null,
+   "tension_max_lbs": null,
+   "price_eur": 23.9,
+   "content_hash": "a540da763f265c25acaba62a7514e29afe124ef3528a45e52843b5ba95dd038a",
+   "source_url": "https://www.tenniswarehouse-europe.com/Wilson_NXT_Power_130_16_String/descpageACWILSON-WNXT16-EN.html",
+   "source_tier": 1,
+   "lifecycle_status": "current",
+   "absence_streak": 0,
+   "sku_codes": [
+    "WNXT16"
+   ],
+   "source_field_notes": [],
+   "collected_at": "2026-07-30T07:32:16+00:00"
+  },
+  {
+   "brand_slug": "wilson",
+   "model_slug": "repel",
+   "family_slug": "repel",
+   "brand_label": "Wilson",
+   "model_label": "Repel",
+   "gauge_mm": 1.25,
+   "gauge_label": "17",
+   "construction": "multifilament",
+   "core_material": null,
+   "wrap_material": null,
+   "colors": [],
+   "tension_min_lbs": null,
+   "tension_max_lbs": null,
+   "price_eur": 13.9,
+   "content_hash": "efbde4b9c0d575204ff97c2d8c3a9fa06540c4e7c3a18be57492e6fdb9c160b0",
+   "source_url": "https://www.tenniswarehouse-europe.com/Wilson_Repel_17_125_17_String/descpageACWILSON-WRP17NA-EN.html",
+   "source_tier": 1,
+   "lifecycle_status": "current",
+   "absence_streak": 0,
+   "sku_codes": [
+    "WRP17NA"
+   ],
+   "source_field_notes": [
+    "construction_from_overview_prose",
+    "coating_wording_present_multifilament_vs_gaine_ambiguous"
+   ],
+   "collected_at": "2026-07-30T07:32:16+00:00"
+  },
+  {
+   "brand_slug": "wilson",
+   "model_slug": "repel",
+   "family_slug": "repel",
+   "brand_label": "Wilson",
+   "model_label": "Repel",
+   "gauge_mm": 1.3,
+   "gauge_label": "16",
+   "construction": "multifilament",
+   "core_material": null,
+   "wrap_material": null,
+   "colors": [],
+   "tension_min_lbs": null,
+   "tension_max_lbs": null,
+   "price_eur": 13.9,
+   "content_hash": "cf0c087049ceae9872ccaed648bb2fbb880b5e7638cd8cdae728fe92190c6595",
+   "source_url": "https://www.tenniswarehouse-europe.com/Wilson_Repel_16_130_16_String/descpageACWILSON-WRP16NA-EN.html",
+   "source_tier": 1,
+   "lifecycle_status": "current",
+   "absence_streak": 0,
+   "sku_codes": [
+    "WRP16NA"
+   ],
+   "source_field_notes": [
+    "construction_from_overview_prose",
+    "coating_wording_present_multifilament_vs_gaine_ambiguous"
+   ],
+   "collected_at": "2026-07-30T07:32:16+00:00"
+  },
+  {
+   "brand_slug": "wilson",
+   "model_slug": "sensation",
+   "family_slug": "sensation",
+   "brand_label": "Wilson",
+   "model_label": "Sensation",
+   "gauge_mm": 1.25,
+   "gauge_label": "17",
+   "construction": "multifilament",
+   "core_material": null,
+   "wrap_material": null,
+   "colors": [
+    "Natural"
+   ],
+   "tension_min_lbs": null,
+   "tension_max_lbs": null,
+   "price_eur": 11.9,
+   "content_hash": "fac0634e8457354d83288a726ac4ac4bee8ff729682aec296db18e032a11ef8e",
+   "source_url": "https://www.tenniswarehouse-europe.com/Wilson_Sensation_125_17_String/descpageACWILSON-WSNS17-EN.html",
+   "source_tier": 1,
+   "lifecycle_status": "current",
+   "absence_streak": 0,
+   "sku_codes": [
+    "WSNS17"
+   ],
+   "source_field_notes": [
+    "coating_wording_present_multifilament_vs_gaine_ambiguous"
+   ],
+   "collected_at": "2026-07-30T07:32:16+00:00"
+  },
+  {
+   "brand_slug": "wilson",
+   "model_slug": "sensation",
+   "family_slug": "sensation",
+   "brand_label": "Wilson",
+   "model_label": "Sensation",
+   "gauge_mm": 1.3,
+   "gauge_label": "16",
+   "construction": "multifilament",
+   "core_material": null,
+   "wrap_material": null,
+   "colors": [
+    "Blue",
+    "Natural"
+   ],
+   "tension_min_lbs": null,
+   "tension_max_lbs": null,
+   "price_eur": 11.9,
+   "content_hash": "fad460e8c1fd9705fcb3ec2290de631dec71dc4525a4fa848816a223d9008c6b",
+   "source_url": "https://www.tenniswarehouse-europe.com/Wilson_Sensation_130_16_Blue_String/descpageACWILSON-SEN16BL-EN.html",
+   "source_tier": 1,
+   "lifecycle_status": "current",
+   "absence_streak": 0,
+   "sku_codes": [
+    "SEN16BL",
+    "WSN16"
+   ],
+   "source_field_notes": [
+    "coating_wording_present_multifilament_vs_gaine_ambiguous"
+   ],
+   "collected_at": "2026-07-30T07:32:16+00:00"
+  }
+ ]
+}
