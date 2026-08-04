@@ -1,10 +1,78 @@
 # Audit Qualité des Données — Tennis String Advisor
 
-> Audit complet des bases de données `racquets-database.ts` (**120 raquettes**) et
-> `strings-database.ts` (47 cordages). Référence générationnelle : **modèles 2025**.
+> Audit complet des bases de données `racquets-database.ts` (**129 raquettes**) et
+> `strings-database.ts` (**69 cordages**). Référence générationnelle : **modèles 2025-2026**.
 >
 > Outil : `scripts/qa-database.mjs` (exécuter `node scripts/qa-database.mjs`).
 > Dernière exécution : **0 problème HIGH / 0 MEDIUM / 0 LOW** après corrections.
+
+---
+
+## 0-bis. BUG CORRIGÉ (v2.5.0) — le run de sync n'alimentait pas le site
+
+**Symptôme signalé** : des modèles très populaires (Tecnifibre **Triax**, gamme Wilson
+**Defyer**) étaient absents de `/tennis-strings` et `/racquets` alors qu'une « grosse mise à
+jour de la base » avait été faite peu avant.
+
+**Ce n'était pas un oubli de saisie : c'était une déconnexion de pipeline.**
+
+Le run de sync `20260730-072613` (PR #48, mergée dans `main`) a bien collecté 64 SKU
+multifilament chez Tennis Warehouse Europe et produit **4 artefacts** :
+
+| Fichier produit | Lu par l'application ? |
+|---|---|
+| `data/snapshot_strings.json` (52 lignes) | ❌ **non** |
+| `data/quarantine_strings.json` (5 mises en quarantaine) | ❌ **non** |
+| `migrations/20260730-072613__sync.sql` (DDL + upserts) | ❌ **non** |
+| `reports/20260730-072613.md` | ❌ non (documentaire) |
+
+**Cause racine — trois maillons manquants :**
+
+1. **Les tables cibles n'existent pas.** La migration crée `public.strings` / `public.racquets`
+   en `create table if not exists`, mais elle n'a **jamais été appliquée** : aucun serveur
+   PostgreSQL n'était disponible pendant le run (le rapport le signale lui-même,
+   « idempotence NOT execution-tested »). `supabase/schema.sql` ne contient toujours ni
+   `public.strings` ni `public.racquets`.
+2. **Même appliquée, l'application ne lirait pas ces tables.** Le site consomme
+   **exclusivement** les fichiers TypeScript `src/data/strings-database.ts` et
+   `src/data/racquets-database.ts` (imports statiques dans les pages et le configurateur).
+   Aucune occurrence de `snapshot_strings`, `snapshot_racquets` ou `public.strings` dans
+   `src/`. Le snapshot est donc un cul-de-sac de données.
+3. **Le run n'a jamais couvert les raquettes.** Son propre `_coverage_scope` déclare
+   `entity: strings`, facette `MULTIFILSTR` uniquement — l'entité `racquets` n'a même pas été
+   énumérée (`status: partial`). L'absence de la gamme Defyer n'était donc **pas** un bug du
+   run : elle sortait de son périmètre. Les cordages polyester (314 SKU), hybrides, synthetic
+   gut et boyau sont eux aussi restés hors périmètre.
+
+**Conséquence** : la base réellement servie aux visiteurs est restée à 47 cordages, et les
+52 lignes vérifiées du snapshot sont restées invisibles pendant ~5 jours.
+
+**Correction appliquée dans cette version :**
+
+- **+22 cordages** ajoutés à `strings-database.ts` (47 → **69**), en reprenant les
+  références du snapshot absentes de la base — dont le **Tecnifibre Triax** signalé.
+  Marques nouvellement représentées : Ashaway, Isospeed, Kirschbaum.
+- **+4 raquettes** : la gamme **Wilson Defyer 2026** complète (98 Pro, 100, 100L, 100UL),
+  hors périmètre du run et donc jamais collectée (120 → **129** raquettes, en comptant les
+  ajouts intermédiaires).
+- Les deux pages listing, le configurateur, le comparateur et les filtres se mettent à jour
+  automatiquement (aucun ID n'est hardcodé, les marques/types sont dérivés de la base).
+
+**Dette restante — à traiter pour que le problème ne réapparaisse pas :**
+
+> Tant que le pipeline de sync écrit dans `data/*.json` + `migrations/*.sql` et que
+> l'application lit `src/data/*.ts`, **tout run futur restera invisible en production.**
+> Deux options, à arbitrer :
+>
+> - **(a) Court terme** — ajouter une étape de génération `snapshot_*.json → src/data/*.ts`
+>   au run, pour que l'artefact vérifié devienne la source du site.
+> - **(b) Cible** — appliquer réellement les migrations sur Supabase, créer les tables
+>   `public.strings` / `public.racquets`, et faire lire ces tables par les pages
+>   (avec les TS en fallback de build).
+>
+> Voir aussi §6 : le snapshot signale à juste titre que le retrait de 7 raquettes (§0) viole
+> la règle « historiser, jamais supprimer » — la bonne primitive est
+> `lifecycle_status = 'discontinued'`.
 
 ---
 
@@ -124,16 +192,17 @@ modèles phares (meilleure pertinence des recommandations cordage/tension).
 | Marque | Modèles |
 |--------|---------|
 | Head | 35 |
-| Wilson | 26 |
+| Wilson | 35 |
 | Babolat | 21 |
 | Yonex | 17 |
 | Tecnifibre | 9 |
-| Prince | 5 |
 | Dunlop | 6 |
+| Prince | 5 |
 | Völkl | 1 |
 | ProKennex | 0 (marque retirée) |
 
-*(Après retrait des 7 modèles introuvables neuf — cf. §0.)*
+*(Après retrait des 7 modèles introuvables neuf — cf. §0 — et ajout de la gamme
+Wilson Defyer 2026 — cf. §0-bis. Total : 129 raquettes.)*
 
 ---
 
@@ -170,8 +239,20 @@ Lignes **incomplètes** ou modèles populaires absents repérés lors de l'inven
 
 ### Cordages
 
-- Couverture solide (47 références, top marchés). Pistes : ajouter quelques
-  **multifilaments confort** récents et **cordages bio** (segment en croissance).
+- Couverture portée à **69 références** (cf. §0-bis). La facette **multifilament** est
+  désormais complète au regard du catalogue Tennis Warehouse Europe (Triax, NRG2, NXT,
+  NXT Power, Sensation, Repel, Xalt, Addixion, XPlore, RIP Control, Velocity Power,
+  Vanquish, X-Natural, Duramix HD, Power Fiber II/Pro, Premier Control, Touch Multifiber,
+  Professional Classic, Control Classic, Fibercore, Dynamite Natural).
+- **Restent hors périmètre du run de sync** (jamais collectés, donc probablement incomplets
+  dans notre base) : **polyester (314 SKU chez TWE)**, sets poly (42), **hybrides (18)**,
+  synthetic gut (16), boyau naturel (5). C'est le prochain chantier prioritaire — notre base
+  ne compte que 26 polyesters face aux 314 référencés chez TWE.
+- 5 références en **quarantaine** dans `data/quarantine_strings.json`, non intégrées faute de
+  jauge fiable (contradiction titre/specs) : Head IntelliTour (double jauge 1.23/1.323),
+  Tecnifibre X-One Biphase 1.34 vs 1.35, Wilson NXT Control 16, etc. À arbitrer manuellement.
+- Pistes restantes : **cordages bio / biodégradables** (le type existe déjà dans l'enum
+  `TennisString` mais aucune référence ne l'utilise).
 
 ---
 
