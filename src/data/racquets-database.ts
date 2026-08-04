@@ -1928,6 +1928,82 @@ export const racquetsDatabase: TennisRacquet[] = [
     playerLevel: ['Intermediate', 'Advanced'],
     description: 'Tempo Junior 26" — balle jaune, 10-12 ans. Dernière étape avant la raquette adulte Tecnifibre.',
     price: { europe: 90, usa: 85 }
+  },
+
+  // ============================================================
+  // WILSON DEFYER (2026) — nouvelle franchise « spin + puissance »
+  // Développée sur le circuit sous les noms de code Python / Redline.
+  // Technos : Torq Shaft, Si3D, Airfoil Bumper. Coloris Adrenalyn Red.
+  // Poids indiqués NON CORDÉS (cohérent avec le reste de la base).
+  // ============================================================
+  {
+    id: 'wilson-defyer-98-pro-v1',
+    brand: 'Wilson',
+    model: 'Defyer',
+    variant: '98 Pro',
+    stiffness: 64,
+    weight: 305,
+    headSize: 98,
+    balance: 315,
+    length: 27,
+    swingWeight: 319,
+    stringPattern: '16x20',
+    category: 'Modern Player',
+    playerLevel: ['Advanced', 'Pro'],
+    description: 'Le cadre de référence de la nouvelle franchise Defyer (2026). Plan 16x20 sans trous partagés : spin explosif mais trajectoire maîtrisée, avec un toucher étonnamment amorti pour une raquette à spin. Le modèle choisi par la grande majorité des pros Defyer.',
+    proUsage: 'Karen Khachanov, Holger Rune, Sebastian Korda, Arthur Fery',
+    price: { europe: 280, usa: 299 }
+  },
+  {
+    id: 'wilson-defyer-100-v1',
+    brand: 'Wilson',
+    model: 'Defyer',
+    variant: '100',
+    stiffness: 66,
+    weight: 300,
+    headSize: 100,
+    balance: 315,
+    length: 27,
+    stringPattern: '16x19',
+    category: 'Modern Player',
+    playerLevel: ['Intermediate', 'Advanced', 'Pro'],
+    description: 'La Defyer la plus polyvalente : tamis 100 et plan ouvert 16x19 pour un accès facile au lift, avec le pocketing caractéristique du Si3D. Le choix le plus pertinent pour la majorité des joueurs de club et compétiteurs.',
+    proUsage: 'Maria Sakkari, Peyton Stearns, Janice Tjen',
+    price: { europe: 270, usa: 289 }
+  },
+  {
+    id: 'wilson-defyer-100l-v1',
+    brand: 'Wilson',
+    model: 'Defyer',
+    variant: '100L',
+    stiffness: 65,
+    weight: 285,
+    headSize: 100,
+    balance: 330,
+    length: 27,
+    swingWeight: 312,
+    stringPattern: '16x19',
+    category: 'Tweener',
+    playerLevel: ['Intermediate', 'Advanced'],
+    description: 'Version allégée de la plateforme Defyer 100 : même ADN spin dans un cadre plus maniable et plus rapide en bout de course. Pour joueur intermédiaire en progression qui veut jouer agressif.',
+    price: { europe: 245, usa: 259 }
+  },
+  {
+    id: 'wilson-defyer-100ul-v1',
+    brand: 'Wilson',
+    model: 'Defyer',
+    variant: '100UL',
+    stiffness: 63,
+    weight: 265,
+    headSize: 100,
+    balance: 340,
+    length: 27,
+    swingWeight: 306,
+    stringPattern: '16x19',
+    category: 'Light',
+    playerLevel: ['Beginner', 'Intermediate'],
+    description: 'La plus légère de la gamme Defyer. Vitesse de tête de raquette maximale et accélération sans effort, tout en conservant le potentiel de spin de la franchise. Idéale pour junior en passage à la raquette adulte.',
+    price: { europe: 235, usa: 249 }
   }
 ];
 

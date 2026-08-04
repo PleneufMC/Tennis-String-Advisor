@@ -25,8 +25,8 @@ Un système avancé de configuration de cordage de tennis avec journal professio
 - ✅ **Configurateur de base** avec calcul RCS simple
 - ✅ **3 configurations sauvegardées** en local storage
 - ✅ **Base de données complète** :
-  - 72 raquettes de tennis (toutes marques)
-  - 50 cordages professionnels
+  - 129 raquettes de tennis (toutes marques, jusqu'aux gammes 2026)
+  - 69 cordages professionnels
 - ✅ **Recommandations basiques** selon le RCS
 
 ### ⭐ Version Premium (4,99€/mois ou 49,90€/an)
@@ -42,21 +42,23 @@ Un système avancé de configuration de cordage de tennis avec journal professio
 
 ### 1. 📊 Base de Données Complète
 
-#### Raquettes (72 modèles)
-- **Marques** : Babolat, Head, Wilson, Yonex, Prince, Tecnifibre, Dunlop, Völkl, ProKennex
+#### Raquettes (129 modèles)
+- **Marques** : Babolat, Head, Wilson, Yonex, Prince, Tecnifibre, Dunlop, Völkl
 - **Données** : RA (rigidité), poids, taille du tamis
 - **Exemples** :
   - Babolat Pure Aero (RA: 69, 300g, 100 sq in)
   - Wilson Blade 98 (RA: 62, 305g, 98 sq in)
   - Head Speed MP (RA: 62, 300g, 100 sq in)
+  - Wilson Defyer 98 Pro (RA: 64, 305g, 98 sq in, 16x20) — gamme 2026
 
-#### Cordages (50 références)
+#### Cordages (69 références)
 - **Types** : Polyester, Multifilament, Boyau naturel, Hybride
 - **Données** : Rigidité (lb/in), contrôle, confort, durabilité, spin
 - **Top cordages** :
   - Luxilon ALU Power (230 lb/in)
   - Babolat RPM Blast (225 lb/in)
   - Solinco Hyper-G (190 lb/in)
+  - Tecnifibre Triax (162 lb/in — multifilament hybride nylon/polyester)
   - Wilson Natural Gut (120 lb/in)
 
 ### 2. 🧮 Système RCS (Recommandation Confort Score)
@@ -248,7 +250,7 @@ npm start
 
 ### ✅ Complété (Janvier 2025)
 - [x] Configurateur RCS avancé
-- [x] Base de données 72 raquettes + 50 cordages
+- [x] Base de données 129 raquettes + 69 cordages
 - [x] Intégration Stripe (paiements)
 - [x] Authentification Google OAuth
 - [x] **Corrections sécurité Supabase** (RLS, fonctions, politiques)
