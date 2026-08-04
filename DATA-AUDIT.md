@@ -28,11 +28,21 @@ multifilament chez Tennis Warehouse Europe et produit **4 artefacts** :
 
 **Cause racine — trois maillons manquants :**
 
-1. **Les tables cibles n'existent pas.** La migration crée `public.strings` / `public.racquets`
-   en `create table if not exists`, mais elle n'a **jamais été appliquée** : aucun serveur
-   PostgreSQL n'était disponible pendant le run (le rapport le signale lui-même,
-   « idempotence NOT execution-tested »). `supabase/schema.sql` ne contient toujours ni
-   `public.strings` ni `public.racquets`.
+1. **La migration n'a jamais été appliquée.** Le run n'avait aucun serveur PostgreSQL à
+   disposition — le rapport le signale lui-même (« idempotence NOT execution-tested »).
+   Vérification empirique via l'API REST : les 7 colonnes que la migration devait ajouter
+   renvoient toutes HTTP 400 (colonne inconnue), et la ligne la plus récente des deux tables
+   date du 2026-01-06, bien avant le run du 30 juillet.
+
+   > ⚠️ **Correction d'une affirmation erronée d'une version antérieure de ce document.**
+   > Il était écrit ici que « les tables cibles n'existent pas », déduit du seul fait que
+   > `supabase/schema.sql` ne les déclare pas. C'était **faux**. Les tables existent bel et
+   > bien en production et sont **peuplées** : `public.strings` contient **173 lignes** et
+   > `public.racquets` **107 lignes** (créées hors versionnement par `scripts/create-tables.js`,
+   > ce qui explique leur absence de `supabase/schema.sql`). Le Tecnifibre Triax y figure
+   > **depuis le 2025-12-15**. La mémoire du propriétaire — « je pensais avoir fait déjà une
+   > grosse mise à jour de la base récemment » — était donc **exacte** : la mise à jour a bien
+   > eu lieu, en base, mais le site ne lit pas la base (point 2).
 2. **Même appliquée, l'application ne lirait pas ces tables.** Le site consomme
    **exclusivement** les fichiers TypeScript `src/data/strings-database.ts` et
    `src/data/racquets-database.ts` (imports statiques dans les pages et le configurateur).
@@ -46,6 +56,41 @@ multifilament chez Tennis Warehouse Europe et produit **4 artefacts** :
 
 **Conséquence** : la base réellement servie aux visiteurs est restée à 47 cordages, et les
 52 lignes vérifiées du snapshot sont restées invisibles pendant ~5 jours.
+
+### 0-ter. Le vrai problème de fond : trois sources de vérité désynchronisées
+
+| Source | Cordages | Raquettes | Triax ? | Lue par le site ? |
+|---|---|---|---|---|
+| `src/data/*.ts` | **69** | **129** | ✅ (ajouté v2.5.0) | ✅ **oui, exclusivement** |
+| `public.strings` / `public.racquets` (Supabase) | **173** | **107** | ✅ depuis déc. 2025 | ❌ non |
+| `data/snapshot_strings.json` | 52 | — | ✅ | ❌ non |
+
+Écarts mesurés (dumps REST complets comparés aux fichiers TS) :
+
+- **18 cordages** présents dans le TS mais absents de la base ;
+- **123 cordages** présents en base mais absents du TS — dont ~103 polyester, la catégorie
+  la plus consultée du site ;
+- **46 cordages** présents des deux côtés avec des **valeurs numériques divergentes**
+  (ex. `solinco-mach-10` : 65 € côté TS contre 17 € en base — le TS ressemble à une faute
+  de saisie) ;
+- **Raquettes : conventions de nommage incompatibles.** La base indexe le millésime
+  (`model='Extreme Pro'`, `variant='2024'`), le TS la déclinaison (`model='Extreme'`,
+  `variant='Pro'`). Aucun `id` ne coïncide, mais après normalisation **39 raquettes du TS
+  correspondent à une ligne déjà en base**. Insérer les 117 « manquantes » créerait
+  39 doublons ;
+- Colonnes manquantes en base : `versatility`, `innovation` (cordages), `balance`, `length`,
+  `swing_weight` (raquettes) — 38 raquettes TS portent au moins un de ces champs ;
+- Type `Synthetic Gut` sur 12 lignes en base, absent de l'enum TypeScript.
+
+**Script de correction livré** : `migrations/2026-08-04__resync_ts_to_supabase.sql`
+(transactionnel, idempotent, strictement additif — aucun `DELETE`/`DROP`/`TRUNCATE` actif).
+Il ajoute les colonnes manquantes, insère les 18 cordages et les 4 Defyer, normalise
+`Synthetic Gut`, et **documente les 46 conflits sans les écraser** : l'arbitrage de la source
+faisant foi reste une décision du propriétaire.
+
+**Dette restante non traitée** : le site continue de servir les fichiers TS. Tant que
+l'application ne lira pas Supabase (ou que les fichiers TS ne seront pas générés depuis la
+base), toute mise à jour devra être faite deux fois. C'est la cause structurelle du bug initial.
 
 **Correction appliquée dans cette version :**
 
