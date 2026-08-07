@@ -205,7 +205,8 @@ export default function PricingPage() {
           <div
             key={plan.id}
             style={{
-              backgroundColor: 'white',
+              backgroundColor: 'var(--surface-card)',
+              color: 'var(--text-strong)', // fix: eviter l'heritage du texte clair en mode sombre
               borderRadius: '16px',
               padding: '2rem',
               position: 'relative',
@@ -235,7 +236,7 @@ export default function PricingPage() {
               fontSize: '1.5rem',
               fontWeight: 'bold',
               marginBottom: '0.5rem',
-              color: '#1f2937'
+              color: 'var(--text-strong)'
             }}>
               {plan.name}
             </h3>
@@ -246,13 +247,13 @@ export default function PricingPage() {
               <span style={{
                 fontSize: '3rem',
                 fontWeight: 'bold',
-                color: plan.popular ? '#10b981' : '#1f2937'
+                color: plan.popular ? '#10b981' : 'var(--text-strong)'
               }}>
                 €{plan.price[billingPeriod]}
               </span>
               <span style={{
                 fontSize: '1rem',
-                color: '#6b7280',
+                color: 'var(--text-muted)',
                 marginLeft: '0.5rem'
               }}>
                 /{billingPeriod === 'monthly' ? 'mois' : 'an'}
@@ -281,7 +282,7 @@ export default function PricingPage() {
                     padding: '0.5rem 0',
                     fontSize: '0.875rem',
                     color: feature.startsWith('✅') ? '#059669' : '#9ca3af',
-                    borderBottom: idx < plan.features.length - 1 ? '1px solid #f3f4f6' : 'none'
+                    borderBottom: idx < plan.features.length - 1 ? '1px solid var(--surface-border-soft)' : 'none'
                   }}
                 >
                   {feature}
@@ -298,7 +299,7 @@ export default function PricingPage() {
                 backgroundColor: 
                   plan.id === 'free' ? '#e5e7eb' :
                   plan.popular ? '#10b981' :
-                  plan.buttonStyle === 'enterprise' ? '#3b82f6' : '#6b7280',
+                  plan.buttonStyle === 'enterprise' ? '#3b82f6' : 'var(--text-muted)',
                 color: plan.id === 'free' ? '#9ca3af' : 'white',
                 borderRadius: '8px',
                 border: 'none',
@@ -334,7 +335,8 @@ export default function PricingPage() {
         zIndex: 1
       }}>
         <div style={{
-          backgroundColor: 'white',
+          backgroundColor: 'var(--surface-card)',
+          color: 'var(--text-strong)', // fix: eviter l'heritage du texte clair en mode sombre
           borderRadius: '16px',
           padding: '2rem',
           boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)'
@@ -344,7 +346,7 @@ export default function PricingPage() {
             fontWeight: 'bold',
             marginBottom: '1.5rem',
             textAlign: 'center',
-            color: '#1f2937'
+            color: 'var(--text-strong)'
           }}>
             Pourquoi passer Premium ?
           </h2>
@@ -356,29 +358,29 @@ export default function PricingPage() {
           }}>
             <div>
               <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>♾️</div>
-              <div style={{ fontWeight: 'bold', color: '#1f2937' }}>Illimité</div>
-              <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>
+              <div style={{ fontWeight: 'bold', color: 'var(--text-strong)' }}>Illimité</div>
+              <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
                 Sauvegardez toutes vos configurations
               </div>
             </div>
             <div>
               <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>📊</div>
-              <div style={{ fontWeight: 'bold', color: '#1f2937' }}>Statistiques</div>
-              <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>
+              <div style={{ fontWeight: 'bold', color: 'var(--text-strong)' }}>Statistiques</div>
+              <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
                 Analysez vos performances
               </div>
             </div>
             <div>
               <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>📄</div>
-              <div style={{ fontWeight: 'bold', color: '#1f2937' }}>Export PDF</div>
-              <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>
+              <div style={{ fontWeight: 'bold', color: 'var(--text-strong)' }}>Export PDF</div>
+              <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
                 Imprimez vos configurations
               </div>
             </div>
             <div>
               <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>🎯</div>
-              <div style={{ fontWeight: 'bold', color: '#1f2937' }}>RCS Avancé</div>
-              <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>
+              <div style={{ fontWeight: 'bold', color: 'var(--text-strong)' }}>RCS Avancé</div>
+              <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
                 Recommandations personnalisées
               </div>
             </div>

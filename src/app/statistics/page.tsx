@@ -51,7 +51,8 @@ export default function StatisticsPage() {
   }, []);
 
   const cardStyle = {
-    backgroundColor: 'white',
+    backgroundColor: 'var(--surface-card)',
+    color: 'var(--text-strong)', // fix: eviter l'heritage du texte clair en mode sombre
     borderRadius: '16px',
     boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)',
     padding: '1.5rem',
@@ -61,17 +62,17 @@ export default function StatisticsPage() {
   const tableHeaderStyle = {
     fontSize: '0.75rem',
     fontWeight: '600',
-    color: '#6b7280',
+    color: 'var(--text-muted)',
     textTransform: 'uppercase' as const,
     letterSpacing: '0.05em',
     padding: '0.75rem',
-    borderBottom: '2px solid #e5e7eb',
+    borderBottom: '2px solid var(--surface-border)',
     textAlign: 'left' as const
   };
 
   const tableCellStyle = {
     padding: '0.75rem',
-    borderBottom: '1px solid #f3f4f6',
+    borderBottom: '1px solid var(--surface-border-soft)',
     fontSize: '0.875rem'
   };
 
@@ -158,7 +159,7 @@ export default function StatisticsPage() {
           <h2 style={{
             fontSize: '1.25rem',
             fontWeight: 'bold',
-            color: '#1f2937',
+            color: 'var(--text-strong)',
             marginBottom: '1.5rem',
             display: 'flex',
             alignItems: 'center'
@@ -172,34 +173,34 @@ export default function StatisticsPage() {
             gap: '1rem'
           }}>
             <div style={{
-              backgroundColor: '#dbeafe',
+              backgroundColor: 'var(--tint-blue-bg)',
               borderRadius: '8px',
               padding: '1rem',
               textAlign: 'center'
             }}>
-              <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#1e3a8a' }}>
+              <div style={{ fontSize: '2rem', fontWeight: 'bold', color: 'var(--tint-blue-fg)' }}>
                 {racquetsDatabase.length}
               </div>
               <div style={{ fontSize: '0.875rem', color: '#3730a3' }}>Raquettes disponibles</div>
             </div>
             <div style={{
-              backgroundColor: '#dcfce7',
+              backgroundColor: 'var(--tint-green-bg)',
               borderRadius: '8px',
               padding: '1rem',
               textAlign: 'center'
             }}>
-              <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#166534' }}>
+              <div style={{ fontSize: '2rem', fontWeight: 'bold', color: 'var(--tint-green-fg)' }}>
                 {stringsDatabase.length}
               </div>
               <div style={{ fontSize: '0.875rem', color: '#15803d' }}>Cordages disponibles</div>
             </div>
             <div style={{
-              backgroundColor: '#fef3c7',
+              backgroundColor: 'var(--tint-amber-bg)',
               borderRadius: '8px',
               padding: '1rem',
               textAlign: 'center'
             }}>
-              <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#92400e' }}>
+              <div style={{ fontSize: '2rem', fontWeight: 'bold', color: 'var(--tint-amber-fg)' }}>
                 {stats.total}
               </div>
               <div style={{ fontSize: '0.875rem', color: '#b45309' }}>Configurations sauvées</div>
@@ -223,7 +224,7 @@ export default function StatisticsPage() {
           <h2 style={{
             fontSize: '1.25rem',
             fontWeight: 'bold',
-            color: '#1f2937',
+            color: 'var(--text-strong)',
             marginBottom: '1.5rem',
             display: 'flex',
             alignItems: 'center'
@@ -256,10 +257,10 @@ export default function StatisticsPage() {
                     <td style={tableCellStyle}>
                       <span style={{
                         padding: '0.25rem 0.5rem',
-                        backgroundColor: string.type === 'Polyester' ? '#dbeafe' : 
-                                        string.type === 'Multifilament' ? '#dcfce7' : '#fef3c7',
-                        color: string.type === 'Polyester' ? '#1e3a8a' : 
-                               string.type === 'Multifilament' ? '#166534' : '#92400e',
+                        backgroundColor: string.type === 'Polyester' ? 'var(--tint-blue-bg)' : 
+                                        string.type === 'Multifilament' ? 'var(--tint-green-bg)' : 'var(--tint-amber-bg)',
+                        color: string.type === 'Polyester' ? 'var(--tint-blue-fg)' : 
+                               string.type === 'Multifilament' ? 'var(--tint-green-fg)' : 'var(--tint-amber-fg)',
                         borderRadius: '4px',
                         fontSize: '0.75rem'
                       }}>
@@ -303,7 +304,7 @@ export default function StatisticsPage() {
           <h2 style={{
             fontSize: '1.25rem',
             fontWeight: 'bold',
-            color: '#1f2937',
+            color: 'var(--text-strong)',
             marginBottom: '1.5rem',
             display: 'flex',
             alignItems: 'center'
@@ -338,11 +339,11 @@ export default function StatisticsPage() {
                       <span style={{
                         padding: '0.25rem 0.5rem',
                         backgroundColor: 
-                          racquet.stiffness && racquet.stiffness < 65 ? '#dcfce7' :
-                          racquet.stiffness && racquet.stiffness < 70 ? '#fef3c7' : '#fee2e2',
+                          racquet.stiffness && racquet.stiffness < 65 ? 'var(--tint-green-bg)' :
+                          racquet.stiffness && racquet.stiffness < 70 ? 'var(--tint-amber-bg)' : 'var(--tint-red-bg)',
                         color:
-                          racquet.stiffness && racquet.stiffness < 65 ? '#166534' :
-                          racquet.stiffness && racquet.stiffness < 70 ? '#92400e' : '#991b1b',
+                          racquet.stiffness && racquet.stiffness < 65 ? 'var(--tint-green-fg)' :
+                          racquet.stiffness && racquet.stiffness < 70 ? 'var(--tint-amber-fg)' : 'var(--tint-red-fg)',
                         borderRadius: '4px',
                         fontSize: '0.75rem'
                       }}>

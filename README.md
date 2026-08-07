@@ -177,6 +177,44 @@ RCS = (racquetStiffness/70 × 0.4) + (stringStiffness/220 × 0.4) + (tension/24 
 └── README.md                       # Ce fichier
 ```
 
+## 🎨 Thème clair / sombre et palette « surface »
+
+Le site suit le thème du système (`ThemeProvider`, `defaultTheme="system"`) :
+en mode sombre, `<html>` reçoit la classe `dark`.
+
+**Cinq pages sont écrites en styles inline** — `configurator`, `statistics`,
+`pricing`, `payment-success`, `payment-cancelled`. Un style inline ne peut pas
+porter de variante `dark:` Tailwind, ce qui avait provoqué un bug de texte
+blanc sur carte blanche en mode sombre. Ces pages consomment donc des
+**variables CSS** définies dans `src/app/globals.css`, dont la valeur bascule
+automatiquement sous `.dark` :
+
+| Variable | Rôle |
+|---|---|
+| `--surface-card` | fond des cartes |
+| `--surface-muted` | en-têtes de sections repliables |
+| `--surface-input` | fond des champs de saisie |
+| `--surface-border`, `--surface-border-soft` | bordures |
+| `--text-strong`, `--text-muted`, `--text-faint` | hiérarchie de texte |
+| `--tint-{blue,green,amber,red}-{bg,fg}` | pastilles catégorielles |
+
+> ⚠️ **Dans ces cinq pages, ne jamais réintroduire une couleur de surface en
+> dur** (`backgroundColor: 'white'`, `color: '#1f2937'`…). Utilisez les
+> variables : sinon le mode sombre casse à nouveau. Les seules exceptions
+> légitimes sont les textes blancs posés sur un fond coloré (boutons verts,
+> sous-titres sur l'image de fond) et les boutons désactivés en gris.
+
+Un test empêche la régression :
+
+```bash
+npm run audit:contrast
+```
+
+Il relit la palette dans `globals.css` et recalcule le contraste de chaque
+paire texte/fond réellement utilisée, **dans les deux thèmes**. Il échoue
+(code 1) si une paire descend sous le seuil WCAG AA de 4.5:1. Il est inclus
+dans `npm run audit:all`.
+
 ## 🚀 Installation et Développement
 
 ### Prérequis

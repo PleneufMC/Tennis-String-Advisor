@@ -49,6 +49,53 @@
   }
 }
 
+/*
+ * Palette "surface" pour les pages écrites en styles inline
+ * (configurator, statistics, pricing, payment-success, payment-cancelled).
+ *
+ * Ces pages dessinent leurs cartes en style inline, qui ne peut pas porter de
+ * variante `dark:` Tailwind. Elles consomment donc ces variables CSS, dont la
+ * valeur bascule automatiquement sous `.dark`. Les contrastes ont été choisis
+ * pour rester >= 4.5:1 (WCAG AA) dans les deux thèmes.
+ */
+:root {
+  --surface-card: #ffffff;
+  --surface-muted: #f9fafb;   /* en-têtes de section repliables */
+  --surface-input: #ffffff;
+  --surface-border: #e5e7eb;
+  --surface-border-soft: #f3f4f6;
+
+  --text-strong: #1f2937;     /* titres, valeurs principales */
+  --text-muted: #6b7280;      /* libellés secondaires */
+  /* #9ca3af (valeur d'origine) ne donnait que 2.54:1 sur blanc, sous le seuil
+     WCAG AA de 4.5:1 : défaut préexistant révélé par l'audit de contraste. */
+  --text-faint: #6b7280;      /* mentions discrètes */
+
+  /* Pastilles catégorielles : fond clair + texte foncé */
+  --tint-blue-bg: #dbeafe;    --tint-blue-fg: #1e3a8a;
+  --tint-green-bg: #dcfce7;   --tint-green-fg: #166534;
+  --tint-amber-bg: #fef3c7;   --tint-amber-fg: #92400e;
+  --tint-red-bg: #fee2e2;     --tint-red-fg: #991b1b;
+}
+
+.dark {
+  --surface-card: #1e293b;
+  --surface-muted: #273449;
+  --surface-input: #0f172a;
+  --surface-border: #334155;
+  --surface-border-soft: #2a3648;
+
+  --text-strong: #f1f5f9;
+  --text-muted: #b6c2d3;
+  --text-faint: #94a3b8;
+
+  /* En sombre on inverse : fond sourd + texte clair lisible */
+  --tint-blue-bg: #1e3a5f;    --tint-blue-fg: #bfdbfe;
+  --tint-green-bg: #14532d;   --tint-green-fg: #bbf7d0;
+  --tint-amber-bg: #4a3410;   --tint-amber-fg: #fde68a;
+  --tint-red-bg: #4c1d1d;     --tint-red-fg: #fecaca;
+}
+
 @layer base {
   * {
     @apply border-border;

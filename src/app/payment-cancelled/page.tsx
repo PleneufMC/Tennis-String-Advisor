@@ -31,7 +31,8 @@ export default function PaymentCancelledPage() {
       <div style={{
         position: 'relative',
         zIndex: 1,
-        backgroundColor: 'white',
+        backgroundColor: 'var(--surface-card)',
+        color: 'var(--text-strong)', // fix: eviter l'heritage du texte clair en mode sombre
         borderRadius: '16px',
         padding: '3rem',
         maxWidth: '500px',
@@ -50,14 +51,14 @@ export default function PaymentCancelledPage() {
           fontSize: '2rem',
           fontWeight: 'bold',
           marginBottom: '1rem',
-          color: '#1f2937'
+          color: 'var(--text-strong)'
         }}>
           Paiement annulé
         </h1>
         
         <p style={{
           fontSize: '1rem',
-          color: '#6b7280',
+          color: 'var(--text-muted)',
           marginBottom: '2rem'
         }}>
           Vous avez annulé votre paiement.<br />
@@ -65,7 +66,7 @@ export default function PaymentCancelledPage() {
         </p>
         
         <div style={{
-          backgroundColor: '#fef3c7',
+          backgroundColor: 'var(--tint-amber-bg)',
           borderRadius: '8px',
           padding: '1rem',
           marginBottom: '2rem'
@@ -73,14 +74,14 @@ export default function PaymentCancelledPage() {
           <h3 style={{
             fontSize: '1rem',
             fontWeight: 'bold',
-            color: '#92400e',
+            color: 'var(--tint-amber-fg)',
             marginBottom: '0.5rem'
           }}>
             💡 Le saviez-vous ?
           </h3>
           <p style={{
             fontSize: '0.875rem',
-            color: '#92400e'
+            color: 'var(--tint-amber-fg)'
           }}>
             Avec Premium, vous économisez en moyenne 30€ par an en évitant les mauvais choix de cordage !
           </p>
@@ -120,10 +121,10 @@ export default function PaymentCancelledPage() {
             style={{
               padding: '0.75rem 2rem',
               backgroundColor: 'transparent',
-              color: '#6b7280',
+              color: 'var(--text-muted)',
               borderRadius: '8px',
               textDecoration: 'none',
-              border: '1px solid #e5e7eb',
+              border: '1px solid var(--surface-border)',
               display: 'inline-block',
               transition: 'all 0.3s'
             }}
@@ -133,7 +134,7 @@ export default function PaymentCancelledPage() {
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.borderColor = '#e5e7eb';
-              e.currentTarget.style.color = '#6b7280';
+              e.currentTarget.style.color = 'var(--text-muted)';
             }}
           >
             Continuer en version gratuite
@@ -143,7 +144,7 @@ export default function PaymentCancelledPage() {
         <div style={{
           marginTop: '2rem',
           fontSize: '0.75rem',
-          color: '#9ca3af'
+          color: 'var(--text-faint)'
         }}>
           Vous pouvez passer Premium à tout moment<br />
           sans perdre vos configurations existantes
