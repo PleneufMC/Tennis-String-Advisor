@@ -328,27 +328,27 @@ export default function ConfiguratorPage() {
     justifyContent: 'space-between',
     cursor: 'pointer',
     padding: '0.75rem',
-    backgroundColor: '#f9fafb',
+    backgroundColor: 'var(--surface-muted)',
     borderRadius: '8px',
     marginBottom: '0.5rem',
     transition: 'background-color 0.2s',
     ':hover': {
-      backgroundColor: '#f3f4f6'
+      backgroundColor: 'var(--surface-border-soft)'
     }
   };
 
   const inputStyle = {
     width: '100%',
     padding: '0.5rem 1rem',
-    border: '1px solid #d1d5db',
+    border: '1px solid var(--surface-border)',
     borderRadius: '8px',
     fontSize: '1rem',
     outline: 'none',
     transition: 'border-color 0.2s',
     // fix: sans fond ni couleur explicites, le champ heritait du texte clair
     // du <body> en mode sombre -> saisie blanche sur fond blanc, illisible.
-    backgroundColor: '#ffffff',
-    color: '#1f2937',
+    backgroundColor: 'var(--surface-card)',
+    color: 'var(--text-strong)',
   };
 
   const selectStyle = {
@@ -426,8 +426,8 @@ export default function ConfiguratorPage() {
       }}>
         {/* Left Column - Configuration */}
         <div style={{
-          backgroundColor: 'white',
-          color: '#1f2937', // fix: eviter l'heritage du texte clair en mode sombre
+          backgroundColor: 'var(--surface-card)',
+          color: 'var(--text-strong)', // fix: eviter l'heritage du texte clair en mode sombre
           borderRadius: '16px',
           boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)',
           padding: '1.5rem'
@@ -435,7 +435,7 @@ export default function ConfiguratorPage() {
           <h2 style={{
             fontSize: '1.25rem',
             fontWeight: 'bold',
-            color: '#1f2937',
+            color: 'var(--text-strong)',
             marginBottom: '1.5rem',
             display: 'flex',
             alignItems: 'center'
@@ -505,12 +505,12 @@ export default function ConfiguratorPage() {
                   <div style={{ 
                     marginTop: '0.5rem',
                     padding: '0.5rem',
-                    backgroundColor: '#dbeafe',
+                    backgroundColor: 'var(--tint-blue-bg)',
                     borderRadius: '8px',
                     fontSize: '0.875rem'
                   }}>
                     <strong>{selectedRacquet.brand} {selectedRacquet.model} {selectedRacquet.variant}</strong>
-                    <div style={{ color: '#1e3a8a', fontSize: '0.75rem' }}>
+                    <div style={{ color: 'var(--tint-blue-fg)', fontSize: '0.75rem' }}>
                       RA: {selectedRacquet.stiffness || 'ND'} | Poids: {selectedRacquet.weight}g | Tamis: {selectedRacquet.headSize} sq in
                     </div>
                   </div>
@@ -521,9 +521,9 @@ export default function ConfiguratorPage() {
                     top: '100%',
                     left: '0.75rem',
                     right: '0.75rem',
-                    backgroundColor: 'white',
-                    color: '#1f2937', // fix: eviter l'heritage du texte clair en mode sombre
-                    border: '1px solid #e5e7eb',
+                    backgroundColor: 'var(--surface-card)',
+                    color: 'var(--text-strong)', // fix: eviter l'heritage du texte clair en mode sombre
+                    border: '1px solid var(--surface-border)',
                     borderRadius: '8px',
                     boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
                     maxHeight: '300px',
@@ -536,12 +536,12 @@ export default function ConfiguratorPage() {
                         key={racquet.id}
                         style={{
                           padding: '0.75rem',
-                          borderBottom: '1px solid #f3f4f6',
+                          borderBottom: '1px solid var(--surface-border-soft)',
                           cursor: 'pointer',
                           transition: 'background-color 0.2s'
                         }}
-                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f9fafb'}
-                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--surface-muted)'}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--surface-card)'}
                         onClick={() => {
                           handleInputChange('racquet', racquet.id);
                           setSearchTerms(prev => ({ ...prev, racquet: `${racquet.brand} ${racquet.model} ${racquet.variant}` }));
@@ -551,7 +551,7 @@ export default function ConfiguratorPage() {
                         <div style={{ fontWeight: '500' }}>
                           {racquet.brand} {racquet.model} {racquet.variant}
                         </div>
-                        <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                           RA: {racquet.stiffness || 'ND'} | {racquet.weight}g | {racquet.headSize} sq in
                         </div>
                       </div>
@@ -598,12 +598,12 @@ export default function ConfiguratorPage() {
                   <div style={{ 
                     marginTop: '0.5rem',
                     padding: '0.5rem',
-                    backgroundColor: '#dcfce7',
+                    backgroundColor: 'var(--tint-green-bg)',
                     borderRadius: '8px',
                     fontSize: '0.875rem'
                   }}>
                     <strong>{selectedMainString.brand} {selectedMainString.model}</strong>
-                    <div style={{ color: '#166534', fontSize: '0.75rem' }}>
+                    <div style={{ color: 'var(--tint-green-fg)', fontSize: '0.75rem' }}>
                       {selectedMainString.type} | Raideur: {selectedMainString.stiffness} lb/in | Contrôle: {selectedMainString.control}/10
                     </div>
                   </div>
@@ -614,9 +614,9 @@ export default function ConfiguratorPage() {
                     top: '100%',
                     left: '0.75rem',
                     right: '0.75rem',
-                    backgroundColor: 'white',
-                    color: '#1f2937', // fix: eviter l'heritage du texte clair en mode sombre
-                    border: '1px solid #e5e7eb',
+                    backgroundColor: 'var(--surface-card)',
+                    color: 'var(--text-strong)', // fix: eviter l'heritage du texte clair en mode sombre
+                    border: '1px solid var(--surface-border)',
                     borderRadius: '8px',
                     boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
                     maxHeight: '300px',
@@ -629,12 +629,12 @@ export default function ConfiguratorPage() {
                         key={string.id}
                         style={{
                           padding: '0.75rem',
-                          borderBottom: '1px solid #f3f4f6',
+                          borderBottom: '1px solid var(--surface-border-soft)',
                           cursor: 'pointer',
                           transition: 'background-color 0.2s'
                         }}
-                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f9fafb'}
-                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--surface-muted)'}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--surface-card)'}
                         onClick={() => {
                           handleInputChange('mainString', string.id);
                           setSearchTerms(prev => ({ ...prev, mainString: `${string.brand} ${string.model}` }));
@@ -648,7 +648,7 @@ export default function ConfiguratorPage() {
                         <div style={{ fontWeight: '500' }}>
                           {string.brand} {string.model}
                         </div>
-                        <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                           {string.type} | Raideur: {string.stiffness} lb/in | €{string.price.europe}
                         </div>
                       </div>
@@ -682,10 +682,10 @@ export default function ConfiguratorPage() {
               <div className="dropdown-container" style={{ padding: '0 0.75rem', position: 'relative' }}>
                 <div style={{ 
                   padding: '0.5rem',
-                  backgroundColor: '#fef3c7',
+                  backgroundColor: 'var(--tint-amber-bg)',
                   borderRadius: '8px',
                   fontSize: '0.75rem',
-                  color: '#92400e',
+                  color: 'var(--tint-amber-fg)',
                   marginBottom: '0.75rem'
                 }}>
                   💡 Laissez vide pour un cordage uniforme, ou choisissez un autre cordage pour un hybride
@@ -705,12 +705,12 @@ export default function ConfiguratorPage() {
                   <div style={{ 
                     marginTop: '0.5rem',
                     padding: '0.5rem',
-                    backgroundColor: '#dcfce7',
+                    backgroundColor: 'var(--tint-green-bg)',
                     borderRadius: '8px',
                     fontSize: '0.875rem'
                   }}>
                     <strong>{selectedCrossString.brand} {selectedCrossString.model}</strong>
-                    <div style={{ color: '#166534', fontSize: '0.75rem' }}>
+                    <div style={{ color: 'var(--tint-green-fg)', fontSize: '0.75rem' }}>
                       {selectedCrossString.type} | Raideur: {selectedCrossString.stiffness} lb/in | Confort: {selectedCrossString.comfort}/10
                     </div>
                     <button
@@ -738,9 +738,9 @@ export default function ConfiguratorPage() {
                     top: '100%',
                     left: '0.75rem',
                     right: '0.75rem',
-                    backgroundColor: 'white',
-                    color: '#1f2937', // fix: eviter l'heritage du texte clair en mode sombre
-                    border: '1px solid #e5e7eb',
+                    backgroundColor: 'var(--surface-card)',
+                    color: 'var(--text-strong)', // fix: eviter l'heritage du texte clair en mode sombre
+                    border: '1px solid var(--surface-border)',
                     borderRadius: '8px',
                     boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
                     maxHeight: '300px',
@@ -753,12 +753,12 @@ export default function ConfiguratorPage() {
                         key={string.id}
                         style={{
                           padding: '0.75rem',
-                          borderBottom: '1px solid #f3f4f6',
+                          borderBottom: '1px solid var(--surface-border-soft)',
                           cursor: 'pointer',
                           transition: 'background-color 0.2s'
                         }}
-                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f9fafb'}
-                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--surface-muted)'}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--surface-card)'}
                         onClick={() => {
                           handleInputChange('crossString', string.id);
                           setSearchTerms(prev => ({ ...prev, crossString: `${string.brand} ${string.model}` }));
@@ -772,7 +772,7 @@ export default function ConfiguratorPage() {
                         <div style={{ fontWeight: '500' }}>
                           {string.brand} {string.model}
                         </div>
-                        <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                           {string.type} | Raideur: {string.stiffness} lb/in | €{string.price.europe}
                         </div>
                       </div>
@@ -805,7 +805,7 @@ export default function ConfiguratorPage() {
                 <div>
                   <label style={{ 
                     fontSize: '0.875rem', 
-                    color: '#6b7280',
+                    color: 'var(--text-muted)',
                     marginBottom: '0.25rem',
                     display: 'block' 
                   }}>
@@ -831,7 +831,7 @@ export default function ConfiguratorPage() {
                 <div>
                   <label style={{ 
                     fontSize: '0.875rem', 
-                    color: '#6b7280',
+                    color: 'var(--text-muted)',
                     marginBottom: '0.25rem',
                     display: 'block' 
                   }}>
@@ -880,7 +880,7 @@ export default function ConfiguratorPage() {
                     justifyContent: 'space-between',
                     marginBottom: '0.5rem' 
                   }}>
-                    <label style={{ fontSize: '0.875rem', color: '#6b7280' }}>Principal</label>
+                    <label style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>Principal</label>
                     <span style={{ fontSize: '0.875rem', fontWeight: '500' }}>{formData.mainTension} kg</span>
                   </div>
                   <input
@@ -895,7 +895,7 @@ export default function ConfiguratorPage() {
                     display: 'flex', 
                     justifyContent: 'space-between',
                     fontSize: '0.75rem',
-                    color: '#9ca3af',
+                    color: 'var(--text-faint)',
                     marginTop: '0.25rem'
                   }}>
                     <span>15 kg</span>
@@ -908,7 +908,7 @@ export default function ConfiguratorPage() {
                     justifyContent: 'space-between',
                     marginBottom: '0.5rem' 
                   }}>
-                    <label style={{ fontSize: '0.875rem', color: '#6b7280' }}>Travers</label>
+                    <label style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>Travers</label>
                     <span style={{ fontSize: '0.875rem', fontWeight: '500' }}>{formData.crossTension} kg</span>
                   </div>
                   <input
@@ -923,7 +923,7 @@ export default function ConfiguratorPage() {
                     display: 'flex', 
                     justifyContent: 'space-between',
                     fontSize: '0.75rem',
-                    color: '#9ca3af',
+                    color: 'var(--text-faint)',
                     marginTop: '0.25rem'
                   }}>
                     <span>15 kg</span>
@@ -938,14 +938,14 @@ export default function ConfiguratorPage() {
           <div style={{ marginBottom: '1.5rem' }}>
             <div style={{
               padding: '0.75rem',
-              backgroundColor: '#fef3c7',
+              backgroundColor: 'var(--tint-amber-bg)',
               borderRadius: '8px',
               border: '1px solid #fde68a',
               display: 'flex',
               alignItems: 'center'
             }}>
               <span style={{ marginRight: '0.5rem' }}>⭐</span>
-              <span style={{ fontWeight: '500', color: '#92400e' }}>Evaluer votre experience</span>
+              <span style={{ fontWeight: '500', color: 'var(--tint-amber-fg)' }}>Evaluer votre experience</span>
             </div>
             <div style={{ padding: '0.75rem' }}>
               <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -966,7 +966,7 @@ export default function ConfiguratorPage() {
                   </button>
                 ))}
               </div>
-              <p style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.5rem' }}>
+              <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
                 Votre satisfaction personnelle
               </p>
             </div>
@@ -976,7 +976,7 @@ export default function ConfiguratorPage() {
           <div style={{ marginBottom: '1.5rem' }}>
             <div style={{
               padding: '0.75rem',
-              backgroundColor: '#f9fafb',
+              backgroundColor: 'var(--surface-muted)',
               borderRadius: '8px',
               display: 'flex',
               alignItems: 'center'
@@ -1009,7 +1009,7 @@ export default function ConfiguratorPage() {
             }}>
               <h3 style={{
                 fontWeight: 'bold',
-                color: '#1e3a8a',
+                color: 'var(--tint-blue-fg)',
                 marginBottom: '0.75rem',
                 display: 'flex',
                 alignItems: 'center'
@@ -1019,12 +1019,12 @@ export default function ConfiguratorPage() {
               <div style={{ fontSize: '0.875rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                   <span style={{ color: '#1e40af' }}>RCS Principal:</span>
-                  <span style={{ fontWeight: 'bold', color: '#1e3a8a' }}>{rcsData.mainRCS.toFixed(1)}</span>
+                  <span style={{ fontWeight: 'bold', color: 'var(--tint-blue-fg)' }}>{rcsData.mainRCS.toFixed(1)}</span>
                 </div>
                 {selectedCrossString && (
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                     <span style={{ color: '#1e40af' }}>RCS Travers:</span>
-                    <span style={{ fontWeight: 'bold', color: '#1e3a8a' }}>{rcsData.crossRCS.toFixed(1)}</span>
+                    <span style={{ fontWeight: 'bold', color: 'var(--tint-blue-fg)' }}>{rcsData.crossRCS.toFixed(1)}</span>
                   </div>
                 )}
                 <div style={{ 
@@ -1049,7 +1049,7 @@ export default function ConfiguratorPage() {
                   borderRadius: '6px',
                   marginBottom: '0.5rem'
                 }}>
-                  <div style={{ fontWeight: 'bold', color: '#1e3a8a', marginBottom: '0.25rem' }}>
+                  <div style={{ fontWeight: 'bold', color: 'var(--tint-blue-fg)', marginBottom: '0.25rem' }}>
                     {rcsData.recommendation.level}
                   </div>
                   <div style={{ fontSize: '0.75rem', color: '#1e40af' }}>
@@ -1080,7 +1080,7 @@ export default function ConfiguratorPage() {
                 marginTop: '1rem',
                 padding: '1.25rem',
                 borderRadius: '12px',
-                border: '1px solid #d1d5db',
+                border: '1px solid var(--surface-border)',
                 background: 'linear-gradient(135deg,#f8fafc 0%,#eef2ff 100%)',
                 position: 'relative',
               }}
@@ -1093,14 +1093,14 @@ export default function ConfiguratorPage() {
                   marginBottom: '0.75rem',
                 }}
               >
-                <span style={{ fontWeight: 700, color: '#1f2937' }}>
+                <span style={{ fontWeight: 700, color: 'var(--text-strong)' }}>
                   🔬 Analyse RCS Avancée
                 </span>
                 <span
                   style={{
                     fontSize: '0.7rem',
                     fontWeight: 700,
-                    color: '#92400e',
+                    color: 'var(--tint-amber-fg)',
                     background: '#fde68a',
                     padding: '2px 8px',
                     borderRadius: '999px',
@@ -1144,7 +1144,7 @@ export default function ConfiguratorPage() {
                       }}
                     >
                       {advancedRcs.overall}
-                      <span style={{ fontSize: '1rem', color: '#6b7280' }}>/100</span>
+                      <span style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>/100</span>
                     </span>
                     <span style={{ color: '#374151', fontSize: '0.9rem' }}>
                       {advancedRcs.summary}
@@ -1205,7 +1205,7 @@ export default function ConfiguratorPage() {
                         border: '1px solid #fecaca',
                         borderRadius: '8px',
                         fontSize: '0.8rem',
-                        color: '#991b1b',
+                        color: 'var(--tint-red-fg)',
                       }}
                     >
                       ⚠️ {w}
@@ -1247,14 +1247,14 @@ export default function ConfiguratorPage() {
                     }}
                   >
                     <span style={{ fontSize: '1.5rem' }}>🔒</span>
-                    <span style={{ fontWeight: 600, color: '#1f2937', fontSize: '0.9rem' }}>
+                    <span style={{ fontWeight: 600, color: 'var(--text-strong)', fontSize: '0.9rem' }}>
                       Sous-scores détaillés &amp; recommandations personnalisées
                     </span>
                     <Link
                       href="/pricing"
                       style={{
                         background: '#f59e0b',
-                        color: '#1f2937',
+                        color: 'var(--text-strong)',
                         fontWeight: 700,
                         padding: '0.5rem 1rem',
                         borderRadius: '8px',
@@ -1308,8 +1308,8 @@ export default function ConfiguratorPage() {
             {saveMessage && (
               <div style={{
                 padding: '0.75rem',
-                backgroundColor: saveMessage.includes('succès') ? '#dcfce7' : '#fee2e2',
-                color: saveMessage.includes('succès') ? '#166534' : '#991b1b',
+                backgroundColor: saveMessage.includes('succès') ? 'var(--tint-green-bg)' : 'var(--tint-red-bg)',
+                color: saveMessage.includes('succès') ? 'var(--tint-green-fg)' : 'var(--tint-red-fg)',
                 borderRadius: '8px',
                 fontSize: '0.875rem',
                 textAlign: 'center'
@@ -1322,8 +1322,8 @@ export default function ConfiguratorPage() {
 
         {/* Right Column - Journal de Cordage */}
         <div style={{
-          backgroundColor: 'white',
-          color: '#1f2937', // fix: eviter l'heritage du texte clair en mode sombre
+          backgroundColor: 'var(--surface-card)',
+          color: 'var(--text-strong)', // fix: eviter l'heritage du texte clair en mode sombre
           borderRadius: '16px',
           boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)',
           padding: '1.5rem'
@@ -1331,7 +1331,7 @@ export default function ConfiguratorPage() {
           <h2 style={{
             fontSize: '1.25rem',
             fontWeight: 'bold',
-            color: '#1f2937',
+            color: 'var(--text-strong)',
             marginBottom: '1.5rem',
             display: 'flex',
             alignItems: 'center',
@@ -1344,8 +1344,8 @@ export default function ConfiguratorPage() {
             <span style={{
               fontSize: '0.75rem',
               padding: '0.25rem 0.5rem',
-              backgroundColor: '#fef3c7',
-              color: '#92400e',
+              backgroundColor: 'var(--tint-amber-bg)',
+              color: 'var(--tint-amber-fg)',
               borderRadius: '9999px'
             }}>
               PREMIUM
@@ -1362,7 +1362,7 @@ export default function ConfiguratorPage() {
             }}>
               <h3 style={{
                 fontWeight: 'bold',
-                color: '#166534',
+                color: 'var(--tint-green-fg)',
                 marginBottom: '0.5rem',
                 display: 'flex',
                 alignItems: 'center'
@@ -1410,11 +1410,11 @@ export default function ConfiguratorPage() {
               }}>
                 🔒 Journal synchronisé
               </h3>
-              <p style={{ fontSize: '0.875rem', color: '#92400e', marginBottom: '0.75rem' }}>
+              <p style={{ fontSize: '0.875rem', color: 'var(--tint-amber-fg)', marginBottom: '0.75rem' }}>
                 Connectez-vous pour sauvegarder vos configurations dans votre
                 compte et les retrouver sur tous vos appareils.
               </p>
-              <ul style={{ fontSize: '0.875rem', color: '#92400e', marginBottom: '1rem', listStyle: 'none', padding: 0 }}>
+              <ul style={{ fontSize: '0.875rem', color: 'var(--tint-amber-fg)', marginBottom: '1rem', listStyle: 'none', padding: 0 }}>
                 <li>✓ Historique de configurations dans votre compte</li>
                 <li>✓ Synchronisation entre tous vos appareils</li>
                 <li>✓ Notes et évaluations conservées</li>
@@ -1444,7 +1444,7 @@ export default function ConfiguratorPage() {
 
           {/* Configuration Preview */}
           <div style={{
-            border: '2px solid #e5e7eb',
+            border: '2px solid var(--surface-border)',
             borderRadius: '8px',
             padding: '1rem',
             marginBottom: '1.5rem'
@@ -1452,7 +1452,7 @@ export default function ConfiguratorPage() {
             <h4 style={{ fontWeight: '500', color: '#374151', marginBottom: '0.75rem' }}>
               {formData.configName || 'Configuration en cours'}
             </h4>
-            <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>
+            <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
               <div style={{ marginBottom: '0.5rem' }}>
                 {selectedRacquet ? `${selectedRacquet.brand} ${selectedRacquet.model}` : 'Aucune raquette sélectionnée'}
               </div>
@@ -1461,7 +1461,7 @@ export default function ConfiguratorPage() {
                 {selectedCrossString && ` / ${selectedCrossString.brand} ${selectedCrossString.model} ${formData.crossGauge}mm`}
               </div>
               {rcsData && (
-                <div style={{ fontSize: '0.75rem', color: '#9ca3af' }}>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-faint)' }}>
                   RCS Moyen: {rcsData.avgRCS.toFixed(1)} | Compatibilité: {rcsData.compatibility.toFixed(0)}%
                 </div>
               )}
@@ -1470,14 +1470,14 @@ export default function ConfiguratorPage() {
 
           {/* RCS Box */}
           <div style={{
-            backgroundColor: '#dbeafe',
+            backgroundColor: 'var(--tint-blue-bg)',
             borderRadius: '8px',
             padding: '1rem',
             marginBottom: '1.5rem'
           }}>
             <h4 style={{
               fontWeight: 'bold',
-              color: '#1e3a8a',
+              color: 'var(--tint-blue-fg)',
               marginBottom: '0.5rem',
               display: 'flex',
               alignItems: 'center'
@@ -1487,17 +1487,17 @@ export default function ConfiguratorPage() {
             <div style={{ fontSize: '0.875rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                 <span style={{ color: '#3730a3' }}>Confort Bras:</span>
-                <span style={{ fontWeight: '500', color: '#1e3a8a' }}>
+                <span style={{ fontWeight: '500', color: 'var(--tint-blue-fg)' }}>
                   {rcsData ? rcsData.recommendation.level : 'Sélectionnez une config'}
                 </span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                 <span style={{ color: '#3730a3' }}>RCS Optimal:</span>
-                <span style={{ fontWeight: '500', color: '#1e3a8a' }}>20-25 (Confortable)</span>
+                <span style={{ fontWeight: '500', color: 'var(--tint-blue-fg)' }}>20-25 (Confortable)</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                 <span style={{ color: '#3730a3' }}>RCS Moyen:</span>
-                <span style={{ fontWeight: '500', color: '#1e3a8a' }}>25-30 (Standard)</span>
+                <span style={{ fontWeight: '500', color: 'var(--tint-blue-fg)' }}>25-30 (Standard)</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: '#3730a3' }}>Tennis Elbow:</span>
@@ -1514,7 +1514,7 @@ export default function ConfiguratorPage() {
             marginBottom: '1.5rem'
           }}>
             <div style={{
-              backgroundColor: '#f9fafb',
+              backgroundColor: 'var(--surface-muted)',
               borderRadius: '8px',
               padding: '0.75rem',
               textAlign: 'center'
@@ -1522,10 +1522,10 @@ export default function ConfiguratorPage() {
               <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#10b981' }}>
                 {stats.total}
               </div>
-              <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>Configurations sauvées</div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Configurations sauvées</div>
             </div>
             <div style={{
-              backgroundColor: '#f9fafb',
+              backgroundColor: 'var(--surface-muted)',
               borderRadius: '8px',
               padding: '0.75rem',
               textAlign: 'center'
@@ -1533,7 +1533,7 @@ export default function ConfiguratorPage() {
               <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#3b82f6' }}>
                 {stats.avgRCS > 0 ? stats.avgRCS.toFixed(1) : '—'}
               </div>
-              <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>RCS moyen</div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>RCS moyen</div>
             </div>
           </div>
 
@@ -1553,19 +1553,19 @@ export default function ConfiguratorPage() {
                       alignItems: 'center',
                       justifyContent: 'space-between',
                       padding: '0.5rem',
-                      backgroundColor: '#f9fafb',
+                      backgroundColor: 'var(--surface-muted)',
                       borderRadius: '8px',
                       cursor: 'pointer',
                       transition: 'background-color 0.2s'
                     }}>
                       <div>
                         <div style={{ fontSize: '0.875rem', fontWeight: '500' }}>{config.name}</div>
-                        <div style={{ fontSize: '0.625rem', color: '#9ca3af' }}>
+                        <div style={{ fontSize: '0.625rem', color: 'var(--text-faint)' }}>
                           {racquet?.brand} {racquet?.model} | {string?.brand} {string?.model}
                         </div>
                       </div>
                       <div style={{ textAlign: 'right' }}>
-                        <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                           RCS: {config.rcsScore.toFixed(1)}
                         </div>
                         {config.rating > 0 && (
@@ -1580,11 +1580,11 @@ export default function ConfiguratorPage() {
               ) : (
                 <div style={{
                   padding: '1rem',
-                  backgroundColor: '#f9fafb',
+                  backgroundColor: 'var(--surface-muted)',
                   borderRadius: '8px',
                   textAlign: 'center',
                   fontSize: '0.875rem',
-                  color: '#6b7280'
+                  color: 'var(--text-muted)'
                 }}>
                   Aucune configuration sauvée
                 </div>

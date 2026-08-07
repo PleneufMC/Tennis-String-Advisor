@@ -48,8 +48,8 @@ export default function PaymentSuccessPage() {
       <div style={{
         position: 'relative',
         zIndex: 1,
-        backgroundColor: 'white',
-        color: '#1f2937', // fix: eviter l'heritage du texte clair en mode sombre
+        backgroundColor: 'var(--surface-card)',
+        color: 'var(--text-strong)', // fix: eviter l'heritage du texte clair en mode sombre
         borderRadius: '16px',
         padding: '3rem',
         maxWidth: '600px',
@@ -76,7 +76,7 @@ export default function PaymentSuccessPage() {
         
         <p style={{
           fontSize: '1.25rem',
-          color: '#1f2937',
+          color: 'var(--text-strong)',
           marginBottom: '2rem'
         }}>
           Votre paiement a été confirmé avec succès
@@ -92,7 +92,7 @@ export default function PaymentSuccessPage() {
           <h3 style={{
             fontSize: '1.125rem',
             fontWeight: 'bold',
-            color: '#166534',
+            color: 'var(--tint-green-fg)',
             marginBottom: '1rem'
           }}>
             ✨ Vos avantages Premium sont maintenant actifs :
@@ -114,12 +114,12 @@ export default function PaymentSuccessPage() {
         </div>
         
         <div style={{
-          backgroundColor: '#fef3c7',
+          backgroundColor: 'var(--tint-amber-bg)',
           borderRadius: '8px',
           padding: '1rem',
           marginBottom: '2rem',
           fontSize: '0.875rem',
-          color: '#92400e'
+          color: 'var(--tint-amber-fg)'
         }}>
           📧 Un email de confirmation a été envoyé avec votre facture
         </div>
@@ -157,7 +157,7 @@ export default function PaymentSuccessPage() {
           
           <div style={{
             fontSize: '0.875rem',
-            color: '#6b7280'
+            color: 'var(--text-muted)'
           }}>
             Redirection automatique dans {countdown} secondes...
           </div>
@@ -166,11 +166,11 @@ export default function PaymentSuccessPage() {
         <div style={{
           marginTop: '2rem',
           paddingTop: '2rem',
-          borderTop: '1px solid #e5e7eb'
+          borderTop: '1px solid var(--surface-border)'
         }}>
           <p style={{
             fontSize: '0.875rem',
-            color: '#6b7280',
+            color: 'var(--text-muted)',
             marginBottom: '0.5rem'
           }}>
             Besoin d'aide ?
