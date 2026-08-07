@@ -191,7 +191,12 @@ for (const [key, members] of families) {
 const STRING_RULES = {
   stiffness: { min: 60, max: 280, label: 'rigidité (lb/in)' },
 };
-const RATING_FIELDS = ['performance', 'control', 'comfort', 'durability', 'versatility', 'innovation', 'spin', 'power'];
+// Notes attendues sur toute entrée : leur absence est un vrai défaut.
+const RATING_FIELDS = ['performance', 'control', 'comfort', 'durability', 'spin', 'power'];
+// Notes facultatives : absentes du schéma Supabase et non lues par l'UI. Leur
+// absence n'est pas signalée (sinon chaque cordage importé depuis la base
+// remonterait deux faux positifs), mais une valeur présente reste contrôlée.
+const OPTIONAL_RATING_FIELDS = ['versatility', 'innovation'];
 const VALID_TYPES = new Set(['Polyester', 'Multifilament', 'Natural Gut', 'Synthetic', 'Hybrid', 'Biodegradable']);
 const REQUIRED_STRING = ['id', 'brand', 'model', 'type', 'gauges', 'stiffness', 'recommendedTension', 'price', 'description'];
 
@@ -226,6 +231,15 @@ for (const s of stringsDatabase) {
     if (v === undefined || v === null) {
       add('LOW', 'missing-optional', 'string', id, `note absente: ${f}`);
     } else if (typeof v !== 'number' || v < 0 || v > 10) {
+      add('MEDIUM', 'out-of-range', 'string', id, `note ${f}=${v} hors [0-10]`);
+    }
+  }
+
+  // Champs facultatifs : on ne contrôle que la validité d'une valeur fournie.
+  for (const f of OPTIONAL_RATING_FIELDS) {
+    const v = s[f];
+    if (v === undefined || v === null) continue;
+    if (typeof v !== 'number' || v < 0 || v > 10) {
       add('MEDIUM', 'out-of-range', 'string', id, `note ${f}=${v} hors [0-10]`);
     }
   }
