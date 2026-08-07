@@ -26,7 +26,7 @@ Un système avancé de configuration de cordage de tennis avec journal professio
 - ✅ **3 configurations sauvegardées** en local storage
 - ✅ **Base de données complète** :
   - 129 raquettes de tennis (toutes marques, jusqu'aux gammes 2026)
-  - 69 cordages professionnels
+  - 190 cordages professionnels
 - ✅ **Recommandations basiques** selon le RCS
 
 ### ⭐ Version Premium (4,99€/mois ou 49,90€/an)
@@ -51,7 +51,7 @@ Un système avancé de configuration de cordage de tennis avec journal professio
   - Head Speed MP (RA: 62, 300g, 100 sq in)
   - Wilson Defyer 98 Pro (RA: 64, 305g, 98 sq in, 16x20) — gamme 2026
 
-#### Cordages (69 références)
+#### Cordages (190 références)
 - **Types** : Polyester, Multifilament, Boyau naturel, Hybride
 - **Données** : Rigidité (lb/in), contrôle, confort, durabilité, spin
 - **Top cordages** :
@@ -177,6 +177,66 @@ RCS = (racquetStiffness/70 × 0.4) + (stringStiffness/220 × 0.4) + (tension/24 
 └── README.md                       # Ce fichier
 ```
 
+## 🔄 Synchronisation base Supabase ↔ fichiers TypeScript
+
+> **Le site lit les fichiers TS, jamais la base.** Aucune référence à
+> `public.strings` ni à `from('strings')` n'existe dans `src/`. Les pages
+> importent `stringsDatabase` depuis `src/data/strings-database.ts`.
+
+Conséquence pratique, à garder en tête pour tout ajout de produit :
+
+| Sens | Script | Effet pour le visiteur |
+|---|---|---|
+| TS → base | `migrations/2026-08-04__resync_ts_to_supabase.sql` | **aucun** : nettoie la base, que le site ne lit pas |
+| **base → TS** | **`scripts/merge-db-to-ts.mjs`** | **visible** : les cordages apparaissent sur le site |
+
+### `scripts/merge-db-to-ts.mjs`
+
+```bash
+node scripts/merge-db-to-ts.mjs --dry-run          # rapport, n'écrit rien
+node scripts/merge-db-to-ts.mjs                    # applique la fusion
+node scripts/merge-db-to-ts.mjs --from-file db.json # source hors ligne
+```
+
+Garanties :
+
+- **additif seul** — aucune entrée existante n'est modifiée ni supprimée, donc
+  les conflits de valeurs TS/base restent en attente d'arbitrage sans bloquer ;
+- **idempotent** — filtrage sur `id` *et* sur `brand + model` normalisé, ce qui
+  écarte les doublons sous identifiant différent (ex. `signum-pro-xperience`
+  en base = `signum-pro-x-perience` sur le site) ;
+- **aucune donnée fabriquée** — voir ci-dessous ;
+- **contrôle des unités avant écriture** — refuse d'écrire si les tensions ne
+  sont pas en kg (bornes 15-35 et ratio base/TS sur les ids communs) ou si la
+  rigidité sort de 60-280 lb/in. Un écart d'unité silencieux fausserait les
+  recommandations de tension ;
+- **relecture de contrôle** après écriture (nombre d'entrées, ids uniques), avec
+  sauvegarde `.ts.bak` (ignorée par git).
+
+Transformations appliquées à l'import :
+
+- `type: 'Synthetic Gut'` → `'Synthetic'` — hors enum TS, aligné sur le
+  précédent déjà présent dans le projet (`Synthetic Gut Duraflex`) ;
+- description : seule la partie principale est conservée. La base y ajoute un
+  bloc `\n\nRigidité par jauge: …`, or `string-card.tsx` rend
+  `{string.description}` en texte JSX brut — les `\n` ne produisent aucun saut
+  de ligne en HTML et le bloc s'afficherait collé à la phrase.
+
+### ⚠️ `versatility` et `innovation`
+
+Ces deux notes sont **absentes du schéma Supabase**. Elles sont donc
+**optionnelles** dans l'interface `TennisString` et **omises** sur les cordages
+importés, plutôt que remplies par une moyenne inventée : cette base sert à
+conseiller des achats, une note fabriquée y serait indiscernable d'une mesure.
+
+Deux conséquences à ne pas défaire :
+
+1. `qa-database.mjs` ne signale pas leur absence (`OPTIONAL_RATING_FIELDS`),
+   mais contrôle toujours une valeur fournie ;
+2. `getRecommendedStrings` filtre avec `s.versatility === undefined || s.versatility >= 7.5`.
+   Sans le test d'`undefined`, les cordages importés seraient **tous** écartés
+   des recommandations pour les joueurs intermédiaires.
+
 ## 🎨 Thème clair / sombre et palette « surface »
 
 Le site suit le thème du système (`ThemeProvider`, `defaultTheme="system"`) :
@@ -288,7 +348,7 @@ npm start
 
 ### ✅ Complété (Janvier 2025)
 - [x] Configurateur RCS avancé
-- [x] Base de données 129 raquettes + 69 cordages
+- [x] Base de données 129 raquettes + 190 cordages
 - [x] Intégration Stripe (paiements)
 - [x] Authentification Google OAuth
 - [x] **Corrections sécurité Supabase** (RLS, fonctions, politiques)

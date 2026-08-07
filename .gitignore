@@ -48,3 +48,6 @@ coverage/
 *.tsbuildinfo
 .eslintcache
 _legacy_static_backup/
+
+# Sauvegardes générées par scripts/merge-db-to-ts.mjs
+*.ts.bak
