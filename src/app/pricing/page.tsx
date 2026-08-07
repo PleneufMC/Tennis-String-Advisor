@@ -206,6 +206,7 @@ export default function PricingPage() {
             key={plan.id}
             style={{
               backgroundColor: 'white',
+              color: '#1f2937', // fix: eviter l'heritage du texte clair en mode sombre
               borderRadius: '16px',
               padding: '2rem',
               position: 'relative',
@@ -335,6 +336,7 @@ export default function PricingPage() {
       }}>
         <div style={{
           backgroundColor: 'white',
+          color: '#1f2937', // fix: eviter l'heritage du texte clair en mode sombre
           borderRadius: '16px',
           padding: '2rem',
           boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)'

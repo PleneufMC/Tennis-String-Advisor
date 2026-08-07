@@ -52,6 +52,7 @@ export default function StatisticsPage() {
 
   const cardStyle = {
     backgroundColor: 'white',
+    color: '#1f2937', // fix: eviter l'heritage du texte clair en mode sombre
     borderRadius: '16px',
     boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)',
     padding: '1.5rem',

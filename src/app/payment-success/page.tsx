@@ -49,6 +49,7 @@ export default function PaymentSuccessPage() {
         position: 'relative',
         zIndex: 1,
         backgroundColor: 'white',
+        color: '#1f2937', // fix: eviter l'heritage du texte clair en mode sombre
         borderRadius: '16px',
         padding: '3rem',
         maxWidth: '600px',

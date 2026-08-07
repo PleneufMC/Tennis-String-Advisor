@@ -345,6 +345,10 @@ export default function ConfiguratorPage() {
     fontSize: '1rem',
     outline: 'none',
     transition: 'border-color 0.2s',
+    // fix: sans fond ni couleur explicites, le champ heritait du texte clair
+    // du <body> en mode sombre -> saisie blanche sur fond blanc, illisible.
+    backgroundColor: '#ffffff',
+    color: '#1f2937',
   };
 
   const selectStyle = {
@@ -423,6 +427,7 @@ export default function ConfiguratorPage() {
         {/* Left Column - Configuration */}
         <div style={{
           backgroundColor: 'white',
+          color: '#1f2937', // fix: eviter l'heritage du texte clair en mode sombre
           borderRadius: '16px',
           boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)',
           padding: '1.5rem'
@@ -517,6 +522,7 @@ export default function ConfiguratorPage() {
                     left: '0.75rem',
                     right: '0.75rem',
                     backgroundColor: 'white',
+                    color: '#1f2937', // fix: eviter l'heritage du texte clair en mode sombre
                     border: '1px solid #e5e7eb',
                     borderRadius: '8px',
                     boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
@@ -609,6 +615,7 @@ export default function ConfiguratorPage() {
                     left: '0.75rem',
                     right: '0.75rem',
                     backgroundColor: 'white',
+                    color: '#1f2937', // fix: eviter l'heritage du texte clair en mode sombre
                     border: '1px solid #e5e7eb',
                     borderRadius: '8px',
                     boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
@@ -732,6 +739,7 @@ export default function ConfiguratorPage() {
                     left: '0.75rem',
                     right: '0.75rem',
                     backgroundColor: 'white',
+                    color: '#1f2937', // fix: eviter l'heritage du texte clair en mode sombre
                     border: '1px solid #e5e7eb',
                     borderRadius: '8px',
                     boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
@@ -1315,6 +1323,7 @@ export default function ConfiguratorPage() {
         {/* Right Column - Journal de Cordage */}
         <div style={{
           backgroundColor: 'white',
+          color: '#1f2937', // fix: eviter l'heritage du texte clair en mode sombre
           borderRadius: '16px',
           boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)',
           padding: '1.5rem'
