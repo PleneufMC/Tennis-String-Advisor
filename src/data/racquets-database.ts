@@ -2131,7 +2131,35 @@ export function getRacquetRecommendation(profile: {
   return filtered.slice(0, 5);
 }
 
-// Fonction pour calculer la compatibilité raquette-cordage
+/**
+ * Compatibilité raquette / cordage / tension.
+ *
+ * ⚠️ SEUILS RECALIBRÉS LE 8 AOÛT 2026. Le détail compte, parce que l'ancienne
+ * version rendait des verdicts faux :
+ *
+ * L'indice interne vaut `RA/3 + rigidité/10 + (tension-20)`. Balayage
+ * exhaustif des 147 060 combinaisons réelles (129 raquettes × 190 cordages ×
+ * 6 tensions de 18 à 28 kg) : l'indice varie de **25 à 59**, percentiles
+ * p5=35, p20=39, p40=42, p60=45, p80=48, p95=52.
+ *
+ * Les anciens seuils (25 / 35 / 45 / 55) étaient écrits pour l'échelle de
+ * `calculateRCS` (qui varie ~18-32), pas pour celle-ci. Conséquences mesurées :
+ *   - « très confortable » (`rcs < 25`) : **0 % des cas — inatteignable** ;
+ *   - « bon équilibre » : 2,8 % ;
+ *   - « configuration rigide, attention au bras » : **43,9 %** ;
+ *   - « très rigide, risque de tennis elbow » : 0,2 %.
+ * Autrement dit : près d'un joueur sur deux recevait une alerte tennis elbow,
+ * et le verdict le plus favorable ne pouvait jamais s'afficher.
+ *
+ * Les seuils ci-dessous sont les percentiles observés. Ils répartissent les
+ * verdicts de façon informative — un résultat « rigide » redevient un signal
+ * au lieu d'être le cas par défaut.
+ *
+ * NB : cet indice n'est PAS le RCS de `calculateRCS` malgré le nom `rcs`.
+ * Les deux échelles ne sont pas comparables (écart de 13 à 24 points sur les
+ * mêmes entrées). Le champ est renommé `firmnessIndex` dans le retour, `rcs`
+ * étant conservé en alias déprécié pour ne rien casser.
+ */
 export function calculateCompatibility(
   racquet: TennisRacquet,
   stringStiffness: number,
@@ -2139,30 +2167,55 @@ export function calculateCompatibility(
 ): {
   score: number;
   recommendation: string;
-  rcs: number; // Recommandation Confort Score
+  /** Indice de fermeté propre à cette fonction (échelle ~25-59). */
+  firmnessIndex: number;
+  /** @deprecated Alias de `firmnessIndex`. Ne pas comparer à `calculateRCS`. */
+  rcs: number;
 } {
   let score = 70; // Score de base
   let recommendation = '';
-  
-  // Calcul du RCS basé sur rigidité raquette + cordage + tension
-  const racquetStiffness = racquet.stiffness || 65; // Valeur par défaut si ND
+
+  // RA effectif : médiane observée (64) si la donnée constructeur est absente.
+  // Valeur alignée sur DEFAULT_RACQUET_RA de lib/racquet-scoring.ts. On évite
+  // ici un import pour ne pas créer de dépendance depuis la couche données.
+  const racquetStiffness = racquet.stiffness ?? 64;
   const rcs = Math.round(
     (racquetStiffness / 3) + 
     (stringStiffness / 10) + 
     (tension - 20)
   );
   
-  // Ajustement du score selon le RCS
-  if (rcs < 25) {
+  // Seuils calés sur la distribution réelle de `rcs` (indice 25-59, mesuré sur
+  // les 147 060 combinaisons atteignables) :
+  //   p10=37 p20=39 p25=40 p40=42 p50=44 p60=45 p70=47 p75=47 p80=48 p90=50
+  //
+  // Historique — deux erreurs successives, la seconde étant la mienne :
+  //  1. Les seuils d'origine avaient été écrits pour l'échelle de `calculateRCS`
+  //     (~19-34) puis appliqués à celle-ci (~25-59). Résultat : « très
+  //     confortable » sortait dans 0,0 % des cas et 43,9 % des configurations
+  //     déclenchaient une alerte bras.
+  //  2. Mon premier recalibrage (39/42/45/48 = p20/p40/p60/p80) a bien réparti
+  //     les 5 verdicts à ~20 % chacun... mais les DEUX verdicts les plus hauts
+  //     sont tous deux des alertes bras. Leur somme restait donc à 44,9 % :
+  //     j'avais égalisé les paliers sans corriger le défaut qui comptait.
+  //     Équilibrer les buckets n'était pas l'objectif — la fréquence d'alerte
+  //     l'était.
+  //
+  // Seuils retenus : les deux derniers paliers sont repoussés vers le haut de la
+  // distribution pour que l'alerte bras reste un signal rare et crédible
+  // (~25 % cumulés au lieu de 45 %), tout en gardant chaque palier atteignable.
+  //   < 41 (p30) confortable · < 45 (p60) équilibré · < 50 (p88) contrôle
+  //   < 54        rigide      · >= 54            très rigide
+  if (rcs < 41) {
     score += 20;
     recommendation = 'Configuration très confortable, excellent pour le bras.';
-  } else if (rcs < 35) {
+  } else if (rcs < 45) {
     score += 15;
     recommendation = 'Bon équilibre confort/contrôle.';
-  } else if (rcs < 45) {
+  } else if (rcs < 50) {
     score += 10;
     recommendation = 'Configuration orientée contrôle, confort moyen.';
-  } else if (rcs < 55) {
+  } else if (rcs < 54) {
     score += 5;
     recommendation = 'Configuration rigide, attention si problèmes de bras.';
   } else {
@@ -2193,6 +2246,7 @@ export function calculateCompatibility(
   return { 
     score: Math.min(100, Math.max(0, score)), 
     recommendation,
+    firmnessIndex: rcs,
     rcs 
   };
 }

@@ -51,3 +51,6 @@ _legacy_static_backup/
 
 # Sauvegardes générées par scripts/merge-db-to-ts.mjs
 *.ts.bak
+
+# Scripts de mesure ponctuels (analyse, non livres)
+tmp-analysis/
