@@ -237,6 +237,53 @@ Deux conséquences à ne pas défaire :
    Sans le test d'`undefined`, les cordages importés seraient **tous** écartés
    des recommandations pour les joueurs intermédiaires.
 
+## 🕵️ Contrôle « texte invisible en thème sombre »
+
+### Mécanique du bug (celui des captures mobile)
+
+Le `<body>` porte `dark:text-slate-100`. En thème sombre, **tout texte qui ne
+définit pas sa propre couleur** hérite donc d'un blanc cassé. Si son conteneur
+impose un fond clair **en dur** (`bg-white`, `backgroundColor: 'white'`, sans
+variante `dark:`), on obtient du blanc sur blanc : **contraste 1,10:1**, texte
+littéralement invisible.
+
+C'est ce qui rendait les pages illisibles sur téléphone. Ce n'était ni une
+police, ni un problème propre au mobile : simplement le thème sombre du système,
+activé par défaut sur beaucoup de téléphones.
+
+### `scripts/qa-inherited-text.mjs`
+
+```bash
+npm run build && npx next start -p 3000 &   # un serveur est requis
+npm run audit:inherited-text
+```
+
+Le script relit le **HTML servi** et simule l'héritage CSS descendant. C'est ce
+qui lui permet de détecter le défaut même quand le fond et la couleur du texte
+sont déclarés dans des fichiers différents (page, composant, composant de base).
+
+> Ce contrôle **n'est pas** dans `audit:all` : il exige un serveur démarré,
+> contrairement aux autres audits qui sont statiques.
+
+Trois pièges rencontrés en l'écrivant, à ne pas réintroduire :
+
+1. le `<body>` porte `text-slate-900 dark:text-slate-100` — sa couleur claire
+   doit rester traitée comme **héritée**, sinon tous ses descendants passent
+   pour colorés et le contrôle ne détecte plus rien ;
+2. les balises ignorées (`svg`, `script`…) ne sont **pas empilées**, donc ne
+   doivent pas être dépilées — sans cette symétrie, un bouton contenant une
+   icône perdait son propre `text-white` et son libellé était signalé à tort ;
+3. les commentaires HTML sont retirés (Next.js insère des marqueurs Suspense
+   `<!--$-->` que le parcours prendrait pour du texte visible).
+
+### ⚠️ Règle à respecter pour tout nouveau composant
+
+Tout élément posant un **fond clair en dur** doit soit fixer une **couleur de
+texte explicite** (`text-gray-900`…), soit porter son fond via
+`var(--surface-card)` / `var(--surface-muted)` / `var(--surface-input)`, qui
+basculent avec le thème. Cela vaut aussi pour les `<input>` et `<select>` : sans
+couleur, la saisie de l'utilisateur devient invisible en thème sombre.
+
 ## 🎨 Thème clair / sombre et palette « surface »
 
 Le site suit le thème du système (`ThemeProvider`, `defaultTheme="system"`) :

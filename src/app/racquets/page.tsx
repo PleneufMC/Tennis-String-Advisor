@@ -277,7 +277,7 @@ export default function RacquetsPage() {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as SortOption)}
-                className="h-12 px-4 rounded-xl border border-gray-200 bg-white text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="h-12 px-4 rounded-xl border border-gray-200 bg-white text-sm text-gray-900 focus:ring-2 focus:ring-green-500 focus:border-transparent"
               >
                 <option value="name">Nom</option>
                 <option value="price-asc">Prix croissant</option>
@@ -361,7 +361,7 @@ export default function RacquetsPage() {
           )}>
             <div className="bg-white rounded-2xl shadow-lg p-6 sticky top-24">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="font-bold text-lg flex items-center gap-2">
+                <h2 className="font-bold text-lg text-gray-900 flex items-center gap-2">
                   <Filter className="h-5 w-5 text-green-600" />
                   Filtres
                 </h2>
@@ -394,7 +394,7 @@ export default function RacquetsPage() {
                         <span className="text-sm text-gray-700 group-hover:text-green-600 transition-colors">
                           {brand}
                         </span>
-                        <span className="text-xs text-gray-400 ml-auto">
+                        <span className="text-xs text-gray-500 ml-auto">
                           ({racquetsDatabase.filter(r => r.brand === brand).length})
                         </span>
                       </label>
@@ -425,7 +425,7 @@ export default function RacquetsPage() {
                         <span className="text-sm text-gray-700 group-hover:text-green-600 transition-colors">
                           {categoryLabels[category] || category}
                         </span>
-                        <span className="text-xs text-gray-400 ml-auto">
+                        <span className="text-xs text-gray-500 ml-auto">
                           ({racquetsDatabase.filter(r => r.category === category).length})
                         </span>
                       </label>

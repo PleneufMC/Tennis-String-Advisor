@@ -247,7 +247,7 @@ export default function StringsPage() {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as SortOption)}
-                className="h-12 px-4 rounded-xl border border-gray-200 bg-white text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="h-12 px-4 rounded-xl border border-gray-200 bg-white text-sm text-gray-900 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               >
                 <option value="rating">Note globale</option>
                 <option value="name">Nom</option>
@@ -381,7 +381,7 @@ export default function StringsPage() {
                         <span className="text-sm text-gray-700 group-hover:text-purple-600 transition-colors">
                           {brand}
                         </span>
-                        <span className="text-xs text-gray-400 ml-auto">
+                        <span className="text-xs text-gray-500 ml-auto">
                           ({stringsDatabase.filter(s => s.brand === brand).length})
                         </span>
                       </label>
@@ -412,7 +412,7 @@ export default function StringsPage() {
                         <span className="text-sm text-gray-700 group-hover:text-purple-600 transition-colors">
                           {typeLabels[type] || type}
                         </span>
-                        <span className="text-xs text-gray-400 ml-auto">
+                        <span className="text-xs text-gray-500 ml-auto">
                           ({stringsDatabase.filter(s => s.type === type).length})
                         </span>
                       </label>
