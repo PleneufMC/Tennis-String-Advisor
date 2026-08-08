@@ -486,7 +486,13 @@ délimitent ce qui est fait de ce qui reste à décider ou à vérifier.*
 
 ---
 
-## Recoupement avec Tennis Warehouse — NON ABOUTI, et mon premier diagnostic était faux
+## Recoupement avec Tennis Warehouse — étape 1/2 : boutique inaccessible
+
+> ⚠️ **SECTION HISTORIQUE — conclusion dépassée.** Elle conserve la trace de ma
+> première tentative et des erreurs commises. Sa conclusion (« recoupement
+> irréalisable ») a été **infirmée** : voir la section suivante, où une source
+> exploitable (TWU) est finalement trouvée pour la rigidité des cordages.
+> Conservée pour la traçabilité, **à ne pas utiliser comme état des lieux.**
 
 Demande : aller chercher les valeurs douteuses sur un site de référence plutôt
 que de les estimer.
@@ -655,26 +661,46 @@ Une seule requête suffit. Copie versionnée : `data/reference/twu-string-stiffn
 
 ### Le résultat est sévère : votre intuition était fondée
 
-Sur les **62 modèles appariés de façon certaine** :
+**Mais d'abord, correction d'un chiffre que j'avais publié ici même.** J'avais
+écrit « écart moyen −13,7 lb/in, extrême −83,5 sur le Solinco Tour Bite ». Ces
+écarts comparaient notre entrée à une **moyenne des jauges** TWU, alors que la
+rigidité dépend massivement de la jauge : le Tour Bite va de **136 à 239 lb/in**
+selon la jauge. Le « −83,5 » mesurait donc en grande partie **mon propre artefact
+de calcul**, pas un défaut de la base.
 
-| Indicateur | Valeur |
+**Test refait avec une méthode insensible à ce biais** : notre valeur est-elle
+hors de **l'intervalle complet** de toutes les jauges mesurées ? Si oui, aucun
+choix de jauge de référence ne peut la justifier.
+
+| Position de notre valeur vs intervalle TWU complet | Modèles |
 |---|---|
-| Écart moyen TWU − nous | **−13,7 lb/in** |
-| Écart médian | −10,8 lb/in |
-| Nos valeurs **trop rigides** | **39 / 62** |
+| **Au-dessus du maximum** (indéfendable, trop rigide) | **39 / 66** |
+| En dessous du minimum | 16 / 66 |
+| Dans l'intervalle (aucun défaut démontrable) | 11 / 66 |
 
-Écarts extrêmes :
+Exemples où même la jauge la plus rigide de TWU reste en dessous de nous :
 
-| Cordage | Nous | TWU | Écart |
+| Cordage | Nous | Intervalle TWU (toutes jauges) | Dépassement |
 |---|---|---|---|
-| Solinco Tour Bite | 255 | 171,5 | **−83,5** |
-| Weiss Cannon Ultra Cable | 250 | 174,9 | −75,1 |
-| Babolat Pro Hurricane | 260 | 185,2 | −74,8 |
-| Head Sonic Pro | 235 | 160,6 | −74,4 |
-| Solinco Tour Bite Diamond Rough | 260 | 191,5 | −68,5 |
+| Weiss Cannon Ultra Cable | 250 | [174,9] | **+75** |
+| Yonex Poly Tour Pro | 220 | [188,6] | +31 |
+| Solinco Hyper-G Soft | 200 | [172] | +28 |
+| Solinco Confidential | 245 | [222,3] | +23 |
+| Luxilon ALU Power | 230 | [209,2] | +21 |
+
+**Impact mesuré sur l'alerte bras** — sur les 30 186 combinaisons concernées par
+ces 39 cordages (39 × 129 raquettes × 6 tensions), en retenant l'hypothèse la
+**plus conservatrice** (le maximum TWU, donc le moins favorable à ma thèse) :
+
+| Rigidités utilisées | Taux d'alerte bras |
+|---|---|
+| Les nôtres | **29,9 %** |
+| Maximum mesuré par TWU | **11,0 %** |
+| **Alertes excédentaires** | **5 697 cas, soit 18,9 points** |
 
 **Sur-estimer la rigidité fait sur-déclencher l'alerte bras** : le défaut va donc
-dans le sens le plus gênant pour l'utilisateur.
+dans le sens le plus gênant pour l'utilisateur — on lui déconseille des
+configurations qui ne présentent pas le risque annoncé.
 
 ### Pourquoi je n'ai PAS recopié ces valeurs automatiquement
 
