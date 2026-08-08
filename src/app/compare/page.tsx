@@ -239,7 +239,7 @@ export default function ComparePage() {
                   className="bg-white rounded-2xl shadow border-2 border-dashed border-gray-200 p-6 flex flex-col items-center justify-center min-h-[200px] hover:border-green-500 hover:bg-green-50 transition-all group"
                 >
                   <Plus className="h-10 w-10 text-gray-300 group-hover:text-green-500 transition-colors" />
-                  <span className="text-sm text-gray-400 mt-2 group-hover:text-green-600">
+                  <span className="text-sm text-gray-500 mt-2 group-hover:text-green-600">
                     Ajouter {mode === 'racquets' ? 'une raquette' : 'un cordage'}
                   </span>
                 </button>
