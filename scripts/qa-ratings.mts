@@ -367,6 +367,43 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
 }
 
 // ---------------------------------------------------------------------------
+// 6bis. Cohérence interne des fiches : la longueur doit s'accorder avec la
+//       catégorie. Détecté le 8 août 2026 : deux Wilson Ultra juniors (25" et
+//       26", `variant` disant « Junior ») étaient classées « Power ». Notées
+//       sur l'échelle de poids ADULTE, elles ressortaient à 9,0/10 en
+//       maniabilité et 1,0/10 en stabilité, valeurs absurdes pour des
+//       raquettes d'enfant. Aucune source externe n'est nécessaire pour
+//       détecter ce genre de faute : la fiche se contredit elle-même.
+// ---------------------------------------------------------------------------
+{
+  const mismatched = racquetsDatabase.filter((r) => {
+    const len = (r as { length?: number }).length;
+    if (typeof len !== 'number' || len <= 0) return false;
+    return len < 27 !== (r.category === 'Junior');
+  });
+  if (mismatched.length > 0) {
+    for (const r of mismatched) {
+      fail(
+        `Fiche incohérente : ${r.id} a length=${(r as { length?: number }).length}" ` +
+          `mais category="${r.category}". Une raquette de moins de 27" est une junior ` +
+          `par définition ; l'incohérence fausse l'échelle de poids du profil dérivé.`
+      );
+    }
+  } else {
+    ok('longueur et catégorie cohérentes sur toutes les fiches');
+  }
+
+  // Le `variant` mentionnant « Junior » doit lui aussi s'accorder.
+  const variantMismatch = racquetsDatabase.filter((r) => {
+    const v = (r as { variant?: string }).variant ?? '';
+    return /junior/i.test(v) && r.category !== 'Junior';
+  });
+  for (const r of variantMismatch) {
+    fail(`Fiche incohérente : ${r.id} variant="${(r as { variant?: string }).variant}" mais category="${r.category}".`);
+  }
+}
+
+// ---------------------------------------------------------------------------
 // 7. Pas de seconde fonction de compatibilité homonyme.
 // ---------------------------------------------------------------------------
 {
