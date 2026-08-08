@@ -483,3 +483,217 @@ recommandations.
 *Document établi le 8 août 2026 à partir de l'historique Git et des sorties
 d'audit. Les mentions « en attente » et « non résolu » sont volontaires : elles
 délimitent ce qui est fait de ce qui reste à décider ou à vérifier.*
+
+---
+
+## Recoupement avec Tennis Warehouse — NON ABOUTI, et mon premier diagnostic était faux
+
+Demande : aller chercher les valeurs douteuses sur un site de référence plutôt
+que de les estimer.
+
+**Il faut commencer par une rectification, parce que j'ai d'abord écrit dans ce
+document une conclusion fausse — et une conclusion fausse rassurante est pire
+qu'un échec avoué.**
+
+### Ce que j'avais affirmé, et qui était faux
+
+> « Le `sitemap.xml` ne contient aucune page produit ; les pages catégorie ne
+> renvoient que des bannières promo, même avec rendu JS ; les données passent
+> par une API interne protégée. »
+
+Deux erreurs de raisonnement, une invention :
+
+1. **Fait vrai, conclusion fausse.** Le sitemap ne contient effectivement aucune
+   fiche produit. Mais il contient **1 472 pages catégorie** (`catpage-*.html`),
+   dont **207** concernent raquettes et cordages. J'ai conclu « données
+   inaccessibles » alors que la bonne lecture était « les fiches ne sont pas
+   dans le sitemap, elles sont listées *par* les pages catégorie ».
+2. **« Uniquement des bannières promo » : faux.** Vérifié par mesure — les pages
+   catégorie renvoient du HTML statique contenant les liens produit
+   (`descpage*.html`) : 9, 1 et 3 liens extraits sur les premières pages
+   testées. Le chemin `sitemap -> catpage -> descpage` **fonctionne**, et une
+   passe de découverte a récolté **21 URL produit réelles et valides**.
+3. **« API interne protégée » : je l'ai inventée.** C'était une supposition
+   présentée comme une observation. Rien ne l'étayait.
+
+### Le vrai blocage, celui-là mesuré
+
+Le site renvoie **HTTP 406 de façon progressive**. Les mêmes URL qui répondaient
+200 en début de session répondent ensuite 406 *systématiquement* — y compris
+`robots.txt` et `sitemap.xml`, qui ne sont interdits à personne :
+
+| Route | Début de session | Après quelques dizaines de requêtes |
+|---|---|---|
+| `robots.txt` | 200 (produits autorisés) | **406** |
+| `sitemap.xml` | 200 — 1 763 URL, 1 472 catpages | **406** |
+| `catpage-LENGTH23.html` | 200 — 163 926 o, **9 liens produit** | **406** |
+| Fiche produit (URL réelle, non devinée) | jamais obtenue | **406** |
+| `curl`, en-têtes navigateur complets | — | **406** |
+
+C'est un bannissement d'IP par protection anti-robot, **pas** une absence de
+données côté serveur. La nuance compte : ce n'est pas « impossible », c'est
+**« pas faisable depuis ce sandbox »** (IP mutualisée, bannie en quelques
+minutes). Depuis une IP normale, à débit lent, la route serait exploitable.
+
+### Ce qui reste vrai malgré tout
+
+**Aucune valeur de la base n'a été confirmée par Tennis Warehouse.** Les 21 URL
+récoltées n'ont jamais pu être *lues* (406 sur les fiches). Le résultat net pour
+les données est donc inchangé : rien n'est sourcé chez eux, et P1–P4 ci-dessous
+restent entiers.
+
+Les deux scripts sont conservés, avec limitation de débit volontaire, pour être
+rejoués depuis un réseau non banni :
+
+| Script | npm | État |
+|---|---|---|
+| `scripts/scraper/tw-discover.mjs` | `npm run scrape:tw-discover` | route validée ; a récolté 21 URL produit réelles |
+| `scripts/scraper/tw-fetch-specs.mjs` | `npm run scrape:tw-specs` | **n'a jamais abouti** — `out/tw-specs.json` n'a jamais été créé, 0 spec récupérée |
+
+Garde-fous de ces scripts : un champ absent de la page reste `null` (jamais
+comblé), et ils n'écrivent QUE dans `scripts/scraper/out/` (non versionné) —
+**jamais** dans `src/data/`. Aucune valeur ne peut donc entrer dans la base sans
+une étape de revue explicite. Les sélecteurs HTML de l'étape 2 restent **à
+revalider** sur une vraie fiche : ils n'ont jamais tourné sur une page réellement
+téléchargée.
+L'ancien `tennis-warehouse-scraper.js` cible une version antérieure du site. Au
+passage, le script npm `scrape:tennis-warehouse` pointait vers
+`tennis-warehouse.js`, **un fichier inexistant** — chemin corrigé.
+
+### Ce que la tentative a tout de même permis de corriger
+
+Faire l'inventaire des données douteuses a révélé des incohérences détectables
+**sans aucune source externe**, parce que les fiches se contredisent elles-mêmes :
+
+- **`wilson-ultra-26-v5` et `wilson-ultra-25-v5`** : `variant` dit « 26" Junior »
+  / « 25" Junior », `length` vaut 26 et 25, la description parle de joueurs de
+  11-12 ans… et `category` valait **`Power`**. Évaluées sur l'échelle de poids
+  **adulte**, elles ressortaient à des valeurs absurdes pour des raquettes
+  d'enfant — 240 g est *lourd* pour un enfant de 10 ans, l'échelle adulte le
+  lisait comme « ultra-maniable » :
+
+  | Fiche | Poids | Avant (échelle adulte) | Après (échelle junior) |
+  |---|---|---|---|
+  | `wilson-ultra-25-v5` | 240 g | maniabilité **9,0** / stabilité **1,0** | 4,7 / 5,3 |
+  | `wilson-ultra-26-v5` | 250 g | maniabilité **8,3** / stabilité **1,7** | 4,1 / 5,9 |
+
+  Corrigé en base, et `deriveRacquetProfile()` se fonde désormais sur la
+  **longueur** (critère objectif) plutôt que sur `category` seul.
+
+  *Autocorrection :* j'avais d'abord écrit « 9,0/10 et 1,0/10 » pour **les deux**
+  fiches. C'était le résultat de la seule 25". Les deux modèles n'ont pas le même
+  poids, donc pas la même note : présenter un chiffre unique pour un couple de
+  fiches était une imprécision de ma part, corrigée ci-dessus par une mesure
+  fiche par fiche.
+- Deux vérifications ajoutées à `audit:ratings` pour cette classe d'erreur.
+
+Autocorrection : mon premier inventaire annonçait « jauge absente sur 190/190 ».
+**Faux** — le champ s'appelle `gauges` (pluriel) et il est renseigné partout.
+Mon script sondait le mauvais nom de champ.
+
+### Ce qui reste NON vérifié (par ordre de gravité)
+
+| Priorité | Donnée | Pourquoi c'est gênant |
+|---|---|---|
+| **P1** | RA absent sur `wilson-ultra-26-v5` et `wilson-ultra-25-v5` | Une valeur comblée (64) alimente une alerte de santé du bras |
+| **P2** | Rigidité des cordages : 8 valeurs reviennent 7 à 11 fois (205, 210, 215 lb/in…) | Signature d'une estimation en lot ; pilote **directement** l'alerte tennis elbow |
+| **P3** | Prix : 23 raquettes à 280 €, 21 cordages à 15 €… | Même signature ; directement visible par l'utilisateur |
+| **P4** | Notes /10 des cordages | Alimentent les sous-scores du PDF, **aucune source citée** dans la base |
+| P5 | 27 RA juniors absents | Impact réel faible (raquettes enfant) |
+
+Les 29 RA absents restent comblés par la médiane mesurée (64), signalés par
+`isRacquetStiffnessEstimated()` et affichés « (estimé) ». **Une valeur comblée
+ne doit jamais être présentée comme une donnée constructeur.**
+
+### Options pour obtenir réellement ces données
+
+1. **Fiches constructeur** (Wilson, Babolat, Head, Yonex…) — le RA n'y est
+   généralement pas publié, ce qui est précisément la cause du trou.
+2. **Base RA de Tennis Warehouse consultée manuellement** : quelques valeurs
+   copiées à la main suffiraient pour P1 (2 raquettes).
+3. **API commerciale** (accès autorisé, sans contournement de protection).
+4. **Statu quo assumé** : conserver le comblement, à condition qu'il reste
+   marqué « estimé » partout — c'est l'état actuel.
+
+Mon avis : P1 se règle en deux valeurs saisies à la main. P2 est le vrai sujet,
+car la rigidité des cordages conditionne un conseil de santé — mais elle
+demande une source pour ~190 références, donc un accès en volume.
+
+---
+
+## Recoupement Tennis Warehouse — 2e tentative du 8 août 2026 : **RÉUSSIE**
+
+### Rectification d'une conclusion fausse de ma part
+
+La section précédente affirmait que le recoupement était irréalisable. **C'était
+faux, et l'erreur venait de ma méthode, pas du site :**
+
+| Ce que j'avais affirmé | Ce qui est réellement vrai |
+|---|---|
+| « Les fiches ne servent plus les specs en HTML » | **Faux.** `Stiffness: 67`, `Swingweight: 322`, `Strung Weight: 318g`, prix `299,00 USD` sont bien dans le HTML statique. |
+| « Le sitemap ne contient aucune page produit » | Vrai, **mais la conclusion tirée était fausse** : il contient 1 472 pages `catpage-*` qui, elles, listent les URL produit. |
+| « API interne protégée » | **Pure supposition**, jamais observée. |
+
+**Ce qui a débloqué la situation :** utiliser la *recherche web* pour obtenir de
+**vraies** URL au lieu de les deviner. Toutes mes URL devinées renvoyaient 404 —
+ce qui m'avait fait croire, à tort, à une protection du site.
+
+Deux pièges techniques identifiés au passage :
+1. **Retours chariot dans les attributs HTML** : `href="\rhttps://...\r"`. Mon
+   motif d'extraction, ancré sur le début de l'attribut, échouait *silencieusement*
+   (21 produits trouvés sur 230 pages au lieu de 178 liens réellement présents).
+2. **HTTP 406 progressif** : après ~230 requêtes, l'IP du sandbox est bannie.
+   Le sous-domaine `twu.tennis-warehouse.com` reste, lui, accessible.
+
+### Source retenue : Tennis Warehouse **University** (le laboratoire de TW)
+
+`https://twu.tennis-warehouse.com/learning_center/reporter2.php`
+
+**480 cordages avec rigidité MESURÉE en `lb/in`** — exactement l'unité de notre
+base — à tension de référence constante (51 lbs), donc comparables entre eux.
+Une seule requête suffit. Copie versionnée : `data/reference/twu-string-stiffness.json`.
+
+### Le résultat est sévère : votre intuition était fondée
+
+Sur les **62 modèles appariés de façon certaine** :
+
+| Indicateur | Valeur |
+|---|---|
+| Écart moyen TWU − nous | **−13,7 lb/in** |
+| Écart médian | −10,8 lb/in |
+| Nos valeurs **trop rigides** | **39 / 62** |
+
+Écarts extrêmes :
+
+| Cordage | Nous | TWU | Écart |
+|---|---|---|---|
+| Solinco Tour Bite | 255 | 171,5 | **−83,5** |
+| Weiss Cannon Ultra Cable | 250 | 174,9 | −75,1 |
+| Babolat Pro Hurricane | 260 | 185,2 | −74,8 |
+| Head Sonic Pro | 235 | 160,6 | −74,4 |
+| Solinco Tour Bite Diamond Rough | 260 | 191,5 | −68,5 |
+
+**Sur-estimer la rigidité fait sur-déclencher l'alerte bras** : le défaut va donc
+dans le sens le plus gênant pour l'utilisateur.
+
+### Pourquoi je n'ai PAS recopié ces valeurs automatiquement
+
+TWU mesure **chaque jauge séparément** : « Solinco Tour Bite » existe en 15L, 16,
+16L, 17, 18, 19 et 20. Nos fiches regroupent plusieurs jauges sous une seule
+entrée (`gauges` est un tableau). Un remplacement 1-pour-1 écrirait la valeur
+d'**une** jauge arbitraire à la place d'un modèle entier — remplacer une donnée
+douteuse par une donnée fausse. L'écart de −83,5 sur le Tour Bite illustre
+exactement ce piège : il compare notre entrée à la jauge **19 (1,10 mm)**.
+
+**Décision qui vous revient : quelle jauge de référence par fiche ?** C'est un
+choix produit, pas technique. Deux options raisonnables : la jauge la plus vendue
+(souvent 16L / 1,25 mm), ou la première de votre tableau `gauges`.
+
+### Points restants
+
+| # | Donnée | État |
+|---|---|---|
+| **P1** | RA des 2 Wilson Ultra junior | La fiche TW est **404** (produit déréférencé) → introuvable chez eux. À saisir à la main. |
+| **P2** | Rigidité des 190 cordages | **Source obtenue** (480 mesures). Bloqué sur le choix de la jauge de référence. |
+| **P3** | Prix | Les fiches TW donnent l'USD, mais la conversion ne reflète pas le tarif français. |
+| **P4** | Notes /10 des cordages | TWU fournit perte de tension et potentiel d'effet **mesurés** (déjà dans le fichier de référence). |

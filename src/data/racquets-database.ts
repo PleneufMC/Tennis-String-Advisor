@@ -899,7 +899,7 @@ export const racquetsDatabase: TennisRacquet[] = [
     balance: 330,
     length: 26,
     stringPattern: '16x19',
-    category: 'Power',
+    category: 'Junior',
     playerLevel: ['Beginner'],
     description: 'Modèle junior 26" de la gamme Ultra v5 pour jeunes joueurs (≈ 11-12 ans). Même ADN puissance/tolérance Ultra dans un format adapté.',
     price: { europe: 90, usa: 99 }
@@ -915,7 +915,7 @@ export const racquetsDatabase: TennisRacquet[] = [
     balance: 325,
     length: 25,
     stringPattern: '16x19',
-    category: 'Power',
+    category: 'Junior',
     playerLevel: ['Beginner'],
     description: 'Modèle junior 25" de la gamme Ultra v5 pour jeunes joueurs (≈ 9-10 ans). Léger et maniable, idéal pour l\'apprentissage.',
     price: { europe: 85, usa: 89 }
