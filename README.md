@@ -284,6 +284,67 @@ texte explicite** (`text-gray-900`…), soit porter son fond via
 basculent avec le thème. Cela vaut aussi pour les `<input>` et `<select>` : sans
 couleur, la saisie de l'utilisateur devient invisible en thème sombre.
 
+## 🟡 Le piège inverse : « jaune sur jaune »
+
+Corriger l'héritage ne suffit pas. Il existe un **second défaut, symétrique**,
+introduit en migrant les pastilles colorées vers les variables :
+
+```jsx
+/* ❌ FAUX : la moitié du travail */
+color: 'var(--tint-amber-fg)',                              // bascule
+background: 'linear-gradient(135deg, #fef3c7, #fde68a)',    // ne bascule PAS
+```
+
+En thème sombre `--tint-amber-fg` vaut `#fde68a`… soit **exactement** l'arrêt du
+dégradé resté en dur. Résultat : du jaune sur du jaune, **1,00:1**. Le titre
+« 🔒 Journal synchronisé » du configurateur était dans ce cas, ainsi que le
+badge PREMIUM et les libellés de `/statistics`.
+
+**La règle : fond et texte doivent venir du même couple.** On utilise
+`var(--tint-X-bg)` **avec** `var(--tint-X-fg)` — jamais une variable d'un côté
+et une couleur en dur de l'autre.
+
+### Pourquoi `audit:contrast` ne l'avait pas vu
+
+`qa-contrast.mjs` ne vérifie que les **paires déclarées** dans `globals.css`
+(`--tint-amber-bg` face à `--tint-amber-fg`). Ces paires étaient correctes ; ce
+sont les **paires réellement employées dans le JSX** qui ne l'étaient pas. Le
+contrôle sortait donc en succès pendant que cinq encarts étaient illisibles.
+
+### `scripts/qa-style-contrast.mjs`
+
+```bash
+npm run audit:style-contrast        # aucun serveur requis
+```
+
+Il analyse les fichiers `.tsx` via l'**AST du compilateur TypeScript** (pas de
+regex : une regex avait déjà fait manquer 1 entrée sur 69 lors d'un audit
+précédent), reconstitue le fond hérité de chaque texte en remontant ses parents,
+résout les `var()` **dans les deux thèmes**, puis calcule le contraste réel.
+
+Il gère les voiles semi-transparents (aplatis sur le fond du dessous), les
+arrêts de dégradé (chacun testé), et le seuil réduit à 3:1 pour le grand texte.
+
+Deux options :
+
+| Option | Effet |
+|---|---|
+| `--strict` | ignore la baseline, exige 0 défaut |
+| `--update-baseline` | regénère `qa-style-contrast.baseline.json` |
+
+**À propos de la baseline** : le site comporte 33 défauts de contraste
+**antérieurs** au thème sombre (blanc sur le vert de marque `#10b981` = 2,54:1,
+gris `#9ca3af` sur blanc…). Ils échouent **identiquement dans les deux thèmes** :
+ce ne sont pas des régressions mais des choix de charte graphique à arbitrer.
+Ils sont gelés pour que le contrôle échoue sur toute **nouvelle** occurrence
+sans être noyé par l'existant. Les clés de baseline sont **indépendantes du
+numéro de ligne**, pour qu'un simple ajout de code ne fasse pas resurgir un
+défaut déjà connu.
+
+> Les couleurs d'état ont dû être adaptées : `#eab308` sur une pastille bleue ne
+> donnait que **1,57:1 même en thème clair**. D'où `--state-good` /
+> `--state-warn` / `--state-bad`, assombries en clair et éclaircies en sombre.
+
 ## 🎨 Thème clair / sombre et palette « surface »
 
 Le site suit le thème du système (`ThemeProvider`, `defaultTheme="system"`) :
@@ -303,7 +364,9 @@ automatiquement sous `.dark` :
 | `--surface-input` | fond des champs de saisie |
 | `--surface-border`, `--surface-border-soft` | bordures |
 | `--text-strong`, `--text-muted`, `--text-faint` | hiérarchie de texte |
-| `--tint-{blue,green,amber,red}-{bg,fg}` | pastilles catégorielles |
+| `--tint-{blue,green,amber,red}-{bg,fg}` | pastilles catégorielles (**à employer par couple**) |
+| `--tint-inset` | voile d'un sous-encart *dans* une pastille |
+| `--state-{good,warn,bad}` | indicateurs d'état lisibles sur pastille |
 
 > ⚠️ **Dans ces cinq pages, ne jamais réintroduire une couleur de surface en
 > dur** (`backgroundColor: 'white'`, `color: '#1f2937'`…). Utilisez les
@@ -311,11 +374,21 @@ automatiquement sous `.dark` :
 > légitimes sont les textes blancs posés sur un fond coloré (boutons verts,
 > sous-titres sur l'image de fond) et les boutons désactivés en gris.
 
-Un test empêche la régression :
+> ⚠️ **Et ne jamais mélanger les registres sur un même élément** : un fond en
+> variable avec un texte en dur (ou l'inverse) produit le défaut « jaune sur
+> jaune » décrit plus haut. `--tint-inset` existe pour cette raison : un
+> `rgba(255,255,255,0.5)` en dur délavait le fond sombre d'une pastille et
+> rendait son texte clair illisible.
+
+Deux tests empêchent la régression — ils sont **complémentaires** :
 
 ```bash
-npm run audit:contrast
+npm run audit:contrast         # les paires DÉCLARÉES dans globals.css
+npm run audit:style-contrast   # les paires RÉELLEMENT utilisées dans le JSX
 ```
+
+Le premier seul est insuffisant : il validait la palette pendant que cinq
+encarts affichaient du texte de la couleur de son fond.
 
 Il relit la palette dans `globals.css` et recalcule le contraste de chaque
 paire texte/fond réellement utilisée, **dans les deux thèmes**. Il échoue

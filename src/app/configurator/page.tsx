@@ -721,7 +721,7 @@ export default function ConfiguratorPage() {
                       style={{
                         marginTop: '0.25rem',
                         fontSize: '0.75rem',
-                        color: '#dc2626',
+                        color: 'var(--state-bad)',
                         background: 'none',
                         border: 'none',
                         cursor: 'pointer',
@@ -1003,7 +1003,7 @@ export default function ConfiguratorPage() {
             <div style={{
               marginBottom: '1.5rem',
               padding: '1rem',
-              background: 'linear-gradient(135deg, #dbeafe, #bfdbfe)',
+              backgroundColor: 'var(--tint-blue-bg)',
               borderRadius: '8px',
               border: '2px solid #3b82f6'
             }}>
@@ -1018,12 +1018,12 @@ export default function ConfiguratorPage() {
               </h3>
               <div style={{ fontSize: '0.875rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                  <span style={{ color: '#1e40af' }}>RCS Principal:</span>
+                  <span style={{ color: 'var(--tint-blue-fg)' }}>RCS Principal:</span>
                   <span style={{ fontWeight: 'bold', color: 'var(--tint-blue-fg)' }}>{rcsData.mainRCS.toFixed(1)}</span>
                 </div>
                 {selectedCrossString && (
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                    <span style={{ color: '#1e40af' }}>RCS Travers:</span>
+                    <span style={{ color: 'var(--tint-blue-fg)' }}>RCS Travers:</span>
                     <span style={{ fontWeight: 'bold', color: 'var(--tint-blue-fg)' }}>{rcsData.crossRCS.toFixed(1)}</span>
                   </div>
                 )}
@@ -1032,27 +1032,27 @@ export default function ConfiguratorPage() {
                   justifyContent: 'space-between', 
                   marginBottom: '0.75rem',
                   paddingTop: '0.5rem',
-                  borderTop: '1px solid #93c5fd'
+                  borderTop: '1px solid var(--surface-border)'
                 }}>
-                  <span style={{ color: '#1e40af', fontWeight: 'bold' }}>RCS Moyen:</span>
+                  <span style={{ color: 'var(--tint-blue-fg)', fontWeight: 'bold' }}>RCS Moyen:</span>
                   <span style={{ 
                     fontWeight: 'bold', 
                     fontSize: '1.125rem',
-                    color: rcsData.avgRCS < 25 ? '#059669' : rcsData.avgRCS < 30 ? '#eab308' : '#dc2626'
+                    color: rcsData.avgRCS < 25 ? 'var(--state-good)' : rcsData.avgRCS < 30 ? 'var(--state-warn)' : 'var(--state-bad)'
                   }}>
                     {rcsData.avgRCS.toFixed(1)}
                   </span>
                 </div>
                 <div style={{
                   padding: '0.75rem',
-                  backgroundColor: 'rgba(255, 255, 255, 0.5)',
+                  backgroundColor: 'var(--tint-inset)',
                   borderRadius: '6px',
                   marginBottom: '0.5rem'
                 }}>
                   <div style={{ fontWeight: 'bold', color: 'var(--tint-blue-fg)', marginBottom: '0.25rem' }}>
                     {rcsData.recommendation.level}
                   </div>
-                  <div style={{ fontSize: '0.75rem', color: '#1e40af' }}>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--tint-blue-fg)' }}>
                     {rcsData.recommendation.description}
                   </div>
                 </div>
@@ -1061,10 +1061,10 @@ export default function ConfiguratorPage() {
                   justifyContent: 'space-between',
                   fontSize: '0.875rem'
                 }}>
-                  <span style={{ color: '#1e40af' }}>Compatibilité:</span>
+                  <span style={{ color: 'var(--tint-blue-fg)' }}>Compatibilité:</span>
                   <span style={{ 
                     fontWeight: 'bold',
-                    color: rcsData.compatibility > 75 ? '#059669' : rcsData.compatibility > 50 ? '#eab308' : '#dc2626'
+                    color: rcsData.compatibility > 75 ? 'var(--state-good)' : rcsData.compatibility > 50 ? 'var(--state-warn)' : 'var(--state-bad)'
                   }}>
                     {rcsData.compatibility.toFixed(0)}%
                   </span>
@@ -1081,7 +1081,7 @@ export default function ConfiguratorPage() {
                 padding: '1.25rem',
                 borderRadius: '12px',
                 border: '1px solid var(--surface-border)',
-                background: 'linear-gradient(135deg,#f8fafc 0%,#eef2ff 100%)',
+                background: 'var(--surface-muted)',
                 position: 'relative',
               }}
             >
@@ -1101,7 +1101,7 @@ export default function ConfiguratorPage() {
                     fontSize: '0.7rem',
                     fontWeight: 700,
                     color: 'var(--tint-amber-fg)',
-                    background: '#fde68a',
+                    background: 'var(--tint-amber-bg)',
                     padding: '2px 8px',
                     borderRadius: '999px',
                   }}
@@ -1135,18 +1135,18 @@ export default function ConfiguratorPage() {
                         fontWeight: 800,
                         color:
                           advancedRcs.level === 'excellent'
-                            ? '#059669'
+                            ? 'var(--state-good)'
                             : advancedRcs.level === 'good'
-                            ? '#2563eb'
+                            ? 'var(--tint-blue-fg)'
                             : advancedRcs.level === 'moderate'
-                            ? '#eab308'
-                            : '#dc2626',
+                            ? 'var(--state-warn)'
+                            : 'var(--state-bad)',
                       }}
                     >
                       {advancedRcs.overall}
                       <span style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>/100</span>
                     </span>
-                    <span style={{ color: '#374151', fontSize: '0.9rem' }}>
+                    <span style={{ color: 'var(--text-strong)', fontSize: '0.9rem' }}>
                       {advancedRcs.summary}
                     </span>
                   </div>
@@ -1167,7 +1167,7 @@ export default function ConfiguratorPage() {
                           display: 'flex',
                           justifyContent: 'space-between',
                           fontSize: '0.8rem',
-                          color: '#374151',
+                          color: 'var(--text-strong)',
                           marginBottom: '2px',
                         }}
                       >
@@ -1187,7 +1187,7 @@ export default function ConfiguratorPage() {
                             width: `${value}%`,
                             height: '100%',
                             background:
-                              value >= 75 ? '#059669' : value >= 50 ? '#2563eb' : '#f59e0b',
+                              value >= 75 ? 'var(--state-good)' : value >= 50 ? '#2563eb' : '#f59e0b',
                           }}
                         />
                       </div>
@@ -1201,8 +1201,8 @@ export default function ConfiguratorPage() {
                       style={{
                         marginTop: '0.6rem',
                         padding: '0.5rem 0.75rem',
-                        background: '#fef2f2',
-                        border: '1px solid #fecaca',
+                        background: 'var(--tint-red-bg)',
+                        border: '1px solid var(--surface-border)',
                         borderRadius: '8px',
                         fontSize: '0.8rem',
                         color: 'var(--tint-red-fg)',
@@ -1219,11 +1219,11 @@ export default function ConfiguratorPage() {
                       style={{
                         marginTop: '0.5rem',
                         padding: '0.5rem 0.75rem',
-                        background: '#eff6ff',
-                        border: '1px solid #bfdbfe',
+                        background: 'var(--tint-blue-bg)',
+                        border: '1px solid var(--surface-border)',
                         borderRadius: '8px',
                         fontSize: '0.8rem',
-                        color: '#1e40af',
+                        color: 'var(--tint-blue-fg)',
                       }}
                     >
                       💡 {rec}
@@ -1254,7 +1254,7 @@ export default function ConfiguratorPage() {
                       href="/pricing"
                       style={{
                         background: '#f59e0b',
-                        color: 'var(--text-strong)',
+                        color: '#422006',
                         fontWeight: 700,
                         padding: '0.5rem 1rem',
                         borderRadius: '8px',
@@ -1355,7 +1355,10 @@ export default function ConfiguratorPage() {
           {/* Journal Box — varie selon l'état de connexion */}
           {session?.user ? (
             <div style={{
-              background: 'linear-gradient(135deg, #dcfce7, #bbf7d0)',
+              // Fond piloté par la variable de teinte : un dégradé en dur restait
+              // clair en thème sombre alors que --tint-green-fg y devient vert
+              // pâle, d'où un texte de la même couleur que son fond (1,00:1).
+              backgroundColor: 'var(--tint-green-bg)',
               borderRadius: '8px',
               padding: '1rem',
               marginBottom: '1.5rem'
@@ -1369,7 +1372,7 @@ export default function ConfiguratorPage() {
               }}>
                 ✅ Journal synchronisé activé
               </h3>
-              <p style={{ fontSize: '0.875rem', color: '#15803d', marginBottom: '0.75rem' }}>
+              <p style={{ fontSize: '0.875rem', color: 'var(--tint-green-fg)', marginBottom: '0.75rem' }}>
                 Vos configurations enregistrées sont sauvegardées dans votre
                 compte et accessibles depuis tous vos appareils.
               </p>
@@ -1396,14 +1399,14 @@ export default function ConfiguratorPage() {
             </div>
           ) : (
             <div style={{
-              background: 'linear-gradient(135deg, #fef3c7, #fde68a)',
+              backgroundColor: 'var(--tint-amber-bg)',
               borderRadius: '8px',
               padding: '1rem',
               marginBottom: '1.5rem'
             }}>
               <h3 style={{
                 fontWeight: 'bold',
-                color: '#78350f',
+                color: 'var(--tint-amber-fg)',
                 marginBottom: '0.5rem',
                 display: 'flex',
                 alignItems: 'center'
@@ -1449,7 +1452,7 @@ export default function ConfiguratorPage() {
             padding: '1rem',
             marginBottom: '1.5rem'
           }}>
-            <h4 style={{ fontWeight: '500', color: '#374151', marginBottom: '0.75rem' }}>
+            <h4 style={{ fontWeight: '500', color: 'var(--text-strong)', marginBottom: '0.75rem' }}>
               {formData.configName || 'Configuration en cours'}
             </h4>
             <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
@@ -1486,22 +1489,22 @@ export default function ConfiguratorPage() {
             </h4>
             <div style={{ fontSize: '0.875rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                <span style={{ color: '#3730a3' }}>Confort Bras:</span>
+                <span style={{ color: 'var(--tint-blue-fg)' }}>Confort Bras:</span>
                 <span style={{ fontWeight: '500', color: 'var(--tint-blue-fg)' }}>
                   {rcsData ? rcsData.recommendation.level : 'Sélectionnez une config'}
                 </span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                <span style={{ color: '#3730a3' }}>RCS Optimal:</span>
+                <span style={{ color: 'var(--tint-blue-fg)' }}>RCS Optimal:</span>
                 <span style={{ fontWeight: '500', color: 'var(--tint-blue-fg)' }}>20-25 (Confortable)</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                <span style={{ color: '#3730a3' }}>RCS Moyen:</span>
+                <span style={{ color: 'var(--tint-blue-fg)' }}>RCS Moyen:</span>
                 <span style={{ fontWeight: '500', color: 'var(--tint-blue-fg)' }}>25-30 (Standard)</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: '#3730a3' }}>Tennis Elbow:</span>
-                <span style={{ fontWeight: '500', color: '#dc2626' }}>Eviter RCS {'>'} 30</span>
+                <span style={{ color: 'var(--tint-blue-fg)' }}>Tennis Elbow:</span>
+                <span style={{ fontWeight: '500', color: 'var(--state-bad)' }}>Eviter RCS {'>'} 30</span>
               </div>
             </div>
           </div>
@@ -1539,7 +1542,7 @@ export default function ConfiguratorPage() {
 
           {/* Recent Configurations */}
           <div>
-            <h4 style={{ fontWeight: '500', color: '#374151', marginBottom: '0.75rem' }}>
+            <h4 style={{ fontWeight: '500', color: 'var(--text-strong)', marginBottom: '0.75rem' }}>
               Configurations récentes
             </h4>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>

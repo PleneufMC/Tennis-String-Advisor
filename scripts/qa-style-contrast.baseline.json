@@ -1,0 +1,30 @@
+{
+  "comment": "Défauts de contraste préexistants (échouent dans les 2 thèmes). Ne pas ajouter de nouvelle entrée sans arbitrage : régénérer avec node scripts/qa-style-contrast.mjs --update-baseline",
+  "generated": "2026-08-08",
+  "known": [
+    "src/app/configurator/page.tsx|clair|#10b981|rgb(249,250,251)",
+    "src/app/configurator/page.tsx|clair|#10b981|rgb(255,255,255)",
+    "src/app/configurator/page.tsx|clair|#d1d5db|rgb(255,255,255)",
+    "src/app/configurator/page.tsx|clair|#fbbf24|rgb(249,250,251)",
+    "src/app/configurator/page.tsx|clair|#fbbf24|rgb(255,255,255)",
+    "src/app/configurator/page.tsx|clair|white|rgb(156,163,175)",
+    "src/app/configurator/page.tsx|clair|white|rgb(22,163,74)",
+    "src/app/configurator/page.tsx|sombre|white|rgb(156,163,175)",
+    "src/app/configurator/page.tsx|sombre|white|rgb(22,163,74)",
+    "src/app/payment-cancelled/page.tsx|clair|white|rgb(59,130,246)",
+    "src/app/payment-cancelled/page.tsx|sombre|white|rgb(59,130,246)",
+    "src/app/payment-success/page.tsx|clair|#10b981|rgb(255,255,255)",
+    "src/app/payment-success/page.tsx|clair|#3b82f6|rgb(255,255,255)",
+    "src/app/payment-success/page.tsx|clair|white|rgb(16,185,129)",
+    "src/app/payment-success/page.tsx|sombre|#3b82f6|rgb(30,41,59)",
+    "src/app/payment-success/page.tsx|sombre|white|rgb(16,185,129)",
+    "src/app/pricing/page.tsx|clair|#059669|rgb(255,255,255)",
+    "src/app/pricing/page.tsx|clair|#10b981|rgb(255,255,255)",
+    "src/app/pricing/page.tsx|clair|#9ca3af|rgb(229,231,235)",
+    "src/app/pricing/page.tsx|clair|#9ca3af|rgb(255,255,255)",
+    "src/app/pricing/page.tsx|clair|white|rgb(16,185,129)",
+    "src/app/pricing/page.tsx|sombre|#059669|rgb(30,41,59)",
+    "src/app/pricing/page.tsx|sombre|#9ca3af|rgb(229,231,235)",
+    "src/app/pricing/page.tsx|sombre|white|rgb(16,185,129)"
+  ]
+}
