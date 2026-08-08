@@ -43,49 +43,24 @@ export function formatPriceRange(min: number, max: number, currency = '€'): st
 }
 
 /**
- * Calculate racquet-string compatibility score
- * Based on RA (stiffness) of racquet and rigidity of string
+ * ⚠️ `calculateCompatibility` A ÉTÉ SUPPRIMÉE D'ICI (audit du 8 août 2026).
+ *
+ * Une seconde fonction homonyme existait dans ce fichier, avec une signature
+ * `(racquetRA, stringRigidity)` incompatible avec celle de
+ * `data/racquets-database.ts` — signature `(racquet, stringStiffness, tension)`.
+ * Elle ignorait la tension, renvoyait des scores figés (40/60/85/95/75) et une
+ * échelle `level` que l'autre fonction n'a pas.
+ *
+ * Elle n'était importée par AUCUN fichier (vérifié : seul `cn` est consommé
+ * depuis `lib/utils`). Deux fonctions de même nom donnant des verdicts
+ * différents sur le même setup constituaient un piège à autocomplétion :
+ * importer la mauvaise aurait produit des conseils de santé du bras erronés,
+ * sans aucune erreur de compilation.
+ *
+ * La référence unique est désormais `calculateCompatibility` de
+ * `data/racquets-database.ts`, dont les seuils ont été recalibrés sur la
+ * distribution réelle. Voir `lib/racquet-scoring.ts` pour la notation raquette.
  */
-export function calculateCompatibility(
-  racquetRA: number,
-  stringRigidity: number
-): {
-  score: number;
-  level: 'excellent' | 'good' | 'moderate' | 'poor';
-  message: string;
-} {
-  // Normalized stiffness contribution from string (centered around 200)
-  const stringContribution = (stringRigidity - 200) / 10;
-  const totalStiffness = racquetRA + stringContribution;
-
-  let score: number;
-  let level: 'excellent' | 'good' | 'moderate' | 'poor';
-  let message: string;
-
-  if (totalStiffness > 78) {
-    score = 40;
-    level = 'poor';
-    message = 'Setup très rigide - Risque accru de tennis elbow. Considérez un cordage plus souple.';
-  } else if (totalStiffness > 72) {
-    score = 60;
-    level = 'moderate';
-    message = 'Setup assez rigide - Bon pour le contrôle mais surveillez votre bras.';
-  } else if (totalStiffness > 65) {
-    score = 85;
-    level = 'good';
-    message = 'Bon équilibre rigidité/confort - Setup polyvalent.';
-  } else if (totalStiffness > 58) {
-    score = 95;
-    level = 'excellent';
-    message = 'Excellente compatibilité - Équilibre optimal puissance/contrôle/confort.';
-  } else {
-    score = 75;
-    level = 'good';
-    message = 'Setup souple - Plus de puissance naturelle, moins de contrôle précis.';
-  }
-
-  return { score, level, message };
-}
 
 /**
  * Get recommended tension range based on string type

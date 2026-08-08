@@ -8,6 +8,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import {
+  deriveRacquetProfile,
+  effectiveRacquetRA,
+  isRacquetStiffnessEstimated,
+  RA_RANGE,
+} from '@/lib/racquet-scoring';
 import { 
   Search, 
   X, 
@@ -48,17 +54,48 @@ const stringTypeConfig: Record<string, { variant: 'polyester' | 'multifilament' 
   'Biodegradable': { variant: 'secondary', label: 'Biodégradable' },
 };
 
-// Comparison bar component
-function ComparisonBar({ label, values, maxValue, colors }: {
+/**
+ * Barre de comparaison.
+ *
+ * Échelles CALIBRÉES sur les plages réellement présentes en base (mesurées le
+ * 8 août 2026 sur 129 raquettes et 190 cordages). Deux défauts corrigés ici :
+ *
+ * 1. Les échelles démarraient toutes à 0, alors qu'aucune donnée n'approche 0.
+ *    Le RA (55-72) affiché sur une échelle 0-80 ne remplissait que 69 % -> 90 %
+ *    de la barre : 21 points d'amplitude pour distinguer deux raquettes, soit
+ *    des barres visuellement quasi identiques. Idem tamis (68->96 %) et
+ *    contrôle cordage (65->100 %). `minValue` recadre la barre sur la plage
+ *    utile, ce qui rend l'écart lisible.
+ * 2. Le prix des cordages était borné à 50 € alors que le maximum réel est
+ *    65 €. La largeur calculée atteignait 130 % et se faisait rogner en
+ *    silence par `overflow-hidden` : un cordage à 65 € et un à 50 € donnaient
+ *    exactement la même barre pleine. Les bornes sont désormais dérivées des
+ *    données, et un `clamp` garantit qu'aucun débordement ne puisse revenir.
+ *
+ * `minValue` reste optionnel : sans lui, le comportement d'origine (base 0)
+ * est conservé.
+ */
+function ComparisonBar({ label, values, maxValue, minValue = 0, unit, colors }: {
   label: string;
   values: (number | null)[];
   maxValue: number;
+  minValue?: number;
+  unit?: string;
   colors: string[];
 }) {
+  const span = maxValue - minValue;
+  const widthOf = (value: number) => {
+    if (span <= 0) return 0;
+    // Plancher à 4 % pour que la valeur la plus basse reste visible,
+    // plafond à 100 % pour interdire tout débordement rogné.
+    const ratio = ((value - minValue) / span) * 100;
+    return Math.min(100, Math.max(4, ratio));
+  };
+
   return (
     <div className="space-y-2">
-      <div className="flex items-center justify-between">
-        <span className="text-sm font-medium text-gray-700">{label}</span>
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{label}</span>
         <div className="flex gap-2">
           {values.map((value, index) => (
             <span key={index} className={cn('text-xs font-semibold', colors[index])}>
@@ -69,13 +106,19 @@ function ComparisonBar({ label, values, maxValue, colors }: {
       </div>
       <div className="flex gap-1 h-3">
         {values.map((value, index) => (
-          <div key={index} className="flex-1 bg-gray-100 rounded-full overflow-hidden">
-            <div 
+          <div key={index} className="flex-1 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+            <div
               className={cn('h-full rounded-full transition-all duration-500', colors[index].replace('text-', 'bg-'))}
-              style={{ width: value !== null ? `${(value / maxValue) * 100}%` : '0%' }}
+              style={{ width: value !== null ? `${widthOf(value)}%` : '0%' }}
             />
           </div>
         ))}
+      </div>
+      {/* L'échelle ne démarrant plus à 0, elle doit être annoncée explicitement,
+          sinon une barre courte se lirait à tort comme une valeur proche de 0. */}
+      <div className="flex justify-between text-[10px] text-gray-400 dark:text-gray-500 tabular-nums">
+        <span>{minValue}{unit ?? ''}</span>
+        <span>{maxValue}{unit ?? ''}</span>
       </div>
     </div>
   );
@@ -148,11 +191,25 @@ export default function ComparePage() {
 
     if (mode === 'racquets') {
       const racquets = selectedItems.map(si => si.item as TennisRacquet);
+      // Les cordages exposent 5 notes interprétables, les raquettes n'avaient que
+      // des specs brutes : la comparaison était asymétrique. `deriveRacquetProfile`
+      // calcule 5 notes équivalentes à partir des specs réelles (poids, tamis, RA,
+      // plan de cordage) — les champs `power`/`control`/... de l'interface
+      // `Racquet` de types/index.ts sont, eux, renseignés sur 0 des 129 raquettes.
+      const profiles = racquets.map(r => deriveRacquetProfile(r));
       return {
         weight: racquets.map(r => r.weight),
         headSize: racquets.map(r => r.headSize),
-        stiffness: racquets.map(r => r.stiffness),
-        price: racquets.map(r => r.price?.europe || null),
+        // RA effectif : la médiane mesurée (64) comble les 29 raquettes sans RA
+        // publié, et `raEstimated` permet de le signaler au lieu d'afficher N/A.
+        stiffness: racquets.map(r => effectiveRacquetRA(r)),
+        raEstimated: racquets.map(r => isRacquetStiffnessEstimated(r)),
+        price: racquets.map(r => r.price?.europe ?? null),
+        power: profiles.map(p => p.power),
+        control: profiles.map(p => p.control),
+        comfort: profiles.map(p => p.comfort),
+        maneuverability: profiles.map(p => p.maneuverability),
+        stability: profiles.map(p => p.stability),
       };
     } else {
       const strings = selectedItems.map(si => si.item as TennisString);
@@ -351,67 +408,125 @@ export default function ComparePage() {
             <CardContent className="space-y-6">
               {mode === 'racquets' ? (
                 <>
-                  <ComparisonBar 
-                    label="Poids (g)" 
+                  {/* Bornes = plages réelles mesurées en base, pas des chiffres ronds. */}
+                  <ComparisonBar
+                    label="Poids (g)"
                     values={comparisonSpecs.weight as number[]}
-                    maxValue={350}
+                    minValue={170}
+                    maxValue={320}
+                    unit=" g"
                     colors={colors.slice(0, selectedItems.length)}
                   />
-                  <ComparisonBar 
-                    label="Taille tamis (in²)" 
+                  <ComparisonBar
+                    label="Taille tamis (in²)"
                     values={comparisonSpecs.headSize as number[]}
-                    maxValue={120}
+                    minValue={82}
+                    maxValue={115}
                     colors={colors.slice(0, selectedItems.length)}
                   />
-                  <ComparisonBar 
-                    label="Rigidité (RA)" 
+                  <ComparisonBar
+                    label="Rigidité (RA)"
                     values={comparisonSpecs.stiffness as (number | null)[]}
-                    maxValue={80}
+                    minValue={RA_RANGE.min}
+                    maxValue={RA_RANGE.max}
                     colors={colors.slice(0, selectedItems.length)}
                   />
-                  <ComparisonBar 
-                    label="Prix (€)" 
+                  {(comparisonSpecs.raEstimated as boolean[]).some(Boolean) && (
+                    <p className="text-xs text-amber-700 dark:text-amber-300 -mt-4">
+                      RA estimé à {RA_RANGE.median} (médiane mesurée) pour les raquettes
+                      dont le fabricant ne publie pas cette valeur.
+                    </p>
+                  )}
+                  <ComparisonBar
+                    label="Prix (€)"
                     values={comparisonSpecs.price as (number | null)[]}
-                    maxValue={400}
+                    minValue={25}
+                    maxValue={300}
+                    unit=" €"
+                    colors={colors.slice(0, selectedItems.length)}
+                  />
+
+                  {/* Profil dérivé : rétablit la symétrie avec les cordages. */}
+                  <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
+                    <p className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-1">
+                      Profil de jeu (calculé)
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
+                      Notes déduites des specs ci-dessus (poids, tamis, RA, plan de
+                      cordage) et non fournies par les fabricants.
+                    </p>
+                  </div>
+                  <ComparisonBar
+                    label="Puissance"
+                    values={comparisonSpecs.power as number[]}
+                    maxValue={10}
+                    colors={colors.slice(0, selectedItems.length)}
+                  />
+                  <ComparisonBar
+                    label="Contrôle"
+                    values={comparisonSpecs.control as number[]}
+                    maxValue={10}
+                    colors={colors.slice(0, selectedItems.length)}
+                  />
+                  <ComparisonBar
+                    label="Confort"
+                    values={comparisonSpecs.comfort as number[]}
+                    maxValue={10}
+                    colors={colors.slice(0, selectedItems.length)}
+                  />
+                  <ComparisonBar
+                    label="Maniabilité"
+                    values={comparisonSpecs.maneuverability as number[]}
+                    maxValue={10}
+                    colors={colors.slice(0, selectedItems.length)}
+                  />
+                  <ComparisonBar
+                    label="Stabilité"
+                    values={comparisonSpecs.stability as number[]}
+                    maxValue={10}
                     colors={colors.slice(0, selectedItems.length)}
                   />
                 </>
               ) : (
                 <>
-                  <ComparisonBar 
-                    label="Contrôle" 
+                  <ComparisonBar
+                    label="Contrôle"
                     values={comparisonSpecs.control as number[]}
                     maxValue={10}
                     colors={colors.slice(0, selectedItems.length)}
                   />
-                  <ComparisonBar 
-                    label="Confort" 
+                  <ComparisonBar
+                    label="Confort"
                     values={comparisonSpecs.comfort as number[]}
                     maxValue={10}
                     colors={colors.slice(0, selectedItems.length)}
                   />
-                  <ComparisonBar 
-                    label="Spin" 
+                  <ComparisonBar
+                    label="Spin"
                     values={comparisonSpecs.spin as number[]}
                     maxValue={10}
                     colors={colors.slice(0, selectedItems.length)}
                   />
-                  <ComparisonBar 
-                    label="Durabilité" 
+                  <ComparisonBar
+                    label="Durabilité"
                     values={comparisonSpecs.durability as number[]}
                     maxValue={10}
                     colors={colors.slice(0, selectedItems.length)}
                   />
-                  <ComparisonBar 
-                    label="Puissance" 
+                  <ComparisonBar
+                    label="Puissance"
                     values={comparisonSpecs.power as number[]}
                     maxValue={10}
                     colors={colors.slice(0, selectedItems.length)}
                   />
-                  <ComparisonBar 
-                    label="Prix (€)" 
+                  {/* 65 € est le maximum réel mesuré ; la borne à 50 € produisait
+                      une largeur de 130 % rognée en silence par overflow-hidden. */}
+                  <ComparisonBar
+                    label="Prix (€)"
                     values={comparisonSpecs.price as number[]}
-                    maxValue={50}
+                    minValue={6}
+                    maxValue={65}
+                    unit=" €"
                     colors={colors.slice(0, selectedItems.length)}
                   />
                 </>

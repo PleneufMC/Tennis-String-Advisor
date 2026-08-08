@@ -35,11 +35,41 @@ export interface Racquet {
   images?: string[];
   description?: string;
   
-  // Ratings (1-10)
+  /**
+   * ⚠️ NOTES JAMAIS RENSEIGNÉES — NE PAS LIRE CES CHAMPS (audit du 8 août 2026).
+   *
+   * Ces 5 notes sont déclarées ici depuis l'origine, mais la mesure sur les
+   * 129 raquettes réelles donne **0 raquette renseignée**. Elles valent donc
+   * toujours `undefined`.
+   *
+   * C'est la cause de l'asymétrie que l'on constatait dans l'interface : les
+   * cordages affichaient 5 notes (contrôle / confort / spin / puissance /
+   * durabilité, toutes peuplées) et les raquettes des barres vides ou absentes.
+   *
+   * Deux points à comprendre avant d'y toucher :
+   *  - La base réellement utilisée par le site est `TennisRacquet` de
+   *    `data/racquets-database.ts`, PAS cette interface. Celle-ci n'est
+   *    référencée que par d'autres types de ce même fichier (`RacquetBrand`,
+   *    etc.), eux-mêmes non consommés par les pages.
+   *  - Pour obtenir un profil de jeu de raquette, utiliser
+   *    `deriveRacquetProfile()` de `lib/racquet-scoring.ts` : il CALCULE les
+   *    5 notes à partir des specs réelles (poids, tamis, RA, plan de cordage)
+   *    au lieu d'attendre des données que les fabricants ne publient pas.
+   *
+   * Conservées en `@deprecated` plutôt que supprimées : la suppression sèche
+   * romprait tout code externe typé sur cette interface, alors que le vrai
+   * problème est qu'il ne faut pas s'y fier.
+   *
+   * @deprecated Utiliser `deriveRacquetProfile()` de `lib/racquet-scoring.ts`.
+   */
   power?: number;
+  /** @deprecated Voir `power` ci-dessus : jamais renseigné. */
   control?: number;
+  /** @deprecated Voir `power` ci-dessus : jamais renseigné. */
   comfort?: number;
+  /** @deprecated Voir `power` ci-dessus : jamais renseigné. */
   spin?: number;
+  /** @deprecated Voir `power` ci-dessus : jamais renseigné. */
   maneuverability?: number;
 }
 

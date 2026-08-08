@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { racquetsDatabase } from '@/data/racquets-database';
 import { stringsDatabase } from '@/data/strings-database';
 import { exportConfigurationPdf } from '@/lib/pdf-export';
+import { buildConfigurationPdfData } from '@/lib/pdf-configuration-data';
 
 interface ServerConfiguration {
   id: string;
@@ -119,21 +120,10 @@ export function ConfigurationsClient() {
     setExportingId(c.id);
     setError(null);
     try {
-      await exportConfigurationPdf({
-        name: c.name,
-        racquetLabel: racquetLabel(c.racquetId),
-        mainStringLabel: stringLabel(c.mainStringId) ?? c.mainStringId,
-        crossStringLabel: stringLabel(c.crossStringId),
-        mainGauge: c.mainGauge,
-        crossGauge: c.crossGauge,
-        mainTension: c.mainTension,
-        crossTension: c.crossTension,
-        rating: c.rating,
-        notes: c.notes,
-        rcsScore: c.rcsScore,
-        compatibility: c.compatibility,
-        createdAt: c.createdAt,
-      });
+      // L'analyse avancée (sous-scores, recommandations, alertes) n'est pas
+      // persistée en base : elle est recalculée ici depuis les identifiants.
+      // Voir lib/pdf-configuration-data.ts pour le raisonnement.
+      await exportConfigurationPdf(buildConfigurationPdfData(c));
     } catch {
       setError("L'export PDF a échoué. Réessayez.");
     } finally {

@@ -14,6 +14,11 @@ import {
   parseGaugeMm,
   type AdvancedRcsResult,
 } from '@/lib/advanced-rcs';
+import {
+  effectiveRacquetRA,
+  isRacquetStiffnessEstimated,
+  deriveRacquetProfile,
+} from '@/lib/racquet-scoring';
 
 export default function ConfiguratorPage() {
   const { data: session } = useSession();
@@ -82,8 +87,13 @@ export default function ConfiguratorPage() {
     if (!selectedRacquet || !selectedMainString) return null;
     
     const avgTension = (formData.mainTension + formData.crossTension) / 2;
+
+    // RA effectif : source UNIQUE (cf. lib/racquet-scoring). Auparavant cette
+    // page utilisait `|| 65` ici et `?? 63` plus bas pour la MEME raquette.
+    const racquetRA = effectiveRacquetRA(selectedRacquet);
+
     const mainRCS = calculateRCS(
-      selectedRacquet.stiffness || 65,
+      racquetRA,
       selectedMainString.stiffness,
       avgTension
     );
@@ -91,7 +101,7 @@ export default function ConfiguratorPage() {
     let crossRCS = mainRCS;
     if (selectedCrossString) {
       crossRCS = calculateRCS(
-        selectedRacquet.stiffness || 65,
+        racquetRA,
         selectedCrossString.stiffness,
         formData.crossTension
       );
@@ -125,7 +135,7 @@ export default function ConfiguratorPage() {
   const advancedRcs: AdvancedRcsResult | null = useMemo(() => {
     if (!selectedRacquet || !selectedMainString) return null;
     return calculateAdvancedRcs({
-      racquetStiffness: selectedRacquet.stiffness ?? 63,
+      racquetStiffness: effectiveRacquetRA(selectedRacquet),
       racquetWeight: selectedRacquet.weight,
       racquetHeadSize: selectedRacquet.headSize,
       mainStringStiffness: selectedMainString.stiffness,
@@ -511,8 +521,25 @@ export default function ConfiguratorPage() {
                   }}>
                     <strong>{selectedRacquet.brand} {selectedRacquet.model} {selectedRacquet.variant}</strong>
                     <div style={{ color: 'var(--tint-blue-fg)', fontSize: '0.75rem' }}>
-                      RA: {selectedRacquet.stiffness || 'ND'} | Poids: {selectedRacquet.weight}g | Tamis: {selectedRacquet.headSize} sq in
+                      {/* Le RA affiche est celui REELLEMENT utilise dans les calculs.
+                          Quand le fabricant ne le publie pas (29 raquettes sur 129,
+                          dont les 27 juniors), la mediane mesuree de la base est
+                          appliquee — et signalee comme estimation plutot que
+                          presentee comme une donnee constructeur. */}
+                      RA: {effectiveRacquetRA(selectedRacquet)}
+                      {isRacquetStiffnessEstimated(selectedRacquet) && ' (estime)'}
+                      {' '}| Poids: {selectedRacquet.weight}g | Tamis: {selectedRacquet.headSize} sq in
                     </div>
+                    {(() => {
+                      const p = deriveRacquetProfile(selectedRacquet);
+                      return (
+                        <div style={{ color: 'var(--tint-blue-fg)', fontSize: '0.75rem', marginTop: '0.25rem' }}>
+                          Profil derive des specs : puissance {p.power}/10 · controle {p.control}/10 ·
+                          confort {p.comfort}/10 · maniabilite {p.maneuverability}/10 ·
+                          stabilite {p.stability}/10
+                        </div>
+                      );
+                    })()}
                   </div>
                 )}
                 {showDropdowns.racquet && (

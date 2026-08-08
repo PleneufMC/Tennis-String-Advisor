@@ -19,7 +19,7 @@
     "audit:contrast": "node scripts/qa-contrast.mjs",
     "audit:style-contrast": "node scripts/qa-style-contrast.mjs",
     "audit:inherited-text": "node scripts/qa-inherited-text.mjs",
-    "audit:all": "npm run audit:security && npm run audit:dependencies && npm run audit:performance && npm run audit:seo && npm run audit:accessibility && npm run audit:contrast && npm run audit:style-contrast",
+    "audit:all": "npm run audit:security && npm run audit:dependencies && npm run audit:performance && npm run audit:seo && npm run audit:accessibility && npm run audit:contrast && npm run audit:style-contrast && npm run audit:ratings",
     "scrape:tennis-warehouse": "node scripts/scraper/tennis-warehouse.js",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
@@ -28,7 +28,9 @@
     "test": "vitest",
     "test:e2e": "playwright test",
     "analyze": "cross-env ANALYZE=true next build",
-    "export": "next export"
+    "export": "next export",
+    "audit:rls": "node scripts/qa-rls-anon.mjs",
+    "audit:ratings": "npx --yes tsx scripts/qa-ratings.mts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",

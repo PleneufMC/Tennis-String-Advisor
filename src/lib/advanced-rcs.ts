@@ -12,8 +12,9 @@
  * (non-régression). Elle prend des entrées primitives normalisées — les
  * helpers `fromConfiguration*` adaptent les objets des bases de données.
  *
- * Repères issus des données réelles :
- *   - Raquette RA (`stiffness`) : 55–72, centré ~63.
+ * Repères issus des données réelles (mesurés le 8 août 2026) :
+ *   - Raquette RA (`stiffness`) : 55–72, médiane **64** (moyenne 64,17).
+ *     29 des 129 raquettes n'ont pas de RA publié (27 juniors + 2 «Power»).
  *   - Cordage rigidité (`stiffness`, lb/in) : poly ~205–235, multi ~165–190,
  *     boyau ~150–170. Centré ~195.
  *   - Tension : plage usuelle 18–28 kg, centrée 24.
@@ -27,7 +28,11 @@ export type RcsLevel = 'excellent' | 'good' | 'moderate' | 'poor';
 export type StringFamily = 'polyester' | 'multifilament' | 'gut' | 'synthetic' | 'hybrid' | 'other';
 
 export interface AdvancedRcsInput {
-  /** RA de la raquette (rigidité cadre). Défaut 63 si inconnu. */
+  /**
+   * RA de la raquette (rigidité cadre).
+   * Utilisez `effectiveRacquetRA()` de `lib/racquet-scoring` pour l'obtenir :
+   * il applique la médiane mesurée (64) quand la donnée est absente.
+   */
   racquetStiffness: number;
   /** Poids de la raquette en grammes (optionnel). */
   racquetWeight?: number;
@@ -190,8 +195,10 @@ export function calculateAdvancedRcs(input: AdvancedRcsInput): AdvancedRcsResult
   const rcs = rcsIndex(racquetStiffness, effStringStiffness, avgTension);
 
   // --- Écarts normalisés (autour des centres "données réelles") ---
-  // RA : 55-72, centré 63. >0 => cadre rigide.
-  const raDev = racquetStiffness - 63;
+  // RA : 55-72. Centre = MÉDIANE MESURÉE (64) sur les 100 raquettes dont le RA
+  // est publié — et non 63 comme écrit initialement de mémoire. Aligné sur
+  // DEFAULT_RACQUET_RA de lib/racquet-scoring.ts. >0 => cadre rigide.
+  const raDev = racquetStiffness - 64;
   // Tension : centrée 24. >0 => tension haute (plus de contrôle, moins de puissance/confort).
   const tDev = avgTension - 24;
   // Rigidité cordage : centrée 195. >0 => cordage raide.
@@ -251,10 +258,29 @@ export function calculateAdvancedRcs(input: AdvancedRcsInput): AdvancedRcsResult
   const armSensitive = profile?.armSensitive ?? false;
   const isPoly = mainStringFamily === 'polyester';
 
-  // Risque tennis elbow. Seuils abaissés pour les profils sensibles du bras.
-  const armRisk = armSensitive
-    ? rcs >= 28 || comfort < 55
-    : rcs >= 33 || comfort < 45;
+  // Risque tennis elbow.
+  //
+  // Seuils CALIBRÉS sur la distribution réelle, mesurée le 8 août 2026 sur les
+  // 147 060 combinaisons atteignables (129 raquettes x 190 cordages x 6 tensions
+  // de 18 à 28 kg). L'indice `rcs` ne parcourt en pratique que 19 -> 34 :
+  //   p50 = 27 | p80 = 29 | p90 = 30 | p95 = 31 | p99 = 32 | max = 34
+  //
+  // Les seuils d'origine (28 / 33) étaient exprimés en valeurs absolues sans
+  // référence à cette distribution, ce qui produisait une échelle incohérente
+  // entre les deux profils :
+  //   - non sensible  rcs >= 33 => percentile 99,8  (288 cas sur 147 060)
+  //   - sensible      rcs >= 28 => percentile ~52   (70 129 cas, soit 47,7 %)
+  // Un joueur sensible du bras recevait donc une alerte sur près d'un setup
+  // sur deux (fatigue d'alerte : l'avertissement ne veut plus rien dire),
+  // tandis que le profil standard ne la voyait quasiment jamais.
+  //
+  // Nouveaux seuils, choisis pour former une échelle monotone et lisible :
+  //   - sensible      rcs >= 29  (p80 : le quintile le plus rigide)
+  //   - non sensible  rcs >= 31  (p95 : le vingtile le plus rigide)
+  // Les conditions de confort restent en second filet ; `comfort < 45` porte
+  // déjà l'essentiel de l'alerte standard (2,31 % des cas) et rattrape les
+  // setups souples-mais-inconfortables que l'indice de fermeté seul ignore.
+  const armRisk = armSensitive ? rcs >= 29 || comfort < 55 : rcs >= 31 || comfort < 45;
   if (armRisk) {
     if (armSensitive) {
       warnings.push(
