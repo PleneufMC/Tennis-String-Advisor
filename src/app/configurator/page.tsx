@@ -19,6 +19,58 @@ import {
   isRacquetStiffnessEstimated,
   deriveRacquetProfile,
 } from '@/lib/racquet-scoring';
+import type { TennisString } from '@/data/strings-database';
+
+/**
+ * Récapitulatif d'un cordage sélectionné (emplacement principal OU travers).
+ *
+ * POURQUOI UN COMPOSANT PARTAGÉ, ET PAS DEUX BLOCS JSX DUPLIQUÉS
+ * -------------------------------------------------------------
+ * Les deux emplacements affichaient auparavant des champs DIFFÉRENTS :
+ *   - carte « principal » : type | raideur | Contrôle
+ *   - carte « travers »   : type | raideur | Confort
+ * Or les deux cartes ont un style identique. Résultat : en posant le MÊME
+ * cordage aux deux emplacements (Head Lynx Tour), l'utilisateur lisait
+ * « 9/10 » en haut et « 8/10 » en bas et concluait — très logiquement — à une
+ * incohérence de données. En réalité les deux valeurs étaient justes, mais
+ * portaient sur deux critères distincts (contrôle = 9, confort = 8).
+ *
+ * Le défaut n'était donc pas une valeur fausse : c'était une asymétrie
+ * d'affichage sans justification fonctionnelle, qui rendait la comparaison
+ * entre les deux cordages d'un hybride impossible et fabriquait une fausse
+ * contradiction.
+ *
+ * Un commentaire n'empêche pas la récidive : une source unique, oui. Tant que
+ * les deux emplacements passent par ce composant, ils ne PEUVENT plus diverger.
+ */
+function SelectedStringSummary({
+  string,
+  children,
+}: {
+  string: TennisString;
+  children?: React.ReactNode;
+}) {
+  return (
+    <div
+      style={{
+        marginTop: '0.5rem',
+        padding: '0.5rem',
+        backgroundColor: 'var(--tint-green-bg)',
+        borderRadius: '8px',
+        fontSize: '0.875rem',
+      }}
+    >
+      <strong>
+        {string.brand} {string.model}
+      </strong>
+      <div style={{ color: 'var(--tint-green-fg)', fontSize: '0.75rem' }}>
+        {string.type} | Raideur: {string.stiffness} lb/in | Contrôle: {string.control}/10 | Confort:{' '}
+        {string.comfort}/10
+      </div>
+      {children}
+    </div>
+  );
+}
 
 export default function ConfiguratorPage() {
   const { data: session } = useSession();
@@ -622,18 +674,7 @@ export default function ConfiguratorPage() {
                   onFocus={() => setShowDropdowns(prev => ({ ...prev, mainString: true }))}
                 />
                 {selectedMainString && (
-                  <div style={{ 
-                    marginTop: '0.5rem',
-                    padding: '0.5rem',
-                    backgroundColor: 'var(--tint-green-bg)',
-                    borderRadius: '8px',
-                    fontSize: '0.875rem'
-                  }}>
-                    <strong>{selectedMainString.brand} {selectedMainString.model}</strong>
-                    <div style={{ color: 'var(--tint-green-fg)', fontSize: '0.75rem' }}>
-                      {selectedMainString.type} | Raideur: {selectedMainString.stiffness} lb/in | Contrôle: {selectedMainString.control}/10
-                    </div>
-                  </div>
+                  <SelectedStringSummary string={selectedMainString} />
                 )}
                 {showDropdowns.mainString && (
                   <div style={{
@@ -729,17 +770,7 @@ export default function ConfiguratorPage() {
                   onFocus={() => setShowDropdowns(prev => ({ ...prev, crossString: true }))}
                 />
                 {selectedCrossString && (
-                  <div style={{ 
-                    marginTop: '0.5rem',
-                    padding: '0.5rem',
-                    backgroundColor: 'var(--tint-green-bg)',
-                    borderRadius: '8px',
-                    fontSize: '0.875rem'
-                  }}>
-                    <strong>{selectedCrossString.brand} {selectedCrossString.model}</strong>
-                    <div style={{ color: 'var(--tint-green-fg)', fontSize: '0.75rem' }}>
-                      {selectedCrossString.type} | Raideur: {selectedCrossString.stiffness} lb/in | Confort: {selectedCrossString.comfort}/10
-                    </div>
+                  <SelectedStringSummary string={selectedCrossString}>
                     <button
                       onClick={() => {
                         handleInputChange('crossString', '');
@@ -757,7 +788,7 @@ export default function ConfiguratorPage() {
                     >
                       Retirer le cordage travers
                     </button>
-                  </div>
+                  </SelectedStringSummary>
                 )}
                 {showDropdowns.crossString && (
                   <div style={{
