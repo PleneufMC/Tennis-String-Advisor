@@ -83,7 +83,7 @@ export default function PaymentSuccessPage() {
         </p>
         
         <div style={{
-          backgroundColor: '#f0fdf4',
+          backgroundColor: 'var(--tint-green-bg)',
           borderRadius: '12px',
           padding: '1.5rem',
           marginBottom: '2rem',
@@ -102,7 +102,7 @@ export default function PaymentSuccessPage() {
             padding: 0,
             textAlign: 'left',
             fontSize: '0.95rem',
-            color: '#15803d'
+            color: 'var(--tint-green-fg)'
           }}>
             <li style={{ marginBottom: '0.5rem' }}>✅ Configurations illimitées</li>
             <li style={{ marginBottom: '0.5rem' }}>✅ Journal de cordage complet</li>

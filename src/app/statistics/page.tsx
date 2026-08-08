@@ -181,7 +181,7 @@ export default function StatisticsPage() {
               <div style={{ fontSize: '2rem', fontWeight: 'bold', color: 'var(--tint-blue-fg)' }}>
                 {racquetsDatabase.length}
               </div>
-              <div style={{ fontSize: '0.875rem', color: '#3730a3' }}>Raquettes disponibles</div>
+              <div style={{ fontSize: '0.875rem', color: 'var(--tint-blue-fg)' }}>Raquettes disponibles</div>
             </div>
             <div style={{
               backgroundColor: 'var(--tint-green-bg)',
@@ -192,7 +192,7 @@ export default function StatisticsPage() {
               <div style={{ fontSize: '2rem', fontWeight: 'bold', color: 'var(--tint-green-fg)' }}>
                 {stringsDatabase.length}
               </div>
-              <div style={{ fontSize: '0.875rem', color: '#15803d' }}>Cordages disponibles</div>
+              <div style={{ fontSize: '0.875rem', color: 'var(--tint-green-fg)' }}>Cordages disponibles</div>
             </div>
             <div style={{
               backgroundColor: 'var(--tint-amber-bg)',
@@ -203,7 +203,7 @@ export default function StatisticsPage() {
               <div style={{ fontSize: '2rem', fontWeight: 'bold', color: 'var(--tint-amber-fg)' }}>
                 {stats.total}
               </div>
-              <div style={{ fontSize: '0.875rem', color: '#b45309' }}>Configurations sauvées</div>
+              <div style={{ fontSize: '0.875rem', color: 'var(--tint-amber-fg)' }}>Configurations sauvées</div>
             </div>
             <div style={{
               backgroundColor: '#fce7f3',

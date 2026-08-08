@@ -76,6 +76,19 @@
   --tint-green-bg: #dcfce7;   --tint-green-fg: #166534;
   --tint-amber-bg: #fef3c7;   --tint-amber-fg: #92400e;
   --tint-red-bg: #fee2e2;     --tint-red-fg: #991b1b;
+
+  /* Voile posé DANS une pastille teintée (sous-encart). En clair on éclaircit,
+     en sombre on assombrit : un rgba(255,255,255,.5) en dur délavait le fond
+     sombre et rendait le texte clair de la pastille illisible. */
+  --tint-inset: rgba(255, 255, 255, 0.55);
+
+  /* Couleurs d'état (bon / moyen / mauvais). Les valeurs « naturelles »
+     (#059669, #eab308, #dc2626) tombaient à 3,09:1 et surtout 1,57:1 pour le
+     jaune, y compris en thème clair : illisibles sur une pastille teintée.
+     Ces variantes sont assombries en clair, éclaircies en sombre. */
+  --state-good: #036048;
+  --state-warn: #92400e;
+  --state-bad: #b91c1c;
 }
 
 .dark {
@@ -94,6 +107,12 @@
   --tint-green-bg: #14532d;   --tint-green-fg: #bbf7d0;
   --tint-amber-bg: #4a3410;   --tint-amber-fg: #fde68a;
   --tint-red-bg: #4c1d1d;     --tint-red-fg: #fecaca;
+
+  --tint-inset: rgba(0, 0, 0, 0.28);
+
+  --state-good: #6ee7b7;
+  --state-warn: #fcd34d;
+  --state-bad: #fca5a5;
 }
 
 @layer base {
