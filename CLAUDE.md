@@ -1,11 +1,22 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.1.0
-> **Date** : 9 août 2026
+> **Version** : 2.1.1
+> **Date** : 13 août 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
 > **Branche de référence** : `genspark_ai_developer`
 > **Repo** : https://github.com/PleneufMC/Tennis-String-Advisor.git
+
+**Changelog v2.1.0 → v2.1.1** — Corrections factuelles issues de l'audit
+multi-agents du 13 août 2026 (4 rapports : revenue, acquisition, core, mesure),
+conformément au §6 (« un agent qui découvre que le §2 est faux corrige le §2 »).
+Réécriture du point 4 du §2 (il n'existe aucun mur d'authentification — le vrai
+défaut est l'incitation inversée du quota), complément du point 1 (circuit de
+paiement EN parallèle), nuance du point 2 (l'activation AWIN exige un
+redéploiement), correction du point 7 (les scripts `audit:*` étaient
+majoritairement cassés), retrait de Zustand de la pile (§1, zéro import), et
+correction du §5 bis : les pondérations RCS « introuvables » existent bel et
+bien dans `public/js/rcs-calculator*.js` — c'est le moteur des pages EN.
 
 **Changelog v2.0.0 → v2.1.0** — Ajout du §5 bis « Articulation avec les agents
 globaux ». La v2.0.0 a été rédigée hors session Claude Code, sans le contexte
@@ -40,9 +51,10 @@ elbow.
 | 30-35 | Ferme | Contrôle maximal |
 | > 35 | Très ferme | Risque tennis elbow |
 
-**Stack** : Next.js 14 (App Router), TypeScript strict, Tailwind, Zustand,
+**Stack** : Next.js 14 (App Router), TypeScript strict, Tailwind,
 Prisma + Supabase (PostgreSQL), NextAuth (Google OAuth + email), Stripe Payment
-Links, déploiement Netlify (adaptateur OpenNext).
+Links, déploiement Netlify (adaptateur OpenNext). (Zustand est déclaré dans
+`package.json` mais n'a aucun import dans `src/` — retiré de la pile ici.)
 
 **Architecture** : hybride assumé. L'application Next sert le FR à la racine
 (`/configurator`, `/racquets`…). Le blog et la version anglaise sont des pages
@@ -56,7 +68,7 @@ de trafic croisé sous-exploité.
 
 ---
 
-## 2. État vérifié au 9 août 2026
+## 2. État vérifié au 13 août 2026
 
 Ce qui suit a été **lu dans le code**, pas dans la documentation. Toute
 divergence entre ce fichier et le code : le code gagne, et ce fichier doit être
@@ -77,14 +89,14 @@ corrigé dans la même PR.
 
 | # | Problème | Impact |
 |---|---|---|
-| 1 | **Aucun webhook Stripe.** Le Payment Link ne transporte pas `client_reference_id`, rien n'écrit `isPremium`. `/payment-success` fait un compte à rebours et redirige. | Un client qui paie 4,99 € reste plafonné à 3 configs, sans PDF ni stats. **Chaque vente produirait un litige.** |
-| 2 | **Affiliation câblée mais inactive.** `NEXT_PUBLIC_AWIN_ID` et `NEXT_PUBLIC_AWIN_TENNISPOINT_MID` vides → liens directs non rémunérés. | 0 € sur 100 % des clics. |
+| 1 | **Aucun webhook Stripe.** Le Payment Link FR ne transporte pas `client_reference_id`, rien n'écrit `isPremium`. Et un **second circuit de paiement EN** existe en parallèle (`public/en/premium.html` : Supabase Auth direct, 3 Payment Links en $, tarifs divergents, offre « Lifetime » sans équivalent code) — 5 Payment Links, 2 systèmes d'identité, 0 consommateur serveur. | Un client qui paie reste plafonné à 3 configs. La page `payment-success` a été désamorcée (13/08) : elle annonce désormais une activation manuelle sous 24 h au lieu de mentir. |
+| 2 | **Affiliation câblée mais inactive.** `NEXT_PUBLIC_AWIN_ID` et `NEXT_PUBLIC_AWIN_TENNISPOINT_MID` vides → liens directs non rémunérés. ⚠️ Ces variables `NEXT_PUBLIC_*` sont inlinées au build : les renseigner dans Netlify **exige un redéploiement** (les commentaires « sans redéploiement » dans `affiliate.ts` et `.env.example` sont faux). | 0 € sur 100 % des clics. |
 | 3 | **Aucun lien d'achat dans le configurateur.** `BuyButton` n'existe que sur `racquet-card` et `string-card`. | Le moment de plus forte intention n'est pas monétisé. |
-| 4 | **Mur d'authentification.** 160 vues de page connexion contre 45 du configurateur ; 39 `form_start` → **1** `form_submit`. | L'auth absorbe le trafic avant le produit. |
-| 5 | **Formule RCS dupliquée** : `calculateRCS` (`src/data/strings-database.ts`) et `rcsIndex` (`src/lib/advanced-rcs.ts`), plus le calculateur EN statique. | Deux vérités possibles. |
-| 6 | **Divergence non résolue** : le site lit les fichiers TypeScript, Supabase est alimenté séparément. | Chaque correction de donnée est à faire deux fois. |
-| 7 | **0 fichier de test** dans le dépôt (`vitest` et `playwright` installés, aucune spec). | Les seuls garde-fous sont les scripts `npm run audit:*`. |
-| 8 | **Aucun événement clé marqué dans GA4.** Le code émet, l'admin GA4 n'enregistre pas (« Taux d'événements clés » = 0 sur tous les pays). | Aucune conversion mesurable. |
+| 4 | **Incitation inversée du quota** (reformulé 13/08 — il n'existe **aucun mur d'authentification** : pas de middleware, configurateur 100 % public). L'anonyme sauvegarde en illimité dans `localStorage` ; se connecter impose le quota de 3 (`premium.ts` appliqué seulement dans `POST /api/configurations`). Créer un compte retire une capacité. Les chiffres (160 vues signin vs 45 configurateur, 39 `form_start` → 1 `form_submit`) décrivent un problème de navigation/attractivité, pas un blocage technique. | L'entonnoir compte → premium est à l'envers. Arbitrage A5 en attente. |
+| 5 | **Formule RCS quadruplée** : `calculateRCS` (`src/data/strings-database.ts`) et `rcsIndex` (`src/lib/advanced-rcs.ts`) sont des copies identiques ; `calculateCompatibility` (échelle 25-59) ; et le moteur statique `public/js/rcs-calculator*.js` (pondérations 0,28/0,42/0,22/0,08, échelle ~1-92) qui sert les 3 pages EN. Un même setup peut être noté 28 côté FR et 58 côté EN sous le même nom « RCS ». | Trois échelles incomparables en production. |
+| 6 | **Divergence non résolue et creusée** : le site FR lit les fichiers TypeScript, les 6 pages EN lisent Supabase. Catalogues raquettes quasi disjoints (12 ids communs sur 129 TS / 107 base), 98 conflits de valeurs cordages dont 16 changent le RCS. | Chaque correction d'un côté recrée l'écart de l'autre. Arbitrage A1 en attente. |
+| 7 | **0 fichier de test** dans le dépôt (`vitest` et `playwright` installés, aucune spec). Ni husky actif, ni CI, ni suivi d'erreurs en production. Les garde-fous réels sont les scripts `qa-*` — `audit:all` a été recâblé le 13/08 (4 maillons pointaient vers des fichiers inexistants et la chaîne mourait avant les scripts fonctionnels). | La garantie repose sur l'exécution manuelle de `audit:all` avant PR. |
+| 8 | **Aucun événement clé marqué dans GA4.** Le code émet, l'admin GA4 n'enregistre pas (« Taux d'événements clés » = 0 sur tous les pays). ⚠️ Préalable découvert le 13/08 : deux implémentations analytics (React vs `public/js/analytics.js`) émettent les mêmes noms d'événements avec des paramètres incompatibles, et `configurator_complete` se répète à chaque changement de tension (compte les essais, pas les complétions). Unifier le schéma avant de marquer. | Aucune conversion mesurable ; les taux du §2 (53 %) et l'objectif §8 ne sont pas interprétables en l'état. |
 
 ### La mesure (1er janv. → 9 août 2026, 221 jours)
 
@@ -188,9 +200,14 @@ sa PR : `[verrou: configurator/page.tsx]`. Il le rend en fermant la PR.
 Le compte utilisateur héberge des agents transverses (`~/.claude/agents/`)
 antérieurs à cette équipe et qui mentionnent TSA. **Dans ce dépôt, l'équipe
 `tsa-*` fait foi** — les connaissances TSA des agents globaux datent d'un état
-antérieur du code (ils citent 104 raquettes / 165 cordages et des pondérations
-RCS introuvables dans le code actuel ; le réel vérifié est 129 / 190, formule
-dans `advanced-rcs.ts` et `strings-database.ts`). Répartition :
+antérieur du code (ils citent 104 raquettes / 165 cordages ; le réel vérifié
+est 129 / 190, formule TypeScript dans `advanced-rcs.ts` et
+`strings-database.ts`). Correction 13/08 : les pondérations RCS
+W_RA=0.28 / W_Cordage=0.42 / W_Tension=0.22 / W_Interaction=0.08 citées par
+`algorithm-validator` ne sont PAS introuvables — elles vivent dans
+`public/js/rcs-calculator*.js:10`, le moteur statique qui sert les 3 pages EN
+(`configurator.html`, `setups.html`, `rcs-calculator.html`). C'est une des 4
+implémentations RCS du dépôt (cf. §2 point 5). Répartition :
 
 | Agent global | Statut sur TSA |
 |---|---|
@@ -302,4 +319,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.0.0 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.1.1 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
