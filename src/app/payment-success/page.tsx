@@ -1,25 +1,14 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
 
+// Page de confirmation post-paiement Stripe.
+// IMPORTANT (audit 13/08/2026) : aucun webhook Stripe n'existe — rien n'écrit
+// isPremium automatiquement (activation manuelle, cf. AUTH-SETUP.md). Cette
+// page ne doit donc JAMAIS affirmer que les avantages sont « actifs » :
+// elle annonce une activation sous 24 h et donne un contact réel.
+// À réécrire quand le webhook existera (roadmap Phase 5).
 export default function PaymentSuccessPage() {
-  const [countdown, setCountdown] = useState(10);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          window.location.href = '/configurator';
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
-
   return (
     <div style={{
       minHeight: '100vh',
@@ -44,7 +33,7 @@ export default function PaymentSuccessPage() {
         background: 'linear-gradient(135deg, rgba(30, 81, 40, 0.9) 0%, rgba(45, 122, 61, 0.85) 50%, rgba(74, 155, 95, 0.8) 100%)',
         zIndex: 0
       }} />
-      
+
       <div style={{
         position: 'relative',
         zIndex: 1,
@@ -59,71 +48,67 @@ export default function PaymentSuccessPage() {
       }}>
         <div style={{
           fontSize: '5rem',
-          marginBottom: '1rem',
-          animation: 'bounce 1s ease-in-out'
+          marginBottom: '1rem'
         }}>
-          🎉
+          🎾
         </div>
-        
+
         <h1 style={{
           fontSize: '2.5rem',
           fontWeight: 'bold',
           marginBottom: '1rem',
           color: '#10b981'
         }}>
-          Bienvenue Premium !
+          Merci pour votre paiement !
         </h1>
-        
+
         <p style={{
           fontSize: '1.25rem',
           color: 'var(--text-strong)',
           marginBottom: '2rem'
         }}>
-          Votre paiement a été confirmé avec succès
+          Votre paiement a bien été reçu par Stripe.
         </p>
-        
+
         <div style={{
-          backgroundColor: 'var(--tint-green-bg)',
+          backgroundColor: 'var(--tint-amber-bg)',
           borderRadius: '12px',
           padding: '1.5rem',
           marginBottom: '2rem',
-          border: '2px solid #10b981'
+          border: '2px solid #f59e0b',
+          textAlign: 'left'
         }}>
           <h3 style={{
             fontSize: '1.125rem',
             fontWeight: 'bold',
-            color: 'var(--tint-green-fg)',
-            marginBottom: '1rem'
+            color: 'var(--tint-amber-fg)',
+            marginBottom: '0.75rem'
           }}>
-            ✨ Vos avantages Premium sont maintenant actifs :
+            ⏳ Activation de votre compte Premium
           </h3>
-          <ul style={{
-            listStyle: 'none',
-            padding: 0,
-            textAlign: 'left',
+          <p style={{
             fontSize: '0.95rem',
-            color: 'var(--tint-green-fg)'
+            color: 'var(--tint-amber-fg)',
+            margin: 0
           }}>
-            <li style={{ marginBottom: '0.5rem' }}>✅ Configurations illimitées</li>
-            <li style={{ marginBottom: '0.5rem' }}>✅ Journal de cordage complet</li>
-            <li style={{ marginBottom: '0.5rem' }}>✅ Analyse RCS avancée</li>
-            <li style={{ marginBottom: '0.5rem' }}>✅ Export PDF professionnel</li>
-            <li style={{ marginBottom: '0.5rem' }}>✅ Statistiques détaillées</li>
-            <li>✅ Support prioritaire par email</li>
-          </ul>
+            Votre accès Premium est activé <strong>manuellement sous 24 h ouvrées</strong>.
+            Vous recevrez un email de confirmation dès que c&apos;est fait. Une fois le
+            compte activé, vous disposerez des configurations illimitées, de
+            l&apos;export PDF et de l&apos;analyse RCS avancée.
+          </p>
         </div>
-        
+
         <div style={{
-          backgroundColor: 'var(--tint-amber-bg)',
+          backgroundColor: 'var(--tint-green-bg)',
           borderRadius: '8px',
           padding: '1rem',
           marginBottom: '2rem',
           fontSize: '0.875rem',
-          color: 'var(--tint-amber-fg)'
+          color: 'var(--tint-green-fg)'
         }}>
-          📧 Un email de confirmation a été envoyé avec votre facture
+          🧾 Conservez le reçu émis par Stripe : il fait foi pour toute question de facturation.
         </div>
-        
+
         <div style={{
           display: 'flex',
           flexDirection: 'column',
@@ -143,26 +128,11 @@ export default function PaymentSuccessPage() {
               transition: 'all 0.3s',
               boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
             }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 10px 20px rgba(0,0,0,0.2)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)';
-            }}
           >
-            🎾 Accéder au Configurateur Premium
+            🎾 Retour au configurateur
           </Link>
-          
-          <div style={{
-            fontSize: '0.875rem',
-            color: 'var(--text-muted)'
-          }}>
-            Redirection automatique dans {countdown} secondes...
-          </div>
         </div>
-        
+
         <div style={{
           marginTop: '2rem',
           paddingTop: '2rem',
@@ -173,10 +143,11 @@ export default function PaymentSuccessPage() {
             color: 'var(--text-muted)',
             marginBottom: '0.5rem'
           }}>
-            Besoin d'aide ?
+            Un problème, une question, ou pas de confirmation sous 24 h ?
+            Écrivez-nous en précisant l&apos;adresse email utilisée lors du paiement :
           </p>
-          <a 
-            href="mailto:support@tennisadvisor.com"
+          <a
+            href="mailto:pleneuftrading@gmail.com"
             style={{
               color: '#3b82f6',
               textDecoration: 'none',
@@ -184,7 +155,7 @@ export default function PaymentSuccessPage() {
               fontWeight: '500'
             }}
           >
-            support@tennisadvisor.com
+            pleneuftrading@gmail.com
           </a>
         </div>
       </div>

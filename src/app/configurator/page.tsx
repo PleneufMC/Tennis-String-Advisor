@@ -6,7 +6,8 @@ import { useSession } from 'next-auth/react';
 import { stringsDatabase, calculateRCS, getStringRecommendation } from '@/data/strings-database';
 import { racquetsDatabase, calculateCompatibility } from '@/data/racquets-database';
 import { ConfigurationStorage, SavedConfiguration } from '@/lib/storage';
-import { trackConfiguratorComplete } from '@/components/analytics/analytics';
+import { trackConfiguratorComplete, trackPremiumCtaClick } from '@/components/analytics/analytics';
+import { BuyButton } from '@/components/product/buy-button';
 import { isPremiumActive } from '@/lib/premium';
 import {
   calculateAdvancedRcs,
@@ -1127,6 +1128,50 @@ export default function ConfiguratorPage() {
                     {rcsData.compatibility.toFixed(0)}%
                   </span>
                 </div>
+
+                {/* Liens partenaires — RÈGLE 1 (§4 CLAUDE.md) : ils apparaissent
+                    APRÈS la recommandation, n'entrent ni dans le calcul du RCS,
+                    ni dans l'ordre de tri, ni dans la sélection des cordages.
+                    Placés ici pour monétiser le moment de plus forte intention
+                    (audit 13/08/2026 : BuyButton n'existait que sur les cartes
+                    catalogue, jamais sur le résultat du configurateur). */}
+                <div style={{
+                  marginTop: '0.75rem',
+                  paddingTop: '0.75rem',
+                  borderTop: '1px solid var(--surface-border)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.5rem'
+                }}>
+                  {/* --tint-blue-fg (et non --text-muted) : ce libellé est posé
+                      sur le fond --tint-blue-bg du panneau. Mélanger une variable
+                      de texte neutre avec un fond teinté donnait 3,96:1, sous le
+                      seuil AA de 4,5:1 (détecté par npm run audit:style-contrast). */}
+                  <div style={{ fontSize: '0.75rem', color: 'var(--tint-blue-fg)' }}>
+                    Acheter ce setup — liens partenaires
+                  </div>
+                  {selectedMainString && (
+                    <BuyButton
+                      brand={selectedMainString.brand}
+                      model={selectedMainString.model}
+                      variant="outline"
+                    />
+                  )}
+                  {selectedCrossString && selectedCrossString.id !== selectedMainString?.id && (
+                    <BuyButton
+                      brand={selectedCrossString.brand}
+                      model={selectedCrossString.model}
+                      variant="outline"
+                    />
+                  )}
+                  {selectedRacquet && (
+                    <BuyButton
+                      brand={selectedRacquet.brand}
+                      model={selectedRacquet.model}
+                      variant="outline"
+                    />
+                  )}
+                </div>
               </div>
             </div>
           )}
@@ -1310,6 +1355,10 @@ export default function ConfiguratorPage() {
                     </span>
                     <Link
                       href="/pricing"
+                      // Ce CTA n'émettait aucun événement : les premium_cta_click
+                      // mesurés venaient tous du header, jamais du moment de
+                      // plus forte intention (audit 13/08/2026).
+                      onClick={() => trackPremiumCtaClick('configurator_advanced_rcs')}
                       style={{
                         background: '#f59e0b',
                         color: '#422006',

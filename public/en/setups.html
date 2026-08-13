@@ -10,7 +10,7 @@
   <link rel="alternate" hreflang="en" href="https://tennisstringadvisor.org/en/setups.html">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="/js/rcs-calculator.js"></script>
+  <script src="/js/rcs-calculator-en.js"></script>
   <script>
     tailwind.config = {
       theme: {
@@ -647,7 +647,7 @@
       const tension = parseFloat(document.getElementById('tensionInput').value);
       let rcsScore = null;
       if (typeof RCS !== 'undefined' && ra && cordage && tension) {
-        rcsScore = Math.round(RCS.calculate(ra, cordage, tension));
+        rcsScore = Math.round(RCS.calculate(ra, cordage, tension).rcs);
       }
 
       const setupData = {

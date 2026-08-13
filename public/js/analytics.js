@@ -55,7 +55,24 @@ function trackConfiguratorSelection(step, option) {
 // Track Premium CTA clicks
 function trackPremiumClick(location) {
   trackEvent('premium_cta_click', {
-    click_location: location, // 'header', 'results_cta', 'sticky_bar', 'paywall'
+    // cta_location : MEME nom de parametre que le React
+    // (src/components/analytics/analytics.tsx). Auparavant 'click_location'
+    // cote statique — une dimension GA4 perdait donc systematiquement la
+    // moitie des clics (audit 13/08/2026).
+    cta_location: location, // 'header', 'results_cta', 'sticky_bar', 'paywall'
+    event_category: 'conversion'
+  });
+}
+
+// Clic sur un lien d'affiliation « ou acheter ».
+// Meme nom d'evenement ET memes parametres que le React
+// (trackAffiliateClick dans src/components/analytics/analytics.tsx) :
+// sans cela, les 28 pages statiques n'emettaient AUCUN affiliate_click et
+// le jalon « premiere commission » n'etait attribuable a aucun canal.
+function trackAffiliateClick(merchant, product) {
+  trackEvent('affiliate_click', {
+    merchant: merchant,
+    product: product,
     event_category: 'conversion'
   });
 }
@@ -162,6 +179,7 @@ window.trackConfiguratorStep = trackConfiguratorStep;
 window.trackConfiguratorComplete = trackConfiguratorComplete;
 window.trackConfiguratorSelection = trackConfiguratorSelection;
 window.trackPremiumClick = trackPremiumClick;
+window.trackAffiliateClick = trackAffiliateClick;
 window.trackPaywallShown = trackPaywallShown;
 window.trackSignupStart = trackSignupStart;
 window.trackBlogView = trackBlogView;

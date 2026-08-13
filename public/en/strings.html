@@ -668,7 +668,8 @@
       const searchQuery = encodeURIComponent(productName);
       
       const affiliateHtml = Object.entries(AFFILIATE_CONFIG).map(([key, config]) => `
-        <a href="${config.url}${searchQuery}${config.tag}" target="_blank" rel="noopener noreferrer"
+        <a href="${config.url}${searchQuery}${config.tag}" target="_blank" rel="sponsored noopener noreferrer"
+          data-affiliate-merchant="${key}" data-affiliate-product="${encodeURIComponent(productName)}"
           class="flex items-center gap-4 p-4 border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-green-500 transition">
           <div class="text-2xl">${config.logo}</div>
           <div class="flex-1">
@@ -705,6 +706,20 @@
       
       modal.addEventListener('click', (e) => { if (e.target === modal) closeAffiliateModal(); });
       document.body.appendChild(modal);
+
+      // Emission de affiliate_click (ecouteur delegue plutot qu'un onclick
+      // inline : un nom de produit contenant une apostrophe casserait
+      // l'attribut). Meme schema de parametres que le React.
+      modal.querySelectorAll('[data-affiliate-merchant]').forEach(function (link) {
+        link.addEventListener('click', function () {
+          if (typeof trackAffiliateClick === 'function') {
+            trackAffiliateClick(
+              link.dataset.affiliateMerchant,
+              decodeURIComponent(link.dataset.affiliateProduct || '')
+            );
+          }
+        });
+      });
     }
 
     function closeAffiliateModal() {
