@@ -12,17 +12,17 @@ export default function PricingPage() {
       id: 'free',
       name: 'Gratuit',
       price: { monthly: 0, yearly: 0 },
+      // Audit 13/08/2026 : ne lister que ce que le code garde réellement
+      // (quota serveur premium.ts + export PDF). Les promesses sans
+      // implémentation (rappels, stats, support prioritaire) sont retirées.
       features: [
-        '✅ Configurateur de base',
-        '✅ 3 configurations sauvegardées',
-        '✅ Calcul RCS simple',
-        '✅ Base de données complète',
+        '✅ Configurateur complet',
+        '✅ Calcul RCS',
+        '✅ Base de données complète (129 raquettes, 190 cordages)',
+        '✅ 3 configurations sauvegardées dans votre compte',
         '❌ Configurations illimitées',
-        '❌ Journal de cordage premium',
-        '❌ Historique détaillé',
-        '❌ Export PDF',
-        '❌ Statistiques avancées',
-        '❌ Support prioritaire'
+        '❌ Analyse RCS avancée',
+        '❌ Export PDF'
       ],
       buttonText: 'Version actuelle',
       buttonStyle: 'secondary',
@@ -36,16 +36,10 @@ export default function PricingPage() {
       features: [
         '✅ Tout du plan gratuit',
         '✅ Configurations illimitées',
-        '✅ Journal de cordage complet',
-        '✅ Historique permanent',
         '✅ Analyse RCS avancée',
-        '✅ Recommandations personnalisées',
-        '✅ Export PDF professionnel',
-        '✅ Statistiques détaillées',
-        '✅ Rappels de recondage',
-        '✅ Support email prioritaire'
+        '✅ Export PDF professionnel'
       ],
-      buttonText: 'Essai gratuit 7 jours',
+      buttonText: 'Passer Premium',
       buttonStyle: 'primary',
       popular: true,
       stripeLinks: {
@@ -417,14 +411,9 @@ export default function PricingPage() {
             <div style={{ fontSize: '0.875rem', opacity: 0.9 }}>À tout moment</div>
           </div>
           <div style={{ color: 'white' }}>
-            <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🎯</div>
-            <div style={{ fontWeight: 'bold' }}>Garantie 30 jours</div>
-            <div style={{ fontSize: '0.875rem', opacity: 0.9 }}>Satisfait ou remboursé</div>
-          </div>
-          <div style={{ color: 'white' }}>
-            <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🚀</div>
-            <div style={{ fontWeight: 'bold' }}>Support Premium</div>
-            <div style={{ fontSize: '0.875rem', opacity: 0.9 }}>Réponse en 24h</div>
+            <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>⏳</div>
+            <div style={{ fontWeight: 'bold' }}>Activation sous 24 h</div>
+            <div style={{ fontSize: '0.875rem', opacity: 0.9 }}>Confirmation par email</div>
           </div>
         </div>
       </div>
