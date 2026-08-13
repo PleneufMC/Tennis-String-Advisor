@@ -3,13 +3,19 @@
  *
  * Marchand principal : Tennis-Point FR (programme Awin, jusqu'à 9 %, cookie 30 j).
  *
- * Activation SANS redéploiement de code :
+ * Activation — ATTENTION, UN REDÉPLOIEMENT EST REQUIS (corrigé le 13/08/2026,
+ * ce bloc affirmait le contraire) :
  *   - Tant que NEXT_PUBLIC_AWIN_ID n'est pas défini, les liens « Acheter »
  *     pointent en DIRECT (non tracké) vers Tennis-Point → fonctionnels et
  *     utiles dès maintenant, mais sans commission.
- *   - Dès que tu renseignes NEXT_PUBLIC_AWIN_ID (ton Publisher/Affiliate ID
- *     Awin) dans les variables d'env Netlify, les liens deviennent
- *     automatiquement des deep-links Awin trackés → rémunérateurs.
+ *   - Pour activer : renseigner NEXT_PUBLIC_AWIN_ID (Publisher/Affiliate ID
+ *     Awin) ET NEXT_PUBLIC_AWIN_TENNISPOINT_MID dans les variables d'env
+ *     Netlify, PUIS relancer un build. Les variables NEXT_PUBLIC_* sont
+ *     inlinées dans le bundle client au moment du build : les saisir dans
+ *     l'interface Netlify sans redéployer ne change rien, et l'activation
+ *     échouerait silencieusement (les liens resteraient en direct).
+ *   - Prérequis hors code : inscription Awin + approbation du programme
+ *     Tennis-Point. C'est le chemin critique, pas le code.
  *
  * Architecture multi-marchands : ajouter un marchand = ajouter une entrée dans
  * MERCHANTS (avec son awinmid). Aucun autre changement nécessaire.
