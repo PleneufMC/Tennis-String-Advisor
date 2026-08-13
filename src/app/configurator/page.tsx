@@ -1143,7 +1143,11 @@ export default function ConfiguratorPage() {
                   flexDirection: 'column',
                   gap: '0.5rem'
                 }}>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                  {/* --tint-blue-fg (et non --text-muted) : ce libellé est posé
+                      sur le fond --tint-blue-bg du panneau. Mélanger une variable
+                      de texte neutre avec un fond teinté donnait 3,96:1, sous le
+                      seuil AA de 4,5:1 (détecté par npm run audit:style-contrast). */}
+                  <div style={{ fontSize: '0.75rem', color: 'var(--tint-blue-fg)' }}>
                     Acheter ce setup — liens partenaires
                   </div>
                   {selectedMainString && (
