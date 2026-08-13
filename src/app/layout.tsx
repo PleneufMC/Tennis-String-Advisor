@@ -153,8 +153,10 @@ export default function RootLayout({ children }: RootLayoutProps) {
         />
       </head>
       <body className="antialiased font-sans bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors">
-        {/* Google Analytics 4 — chargé après l'hydratation (perf), IP anonymisée (RGPD). */}
-        {GA_MEASUREMENT_ID && (
+        {/* Google Analytics 4 — chargé après l'hydratation (perf), IP anonymisée (RGPD).
+            Garde NODE_ENV : les sessions de dev polluaient la propriété de production.
+            send_page_view: false — le page_view unique est émis par le composant Analytics à chaque navigation. */}
+        {GA_MEASUREMENT_ID && process.env.NODE_ENV === 'production' && (
           <>
             <Script
               src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
@@ -165,7 +167,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
                 window.dataLayer = window.dataLayer || [];
                 function gtag(){dataLayer.push(arguments);}
                 gtag('js', new Date());
-                gtag('config', '${GA_MEASUREMENT_ID}', { anonymize_ip: true });
+                gtag('config', '${GA_MEASUREMENT_ID}', { anonymize_ip: true, send_page_view: false });
               `}
             </Script>
             <Analytics measurementId={GA_MEASUREMENT_ID} />

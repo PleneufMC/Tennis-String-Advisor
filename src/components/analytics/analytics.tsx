@@ -22,10 +22,13 @@ function AnalyticsInner({ measurementId }: AnalyticsProps) {
       return;
     }
 
-    const url = pathname + (searchParams ? searchParams.toString() : '');
-    
-    // Track page view
-    window.gtag('config', measurementId, {
+    // searchParams n'est jamais null (ReadonlyURLSearchParams) : on teste la chaîne.
+    const search = searchParams.toString();
+    const url = search ? `${pathname}?${search}` : pathname;
+
+    // Un seul page_view par navigation — l'init du layout est en send_page_view: false,
+    // un second gtag('config') ici provoquait un double comptage au chargement initial.
+    window.gtag('event', 'page_view', {
       page_path: url,
     });
   }, [pathname, searchParams, measurementId]);
