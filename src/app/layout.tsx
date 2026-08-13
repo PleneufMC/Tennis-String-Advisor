@@ -57,6 +57,16 @@ export const metadata: Metadata = {
     'Yonex',
     'Luxilon',
   ],
+  // Canonical + hreflang de la HOME. Les autres routes surchargent ces valeurs
+  // via leur propre layout (cf. lib/seo/route-metadata), et les pages
+  // utilitaires (auth, compte, paiement) les neutralisent en noindex.
+  alternates: {
+    canonical: SITE_URL,
+    languages: {
+      'fr-FR': SITE_URL,
+      'en-US': `${SITE_URL}/en/`,
+    },
+  },
   authors: [{ name: 'Tennis String Advisor Team' }],
   creator: 'Tennis String Advisor',
   publisher: 'Tennis String Advisor',
