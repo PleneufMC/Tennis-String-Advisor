@@ -9,7 +9,7 @@
  */
 
 import { execSync } from 'node:child_process';
-import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, writeFileSync, rmSync, renameSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -25,9 +25,9 @@ function transpile(file) {
     `npx tsc "${join(SRC, file)}" --outDir "${tmp}" --module esnext --target es2020 --moduleResolution node --skipLibCheck`,
     { stdio: 'pipe' }
   );
-  // tsc produit .js ; renomme en .mjs pour import ESM
+  // tsc produit .js ; renomme en .mjs pour import ESM (renameSync : portable Windows/POSIX)
   const js = join(tmp, file.replace(/\.ts$/, '.js'));
-  execSync(`mv "${js}" "${out}"`);
+  renameSync(js, out);
   return out;
 }
 
