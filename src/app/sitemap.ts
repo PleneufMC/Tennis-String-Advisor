@@ -1,4 +1,6 @@
 import type { MetadataRoute } from 'next';
+import { stringsDatabase } from '@/data/strings-database';
+import { racquetsDatabase } from '@/data/racquets-database';
 
 /**
  * Sitemap natif Next.js (App Router).
@@ -109,6 +111,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.6,
   }));
 
+  // Fiches produit individuelles (routes [slug] pré-générées). La source est
+  // la base elle-même : impossible qu'une URL du sitemap ne corresponde pas à
+  // une page réelle, puisque generateStaticParams lit exactement ces ids.
+  const productEntries: MetadataRoute.Sitemap = [
+    ...racquetsDatabase.map((r) => `/racquets/${r.id}`),
+    ...stringsDatabase.map((s) => `/tennis-strings/${s.id}`),
+  ].map((path) => ({
+    url: `${BASE_URL}${path}`,
+    lastModified: now,
+    changeFrequency: 'monthly' as const,
+    priority: 0.6,
+  }));
+
   const enPageEntries: MetadataRoute.Sitemap = EN_PAGES.map((p) => ({
     url: `${BASE_URL}${p.path}`,
     lastModified: now,
@@ -134,6 +149,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   return [
     ...appEntries,
+    ...productEntries,
     ...blogIndex,
     ...blogEntries,
     ...enPageEntries,
