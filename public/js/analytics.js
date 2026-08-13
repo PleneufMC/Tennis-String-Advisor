@@ -179,6 +179,7 @@ window.trackConfiguratorStep = trackConfiguratorStep;
 window.trackConfiguratorComplete = trackConfiguratorComplete;
 window.trackConfiguratorSelection = trackConfiguratorSelection;
 window.trackPremiumClick = trackPremiumClick;
+window.trackAffiliateClick = trackAffiliateClick;
 window.trackPaywallShown = trackPaywallShown;
 window.trackSignupStart = trackSignupStart;
 window.trackBlogView = trackBlogView;
