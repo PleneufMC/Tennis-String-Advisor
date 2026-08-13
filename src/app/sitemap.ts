@@ -14,9 +14,18 @@ import type { MetadataRoute } from 'next';
  * `public/blog/*.html`. À mettre à jour quand une route/un article est ajouté.
  */
 
-const BASE_URL = (
-  process.env.NEXT_PUBLIC_APP_URL || 'https://tennisstringadvisor.org'
-).replace(/\/$/, '');
+// Même garde que le layout racine : une NEXT_PUBLIC_APP_URL pointant sur
+// localhost (valeur par défaut de .env.example) publierait un sitemap entier
+// d'URL localhost. Le repli sur le domaine canonique doit donc couvrir ce cas,
+// pas seulement l'absence de variable.
+const CANONICAL_BASE = 'https://tennisstringadvisor.org';
+const BASE_URL = (() => {
+  const envUrl = process.env.NEXT_PUBLIC_APP_URL?.trim();
+  if (envUrl && !/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/i.test(envUrl)) {
+    return envUrl.replace(/\/$/, '');
+  }
+  return CANONICAL_BASE;
+})();
 
 // Routes applicatives réelles (cf. `find src/app -name page.tsx`).
 // Les routes purement transactionnelles (payment-success/cancelled) sont
@@ -52,6 +61,22 @@ const BLOG_SLUGS: string[] = [
   'cordage-mono-vs-multifilament.html',
 ];
 
+// Pages anglaises statiques publiques (`public/en/*.html`).
+// Elles étaient absentes du sitemap alors que trois d'entre elles portent un
+// JSON-LD produit riche (racquets, strings, configurator). Les pages
+// utilitaires (account, auth, setups) sont volontairement exclues : elles
+// sont en `noindex`.
+const EN_PAGES: Array<{ path: string; priority: number }> = [
+  { path: '/en/', priority: 0.9 },
+  { path: '/en/configurator.html', priority: 0.8 },
+  { path: '/en/racquets.html', priority: 0.7 },
+  { path: '/en/strings.html', priority: 0.7 },
+  { path: '/en/compare.html', priority: 0.6 },
+  { path: '/en/rcs-calculator.html', priority: 0.6 },
+  { path: '/en/faq.html', priority: 0.5 },
+  { path: '/en/premium.html', priority: 0.5 },
+];
+
 // Articles de blog anglais réellement présents dans `public/en/blog/*.html`.
 const EN_BLOG_SLUGS: string[] = [
   'challengers-sinner-alcaraz-2026.html',
@@ -84,6 +109,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.6,
   }));
 
+  const enPageEntries: MetadataRoute.Sitemap = EN_PAGES.map((p) => ({
+    url: `${BASE_URL}${p.path}`,
+    lastModified: now,
+    changeFrequency: 'monthly',
+    priority: p.priority,
+  }));
+
   const enBlogIndex: MetadataRoute.Sitemap = [
     {
       url: `${BASE_URL}/en/blog/`,
@@ -104,6 +136,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...appEntries,
     ...blogIndex,
     ...blogEntries,
+    ...enPageEntries,
     ...enBlogIndex,
     ...enBlogEntries,
   ];
