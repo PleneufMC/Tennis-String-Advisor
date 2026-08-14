@@ -26,7 +26,6 @@
     .pricing-card:hover { transform: translateY(-4px); }
     .popular-badge { animation: pulse 2s infinite; }
     @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.8; } }
-    .lifetime-urgency { animation: glow 1.5s ease-in-out infinite alternate; }
     @keyframes glow { from { box-shadow: 0 0 20px rgba(251, 191, 36, 0.3); } to { box-shadow: 0 0 30px rgba(251, 191, 36, 0.6); } }
   </style>
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-YSSLHJ5WYD"></script>
@@ -56,16 +55,6 @@
     </div>
   </header>
 
-  <!-- Lifetime Launch Banner -->
-  <div id="lifetimeBanner" class="bg-gradient-to-r from-amber-500 to-orange-500 text-white py-3 px-4">
-    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-2 text-center">
-      <span class="font-bold">🚀 Launch offer:</span>
-      <span>Lifetime at <strong>$19.99</strong> (one-time payment, lifetime access)</span>
-      <span class="bg-white/20 px-3 py-1 rounded-full text-sm font-bold">
-        <span id="lifetimeRemaining">150</span> spots remaining
-      </span>
-    </div>
-  </div>
 
   <!-- Main Content -->
   <main class="max-w-6xl mx-auto px-4 py-12">
@@ -136,38 +125,6 @@
         </button>
       </div>
 
-      <!-- Lifetime Plan -->
-      <div id="lifetimeCard" class="pricing-card lifetime-urgency bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl border-2 border-amber-400 p-8 relative">
-        <div class="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-4 py-1 rounded-full text-sm font-bold flex items-center gap-1">
-          🚀 Launch
-        </div>
-        <div class="mb-6">
-          <h3 class="text-lg font-semibold text-amber-900 mb-2">Lifetime</h3>
-          <p class="text-amber-700 text-sm">One-time payment, lifetime access</p>
-        </div>
-        <div class="mb-2">
-          <span class="text-4xl font-bold text-amber-900">$19.99</span>
-          <span class="text-amber-700">once</span>
-        </div>
-        <div class="mb-6">
-          <div class="bg-amber-200/50 rounded-lg p-3 text-center">
-            <span class="text-amber-800 font-bold text-lg" id="lifetimeRemainingCard">150</span>
-            <span class="text-amber-700 text-sm"> / 150 spots</span>
-            <div class="w-full bg-amber-200 rounded-full h-2 mt-2">
-              <div id="lifetimeProgress" class="bg-gradient-to-r from-amber-500 to-orange-500 h-2 rounded-full" style="width: 100%"></div>
-            </div>
-          </div>
-        </div>
-        <ul class="space-y-3 mb-8">
-          <li class="flex items-center gap-2 text-amber-800"><span class="text-amber-500">✓</span> All Premium features, forever</li>
-          <li class="flex items-center gap-2 text-amber-800"><span class="text-amber-500">✓</span> Future features included</li>
-          <li class="flex items-center gap-2 text-amber-800"><span class="text-amber-500">✓</span> No recurring payments</li>
-          <li class="flex items-center gap-2 text-amber-800"><span class="text-amber-500">✓</span> "Early Supporter" badge 🏆</li>
-        </ul>
-        <button onclick="selectPlan('lifetime')" class="w-full py-3 px-6 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-xl hover:from-amber-600 hover:to-orange-600 transition shadow-lg">
-          Reserve my spot
-        </button>
-      </div>
     </div>
 
     <!-- Features Detail Section -->
@@ -291,8 +248,6 @@
         </div>
         
         <div class="bg-white rounded-xl border border-gray-200 p-6">
-          <h3 class="font-semibold text-gray-900 mb-2">What exactly is the Lifetime offer?</h3>
-          <p class="text-gray-600">It's a launch offer limited to 150 spots. You pay once $19.99 and get Premium access for life, including all future features. No recurring payments.</p>
         </div>
         
         <div class="bg-white rounded-xl border border-gray-200 p-6">
@@ -314,9 +269,6 @@
       <div class="flex flex-col sm:flex-row gap-4 justify-center">
         <button onclick="selectPlan('annual')" class="px-8 py-4 bg-white text-green-700 font-bold rounded-xl hover:bg-green-50 transition shadow-lg">
           Get Started with Annual – $24.99/year
-        </button>
-        <button onclick="selectPlan('lifetime')" id="finalLifetimeCta" class="px-8 py-4 bg-gradient-to-r from-amber-400 to-orange-400 text-white font-bold rounded-xl hover:from-amber-500 hover:to-orange-500 transition shadow-lg">
-          🚀 Lifetime – $19.99 (150 spots)
         </button>
       </div>
     </div>
@@ -421,18 +373,14 @@
 
     const PAYMENT_LINKS = {
       monthly: 'https://buy.stripe.com/bJedR9aD1cZkaNwduk8Vi03',
-      annual: 'https://buy.stripe.com/bJe00jeThbVgaNw1LC8Vi04',
-      lifetime: 'https://buy.stripe.com/28E3cvfXl8J4f3M9e48Vi05'
+      annual: 'https://buy.stripe.com/bJe00jeThbVgaNw1LC8Vi04'
     };
     
     const PLANS = {
       monthly: { name: 'Monthly Premium', price: '$2.99', note: 'Monthly renewal, no commitment', paymentLink: PAYMENT_LINKS.monthly },
-      annual: { name: 'Annual Premium', price: '$24.99', note: 'Annual payment, save 30%', paymentLink: PAYMENT_LINKS.annual },
-      lifetime: { name: 'Lifetime (Launch offer)', price: '$19.99', note: 'One-time payment, lifetime access', paymentLink: PAYMENT_LINKS.lifetime }
+      annual: { name: 'Annual Premium', price: '$24.99', note: 'Annual payment, save 30%', paymentLink: PAYMENT_LINKS.annual }
     };
 
-    const LIFETIME_TOTAL = 150;
-    let lifetimeRemaining = LIFETIME_TOTAL;
     let currentUser = null;
     let selectedPlan = null;
 
@@ -444,41 +392,12 @@
         document.getElementById('authLink').href = '/account.html';
         document.getElementById('authLink').innerHTML = '👤 My Account';
       }
-      await loadLifetimeCount();
-    }
-
-    async function loadLifetimeCount() {
-      try {
-        const { data, error } = await supabaseClient.from('settings').select('value').eq('key', 'lifetime_remaining').single();
-        if (data && !error) lifetimeRemaining = parseInt(data.value) || LIFETIME_TOTAL;
-      } catch (e) {
-        const stored = localStorage.getItem('tsa_lifetime_remaining');
-        if (stored !== null) lifetimeRemaining = parseInt(stored);
-      }
-      updateLifetimeDisplay();
-    }
-
-    function updateLifetimeDisplay() {
-      const remaining = Math.max(0, lifetimeRemaining);
-      const percentage = (remaining / LIFETIME_TOTAL) * 100;
-      document.getElementById('lifetimeRemaining').textContent = remaining;
-      document.getElementById('lifetimeRemainingCard').textContent = remaining;
-      document.getElementById('lifetimeProgress').style.width = percentage + '%';
-      if (remaining <= 0) {
-        document.getElementById('lifetimeBanner').classList.add('hidden');
-        document.getElementById('lifetimeCard').classList.add('hidden');
-        document.getElementById('finalLifetimeCta').classList.add('hidden');
-      }
     }
 
     function selectPlan(planId) {
       selectedPlan = planId;
       const plan = PLANS[planId];
       if (!plan) return;
-      if (planId === 'lifetime' && lifetimeRemaining <= 0) {
-        alert('Sorry, all 150 Lifetime spots have been taken. Choose the Annual plan to save.');
-        return;
-      }
       document.getElementById('checkoutPlanName').textContent = plan.name;
       document.getElementById('checkoutPrice').textContent = plan.price;
       document.getElementById('checkoutNote').textContent = plan.note;
