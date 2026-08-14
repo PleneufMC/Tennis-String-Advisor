@@ -460,8 +460,8 @@
     }
 
     function renderSetupCard(setup) {
-      const rcsColor = setup.rcs_score < 40 ? 'green' : setup.rcs_score < 60 ? 'yellow' : setup.rcs_score < 80 ? 'orange' : 'red';
-      const rcsEmoji = setup.rcs_score < 40 ? '💚' : setup.rcs_score < 60 ? '💛' : setup.rcs_score < 80 ? '🧡' : '❤️';
+      const rcsColor = setup.rcs_score < 25 ? 'green' : setup.rcs_score < 30 ? 'yellow' : setup.rcs_score < 35 ? 'orange' : 'red';
+      const rcsEmoji = setup.rcs_score < 25 ? '💚' : setup.rcs_score < 30 ? '💛' : setup.rcs_score < 35 ? '🧡' : '❤️';
       const rcsLabel = getRcsLabel(setup.rcs_score);
       const racquet = setup.racquets || {};
       const string = setup.strings || {};
@@ -519,11 +519,11 @@
 
     function getRcsLabel(score) {
       if (!score) return 'Not calculated';
-      if (score < 20) return 'Ultra Comfort';
-      if (score < 40) return 'Very Comfortable';
-      if (score < 60) return 'Balanced';
-      if (score < 80) return 'Performance';
-      return 'Extreme';
+      if (score < 20) return 'Very Comfortable';
+      if (score < 25) return 'Comfortable';
+      if (score < 30) return 'Standard';
+      if (score < 35) return 'Firm';
+      return 'Very Firm - elbow risk';
     }
 
     function escapeHtml(text) {
@@ -591,10 +591,10 @@
         document.getElementById('rcsLabel').textContent = decile.label;
         const gauge = document.getElementById('rcsGauge');
         const emoji = document.getElementById('rcsEmoji');
-        if (score < 30) { gauge.style.borderColor = '#16a34a'; emoji.textContent = '💚'; }
-        else if (score < 50) { gauge.style.borderColor = '#84cc16'; emoji.textContent = '💛'; }
-        else if (score < 70) { gauge.style.borderColor = '#eab308'; emoji.textContent = '🧡'; }
-        else if (score < 90) { gauge.style.borderColor = '#f97316'; emoji.textContent = '🔶'; }
+        if (score < 20) { gauge.style.borderColor = '#16a34a'; emoji.textContent = '💚'; }
+        else if (score < 25) { gauge.style.borderColor = '#84cc16'; emoji.textContent = '💛'; }
+        else if (score < 30) { gauge.style.borderColor = '#eab308'; emoji.textContent = '🧡'; }
+        else if (score < 35) { gauge.style.borderColor = '#f97316'; emoji.textContent = '🔶'; }
         else { gauge.style.borderColor = '#dc2626'; emoji.textContent = '❤️'; }
       } else {
         document.getElementById('rcsPreview').textContent = '--';

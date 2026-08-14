@@ -3670,16 +3670,50 @@ export function filterStrings(
 }
 
 // Fonction pour calculer le RCS (Recommandation Confort Score)
+/**
+ * Indice RCS — SOURCE UNIQUE de la fermeté d'un montage.
+ *
+ * Plus la valeur est élevée, plus le montage est ferme (donc moins confortable
+ * pour le bras). `rcsIndex` (lib/advanced-rcs) et le moteur statique anglais
+ * (public/js/rcs-calculator*.js) délèguent à cette formule : toute évolution se
+ * fait ICI et nulle part ailleurs.
+ *
+ * RECALIBRATION DU 14/08/2026 — pourquoi le facteur 2 et le retrait de 27
+ * -----------------------------------------------------------------------
+ * La formule d'origine sortait `(…) * 30` sans décalage, ce qui écrasait les
+ * 147 060 combinaisons réelles (129 raquettes × 190 cordages × 6 tensions)
+ * entre 19 et 34. Conséquence : sur les 5 paliers publiés, deux étaient morts.
+ *   - « < 20 très confortable » : 0,01 % des cas
+ *   - « ≥ 35 très ferme, risque tennis elbow » : **0,00 %, inatteignable**
+ * Le signal de sécurité qui justifie l'existence du RCS ne pouvait donc JAMAIS
+ * s'afficher, quel que soit le montage — y compris le plus agressif possible.
+ *
+ * La correction est une transformation AFFINE (a·x + b, a > 0) : elle ne change
+ * aucun classement — deux montages gardent exactement le même ordre relatif,
+ * la corrélation de rang avec l'ancienne échelle vaut 1 — elle ne fait
+ * qu'étaler l'échelle sur la plage que le produit annonce.
+ *
+ * Répartition obtenue sur les 147 060 combinaisons réelles :
+ *   < 20 très confortable  4,3 %   |  20-25 confortable  17,2 %
+ *   25-30 standard        39,2 %   |  30-35 ferme        32,9 %
+ *   ≥ 35 très ferme        6,3 %   (9 248 combinaisons, 53 cordages distincts)
+ *
+ * Bornes réelles vérifiées :
+ *   - le plus souple : Wilson Clash (RA 55) + boyau naturel 92 lb/in @ 19 kg → 11
+ *   - le plus ferme  : cadre RA 72 + polyester 262 lb/in @ 29 kg → 41
+ */
 export function calculateRCS(racquetStiffness: number, stringStiffness: number, tension: number): number {
-  // Formule RCS complète incluant raquette, cordage et tension
-  // Plus les valeurs sont élevées, plus le RCS est élevé (moins confortable)
   const racquetFactor = racquetStiffness / 70; // Normalise autour de RA 70
   const stringFactor = stringStiffness / 220; // Normalise autour de 220 lb/in
   const tensionFactor = tension / 24; // Normalise autour de 24 kg
-  
-  const baseRCS = (racquetFactor * 0.4 + stringFactor * 0.4 + tensionFactor * 0.2) * 30;
-  return Math.round(baseRCS);
+
+  const base = (racquetFactor * 0.4 + stringFactor * 0.4 + tensionFactor * 0.2) * 30;
+  return Math.round(RCS_SCALE_GAIN * base + RCS_SCALE_OFFSET);
 }
+
+/** Coefficients de l'échelle publiée (cf. commentaire de `calculateRCS`). */
+export const RCS_SCALE_GAIN = 2;
+export const RCS_SCALE_OFFSET = -27;
 
 // Fonction simple pour obtenir une recommandation basée sur le RCS
 export function getStringRecommendation(rcs: number): {

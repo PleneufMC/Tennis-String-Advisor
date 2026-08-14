@@ -22,8 +22,9 @@
  *
  * Usage : npm run audit:ratings
  */
+import { readFileSync } from 'node:fs';
 import { racquetsDatabase, calculateCompatibility } from '../src/data/racquets-database';
-import { stringsDatabase } from '../src/data/strings-database';
+import { stringsDatabase, calculateRCS, getStringRecommendation } from '../src/data/strings-database';
 import { calculateAdvancedRcs, stringTypeToFamily } from '../src/lib/advanced-rcs';
 import {
   DEFAULT_RACQUET_RA,
@@ -418,6 +419,90 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
     );
   } else {
     ok('une seule calculateCompatibility dans le code (data/racquets-database.ts)');
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 8. ÉCHELLE RCS — paliers atteignables et parité avec le moteur statique
+// ---------------------------------------------------------------------------
+// Deux défauts que ce bloc rend impossibles à réintroduire silencieusement :
+//
+// a) Un palier publié inatteignable. Jusqu'au 14/08/2026, « ≥ 35 : très ferme,
+//    risque tennis elbow » ne pouvait JAMAIS s'afficher (maximum réel 34) : le
+//    signal de sécurité qui justifie l'existence du RCS était mort, et rien ne
+//    le détectait. Ce script testait l'atteignabilité des verdicts de
+//    `calculateCompatibility`, mais pas ceux de `getStringRecommendation`.
+//
+// b) La divergence FR/EN. Le moteur statique `public/js/rcs-calculator*.js`
+//    sert 3 pages anglaises et était resté figé sur une calibration de janvier
+//    2026 : un même montage sortait à 28 côté FR et 58 côté EN. Aucun script
+//    ne regardait dans `public/js/`.
+{
+  const TENSIONS = [19, 21, 23, 25, 27, 29];
+  const values: number[] = [];
+  for (const r of racquetsDatabase) {
+    const ra = effectiveRacquetRA(r);
+    for (const s of stringsDatabase)
+      for (const t of TENSIONS) values.push(calculateRCS(ra, s.stiffness, t));
+  }
+
+  // a) les 5 paliers publiés doivent tous être atteignables
+  const levels = new Map<string, number>();
+  for (const v of values) {
+    const l = getStringRecommendation(v).level;
+    levels.set(l, (levels.get(l) ?? 0) + 1);
+  }
+  const EXPECTED = ['Très Confortable', 'Confortable', 'Standard', 'Ferme', 'Très Ferme'];
+  const dead = EXPECTED.filter((l) => (levels.get(l) ?? 0) === 0);
+  if (dead.length > 0) {
+    fail(
+      `paliers RCS inatteignables : ${dead.join(', ')}. getStringRecommendation ` +
+        `annonce une graduation qu'aucune combinaison réelle ne produit ` +
+        `(plage observée ${Math.min(...values)}-${Math.max(...values)}).`
+    );
+  } else {
+    const top = ((levels.get('Très Ferme') ?? 0) / values.length) * 100;
+    ok(`les 5 paliers RCS publiés sont atteignables (alerte « Très Ferme » : ${top.toFixed(1)} %)`);
+  }
+
+  // b) le moteur statique doit renvoyer exactement la même valeur
+  const engines = ['public/js/rcs-calculator.js', 'public/js/rcs-calculator-en.js'];
+  for (const path of engines) {
+    let engine: any;
+    try {
+      const src = readFileSync(path, 'utf8');
+      engine = new Function(
+        'window',
+        'document',
+        `${src}; return typeof RCS !== 'undefined' ? RCS : window.RCS;`
+      )({}, { addEventListener() {} });
+    } catch (e) {
+      fail(`${path} : moteur statique illisible (${(e as Error).message})`);
+      continue;
+    }
+    let diff = 0;
+    let sample = '';
+    for (const r of racquetsDatabase) {
+      const ra = effectiveRacquetRA(r);
+      for (const s of stringsDatabase)
+        for (const t of TENSIONS) {
+          const expected = calculateRCS(ra, s.stiffness, t);
+          const got = engine.calculate(ra, s.stiffness, t).rcs;
+          if (got !== expected) {
+            diff++;
+            if (!sample) sample = `RA${ra} + ${s.stiffness} lb/in @ ${t} kg : TS=${expected} vs statique=${got}`;
+          }
+        }
+    }
+    if (diff > 0) {
+      fail(
+        `${path} diverge de calculateRCS sur ${diff} combinaisons (ex. ${sample}). ` +
+          `Le site anglais et le site français afficheraient deux indices ` +
+          `différents sous le même nom « RCS ».`
+      );
+    } else {
+      ok(`${path} : parité exacte avec calculateRCS (${values.length} combinaisons)`);
+    }
   }
 }
 
