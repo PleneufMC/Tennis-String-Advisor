@@ -377,10 +377,27 @@ const RCS = {
     return p[profile] || p['club'];
   },
 
+  // ABSOLUTE HEALTH THRESHOLD — no player profile can switch it off.
+  // Regle 2 du §4 : la sante prime sur la conversion. Avant ce garde-fou, le
+  // profil « Pro » (plage 31-41) faisait renvoyer « Configuration optimale »
+  // pour un RCS de 40, c'est-a-dire en pleine zone « tres ferme, risque tennis
+  // elbow » — l'alerte etait desactivee par la personne qu'elle protege.
+  // Valeur alignee sur le palier publie (§1) et sur advanced-rcs.
+  HEALTH_ALERT_RCS: 35,
+
   evaluateForProfile(rcs, profile) {
     const rec = this.getRecommendations(profile);
     const [minRCS, maxRCS] = rec.rcsRange;
     const dec = this.getDecile(rcs);
+    if (rcs >= this.HEALTH_ALERT_RCS) {
+      return {
+        isOk: false,
+        status: 'risque_sante',
+        message: `Very firm setup (index ${rcs}): tennis elbow risk`,
+        suggestion: `Whatever your level, lower the tension or switch to a softer string in the mains. This threshold does not depend on the player profile.`,
+        icon: '⚠️'
+      };
+    }
     if (rcs >= minRCS && rcs <= maxRCS) {
       return {
         isOk: true,
