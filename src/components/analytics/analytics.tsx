@@ -54,12 +54,60 @@ const gaEvent = (name: string, params: Record<string, unknown> = {}) => {
   }
 };
 
-// Recommandation RCS calculée / configurateur complété.
-// À marquer comme « key event » (conversion) dans GA4.
+/**
+ * LE DÉNOMINATEUR — pourquoi deux événements et non un seul.
+ *
+ * `configurator_complete` était émis à CHAQUE recalcul, sa signature de
+ * déduplication incluant les tensions. Un joueur qui essaie cinq tensions sur
+ * la même raquette produisait donc cinq « complétions ». Le compteur mesurait
+ * *les configurations explorées*, pas *les utilisateurs qui aboutissent* — et
+ * c'est ce compteur gonflé qui sert de dénominateur à l'objectif du §8
+ * (`affiliate_click / configurator_complete`) et à son critère d'arrêt.
+ *
+ * Séparation :
+ *   - `configurator_result_view` : chaque affichage de résultat, y compris un
+ *     simple changement de tension. Mesure l'exploration.
+ *   - `configurator_complete` : une fois par couple raquette + cordages,
+ *     SANS les tensions dans la signature. Mesure l'aboutissement.
+ *
+ * ⚠️ Le compteur `configurator_complete` va donc BAISSER par construction.
+ * Ce n'est pas une régression : c'est la même réalité, enfin comptée
+ * correctement. Toute comparaison avec les chiffres d'avant le 14/08/2026
+ * est invalide.
+ */
 export const trackConfiguratorComplete = (rcsScore: number, compatibility?: number) => {
   gaEvent('configurator_complete', {
     rcs_score: Math.round(rcsScore),
     compatibility: compatibility !== undefined ? Math.round(compatibility) : undefined,
+  });
+};
+
+/** Affichage d'un résultat RCS, y compris après un simple ajustement de tension. */
+export const trackConfiguratorResultView = (rcsScore: number) => {
+  gaEvent('configurator_result_view', { rcs_score: Math.round(rcsScore) });
+};
+
+/**
+ * Entrée dans le parcours : première sélection faite par l'utilisateur.
+ * `configurator_step` n'était émis QUE par le configurateur anglais statique —
+ * le taux de complétion rapportait donc un numérateur venu des deux univers à
+ * un dénominateur venu d'un seul.
+ */
+export const trackConfiguratorStart = (step: string) => {
+  gaEvent('configurator_step', { step_name: step });
+};
+
+/**
+ * Un avertissement de risque bras a été AFFICHÉ à l'écran.
+ *
+ * Sans cet événement, le respect de la règle 2 n'est vérifiable que par
+ * lecture du code — et c'est précisément ce qui a permis à l'alerte de rester
+ * invisible pendant des mois derrière un flou CSS, sans que rien ne le signale.
+ */
+export const trackArmWarningShown = (rcsScore: number, armSensitive: boolean) => {
+  gaEvent('arm_warning_shown', {
+    rcs_score: Math.round(rcsScore),
+    arm_sensitive: armSensitive,
   });
 };
 
