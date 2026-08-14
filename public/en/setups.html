@@ -362,10 +362,16 @@
     let maxSetups = 3;
     let isPremium = false;
 
+    // Aligne sur racquets.html / strings.html. L'ancienne config produisait des
+    // URL a DEUX points d'interrogation (baseUrl + 'search/?q=' + tag commencant
+    // lui aussi par '?') et visait des domaines .com au lieu des boutiques FR.
+    // Les suffixes ?from=tsa / ?utm_source=... / ?mc=... etaient inventes :
+    // aucun de ces programmes n'est rejoint, ils ne rapportaient rien et
+    // simulaient une affiliation inexistante (regles 3 et 4 du §4).
     const AFFILIATE_CONFIG = {
-      tennisWarehouse: { name: 'Tennis Warehouse', logo: '🏬', baseUrl: 'https://www.tennis-warehouse.com/', tag: '?from=tsa' },
-      tennisPoint: { name: 'Tennis-Point', logo: '🎾', baseUrl: 'https://www.tennis-point.com/', tag: '?utm_source=tennisstring' },
-      decathlon: { name: 'Decathlon', logo: '🏪', baseUrl: 'https://www.decathlon.com/', tag: '?mc=affiliate_tsa' }
+      tennisWarehouse: { name: 'Tennis Warehouse', logo: '🏬', url: 'https://www.tennis-warehouse.com/searchresults.html?searchtext=' },
+      tennisPoint: { name: 'Tennis-Point', logo: '🎾', url: 'https://www.tennis-point.fr/search?q=' },
+      decathlon: { name: 'Decathlon', logo: '🏪', url: 'https://www.decathlon.fr/search?Ntt=' }
     };
 
     async function checkAuth() {
@@ -705,7 +711,7 @@
       let html = '';
       Object.entries(AFFILIATE_CONFIG).forEach(([key, config]) => {
         html += `
-          <a href="${config.baseUrl}search/?q=${searchQuery}${config.tag}" target="_blank" rel="noopener noreferrer"
+          <a href="${config.url}${searchQuery}" target="_blank" rel="sponsored noopener noreferrer"
             class="flex items-center gap-4 p-4 border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-green-500 transition group">
             <div class="text-3xl">${config.logo}</div>
             <div class="flex-1">
