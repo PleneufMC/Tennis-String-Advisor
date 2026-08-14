@@ -1213,6 +1213,35 @@ export default function ConfiguratorPage() {
                 </span>
               </div>
 
+              {/* ALERTES SANTÉ — HORS du bloc premium, visibles de TOUS.
+                  Elles étaient auparavant rendues à l'intérieur du sous-arbre
+                  flouté (blur + pointerEvents:none + aria-hidden) : comme rien
+                  n'écrit jamais `isPremium`, la part d'utilisateurs qui voyaient
+                  l'avertissement de risque tennis elbow était exactement ZÉRO.
+                  Règle 2 du §4 : la santé prime sur la conversion — une alerte
+                  bras ne se masque jamais, et surtout pas derrière un paywall. */}
+              {advancedRcs.warnings.length > 0 && (
+                <div style={{ marginBottom: '0.9rem' }} role="alert">
+                  {advancedRcs.warnings.map((w, i) => (
+                    <div
+                      key={i}
+                      style={{
+                        marginTop: i === 0 ? 0 : '0.5rem',
+                        padding: '0.6rem 0.85rem',
+                        background: 'var(--tint-red-bg)',
+                        border: '1px solid var(--state-bad)',
+                        borderRadius: '8px',
+                        fontSize: '0.85rem',
+                        fontWeight: 500,
+                        color: 'var(--tint-red-fg)',
+                      }}
+                    >
+                      ⚠️ {w}
+                    </div>
+                  ))}
+                </div>
+              )}
+
               {/* Contenu : flouté + verrouillé pour les non-premium */}
               <div style={{ position: 'relative' }}>
                 <div
@@ -1294,24 +1323,6 @@ export default function ConfiguratorPage() {
                           }}
                         />
                       </div>
-                    </div>
-                  ))}
-
-                  {/* Alertes */}
-                  {advancedRcs.warnings.map((w, i) => (
-                    <div
-                      key={i}
-                      style={{
-                        marginTop: '0.6rem',
-                        padding: '0.5rem 0.75rem',
-                        background: 'var(--tint-red-bg)',
-                        border: '1px solid var(--surface-border)',
-                        borderRadius: '8px',
-                        fontSize: '0.8rem',
-                        color: 'var(--tint-red-fg)',
-                      }}
-                    >
-                      ⚠️ {w}
                     </div>
                   ))}
 
@@ -1611,7 +1622,12 @@ export default function ConfiguratorPage() {
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: 'var(--tint-blue-fg)' }}>Tennis Elbow:</span>
-                <span style={{ fontWeight: '500', color: 'var(--state-bad)' }}>Eviter RCS {'>'} 30</span>
+                {/* Seuil aligné sur la borne publiée (§1 CLAUDE.md) et sur le
+                    seuil d'alerte du moteur. Il annonçait « > 30 », en
+                    contradiction avec le tableau du site (35) et avec
+                    advanced-rcs (32 sensible / 35 standard) : trois chiffres
+                    différents pour un même avertissement de santé. */}
+                <span style={{ fontWeight: '500', color: 'var(--state-bad)' }}>Prudence au-delà de 32, risque à partir de 35</span>
               </div>
             </div>
           </div>
