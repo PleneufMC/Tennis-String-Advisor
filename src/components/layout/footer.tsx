@@ -114,6 +114,21 @@ export function Footer() {
                       </Link>
                     </li>
                   ))}
+                  {/* TennisMatchFinder, même propriétaire. Le §1 du CLAUDE.md
+                      présentait ce canal croisé comme sous-exploité — il
+                      n'existait en réalité dans AUCUN fichier du dépôt, dans
+                      aucun des deux sens. L'UTM permet de mesurer ce que le
+                      canal rapporte réellement, au lieu de le supposer. */}
+                  <li>
+                    <a
+                      href="https://tennismatchfinder.net/?utm_source=tennisstringadvisor&utm_medium=footer&utm_campaign=cross_site"
+                      target="_blank"
+                      rel="noopener"
+                      className="text-sm leading-6 text-gray-400 hover:text-white transition-colors"
+                    >
+                      {t('footer.link.tmf')}
+                    </a>
+                  </li>
                   <li>
                     <a
                       href="/en/"
