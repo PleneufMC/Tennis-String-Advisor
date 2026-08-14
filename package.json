@@ -16,7 +16,7 @@
     "audit:style-contrast": "node scripts/qa-style-contrast.mjs",
     "audit:inherited-text": "node scripts/qa-inherited-text.mjs",
     "audit:database": "node scripts/qa-database.mjs",
-    "audit:all": "npm run audit:contrast && npm run audit:style-contrast && npm run audit:database && npm run audit:ratings && npm run audit:security",
+    "audit:all": "node scripts/qa-runner.mjs",
     "scrape:tennis-warehouse": "node scripts/scraper/tennis-warehouse-scraper.js",
     "scrape:tw-discover": "node scripts/scraper/tw-discover.mjs",
     "scrape:tw-specs": "node scripts/scraper/tw-fetch-specs.mjs",
