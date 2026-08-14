@@ -1289,11 +1289,15 @@
         canUse = true; // Allow anyway for debugging
       }
       
-      if (!canUse) {
-        console.log('🔒 Showing paywall...');
-        showPaywall();
-        return;
-      }
+      // REGLE 2 (§4) — la sante prime sur la conversion.
+      // Ce bloc faisait `showPaywall(); return;` : il sortait de la fonction
+      // AVANT toute generation de resultat, donc l'utilisateur ne voyait ni son
+      // indice RCS ni l'avertissement de risque tennis elbow. Un paywall ne
+      // doit jamais masquer un retour de sante.
+      // Le resultat est desormais TOUJOURS calcule et affiche ; l'invitation
+      // premium est presentee APRES, sans rien retenir.
+      // (aucun blocage ici : `canUse` reste calcule pour le suivi analytique,
+      // mais il ne conditionne plus l'affichage du resultat.)
       
       console.log('✅ Generating recommendations...');
       
