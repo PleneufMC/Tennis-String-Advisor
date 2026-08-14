@@ -83,6 +83,12 @@ const EN_PAGES: Array<{ path: string; priority: number }> = [
 const EN_BLOG_SLUGS: string[] = [
   'challengers-sinner-alcaraz-2026.html',
   'next-gen-tennis-racquets-fonseca-mensik-cobolli-jodar.html',
+  // Guides evergreen adaptés du français (14/08/2026), appairés en hreflang
+  // avec leur source FR.
+  'tennis-string-gauge.html',
+  'tennis-string-pattern.html',
+  'polyester-vs-multifilament-strings.html',
+  'tennis-string-tension-guide.html',
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
