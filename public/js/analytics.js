@@ -69,10 +69,15 @@ function trackPremiumClick(location) {
 // (trackAffiliateClick dans src/components/analytics/analytics.tsx) :
 // sans cela, les 28 pages statiques n'emettaient AUCUN affiliate_click et
 // le jalon « premiere commission » n'etait attribuable a aucun canal.
-function trackAffiliateClick(merchant, product) {
+function trackAffiliateClick(merchant, product, linkType) {
   trackEvent('affiliate_click', {
     merchant: merchant,
     product: product,
+    // Meme parametre que le React : distingue un deep-link Awin tracke d'un
+    // lien direct non remunere. C'est la seule preuve lisible en production
+    // que l'activation Awin a bien ete suivie d'un redeploiement.
+    // Cote statique aucun deep-link n'est encore construit -> 'direct'.
+    link_type: linkType || 'direct',
     event_category: 'conversion'
   });
 }

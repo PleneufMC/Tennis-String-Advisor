@@ -8,6 +8,7 @@ import { trackAffiliateClick } from '@/components/analytics/analytics';
 import {
   buildProductLink,
   getMerchantLabel,
+  isAffiliateEnabled,
   DEFAULT_MERCHANT,
   type MerchantKey,
 } from '@/lib/affiliate';
@@ -56,7 +57,9 @@ export function BuyButton({
       href={href}
       target="_blank"
       rel="sponsored noopener noreferrer"
-      onClick={() => trackAffiliateClick(merchant, productName)}
+      onClick={() =>
+        trackAffiliateClick(merchant, productName, isAffiliateEnabled(merchant) ? 'awin' : 'direct')
+      }
       className={cn(
         buttonVariants({ variant, size }),
         'group/buy gap-1.5 no-underline',
