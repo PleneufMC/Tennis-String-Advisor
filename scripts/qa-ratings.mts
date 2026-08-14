@@ -507,6 +507,81 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
 }
 
 // ---------------------------------------------------------------------------
+// 9. ALERTE SANTÉ — aucun profil ne peut la désactiver, aucune surface ne
+//    peut afficher un RCS sans chemin vers un avertissement
+// ---------------------------------------------------------------------------
+// Défaut corrigé le 14/08/2026 : `evaluateForProfile` renvoyait « Configuration
+// optimale ✅ » pour un RCS de 40 dès que l'utilisateur cochait le profil
+// « Pro » (plage 31-41) — c'est-à-dire en pleine zone « très ferme, risque
+// tennis elbow ». L'alerte était désactivée par la personne qu'elle protège.
+// Et 3 des 4 surfaces affichant un RCS n'appelaient jamais getHealthWarning.
+{
+  const engines = ['public/js/rcs-calculator.js', 'public/js/rcs-calculator-en.js'];
+  const PROFILS = [
+    'reeducation', 'tennis_elbow', 'senior', 'debutant',
+    'club', 'confirme', 'competiteur', 'expert', 'pro',
+  ];
+
+  for (const path of engines) {
+    let engine: any;
+    try {
+      const src = readFileSync(path, 'utf8');
+      engine = new Function(
+        'window',
+        'document',
+        `${src}; return typeof RCS !== 'undefined' ? RCS : window.RCS;`
+      )({}, { addEventListener() {} });
+    } catch {
+      continue; // l'absence du moteur est déjà signalée par le contrôle 8
+    }
+
+    const leaks: string[] = [];
+    for (const p of PROFILS) {
+      for (let rcs = 35; rcs <= 45; rcs++) {
+        const verdict = engine.evaluateForProfile(rcs, p);
+        if (verdict?.isOk === true) leaks.push(`${p} @ RCS ${rcs}`);
+      }
+    }
+    if (leaks.length > 0) {
+      fail(
+        `${path} : ${leaks.length} verdict(s) favorable(s) sur un montage en zone ` +
+          `d'alerte (ex. ${leaks.slice(0, 3).join(', ')}). Aucun profil de joueur ne ` +
+          `doit pouvoir transformer un risque tennis elbow en « configuration optimale ».`
+      );
+    } else {
+      ok(`${path} : aucun profil ne neutralise l'alerte santé (9 profils × RCS 35-45)`);
+    }
+
+    if (!engine.getHealthWarning || !engine.getHealthWarning(40)) {
+      fail(`${path} : getHealthWarning n'émet aucune alerte à RCS 40.`);
+    }
+  }
+
+  // Les surfaces qui affichent un RCS doivent avoir un chemin vers une alerte.
+  const SURFACES = [
+    'public/en/configurator.html',
+    'public/en/rcs-calculator.html',
+  ];
+  for (const surface of SURFACES) {
+    let html = '';
+    try {
+      html = readFileSync(surface, 'utf8');
+    } catch {
+      fail(`${surface} : surface introuvable.`);
+      continue;
+    }
+    if (!html.includes('getHealthWarning')) {
+      fail(
+        `${surface} affiche un RCS sans jamais appeler getHealthWarning : ` +
+          `un utilisateur peut y lire un score en zone de risque sans aucun avertissement.`
+      );
+    } else {
+      ok(`${surface} : chemin d'appel vers l'alerte santé présent`);
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
 console.log('--- audit notation raquettes/cordages ---');
 notes.forEach((n) => console.log(n));
 if (failures.length > 0) {

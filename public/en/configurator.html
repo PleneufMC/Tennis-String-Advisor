@@ -665,6 +665,8 @@
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <!-- Score Display -->
+          <div id="rcs-health-warning" class="hidden"></div>
+
           <div class="text-center">
             <div id="rcs-score-display" class="inline-flex items-center justify-center w-28 h-28 rounded-full text-white text-4xl font-bold mb-3 shadow-lg" style="background: #FFD700;">
               50
@@ -1666,7 +1668,10 @@
       document.getElementById('rcs-description').textContent = decile.description;
 
       // Update gauge indicator
-      document.getElementById('rcs-indicator').style.marginLeft = `calc(${rcs}% - 10px)`;
+      // Position derivee de l'echelle reelle (11-41), pas d'un pourcentage brut :
+      // le curseur ne quittait jamais le premier tiers de la jauge.
+      const gaugePct = Math.max(0, Math.min(100, ((rcs - 11) / 30) * 100));
+      document.getElementById('rcs-indicator').style.marginLeft = `calc(${gaugePct}% - 10px)`;
 
       // Update comment box
       const commentBox = document.getElementById('rcs-comment');
@@ -1675,16 +1680,37 @@
       
       // Generate advice based on RCS
       let advice = '';
-      if (rcs < 30) {
-        advice = 'Configuration très confortable. Excellente pour préserver vos articulations.';
-      } else if (rcs < 50) {
-        advice = 'Configuration équilibrée, adaptée à la plupart des joueurs de club.';
-      } else if (rcs < 70) {
-        advice = 'Configuration dynamique. Assurez-vous d\'avoir une bonne condition physique.';
+      if (rcs < 20) {
+        advice = 'Very comfortable setup. Ideal if you are protecting your arm.';
+      } else if (rcs < 25) {
+        advice = 'Comfortable setup, forgiving on the joints.';
+      } else if (rcs < 30) {
+        advice = 'Standard setup, suitable for most club players.';
       } else {
-        advice = '⚠️ Configuration exigeante. Échauffement rigoureux recommandé.';
+        advice = 'Firm or very firm setup — check the health warning above.';
       }
       document.getElementById('rcs-advice').textContent = advice;
+
+      // HEALTH WARNING — cette page affichait un RCS sans JAMAIS appeler
+      // getHealthWarning : 3 des 4 surfaces montrant un score n'avaient aucun
+      // chemin vers un avertissement. Regle 2 du §4 : la sante prime.
+      const healthBox = document.getElementById('rcs-health-warning');
+      const warning = RCS.getHealthWarning(rcs);
+      if (warning) {
+        healthBox.innerHTML =
+          '<div class="flex items-start gap-3"><span class="text-2xl">' + warning.icon +
+          '</span><div><div class="font-bold">' + warning.title +
+          '</div><p class="text-sm mt-1">' + warning.message +
+          '</p><ul class="text-sm mt-2 list-disc ml-5">' +
+          warning.tips.map(function (t) { return '<li>' + t + '</li>'; }).join('') +
+          '</ul></div></div>';
+        healthBox.className = 'mb-4 p-4 rounded-xl border-2 ' + (warning.level === 'danger'
+          ? 'bg-red-50 border-red-400 text-red-900'
+          : 'bg-amber-50 border-amber-400 text-amber-900');
+      } else {
+        healthBox.className = 'hidden';
+        healthBox.innerHTML = '';
+      }
 
       // Profile evaluation if applicable
       if (profile) {
