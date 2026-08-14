@@ -6,7 +6,13 @@ import { useSession } from 'next-auth/react';
 import { stringsDatabase, calculateRCS, getStringRecommendation } from '@/data/strings-database';
 import { racquetsDatabase, calculateCompatibility } from '@/data/racquets-database';
 import { ConfigurationStorage, SavedConfiguration } from '@/lib/storage';
-import { trackConfiguratorComplete, trackPremiumCtaClick } from '@/components/analytics/analytics';
+import {
+  trackConfiguratorComplete,
+  trackConfiguratorResultView,
+  trackConfiguratorStart,
+  trackArmWarningShown,
+  trackPremiumCtaClick,
+} from '@/components/analytics/analytics';
 import { BuyButton } from '@/components/product/buy-button';
 import { isPremiumActive } from '@/lib/premium';
 import {
@@ -228,19 +234,57 @@ export default function ConfiguratorPage() {
     formData.crossTension,
   ]);
 
-  // GA4 : émettre `configurator_complete` quand une reco RCS valide est produite.
-  // Dédupliqué par combinaison (raquette + cordages + tensions) pour ne pas
-  // spammer l'event à chaque interaction sur une même configuration.
+  // Un avertissement bras a été AFFICHÉ. Sans cet événement, le respect de la
+  // règle 2 n'est vérifiable que par lecture du code — ce qui est exactement
+  // ce qui a permis à l'alerte de rester invisible derrière un flou CSS.
+  const lastWarnedConfig = useRef<string | null>(null);
+  useEffect(() => {
+    if (!advancedRcs || advancedRcs.warnings.length === 0) return;
+    const sig = [formData.racquet, formData.mainString, formData.crossString].join('|');
+    if (lastWarnedConfig.current === sig) return;
+    lastWarnedConfig.current = sig;
+    trackArmWarningShown(advancedRcs.rcs, false);
+  }, [advancedRcs, formData.racquet, formData.mainString, formData.crossString]);
+
+  // GA4 — DEUX événements distincts, cf. lib analytics :
+  //   `configurator_result_view` : chaque affichage de résultat, tensions
+  //      comprises. Mesure l'exploration.
+  //   `configurator_complete` : une fois par couple raquette + cordages, SANS
+  //      les tensions dans la signature. Mesure l'aboutissement.
+  // Auparavant un seul événement portait les deux sens, avec les tensions dans
+  // la signature : cinq essais de tension = cinq « complétions ». Le
+  // dénominateur de l'objectif §8 était gonflé d'autant.
+  // Entrée dans le parcours — émis une seule fois, à la première sélection.
+  // `configurator_step` n'existait que côté anglais statique : le taux de
+  // complétion rapportait un numérateur venu des deux univers à un
+  // dénominateur venu d'un seul.
+  const startTracked = useRef(false);
+  useEffect(() => {
+    if (startTracked.current || !formData.racquet) return;
+    startTracked.current = true;
+    trackConfiguratorStart('racquet_selected');
+  }, [formData.racquet]);
+
   const lastTrackedConfig = useRef<string | null>(null);
+  const lastTrackedView = useRef<string | null>(null);
   useEffect(() => {
     if (!rcsData || !selectedRacquet || !selectedMainString) return;
-    const signature = [
+
+    const viewSignature = [
       formData.racquet,
       formData.mainString,
       formData.crossString,
       formData.mainTension,
       formData.crossTension,
     ].join('|');
+    if (lastTrackedView.current !== viewSignature) {
+      lastTrackedView.current = viewSignature;
+      trackConfiguratorResultView(rcsData.avgRCS);
+    }
+
+    // Signature SANS les tensions : ajuster la tension n'est pas aboutir une
+    // seconde fois, c'est affiner la même configuration.
+    const signature = [formData.racquet, formData.mainString, formData.crossString].join('|');
     if (lastTrackedConfig.current === signature) return;
     lastTrackedConfig.current = signature;
     trackConfiguratorComplete(rcsData.avgRCS, rcsData.compatibility);

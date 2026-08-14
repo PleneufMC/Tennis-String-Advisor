@@ -1,7 +1,7 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.1.1
-> **Date** : 13 août 2026
+> **Version** : 2.1.2
+> **Date** : 14 août 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
 > **Branche de référence** : `genspark_ai_developer`
@@ -96,6 +96,18 @@ corrigé dans la même PR.
 | 5 | **Formule RCS quadruplée** : `calculateRCS` (`src/data/strings-database.ts`) et `rcsIndex` (`src/lib/advanced-rcs.ts`) sont des copies identiques ; `calculateCompatibility` (échelle 25-59) ; et le moteur statique `public/js/rcs-calculator*.js` (pondérations 0,28/0,42/0,22/0,08, échelle ~1-92) qui sert les 3 pages EN. Un même setup peut être noté 28 côté FR et 58 côté EN sous le même nom « RCS ». | Trois échelles incomparables en production. |
 | 6 | **Divergence non résolue et creusée** : le site FR lit les fichiers TypeScript, les 6 pages EN lisent Supabase. Catalogues raquettes quasi disjoints (12 ids communs sur 129 TS / 107 base), 98 conflits de valeurs cordages dont 16 changent le RCS. | Chaque correction d'un côté recrée l'écart de l'autre. Arbitrage A1 en attente. |
 | 7 | **0 fichier de test** dans le dépôt (`vitest` et `playwright` installés, aucune spec). Ni husky actif, ni CI, ni suivi d'erreurs en production. Les garde-fous réels sont les scripts `qa-*` — `audit:all` a été recâblé le 13/08 (4 maillons pointaient vers des fichiers inexistants et la chaîne mourait avant les scripts fonctionnels). | La garantie repose sur l'exécution manuelle de `audit:all` avant PR. |
+> ⚠️ **RUPTURE DE SÉRIE — 14/08/2026.** `configurator_complete` était émis à
+> chaque recalcul, sa signature de déduplication incluant les tensions : cinq
+> essais de tension sur une même raquette comptaient pour cinq « complétions ».
+> Il est désormais scindé en `configurator_result_view` (l'exploration) et
+> `configurator_complete` (l'aboutissement, signature sans les tensions).
+> **Le compteur va baisser par construction — ce n'est pas une régression.**
+> Toute comparaison avec les chiffres antérieurs au 14/08 est invalide, y
+> compris ceux de la ligne « La mesure » ci-dessous. Deux événements ajoutés
+> au passage : `configurator_step` côté FR (il n'existait que côté EN, donc le
+> taux de complétion rapportait deux univers à un seul) et `arm_warning_shown`,
+> sans lequel le respect de la règle 2 n'est vérifiable que par lecture du code.
+
 | 8 | **Aucun événement clé marqué dans GA4.** Le code émet, l'admin GA4 n'enregistre pas (« Taux d'événements clés » = 0 sur tous les pays). ⚠️ Préalable découvert le 13/08 : deux implémentations analytics (React vs `public/js/analytics.js`) émettent les mêmes noms d'événements avec des paramètres incompatibles, et `configurator_complete` se répète à chaque changement de tension (compte les essais, pas les complétions). Unifier le schéma avant de marquer. | Aucune conversion mesurable ; les taux du §2 (53 %) et l'objectif §8 ne sont pas interprétables en l'état. |
 
 ### La mesure (1er janv. → 9 août 2026, 221 jours)
