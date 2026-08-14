@@ -24,9 +24,36 @@
  * Chaque source absente est ignorée avec un message, sans faire échouer le run.
  */
 
+import { existsSync, readFileSync } from 'node:fs';
 import { stringsDatabase, calculateRCS } from '../src/data/strings-database';
 import { racquetsDatabase } from '../src/data/racquets-database';
 import { effectiveRacquetRA } from '../src/lib/racquet-scoring';
+
+/**
+ * Charge `.env` (puis `.env.local`) sans dépendance externe.
+ * `tsx` ne le fait pas tout seul — sans ceci le script sortait toujours
+ * « identifiants absents », même avec un .env correctement rempli.
+ * Une variable déjà présente dans l'environnement n'est jamais écrasée.
+ */
+function loadEnvFiles() {
+  for (const file of ['.env', '.env.local']) {
+    if (!existsSync(file)) continue;
+    for (const line of readFileSync(file, 'utf8').split(/\r?\n/)) {
+      const m = /^\s*([A-Z0-9_]+)\s*=\s*(.*)$/i.exec(line);
+      if (!m || line.trimStart().startsWith('#')) continue;
+      const key = m[1];
+      let value = m[2].trim();
+      if (
+        (value.startsWith('"') && value.endsWith('"')) ||
+        (value.startsWith("'") && value.endsWith("'"))
+      ) {
+        value = value.slice(1, -1);
+      }
+      if (value && process.env[key] === undefined) process.env[key] = value;
+    }
+  }
+}
+loadEnvFiles();
 
 const APPLY = process.argv.includes('--apply');
 
