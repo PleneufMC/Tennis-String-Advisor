@@ -24,6 +24,8 @@
 // Types
 // =====================
 
+import { calculateRCS } from '@/data/strings-database';
+
 export type RcsLevel = 'excellent' | 'good' | 'moderate' | 'poor';
 export type StringFamily = 'polyester' | 'multifilament' | 'gut' | 'synthetic' | 'hybrid' | 'other';
 
@@ -113,11 +115,19 @@ const round = (v: number) => Math.round(v);
  * Réexposé ici pour garder la fonction avancée autonome et testable.
  * Plus la valeur est haute, plus le setup est rigide (moins confortable).
  */
+/**
+ * Indice de fermeté — délègue à `calculateRCS` (data/strings-database), qui est
+ * la source unique depuis le 14/08/2026.
+ *
+ * Cette fonction était auparavant une COPIE caractère pour caractère de
+ * `calculateRCS`. Deux copies d'une même formule finissent toujours par
+ * diverger : c'est exactement ce qui s'est produit avec le moteur statique
+ * anglais, resté figé sur une calibration de janvier pendant que le TypeScript
+ * était recalibré. On garde le nom (utilisé par l'analyse avancée) mais plus
+ * l'implémentation.
+ */
 export function rcsIndex(racquetStiffness: number, stringStiffness: number, tension: number): number {
-  const racquetFactor = racquetStiffness / 70;
-  const stringFactor = stringStiffness / 220;
-  const tensionFactor = tension / 24;
-  return round((racquetFactor * 0.4 + stringFactor * 0.4 + tensionFactor * 0.2) * 30);
+  return calculateRCS(racquetStiffness, stringStiffness, tension);
 }
 
 /** Pondération hybride : le cordage principal domine le ressenti (60/40). */
@@ -260,27 +270,33 @@ export function calculateAdvancedRcs(input: AdvancedRcsInput): AdvancedRcsResult
 
   // Risque tennis elbow.
   //
-  // Seuils CALIBRÉS sur la distribution réelle, mesurée le 8 août 2026 sur les
-  // 147 060 combinaisons atteignables (129 raquettes x 190 cordages x 6 tensions
-  // de 18 à 28 kg). L'indice `rcs` ne parcourt en pratique que 19 -> 34 :
-  //   p50 = 27 | p80 = 29 | p90 = 30 | p95 = 31 | p99 = 32 | max = 34
+  // Les seuils sont exprimés en PERCENTILES de la distribution réelle, jamais
+  // en valeurs absolues — c'est la seule formulation qui survit à un changement
+  // d'échelle ou à un élargissement du catalogue. Cible retenue depuis le
+  // 8 août 2026, inchangée :
+  //   - sensible du bras : p80 (le quintile le plus rigide)
+  //   - profil standard  : p95 (le vingtile le plus rigide)
   //
-  // Les seuils d'origine (28 / 33) étaient exprimés en valeurs absolues sans
-  // référence à cette distribution, ce qui produisait une échelle incohérente
-  // entre les deux profils :
-  //   - non sensible  rcs >= 33 => percentile 99,8  (288 cas sur 147 060)
-  //   - sensible      rcs >= 28 => percentile ~52   (70 129 cas, soit 47,7 %)
-  // Un joueur sensible du bras recevait donc une alerte sur près d'un setup
-  // sur deux (fatigue d'alerte : l'avertissement ne veut plus rien dire),
-  // tandis que le profil standard ne la voyait quasiment jamais.
+  // Deux dérives corrigées le 14/08/2026 :
   //
-  // Nouveaux seuils, choisis pour former une échelle monotone et lisible :
-  //   - sensible      rcs >= 29  (p80 : le quintile le plus rigide)
-  //   - non sensible  rcs >= 31  (p95 : le vingtile le plus rigide)
-  // Les conditions de confort restent en second filet ; `comfort < 45` porte
-  // déjà l'essentiel de l'alerte standard (2,31 % des cas) et rattrape les
-  // setups souples-mais-inconfortables que l'indice de fermeté seul ignore.
-  const armRisk = armSensitive ? rcs >= 29 || comfort < 55 : rcs >= 31 || comfort < 45;
+  // 1. Les seuils 29 / 31 visaient p80 / p95 mais ne les atteignaient plus :
+  //    mesurés sur les 147 060 combinaisons actuelles, ils frappaient 34,9 % et
+  //    8,2 % des setups. La base cordages est passée de 69 à 190 références le
+  //    7 août (fusion Supabase), donc APRÈS le calcul des percentiles : les
+  //    seuils absolus sont restés, la distribution sous eux a bougé.
+  // 2. L'échelle a été recalibrée (cf. `calculateRCS`) pour rendre les 5
+  //    paliers publiés atteignables. Les valeurs absolues devaient suivre.
+  //
+  // Seuils recalculés sur la nouvelle échelle (mesure du 14/08/2026) :
+  //   - sensible      rcs >= 32  => 23,2 % des setups  (~p80)
+  //   - non sensible  rcs >= 35  => 6,3 % des setups   (~p95)
+  // Le seuil standard coïncide volontairement avec la borne du palier publié
+  // « ≥ 35 : très ferme, risque tennis elbow » : l'alerte et l'échelle affichée
+  // disent désormais la même chose au même moment.
+  //
+  // Les conditions de confort restent en second filet et rattrapent les setups
+  // souples-mais-inconfortables que l'indice de fermeté seul ignore.
+  const armRisk = armSensitive ? rcs >= 32 || comfort < 55 : rcs >= 35 || comfort < 45;
   if (armRisk) {
     if (armSensitive) {
       warnings.push(
@@ -308,7 +324,9 @@ export function calculateAdvancedRcs(input: AdvancedRcsInput): AdvancedRcsResult
   }
 
   // Cohérence profil ↔ setup.
-  if (profile?.level === 'beginner' && (isPoly || rcs >= 30)) {
+  // Seuil rescalé le 14/08/2026 : l'ancien 30 (~p65 de l'ancienne échelle)
+  // correspond à 33 sur la nouvelle (~16 % des setups les plus fermes).
+  if (profile?.level === 'beginner' && (isPoly || rcs >= 33)) {
     recommendations.push(
       `Profil débutant : un cordage souple (multifilament) à tension modérée serait plus indulgent ` +
         `et plus confortable qu'un polyester rigide.`
