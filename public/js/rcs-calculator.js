@@ -19,7 +19,7 @@ const RCS = {
 
   DECILES: [
     { 
-      min: 0, max: 10, 
+      min: 11, max: 22, 
       label: 'Ultra Confort+', 
       description: 'Rééducation post-blessure',
       color: '#006400', 
@@ -35,7 +35,7 @@ const RCS = {
       }
     },
     { 
-      min: 10, max: 20, 
+      min: 22, max: 24, 
       label: 'Ultra Confort', 
       description: 'Tennis elbow chronique',
       color: '#228B22', 
@@ -51,7 +51,7 @@ const RCS = {
       }
     },
     { 
-      min: 20, max: 30, 
+      min: 24, max: 26, 
       label: 'Très Confortable', 
       description: 'Seniors / Bras fragile',
       color: '#32CD32', 
@@ -67,7 +67,7 @@ const RCS = {
       }
     },
     { 
-      min: 30, max: 40, 
+      min: 26, max: 27, 
       label: 'Confortable', 
       description: 'Débutants / Loisir doux',
       color: '#9ACD32', 
@@ -83,7 +83,7 @@ const RCS = {
       }
     },
     { 
-      min: 40, max: 50, 
+      min: 27, max: 28, 
       label: 'Équilibré Souple', 
       description: 'Club niveau moyen',
       color: '#FFD700', 
@@ -99,7 +99,7 @@ const RCS = {
       }
     },
     { 
-      min: 50, max: 60, 
+      min: 28, max: 29, 
       label: 'Équilibré', 
       description: 'Club confirmé',
       color: '#FFC000', 
@@ -115,7 +115,7 @@ const RCS = {
       }
     },
     { 
-      min: 60, max: 70, 
+      min: 29, max: 31, 
       label: 'Dynamique', 
       description: 'Compétiteur régional',
       color: '#FF8C00', 
@@ -131,7 +131,7 @@ const RCS = {
       }
     },
     { 
-      min: 70, max: 80, 
+      min: 31, max: 32, 
       label: 'Ferme', 
       description: 'Compétiteur national',
       color: '#FF6600', 
@@ -147,7 +147,7 @@ const RCS = {
       }
     },
     { 
-      min: 80, max: 90, 
+      min: 32, max: 34, 
       label: 'Rigide', 
       description: 'Expert / Semi-pro',
       color: '#FF4444', 
@@ -163,7 +163,7 @@ const RCS = {
       }
     },
     { 
-      min: 90, max: 100, 
+      min: 34, max: 41, 
       label: 'Extrême', 
       description: 'Pro / Gros frappeur élite',
       color: '#CC0000', 
@@ -182,49 +182,49 @@ const RCS = {
 
   QUINTILES: [
     {
-      min: 0, max: 20,
+      min: 11, max: 24,
       label: 'Zone Confort Thérapeutique',
       color: '#228B22',
       icon: '💚',
       summary: 'Protection maximale du bras',
       description: 'Configurations ultra-confortables pour la rééducation, le tennis elbow ou les seniors avec bras fragile. Priorité absolue à la santé articulaire.',
-      targetRCS: '0-20'
+      targetRCS: '11-24'
     },
     {
-      min: 20, max: 40,
+      min: 24, max: 27,
       label: 'Zone Confort Préventive',
       color: '#9ACD32',
       icon: '🌿',
       summary: 'Confort et prévention',
       description: 'Idéal pour les débutants, joueurs occasionnels ou ceux souhaitant prévenir les blessures. Bon équilibre vers le confort.',
-      targetRCS: '20-40'
+      targetRCS: '24-27'
     },
     {
-      min: 40, max: 60,
+      min: 27, max: 29,
       label: 'Zone Équilibrée',
       color: '#FFD700',
       icon: '⚖️',
       summary: 'Le sweet spot polyvalent',
       description: 'Configuration standard pour la majorité des joueurs de club. Équilibre optimal entre confort, puissance et contrôle.',
-      targetRCS: '40-60'
+      targetRCS: '27-29'
     },
     {
-      min: 60, max: 80,
+      min: 29, max: 32,
       label: 'Zone Performance',
       color: '#FF8C00',
       icon: '🔥',
       summary: 'Contrôle et précision',
       description: 'Pour les compétiteurs confirmés recherchant plus de contrôle. Nécessite bonne technique et condition physique.',
-      targetRCS: '60-80'
+      targetRCS: '29-32'
     },
     {
-      min: 80, max: 100,
+      min: 32, max: 41,
       label: 'Zone Expert/Pro',
       color: '#CC0000',
       icon: '👑',
       summary: 'Performance maximale',
       description: 'Réservé aux experts et professionnels. Sollicitation articulaire élevée - préparation physique indispensable.',
-      targetRCS: '80-100'
+      targetRCS: '32-41'
     }
   ],
 
@@ -288,15 +288,18 @@ const RCS = {
     return result;
   },
 
+  // Formule RCS — MIROIR EXACT de calculateRCS (src/data/strings-database.ts).
+  // Harmonisation du 14/08/2026 : ce moteur statique etait reste fige sur une
+  // calibration de janvier 2026 (ponderations 0.28/0.42/0.22/0.08, echelle
+  // 1-92) pendant que le TypeScript etait recalibre. Un meme montage etait
+  // note 28 cote FR et 58 cote EN, sous le meme nom « RCS ».
+  // Toute evolution de la formule se fait dans strings-database.ts, PUIS ici.
   calculate(ra, cordageStiffness, tension) {
-    const a = this._n1(ra);
-    const b = this._n2(cordageStiffness);
-    const c = this._n3(tension);
-    const d = a * b * c;
-    const e = this._w[0] * a + this._w[1] * b + this._w[2] * c + this._w[3] * d;
-    let r = 100 * Math.pow(e, this._w[4]);
-    r = Math.max(0, Math.min(100, r));
-    r = Math.round(r * 10) / 10;
+    const racquetFactor = ra / 70;
+    const stringFactor = cordageStiffness / 220;
+    const tensionFactor = tension / 24;
+    const base = (racquetFactor * 0.4 + stringFactor * 0.4 + tensionFactor * 0.2) * 30;
+    const r = Math.round(2 * base - 27);
     const dec = this.getDecile(r);
     const qui = this.getQuintile(r);
     return {
@@ -304,32 +307,36 @@ const RCS = {
       decile: dec,
       quintile: qui,
       details: {
-        ra_norm: Math.round(a * 1000) / 1000,
-        cordage_norm: Math.round(b * 1000) / 1000,
-        tension_norm: Math.round(c * 1000) / 1000,
-        interaction: Math.round(d * 1000) / 1000,
-        score_brut: Math.round(e * 1000) / 1000,
+        ra_norm: Math.round(racquetFactor * 1000) / 1000,
+        cordage_norm: Math.round(stringFactor * 1000) / 1000,
+        tension_norm: Math.round(tensionFactor * 1000) / 1000,
+        interaction: 0,
+        score_brut: Math.round(base * 1000) / 1000,
         contributions: {
-          ra: Math.round(this._w[0] * a * 100 * 10) / 10,
-          cordage: Math.round(this._w[1] * b * 100 * 10) / 10,
-          tension: Math.round(this._w[2] * c * 100 * 10) / 10,
-          interaction: Math.round(this._w[3] * d * 100 * 10) / 10
+          ra: Math.round(racquetFactor * 0.4 * 30 * 2 * 10) / 10,
+          cordage: Math.round(stringFactor * 0.4 * 30 * 2 * 10) / 10,
+          tension: Math.round(tensionFactor * 0.2 * 30 * 2 * 10) / 10,
+          interaction: 0
         }
       }
     };
   },
 
+  // Bornes = deciles MESURES de la distribution reelle (147 060 combinaisons)
+  // sur l'echelle harmonisee. L'ancien floor(rcs/10) supposait une echelle
+  // 0-100 qui n'existe plus.
+  DECILE_BOUNDS: [22, 24, 26, 27, 28, 29, 31, 32, 34],
+  QUINTILE_BOUNDS: [24, 27, 29, 32],
+
   getDecile(rcs) {
-    if (rcs >= 100) return { number: 10, ...this.DECILES[9] };
-    if (rcs < 0) return { number: 1, ...this.DECILES[0] };
-    const i = Math.min(9, Math.max(0, Math.floor(rcs / 10)));
+    let i = 0;
+    while (i < this.DECILE_BOUNDS.length && rcs >= this.DECILE_BOUNDS[i]) i++;
     return { number: i + 1, ...this.DECILES[i] };
   },
 
   getQuintile(rcs) {
-    if (rcs >= 100) return { number: 5, ...this.QUINTILES[4] };
-    if (rcs < 0) return { number: 1, ...this.QUINTILES[0] };
-    const i = Math.min(4, Math.max(0, Math.floor(rcs / 20)));
+    let i = 0;
+    while (i < this.QUINTILE_BOUNDS.length && rcs >= this.QUINTILE_BOUNDS[i]) i++;
     return { number: i + 1, ...this.QUINTILES[i] };
   },
 
@@ -357,15 +364,15 @@ const RCS = {
 
   getRecommendations(profile) {
     const p = {
-      'reeducation': { targetDecile: [1, 2], rcsRange: [0, 20], description: 'Rééducation post-blessure', quintile: 1 },
-      'tennis_elbow': { targetDecile: [1, 3], rcsRange: [0, 30], description: 'Tennis elbow / Épicondylite', quintile: 1 },
-      'senior': { targetDecile: [2, 4], rcsRange: [10, 40], description: 'Senior / Bras sensible', quintile: 2 },
-      'debutant': { targetDecile: [3, 5], rcsRange: [20, 50], description: 'Débutant / Loisir', quintile: 2 },
-      'club': { targetDecile: [4, 6], rcsRange: [30, 60], description: 'Joueur de club', quintile: 3 },
-      'confirme': { targetDecile: [5, 7], rcsRange: [40, 70], description: 'Club confirmé', quintile: 3 },
-      'competiteur': { targetDecile: [6, 8], rcsRange: [50, 80], description: 'Compétiteur', quintile: 4 },
-      'expert': { targetDecile: [7, 9], rcsRange: [60, 90], description: 'Expert / Semi-pro', quintile: 4 },
-      'pro': { targetDecile: [8, 10], rcsRange: [70, 100], description: 'Pro / Élite', quintile: 5 }
+      'reeducation': { targetDecile: [1, 2], rcsRange: [11, 22], description: 'Rééducation post-blessure', quintile: 1 },
+      'tennis_elbow': { targetDecile: [1, 3], rcsRange: [11, 24], description: 'Tennis elbow / Épicondylite', quintile: 1 },
+      'senior': { targetDecile: [2, 4], rcsRange: [22, 26], description: 'Senior / Bras sensible', quintile: 2 },
+      'debutant': { targetDecile: [3, 5], rcsRange: [24, 27], description: 'Débutant / Loisir', quintile: 2 },
+      'club': { targetDecile: [4, 6], rcsRange: [26, 29], description: 'Joueur de club', quintile: 3 },
+      'confirme': { targetDecile: [5, 7], rcsRange: [27, 31], description: 'Club confirmé', quintile: 3 },
+      'competiteur': { targetDecile: [6, 8], rcsRange: [28, 32], description: 'Compétiteur', quintile: 4 },
+      'expert': { targetDecile: [7, 9], rcsRange: [29, 34], description: 'Expert / Semi-pro', quintile: 4 },
+      'pro': { targetDecile: [8, 10], rcsRange: [31, 41], description: 'Pro / Élite', quintile: 5 }
     };
     return p[profile] || p['club'];
   },
@@ -387,7 +394,7 @@ const RCS = {
         isOk: false,
         status: 'trop_souple',
         message: `Configuration trop souple pour ${rec.description}`,
-        suggestion: `Augmentez la tension de ${Math.ceil((minRCS - rcs) / 5)} kg ou choisissez un cordage plus rigide pour plus de contrôle.`,
+        suggestion: `Augmentez la tension de ${Math.ceil((minRCS - rcs) * 2)} kg ou choisissez un cordage plus rigide pour plus de contrôle.`,
         icon: '❄️'
       };
     } else {
@@ -395,14 +402,14 @@ const RCS = {
         isOk: false,
         status: 'trop_rigide',
         message: `Configuration trop rigide pour ${rec.description}`,
-        suggestion: `Réduisez la tension de ${Math.ceil((rcs - maxRCS) / 5)} kg ou optez pour un cordage plus souple pour protéger votre bras.`,
+        suggestion: `Réduisez la tension de ${Math.ceil((rcs - maxRCS) * 2)} kg ou optez pour un cordage plus souple pour protéger votre bras.`,
         icon: '🔥'
       };
     }
   },
 
   getHealthWarning(rcs) {
-    if (rcs >= 80) {
+    if (rcs >= 35) {
       return {
         level: 'danger',
         icon: '⚠️',
@@ -415,7 +422,7 @@ const RCS = {
           'Consultez un kiné en cas de gêne persistante'
         ]
       };
-    } else if (rcs >= 70) {
+    } else if (rcs >= 32) {
       return {
         level: 'warning',
         icon: '⚡',
