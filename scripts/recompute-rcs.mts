@@ -8,7 +8,7 @@
  * Les deux tables stockent les ENTRÉES du calcul à côté du résultat :
  *   - Prisma  `Configuration` : racquetId, mainStringId, crossStringId,
  *     mainTension, crossTension
- *   - Supabase `setups`       : racquet_id, string_id, tension
+ *   - Supabase `user_setups` : racquet_id, string_id, tension
  * Le score est donc une donnée dérivée, entièrement reconstructible. Aucun
  * historique n'est perdu — contrairement à un effacement.
  *
@@ -133,7 +133,7 @@ async function runSupabase() {
     return;
   }
   const headers = { apikey: key, Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' };
-  const res = await fetch(`${url}/rest/v1/setups?select=id,racquet_id,string_id,tension,rcs_score`, { headers });
+  const res = await fetch(`${url}/rest/v1/user_setups?select=id,racquet_id,string_id,tension,rcs_score`, { headers });
   if (!res.ok) throw new Error(`Supabase ${res.status} ${await res.text()}`);
   const rows = (await res.json()) as Array<{
     id: string; racquet_id: string | null; string_id: string | null;
@@ -151,7 +151,7 @@ async function runSupabase() {
     if (out.value === s.rcs_score) continue;
     updated.push({ id: s.id, before: s.rcs_score, after: out.value });
     if (APPLY) {
-      const up = await fetch(`${url}/rest/v1/setups?id=eq.${s.id}`, {
+      const up = await fetch(`${url}/rest/v1/user_setups?id=eq.${s.id}`, {
         method: 'PATCH',
         headers,
         body: JSON.stringify({ rcs_score: out.value }),
@@ -159,7 +159,7 @@ async function runSupabase() {
       if (!up.ok) throw new Error(`PATCH ${s.id} : ${up.status} ${await up.text()}`);
     }
   }
-  summary.push({ source: `Supabase setups (${rows.length} lignes)`, updated, skipped });
+  summary.push({ source: `Supabase user_setups (${rows.length} lignes)`, updated, skipped });
 }
 
 // ---------------------------------------------------------------------------
