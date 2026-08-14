@@ -29,7 +29,8 @@
     "analyze": "cross-env ANALYZE=true next build",
     "export": "next export",
     "audit:rls": "node scripts/qa-rls-anon.mjs",
-    "audit:ratings": "npx --yes tsx scripts/qa-ratings.mts"
+    "audit:ratings": "npx --yes tsx scripts/qa-ratings.mts",
+    "rcs:recompute": "npx --yes tsx scripts/recompute-rcs.mts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
