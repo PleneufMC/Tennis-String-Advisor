@@ -45,46 +45,6 @@ export function Analytics({ measurementId }: AnalyticsProps) {
   );
 }
 
-// Helper functions for tracking events
-export const trackEvent = (
-  action: string,
-  category: string,
-  label?: string,
-  value?: number
-) => {
-  if (typeof window !== 'undefined' && window.gtag) {
-    window.gtag('event', action, {
-      event_category: category,
-      event_label: label,
-      value: value,
-    });
-  }
-};
-
-export const trackSearch = (searchTerm: string) => {
-  trackEvent('search', 'engagement', searchTerm);
-};
-
-export const trackProductView = (_productId: string, productName: string) => {
-  trackEvent('view_item', 'ecommerce', productName, undefined);
-};
-
-export const trackAddToCart = (_productId: string, productName: string, value: number) => {
-  trackEvent('add_to_cart', 'ecommerce', productName, value);
-};
-
-export const trackPurchase = (transactionId: string, value: number) => {
-  trackEvent('purchase', 'ecommerce', transactionId, value);
-};
-
-export const trackSignUp = (method: string) => {
-  trackEvent('sign_up', 'engagement', method);
-};
-
-export const trackLogin = (method: string) => {
-  trackEvent('login', 'engagement', method);
-};
-
 // --- Events du funnel (nomenclature GA4 de l'audit #0.3) ---------------------
 // Envoi bas-niveau d'un event GA4 avec des paramètres nommés (recommandé GA4),
 // plutôt que la convention event_category/label de l'ancien helper.
@@ -105,8 +65,21 @@ export const trackConfiguratorComplete = (rcsScore: number, compatibility?: numb
 
 // Clic sur un lien d'affiliation « où acheter » (cf. ticket #3 / audit #3.0).
 // À marquer comme « key event » (conversion) dans GA4.
-export const trackAffiliateClick = (merchant: string, product?: string) => {
-  gaEvent('affiliate_click', { merchant, product });
+/**
+ * `link_type` distingue un deep-link Awin tracké d'un lien direct non rémunéré.
+ *
+ * C'est la SEULE preuve lisible depuis la production que l'activation Awin a
+ * bien pris : les variables `NEXT_PUBLIC_AWIN_*` sont inlinées au build, donc
+ * les renseigner dans Netlify sans redéployer ne change rien — et rien à
+ * l'écran ne le signalerait. Si les clics continuent d'arriver en `direct`
+ * après le déploiement d'activation, c'est que le build n'a pas été relancé.
+ */
+export const trackAffiliateClick = (
+  merchant: string,
+  product?: string,
+  linkType: 'awin' | 'direct' = 'direct'
+) => {
+  gaEvent('affiliate_click', { merchant, product, link_type: linkType });
 };
 
 // Clic sur un CTA Premium (audit #0.3).
