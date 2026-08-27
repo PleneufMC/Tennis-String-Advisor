@@ -90,6 +90,8 @@ const EN_BLOG_SLUGS: string[] = [
   'tennis-string-pattern.html',
   'polyester-vs-multifilament-strings.html',
   'tennis-string-tension-guide.html',
+  // Adapté du FR raquette-point-fort-ou-point-faible (27/08/2026), appairé en hreflang.
+  'racquet-strengths-or-weaknesses.html',
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
