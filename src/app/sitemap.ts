@@ -61,6 +61,7 @@ const BLOG_SLUGS: string[] = [
   'challengers-sinner-alcaraz-2026.html',
   'actualite-materiel-tennis-2026-guerre-du-spin.html',
   'cordage-mono-vs-multifilament.html',
+  'raquette-point-fort-ou-point-faible.html',
 ];
 
 // Pages anglaises statiques publiques (`public/en/*.html`).
