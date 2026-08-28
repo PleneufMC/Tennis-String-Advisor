@@ -61,6 +61,7 @@ const BLOG_SLUGS: string[] = [
   'challengers-sinner-alcaraz-2026.html',
   'actualite-materiel-tennis-2026-guerre-du-spin.html',
   'cordage-mono-vs-multifilament.html',
+  'cordage-tennis-chaleur.html',
 ];
 
 // Pages anglaises statiques publiques (`public/en/*.html`).
@@ -89,6 +90,9 @@ const EN_BLOG_SLUGS: string[] = [
   'tennis-string-pattern.html',
   'polyester-vs-multifilament-strings.html',
   'tennis-string-tension-guide.html',
+  // Article chaleur (28/08/2026), appairé en hreflang avec
+  // /blog/cordage-tennis-chaleur.html.
+  'tennis-strings-heat-tension.html',
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
