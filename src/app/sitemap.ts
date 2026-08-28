@@ -62,6 +62,7 @@ const BLOG_SLUGS: string[] = [
   'actualite-materiel-tennis-2026-guerre-du-spin.html',
   'cordage-mono-vs-multifilament.html',
   'cordage-tennis-chaleur.html',
+  'raquette-point-fort-ou-point-faible.html',
 ];
 
 // Pages anglaises statiques publiques (`public/en/*.html`).
@@ -93,6 +94,8 @@ const EN_BLOG_SLUGS: string[] = [
   // Article chaleur (28/08/2026), appairé en hreflang avec
   // /blog/cordage-tennis-chaleur.html.
   'tennis-strings-heat-tension.html',
+  // Adapté du FR raquette-point-fort-ou-point-faible (27/08/2026), appairé en hreflang.
+  'racquet-strengths-or-weaknesses.html',
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
