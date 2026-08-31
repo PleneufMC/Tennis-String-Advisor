@@ -272,6 +272,7 @@ export function RacquetCard({
             brand={racquet.brand}
             model={`${racquet.model}${racquet.variant && racquet.variant !== 'Standard' ? ' ' + racquet.variant : ''}`}
             className="w-full mt-3"
+            location="catalog_card"
           />
         )}
       </CardContent>
