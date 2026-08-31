@@ -140,7 +140,12 @@ Trois canaux, par ordre de coût croissant :
    décrit comme « audience exactement qualifiée, coût marginal nul ». Le
    premier terme est faux : Pierre a établi que TMF ne trouve pas son public.
    Deux sites sans audience ne s'entraident pas. Ne pas le proposer comme
-   canal de distribution sans une mesure d'audience TMF préalable.
+   canal de distribution sans une mesure d'audience TMF préalable. Si le
+   canal était un jour réactivé : un `utm_content` distinct par emplacement,
+   pour que le volume soit attribuable dès le premier jour plutôt que
+   supposé. À noter aussi : le seul lien croisé existant va dans l'autre
+   sens (footer TSA → TMF, `utm_campaign=cross_site`) — TSA exporte ses
+   visiteurs sans contrepartie.
 2. **Forums** — Tennis-Classim (FR), Saitenforum.de (DE, communauté la plus
    technique d'Europe). Participation utile sur des questions réelles, signature
    discrète. Jamais de publication promotionnelle : sur ces forums, ça se voit
