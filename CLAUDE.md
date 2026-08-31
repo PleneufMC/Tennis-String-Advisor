@@ -75,8 +75,11 @@ Links, déploiement Netlify (adaptateur OpenNext). (Zustand est déclaré dans
 
 **Base** : 129 raquettes, 190 cordages (`src/data/*.ts`).
 
-**Écosystème** : tennismatchfinder.net (même propriétaire) référence TSA — canal
-de trafic croisé sous-exploité.
+**Écosystème** : tennismatchfinder.net (même propriétaire) référence TSA.
+⚠️ **Corrigé le 31/08/2026** — ce site était présenté ici comme « un canal de
+trafic croisé sous-exploité ». Pierre a établi que **TMF ne trouve pas son
+public** : l'audience supposée n'existe pas. Un lien depuis un site sans
+visiteurs n'apporte pas de visiteurs. La prémisse n'avait jamais été mesurée.
 
 ---
 

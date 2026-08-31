@@ -136,10 +136,11 @@ permanente ci-dessus.
 
 Trois canaux, par ordre de coût croissant :
 
-1. **TennisMatchFinder.net** — même propriétaire, audience exactement
-   qualifiée, coût marginal nul. Bandeau, lien contextuel après inscription,
-   et surtout : paramètres de suivi pour savoir combien de personnes passent
-   réellement d'un site à l'autre. Aujourd'hui, personne ne le sait.
+1. ~~**TennisMatchFinder.net**~~ — ⚠️ **écarté le 31/08/2026.** Ce canal était
+   décrit comme « audience exactement qualifiée, coût marginal nul ». Le
+   premier terme est faux : Pierre a établi que TMF ne trouve pas son public.
+   Deux sites sans audience ne s'entraident pas. Ne pas le proposer comme
+   canal de distribution sans une mesure d'audience TMF préalable.
 2. **Forums** — Tennis-Classim (FR), Saitenforum.de (DE, communauté la plus
    technique d'Europe). Participation utile sur des questions réelles, signature
    discrète. Jamais de publication promotionnelle : sur ces forums, ça se voit
