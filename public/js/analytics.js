@@ -69,8 +69,8 @@ function trackPremiumClick(location) {
 // (trackAffiliateClick dans src/components/analytics/analytics.tsx) :
 // sans cela, les 28 pages statiques n'emettaient AUCUN affiliate_click et
 // le jalon « premiere commission » n'etait attribuable a aucun canal.
-function trackAffiliateClick(merchant, product, linkType) {
-  trackEvent('affiliate_click', {
+function trackAffiliateClick(merchant, product, linkType, location) {
+  var params = {
     merchant: merchant,
     product: product,
     // Meme parametre que le React : distingue un deep-link Awin tracke d'un
@@ -79,7 +79,13 @@ function trackAffiliateClick(merchant, product, linkType) {
     // Cote statique aucun deep-link n'est encore construit -> 'direct'.
     link_type: linkType || 'direct',
     event_category: 'conversion'
-  });
+  };
+  // Meme parametre que le React (31/08) : surface d'emission du clic
+  // ('configurator_result' | 'catalog_card'). Optionnel et SANS defaut :
+  // absent -> "(not set)" dans GA4 = emetteur pas encore migre, jamais une
+  // surface devinee.
+  if (location) params.location = location;
+  trackEvent('affiliate_click', params);
 }
 
 // Track paywall shown
