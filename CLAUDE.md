@@ -183,7 +183,10 @@ dans la PR `agent/tsa-measure/a3-blog-vers-configurateur`) :
 
 1. **Affiliation dans le configurateur** — monétiser les 53 % qui terminent.
 2. **SEO / contenu** — le blog est le seul canal qui apporte du trafic.
-3. **Distribution externe** — TennisMatchFinder, forums, clubs.
+3. **Distribution externe** — forums, clubs et cordeurs. (TennisMatchFinder
+   retiré de cette liste le 31/08/2026 : il n'a pas d'audience, cf. §1. Le
+   seul lien croisé existant va d'ailleurs dans le mauvais sens — TSA envoie
+   ses visiteurs vers TMF depuis son footer, et ne reçoit rien en retour.)
 4. **Webhook Stripe** — débloquer le paiement (ou le retirer proprement).
 
 Un agent ne remonte pas la file d'attente de son propre chef. S'il pense que
