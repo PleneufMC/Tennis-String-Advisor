@@ -20,6 +20,13 @@ interface BuyButtonProps {
   model: string;
   /** Marchand ciblé (par défaut Tennis-Point). */
   merchant?: MerchantKey;
+  /**
+   * Surface d'émission du clic, transmise telle quelle à `affiliate_click`
+   * (paramètre `location`, cf. analytics.tsx). PAS de valeur par défaut : ce
+   * bouton sert déjà les deux surfaces, un défaut étiquetterait à tort les
+   * clics des appelants non migrés — absent, GA4 affiche « (not set) ».
+   */
+  location?: 'configurator_result' | 'catalog_card';
   /** Style du bouton. */
   variant?: 'default' | 'outline';
   /** Taille du bouton. */
@@ -43,6 +50,7 @@ export function BuyButton({
   brand,
   model,
   merchant = DEFAULT_MERCHANT,
+  location,
   variant = 'default',
   size = 'sm',
   showIcon = true,
@@ -58,7 +66,12 @@ export function BuyButton({
       target="_blank"
       rel="sponsored noopener noreferrer"
       onClick={() =>
-        trackAffiliateClick(merchant, productName, isAffiliateEnabled(merchant) ? 'awin' : 'direct')
+        trackAffiliateClick(
+          merchant,
+          productName,
+          isAffiliateEnabled(merchant) ? 'awin' : 'direct',
+          location
+        )
       }
       className={cn(
         buttonVariants({ variant, size }),
