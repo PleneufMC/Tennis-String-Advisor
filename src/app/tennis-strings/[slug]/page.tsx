@@ -180,7 +180,9 @@ export default function StringPage({ params }: { params: { slug: string } }) {
         <h2 className="mb-3 text-sm font-medium text-slate-600 dark:text-slate-400">
           Où acheter — lien partenaire
         </h2>
-        <BuyButton brand={string.brand} model={string.model} variant="outline" />
+        {/* `catalog_card` : la fiche détail relève de la surface catalogue —
+            l'union de `location` ne distingue que configurateur vs catalogue. */}
+        <BuyButton brand={string.brand} model={string.model} variant="outline" location="catalog_card" />
       </section>
 
       <p className="mt-10 text-sm">

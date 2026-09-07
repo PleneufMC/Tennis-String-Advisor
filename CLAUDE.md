@@ -1,11 +1,23 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.1.2
-> **Date** : 14 août 2026
+> **Version** : 2.1.3
+> **Date** : 31 août 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
 > **Branche de référence** : `genspark_ai_developer`
 > **Repo** : https://github.com/PleneufMC/Tennis-String-Advisor.git
+
+**Changelog v2.1.2 → v2.1.3** — Actualisation du §2 au 31/08/2026 (chantier
+A3 de `tsa-measure`), sur constat code, commandes et sorties dans la PR :
+point 3 passé en résolu (`BuyButton` est dans le résultat du configurateur depuis
+`15c6649` du 13/08 — non monétisé tant que le point 2 tient), point 5 réécrit
+(échelle RCS unifiée FR/EN le 14/08 par `b227ba7`, miroir contrôlé par
+`audit:ratings`), ajout du bloc « Actualisation vérifiée au
+31 août 2026 » (comptages blog réels 14 FR + 8 EN hors index, Stripe et AWIN
+revérifiés cassés, indice d'indexation daté, instrument A3 + garde-fou
+`audit:blog-funnel`). Régularisation au passage : la v2.1.2 (14/08, bloc
+« rupture de série » du §2) n'avait ni entrée de changelog ni pied de page à
+jour.
 
 **Changelog v2.1.0 → v2.1.1** — Corrections factuelles issues de l'audit
 multi-agents du 13 août 2026 (4 rapports : revenue, acquisition, core, mesure),
@@ -63,12 +75,15 @@ Links, déploiement Netlify (adaptateur OpenNext). (Zustand est déclaré dans
 
 **Base** : 129 raquettes, 190 cordages (`src/data/*.ts`).
 
-**Écosystème** : tennismatchfinder.net (même propriétaire) référence TSA — canal
-de trafic croisé sous-exploité.
+**Écosystème** : tennismatchfinder.net (même propriétaire) référence TSA.
+⚠️ **Corrigé le 31/08/2026** — ce site était présenté ici comme « un canal de
+trafic croisé sous-exploité ». Pierre a établi que **TMF ne trouve pas son
+public** : l'audience supposée n'existe pas. Un lien depuis un site sans
+visiteurs n'apporte pas de visiteurs. La prémisse n'avait jamais été mesurée.
 
 ---
 
-## 2. État vérifié au 13 août 2026
+## 2. État vérifié au 13 août 2026, actualisé le 31 août 2026
 
 Ce qui suit a été **lu dans le code**, pas dans la documentation. Toute
 divergence entre ce fichier et le code : le code gagne, et ce fichier doit être
@@ -91,9 +106,9 @@ corrigé dans la même PR.
 |---|---|---|
 | 1 | **Aucun webhook Stripe.** Le Payment Link FR ne transporte pas `client_reference_id`, rien n'écrit `isPremium`. Et un **second circuit de paiement EN** existe en parallèle (`public/en/premium.html` : Supabase Auth direct, 3 Payment Links en $, tarifs divergents, offre « Lifetime » sans équivalent code) — 5 Payment Links, 2 systèmes d'identité, 0 consommateur serveur. | Un client qui paie reste plafonné à 3 configs. La page `payment-success` a été désamorcée (13/08) : elle annonce désormais une activation manuelle sous 24 h au lieu de mentir. |
 | 2 | **Affiliation câblée mais inactive.** `NEXT_PUBLIC_AWIN_ID` et `NEXT_PUBLIC_AWIN_TENNISPOINT_MID` vides → liens directs non rémunérés. ⚠️ Ces variables `NEXT_PUBLIC_*` sont inlinées au build : les renseigner dans Netlify **exige un redéploiement** (les commentaires « sans redéploiement » dans `affiliate.ts` et `.env.example` sont faux). | 0 € sur 100 % des clics. |
-| 3 | **Aucun lien d'achat dans le configurateur.** `BuyButton` n'existe que sur `racquet-card` et `string-card`. | Le moment de plus forte intention n'est pas monétisé. |
+| 3 | **Résolu depuis le 13/08** (`15c6649`), constaté dans le code le 31/08 : import `BuyButton` ligne 16 de `configurator/page.tsx`, trois instances (cordage principal, travers, raquette) sous « Acheter ce setup — liens partenaires », placées après le bloc RCS conformément à la règle 1. Vérifié **en exécution** le 31/08 par `tsa-revenue` (Playwright, stub gtag) : liens `rel="sponsored"` vers tennis-point.fr en HTTP 200, alertes bras `role="alert"` affichées AVANT les liens (règle 2), séquence `configurator_step` → `arm_warning_shown` → `configurator_result_view` → `configurator_complete` → `affiliate_click` complète, bascule Awin vérifiée en dev ET sur build de production (`npm run build` exit 0 dans les deux cas ; sans variables : lien tennis-point.fr direct, `link_type: direct` ; avec `NEXT_PUBLIC_AWIN_ID`/`_TENNISPOINT_MID` factices : lien `awin1.com/cread.php?awinmid=…&awinaffid=…&ued=…`, `link_type: awin` — zéro changement de code entre les deux builds). L'entrée du 13/08 était périmée le jour même de sa rédaction. | Le moment de plus forte intention est équipé. Ces clics restent non rémunérés tant que le point 2 (AWIN) tient — c'est le point 2, pas celui-ci. Verrou `configurator/page.tsx` rendu par `tsa-revenue` le 31/08 (surface d'émission `location` propagée sur les 6 appelants, merge `c93ef38`). Procédure d'activation et de vérification : `reports/r2-activation-awin.md`. |
 | 4 | **Incitation inversée du quota** (reformulé 13/08 — il n'existe **aucun mur d'authentification** : pas de middleware, configurateur 100 % public). L'anonyme sauvegarde en illimité dans `localStorage` ; se connecter impose le quota de 3 (`premium.ts` appliqué seulement dans `POST /api/configurations`). Créer un compte retire une capacité. Les chiffres (160 vues signin vs 45 configurateur, 39 `form_start` → 1 `form_submit`) décrivent un problème de navigation/attractivité, pas un blocage technique. | L'entonnoir compte → premium est à l'envers. Arbitrage A5 en attente. |
-| 5 | **Formule RCS quadruplée** : `calculateRCS` (`src/data/strings-database.ts`) et `rcsIndex` (`src/lib/advanced-rcs.ts`) sont des copies identiques ; `calculateCompatibility` (échelle 25-59) ; et le moteur statique `public/js/rcs-calculator*.js` (pondérations 0,28/0,42/0,22/0,08, échelle ~1-92) qui sert les 3 pages EN. Un même setup peut être noté 28 côté FR et 58 côté EN sous le même nom « RCS ». | Trois échelles incomparables en production. |
+| 5 | **Largement résorbé le 14/08** (`b227ba7`, vérifié dans le code le 31/08) : `calculateRCS` (`strings-database.ts`, gain 2 / offset −27) est l'unique source de vérité ; `rcsIndex` y **délègue** (plus une copie) ; `public/js/rcs-calculator*.js` en est un **miroir exact**, comparé valeur par valeur à chaque `audit:ratings` (le script charge les moteurs JS). Reste : le miroir est une duplication par convention (toute évolution se fait dans `strings-database.ts` PUIS dans les 2 JS), et `calculateCompatibility` (`racquets-database.ts`) demeure une échelle homonyme distincte, documentée dans `racquet-scoring.ts`. | Un même montage affiche le même RCS FR/EN. La dette restante (miroir manuel, homonyme) est contrôlée par script, plus silencieuse. |
 | 6 | **Divergence non résolue et creusée** : le site FR lit les fichiers TypeScript, les 6 pages EN lisent Supabase. Catalogues raquettes quasi disjoints (12 ids communs sur 129 TS / 107 base), 98 conflits de valeurs cordages dont 16 changent le RCS. | Chaque correction d'un côté recrée l'écart de l'autre. Arbitrage A1 en attente. |
 | 7 | **0 fichier de test** dans le dépôt (`vitest` et `playwright` installés, aucune spec). Ni husky actif, ni CI, ni suivi d'erreurs en production. Les garde-fous réels sont les scripts `qa-*` — `audit:all` a été recâblé le 13/08 (4 maillons pointaient vers des fichiers inexistants et la chaîne mourait avant les scripts fonctionnels). | La garantie repose sur l'exécution manuelle de `audit:all` avant PR. |
 > ⚠️ **RUPTURE DE SÉRIE — 14/08/2026.** `configurator_complete` était émis à
@@ -130,13 +145,48 @@ sur Ashburn/Boydton/Council Bluffs) et du trafic interne (Monaco 18),
 **Lecture** : le produit convertit très bien — il n'a personne à convertir.
 Le goulot est la distribution, pas la mécanique de monétisation.
 
+### Actualisation vérifiée au 31 août 2026
+
+Constats lus dans le code et exécutés en commande le 31/08 (sorties collées
+dans la PR `agent/tsa-measure/a3-blog-vers-configurateur`) :
+
+- **Blog** : `public/blog/` contient **14 articles + un index** (15 fichiers
+  `.html`) ; `public/en/blog/` existe depuis le 14/08 et contient
+  **8 articles + un index** (9 fichiers). Deux articles publiés les 27-28/08
+  en FR et EN (« raquette : point fort ou point faible », « cordage &
+  chaleur »). Toute mention antérieure de « 12 articles FR / 2 articles EN »
+  est périmée — il en reste une dans `.claude/agents/tsa-acquisition.md`.
+- **Toujours cassé, revérifié le 31/08** : `src/app/api/stripe/` absent
+  (aucun webhook — point 1 inchangé) ; `NEXT_PUBLIC_AWIN_ID` et
+  `NEXT_PUBLIC_AWIN_TENNISPOINT_MID` vides (point 2 inchangé).
+- **Indexation** : le diagnostic implicite « site invisible en recherche » est
+  contredit par un **indice daté** — le 31/08, la requête Google
+  « configurateur cordage tennis tension raquette calculateur » fait
+  ressortir `/blog/guide-tension-cordage-tennis.html` en page 1, aux côtés de
+  Décathlon, Mouratoglou et Extreme Tennis. Niveau de preuve : une requête
+  unique, personnalisable et non reproductible — un indice, **pas une mesure
+  d'indexation**. L'établir proprement exige Search Console (couverture
+  d'index + rapport Requêtes). La ligne « Articles indexés ~0 » du §8 est
+  donc probablement pessimiste, sans qu'on sache de combien.
+- **Entonnoir blog → configurateur (A3)** : l'indicateur est défini et outillé
+  — définition, procédure GA4 et relevé hebdomadaire dans
+  `reports/a3-blog-vers-configurateur.md`, instrument gardé par
+  `npm run audit:blog-funnel` (intégré à `audit:all`). La mesure s'appuie sur
+  le `page_referrer` GA4 natif : zéro code dans les périmètres d'autrui.
+  Lacune détectée au passage : l'article EN
+  `next-gen-tennis-racquets-fonseca-mensik-cobolli-jodar.html` n'a **aucun**
+  lien vers le configurateur (à traiter par `tsa-acquisition`).
+
 ---
 
 ## 3. Ordre de priorité (arbitré, 90 jours)
 
 1. **Affiliation dans le configurateur** — monétiser les 53 % qui terminent.
 2. **SEO / contenu** — le blog est le seul canal qui apporte du trafic.
-3. **Distribution externe** — TennisMatchFinder, forums, clubs.
+3. **Distribution externe** — forums, clubs et cordeurs. (TennisMatchFinder
+   retiré de cette liste le 31/08/2026 : il n'a pas d'audience, cf. §1. Le
+   seul lien croisé existant va d'ailleurs dans le mauvais sens — TSA envoie
+   ses visiteurs vers TMF depuis son footer, et ne reçoit rien en retour.)
 4. **Webhook Stripe** — débloquer le paiement (ou le retirer proprement).
 
 Un agent ne remonte pas la file d'attente de son propre chef. S'il pense que
@@ -331,4 +381,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.1.1 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.1.3 — Tennis String Advisor — « Mesurer avant d'affirmer. »*

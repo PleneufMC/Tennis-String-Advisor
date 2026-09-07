@@ -54,3 +54,8 @@ _legacy_static_backup/
 
 # Scripts de mesure ponctuels (analyse, non livres)
 tmp-analysis/
+
+# Worktrees isolés des agents (règle adoptée le 31/08/2026 : un agent =
+# un worktree, l'intégration sur genspark_ai_developer passe par le lead).
+# Répertoires de travail locaux, jamais versionnés.
+.claude/worktrees/

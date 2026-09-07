@@ -22,6 +22,7 @@ const CHECKS = [
   { name: 'style-contrast', cmd: 'npm', args: ['run', '--silent', 'audit:style-contrast'] },
   { name: 'database', cmd: 'npm', args: ['run', '--silent', 'audit:database'] },
   { name: 'ratings', cmd: 'npm', args: ['run', '--silent', 'audit:ratings'] },
+  { name: 'blog-funnel', cmd: 'npm', args: ['run', '--silent', 'audit:blog-funnel'] },
   { name: 'security', cmd: 'npm', args: ['run', '--silent', 'audit:security'] },
 ];
 

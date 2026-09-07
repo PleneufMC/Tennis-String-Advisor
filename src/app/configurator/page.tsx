@@ -1199,6 +1199,7 @@ export default function ConfiguratorPage() {
                       brand={selectedMainString.brand}
                       model={selectedMainString.model}
                       variant="outline"
+                      location="configurator_result"
                     />
                   )}
                   {selectedCrossString && selectedCrossString.id !== selectedMainString?.id && (
@@ -1206,6 +1207,7 @@ export default function ConfiguratorPage() {
                       brand={selectedCrossString.brand}
                       model={selectedCrossString.model}
                       variant="outline"
+                      location="configurator_result"
                     />
                   )}
                   {selectedRacquet && (
@@ -1213,6 +1215,7 @@ export default function ConfiguratorPage() {
                       brand={selectedRacquet.brand}
                       model={selectedRacquet.model}
                       variant="outline"
+                      location="configurator_result"
                     />
                   )}
                 </div>

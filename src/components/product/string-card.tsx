@@ -253,6 +253,7 @@ export function StringCard({
             brand={string.brand}
             model={string.model}
             className="w-full mt-3"
+            location="catalog_card"
           />
         )}
       </CardContent>

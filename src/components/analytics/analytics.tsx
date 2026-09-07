@@ -122,12 +122,26 @@ export const trackArmWarningShown = (rcsScore: number, armSensitive: boolean) =>
  * l'écran ne le signalerait. Si les clics continuent d'arriver en `direct`
  * après le déploiement d'activation, c'est que le build n'a pas été relancé.
  */
+/**
+ * `location` distingue la SURFACE d'émission du clic — `configurator_result`
+ * vs `catalog_card` — sans quoi l'indicateur du §8
+ * (`affiliate_click / configurator_complete`) mélange des clics qui n'ont pas
+ * le même dénominateur. Rôle distinct de `link_type`, qui reste la preuve
+ * d'activation Awin et ne doit jamais servir à porter la surface.
+ *
+ * PAS de valeur par défaut, volontairement : l'unique appelant (`BuyButton`)
+ * sert déjà les deux surfaces — un défaut `catalog_card` étiquetterait à tort
+ * les clics du configurateur tant que l'appelant ne passe rien. Absent, GA4
+ * affiche « (not set) » : ça se lit comme « émetteur pas encore migré », pas
+ * comme une fausse donnée.
+ */
 export const trackAffiliateClick = (
   merchant: string,
   product?: string,
-  linkType: 'awin' | 'direct' = 'direct'
+  linkType: 'awin' | 'direct' = 'direct',
+  location?: 'configurator_result' | 'catalog_card'
 ) => {
-  gaEvent('affiliate_click', { merchant, product, link_type: linkType });
+  gaEvent('affiliate_click', { merchant, product, link_type: linkType, location });
 };
 
 // Clic sur un CTA Premium (audit #0.3).

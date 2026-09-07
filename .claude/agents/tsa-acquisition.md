@@ -49,6 +49,23 @@ Tu ne modifies jamais : la logique applicative, `src/data/`, `src/lib/` (sauf
 `i18n/route-map.ts` en coordination), les composants de produit, tout ce qui
 touche au paiement.
 
+## Règle permanente — entonnoir A3 (blog → configurateur)
+
+L'indicateur A3 (défini par `tsa-measure` le 31/08/2026,
+`reports/a3-blog-vers-configurateur.md`) mesure les arrivées sur le
+configurateur via le `page_referrer` GA4 natif des `page_view`. Trois
+obligations sur **tout article, nouveau ou modifié** :
+
+1. **Au moins un lien vers le configurateur de son univers, dans le corps de
+   l'article** — FR : `href="/configurator"` ; EN :
+   `href="/en/configurator.html"`. À un endroit qui sert le lecteur, pas un
+   bandeau collé en fin de page.
+2. **Jamais `rel="noreferrer"` ni `referrerpolicy`** sur un lien vers le
+   configurateur : ces attributs suppriment le `page_referrer` et rendent le
+   passage invisible dans GA4 — la mesure casse en silence, sans erreur.
+3. **`npm run audit:blog-funnel` doit passer** avant toute PR touchant
+   `public/blog/` ou `public/en/blog/`. Son échec est bloquant, pas indicatif.
+
 ## Chantiers, dans l'ordre
 
 ### A1 — Établir pourquoi le site n'est pas visible
@@ -56,8 +73,9 @@ touche au paiement.
 Avant d'écrire une ligne de contenu, trouver ce qui bloque. Hypothèses à
 éliminer une par une, avec preuve :
 
-- Les 12 articles FR et 2 articles EN sont-ils **indexés** ? (Search Console —
-  demander l'accès à Pierre, ou `site:tennisstringadvisor.org` en recherche.)
+- Les 14 articles FR et 8 articles EN (hors index, comptage vérifié le
+  31/08/2026) sont-ils **indexés** ? (Search Console — demander l'accès à
+  Pierre, ou `site:tennisstringadvisor.org` en recherche.)
 - `robots.txt` bloque-t-il quelque chose ?
 - Le sitemap est-il soumis, et les URL qu'il déclare résolvent-elles toutes ?
   (Le sitemap a été refait proprement — vérifier qu'il est bien pris en compte.)
@@ -99,6 +117,12 @@ contenu. Le définir avec `tsa-measure`, l'instrumenter, et l'afficher.
 
 **Critère de fin** : le taux blog → configurateur est connu à la semaine près.
 
+**Statut 31/08/2026** : indicateur défini et instrumenté par `tsa-measure`
+(`reports/a3-blog-vers-configurateur.md`, mécanisme `page_referrer` GA4,
+garde-fou `npm run audit:blog-funnel`). Reste le relevé hebdomadaire par
+Pierre — ligne de base : semaines du 17/08 et du 24/08. Voir la règle
+permanente ci-dessus.
+
 ### A4 — Données structurées et internationalisation
 
 - `Article` sur chaque article de blog.
@@ -112,10 +136,16 @@ contenu. Le définir avec `tsa-measure`, l'instrumenter, et l'afficher.
 
 Trois canaux, par ordre de coût croissant :
 
-1. **TennisMatchFinder.net** — même propriétaire, audience exactement
-   qualifiée, coût marginal nul. Bandeau, lien contextuel après inscription,
-   et surtout : paramètres de suivi pour savoir combien de personnes passent
-   réellement d'un site à l'autre. Aujourd'hui, personne ne le sait.
+1. ~~**TennisMatchFinder.net**~~ — ⚠️ **écarté le 31/08/2026.** Ce canal était
+   décrit comme « audience exactement qualifiée, coût marginal nul ». Le
+   premier terme est faux : Pierre a établi que TMF ne trouve pas son public.
+   Deux sites sans audience ne s'entraident pas. Ne pas le proposer comme
+   canal de distribution sans une mesure d'audience TMF préalable. Si le
+   canal était un jour réactivé : un `utm_content` distinct par emplacement,
+   pour que le volume soit attribuable dès le premier jour plutôt que
+   supposé. À noter aussi : le seul lien croisé existant va dans l'autre
+   sens (footer TSA → TMF, `utm_campaign=cross_site`) — TSA exporte ses
+   visiteurs sans contrepartie.
 2. **Forums** — Tennis-Classim (FR), Saitenforum.de (DE, communauté la plus
    technique d'Europe). Participation utile sur des questions réelles, signature
    discrète. Jamais de publication promotionnelle : sur ces forums, ça se voit
