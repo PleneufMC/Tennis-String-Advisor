@@ -67,7 +67,8 @@ export default function StringsPage() {
   const [filters, setFilters] = useState<Filters>(defaultFilters);
   const [sortBy, setSortBy] = useState<SortOption>('rating');
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
-  const [showFilters, setShowFilters] = useState(true);
+  // Repliés par défaut : sous lg, l'aside w-72 écraserait la grille de résultats.
+  const [showFilters, setShowFilters] = useState(false);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     brands: true,
@@ -288,6 +289,8 @@ export default function StringsPage() {
                 variant={showFilters ? 'default' : 'outline'}
                 onClick={() => setShowFilters(!showFilters)}
                 className="lg:hidden"
+                aria-expanded={showFilters}
+                aria-controls="catalog-filters"
               >
                 <SlidersHorizontal className="h-4 w-4 mr-2" />
                 Filtres
@@ -340,13 +343,13 @@ export default function StringsPage() {
         </div>
 
         {/* Content Grid */}
-        <div className="flex gap-6">
+        <div className="flex flex-col lg:flex-row gap-6">
           {/* Sidebar Filters */}
-          <aside className={cn(
-            'w-72 flex-shrink-0 transition-all duration-300',
+          <aside id="catalog-filters" className={cn(
+            'w-full lg:w-72 flex-shrink-0 transition-all duration-300',
             showFilters ? 'block' : 'hidden lg:block'
           )}>
-            <div className="bg-white rounded-2xl shadow-lg p-6 sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto">
+            <div className="bg-white rounded-2xl shadow-lg p-6 lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="font-bold text-lg flex items-center gap-2 text-gray-900">
                   <Filter className="h-5 w-5 text-purple-600" />

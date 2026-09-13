@@ -107,13 +107,13 @@ export function Header() {
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex lg:items-center lg:gap-x-1">
+          <div className="hidden lg:flex lg:items-center lg:gap-x-0.5 xl:gap-x-1">
             {navigation.map((item) => (
               <Link
                 key={item.key}
                 href={item.href}
                 className={cn(
-                  'px-4 py-2 text-sm font-medium rounded-lg transition-colors',
+                  'px-2 xl:px-4 py-2 text-sm font-medium rounded-lg transition-colors',
                   isActive(item.href)
                     ? 'bg-green-100 text-green-700 dark:bg-tennis-green-500/15 dark:text-tennis-green-400'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-800'
@@ -124,14 +124,14 @@ export function Header() {
             ))}
             
             {/* Separator */}
-            <div className="w-px h-6 bg-gray-200 mx-2 dark:bg-slate-700" />
+            <div className="w-px h-6 bg-gray-200 mx-1 xl:mx-2 dark:bg-slate-700" />
             
             {secondaryNavigation.map((item) => (
               <Link
                 key={item.key}
                 href={item.href}
                 className={cn(
-                  'px-3 py-2 text-sm font-medium rounded-lg transition-colors',
+                  'px-2 xl:px-3 py-2 text-sm font-medium rounded-lg transition-colors',
                   isActive(item.href)
                     ? 'text-green-700 dark:text-tennis-green-400'
                     : 'text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-200'
