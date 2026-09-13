@@ -80,7 +80,7 @@
           <p class="text-gray-500 text-sm">No commitment, cancel anytime</p>
         </div>
         <div class="mb-6">
-          <span class="text-4xl font-bold text-gray-900">$2.99</span>
+          <span class="text-4xl font-bold text-gray-900">€2.99</span>
           <span class="text-gray-500">/month</span>
         </div>
         <ul class="space-y-3 mb-8">
@@ -106,11 +106,11 @@
           <p class="text-gray-500 text-sm">Save ~30% compared to monthly</p>
         </div>
         <div class="mb-2">
-          <span class="text-4xl font-bold text-gray-900">$24.99</span>
+          <span class="text-4xl font-bold text-gray-900">€24.99</span>
           <span class="text-gray-500">/year</span>
         </div>
         <div class="mb-6 text-sm text-green-600 font-medium">
-          That's $2.08/month • Save $10.89/year
+          That's €2.08/month • Save €10.89/year
         </div>
         <ul class="space-y-3 mb-8">
           <li class="flex items-center gap-2 text-gray-700"><span class="text-green-500">✓</span> Unlimited setups</li>
@@ -268,7 +268,7 @@
       <p class="text-green-100 mb-8 max-w-xl mx-auto">Join hundreds of players who have improved their playing comfort with Tennis String Advisor.</p>
       <div class="flex flex-col sm:flex-row gap-4 justify-center">
         <button onclick="selectPlan('annual')" class="px-8 py-4 bg-white text-green-700 font-bold rounded-xl hover:bg-green-50 transition shadow-lg">
-          Get Started with Annual – $24.99/year
+          Get Started with Annual – €24.99/year
         </button>
       </div>
     </div>
@@ -325,7 +325,7 @@
         <div class="bg-gray-50 rounded-xl p-4 mb-6">
           <div class="flex justify-between items-center">
             <span class="text-gray-700">Total</span>
-            <span class="text-2xl font-bold text-gray-900" id="checkoutPrice">$0</span>
+            <span class="text-2xl font-bold text-gray-900" id="checkoutPrice">—</span>
           </div>
           <p class="text-xs text-gray-500 mt-2" id="checkoutNote">Secure payment by Stripe</p>
         </div>
@@ -377,8 +377,8 @@
     };
     
     const PLANS = {
-      monthly: { name: 'Monthly Premium', price: '$2.99', note: 'Monthly renewal, no commitment', paymentLink: PAYMENT_LINKS.monthly },
-      annual: { name: 'Annual Premium', price: '$24.99', note: 'Annual payment, save 30%', paymentLink: PAYMENT_LINKS.annual }
+      monthly: { name: 'Monthly Premium', price: '€2.99', note: 'Monthly renewal, no commitment', paymentLink: PAYMENT_LINKS.monthly },
+      annual: { name: 'Annual Premium', price: '€24.99', note: 'Annual payment, save 30%', paymentLink: PAYMENT_LINKS.annual }
     };
 
     let currentUser = null;
