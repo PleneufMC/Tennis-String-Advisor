@@ -3,6 +3,7 @@ import { Prisma } from '@prisma/client';
 import Stripe from 'stripe';
 import { prisma } from '@/lib/db';
 import { PRIX_A_VIE_CENTIMES, PRIX_ABONNEMENT_CENTIMES, DEVISE } from '@/lib/premium';
+import { envoyerAchatGA4 } from '@/lib/ga4';
 
 /**
  * Webhook Stripe — seul consommateur serveur des paiements.
@@ -153,6 +154,7 @@ async function activerDepuisSession(session: Stripe.Checkout.Session, client: St
       where: { id: userId },
       data: { isPremium: true, premiumUntil: null, ...clientAEcrire },
     });
+    await signalerAchat(session, 'a-vie', userId);
     return NextResponse.json({ received: true, matched: true });
   }
 
@@ -162,7 +164,31 @@ async function activerDepuisSession(session: Stripe.Checkout.Session, client: St
     where: { id: userId, NOT: { isPremium: true, premiumUntil: null } },
     data: { isPremium: true, premiumUntil: echeance, ...clientAEcrire },
   });
+  await signalerAchat(session, 'abonnement', userId);
   return NextResponse.json({ received: true, matched: true });
+}
+
+/**
+ * Remonte l'achat à GA4, ou il resterait invisible : `purchase` est le seul
+ * evenement cle declare dans la propriete, et rien ne l'emettait. La mesure ne
+ * doit jamais faire echouer une activation deja payee — d'ou le catch muet.
+ */
+async function signalerAchat(
+  session: Stripe.Checkout.Session,
+  nature: 'a-vie' | 'abonnement',
+  userId: string
+) {
+  try {
+    await envoyerAchatGA4({
+      transactionId: session.id,
+      montantCentimes: session.amount_total ?? 0,
+      devise: session.currency ?? DEVISE,
+      nature,
+      userId,
+    });
+  } catch {
+    /* deja trace dans lib/ga4 */
+  }
 }
 
 /** Retire le premium d'un client Stripe, sans lecture préalable : pas de fenêtre de course. */
