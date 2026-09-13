@@ -3,9 +3,18 @@
 import { useState } from 'react';
 import Link from 'next/link';
 
-// Les deux Payment Links FR renvoient « The link is no longer active. » côté
-// Stripe. Tant qu'ils ne sont pas remplacés, annoncer l'indisponibilité plutôt
-// que rediriger vers une impasse. Repasser à true quand les liens sont vérifiés.
+// Payment Links vérifiés un par un : produit, montant et récurrence lus sur la
+// page de paiement Stripe, en français et en anglais.
+const STRIPE_LINKS = {
+  monthly: 'https://buy.stripe.com/4gM6oH8uT2kGaNw4XO8Vi0b',   // 4,99 € par mois
+  yearly: 'https://buy.stripe.com/4gM9AT26v3oK7Bk9e48Vi0f',    // 49,99 € par an
+  lifetime: 'https://buy.stripe.com/6oUbJ19yXcZkbRAcqg8Vi0d',  // 19,99 € une fois
+};
+
+// Les liens ci-dessus sont valides, mais aucun webhook ne consomme le paiement :
+// un client qui paie resterait plafonné à 3 configurations. Tant que
+// src/app/api/stripe/ n'existe pas, annoncer l'indisponibilité plutôt
+// qu'encaisser sans livrer. Repasser à true avec le webhook, pas avant.
 const CHECKOUT_DISPONIBLE = false;
 const CONTACT_EMAIL = 'pleneuftrading@gmail.com';
 
@@ -37,8 +46,8 @@ export default function PricingPage() {
     {
       id: 'premium',
       name: 'Premium',
-      price: { monthly: 4.99, yearly: 49.90 },
-      savings: '2 mois gratuits',
+      price: { monthly: 4.99, yearly: 49.99 },
+      savings: 'près de 2 mois offerts',
       features: [
         '✅ Tout du plan gratuit',
         '✅ Configurations illimitées',
@@ -49,8 +58,30 @@ export default function PricingPage() {
       buttonStyle: 'primary',
       popular: true,
       stripeLinks: {
-        monthly: 'https://buy.stripe.com/4gMcN56mL5wS3l44XO8Vi01',
-        yearly: 'https://buy.stripe.com/9B600jeThbVgcVEfCs8Vi02'
+        monthly: STRIPE_LINKS.monthly,
+        yearly: STRIPE_LINKS.yearly
+      }
+    },
+    {
+      id: 'lifetime',
+      name: 'À vie',
+      // Paiement unique : le prix ne suit pas la bascule mensuel / annuel.
+      price: { monthly: 19.99, yearly: 19.99 },
+      oneTime: true,
+      features: [
+        '✅ Tout du plan Premium',
+        '✅ Payé une seule fois, sans abonnement',
+        '✅ Configurations illimitées',
+        '✅ Analyse RCS avancée',
+        '✅ Export PDF professionnel'
+      ],
+      note: 'Prix réservé aux 200 premiers.',
+      buttonText: 'Accès à vie',
+      buttonStyle: 'primary',
+      popular: false,
+      stripeLinks: {
+        monthly: STRIPE_LINKS.lifetime,
+        yearly: STRIPE_LINKS.lifetime
       }
     }
   ];
@@ -256,8 +287,18 @@ export default function PricingPage() {
                 color: 'var(--text-muted)',
                 marginLeft: '0.5rem'
               }}>
-                /{billingPeriod === 'monthly' ? 'mois' : 'an'}
+                {plan.oneTime ? 'une fois' : `/${billingPeriod === 'monthly' ? 'mois' : 'an'}`}
               </span>
+              {plan.note && (
+                <div style={{
+                  marginTop: '0.5rem',
+                  fontSize: '0.875rem',
+                  color: 'var(--text-muted)',
+                  fontWeight: '500'
+                }}>
+                  {plan.note}
+                </div>
+              )}
               {billingPeriod === 'yearly' && plan.savings && (
                 <div style={{
                   marginTop: '0.5rem',
