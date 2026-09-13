@@ -526,7 +526,7 @@ export default function ConfiguratorPage() {
         margin: '0 auto',
         padding: '0 1rem 3rem',
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(500px, 1fr))',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(min(500px, 100%), 1fr))',
         gap: '1.5rem',
         position: 'relative',
         zIndex: 1
