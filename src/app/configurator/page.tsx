@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect, useRef, type KeyboardEvent as ReactKeyboardEvent } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { stringsDatabase, calculateRCS, getStringRecommendation } from '@/data/strings-database';
@@ -429,11 +429,43 @@ export default function ConfiguratorPage() {
     setStats(configStats);
   };
 
+  // Sans ceci, les options des listes de produits ne sont atteignables qu'a la
+  // souris : elles sont rendues hors de l'ordre de tabulation naturel du champ.
+  const handleDropdownKeys = (
+    e: ReactKeyboardEvent<HTMLDivElement>,
+    key: 'racquet' | 'mainString' | 'crossString'
+  ) => {
+    const container = e.currentTarget;
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      // Le focus d'abord : l'onFocus du champ rouvre la liste, la fermeture doit
+      // donc etre enregistree apres lui pour l'emporter dans le meme lot React.
+      container.querySelector('input')?.focus();
+      setShowDropdowns(prev => ({ ...prev, [key]: false }));
+      return;
+    }
+    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+    const items = Array.from(container.querySelectorAll<HTMLButtonElement>('button[data-option]'));
+    if (items.length === 0) return;
+    e.preventDefault();
+    const current = items.indexOf(document.activeElement as HTMLButtonElement);
+    const next = e.key === 'ArrowDown'
+      ? (current + 1) % items.length
+      : (current <= 0 ? items.length - 1 : current - 1);
+    items[next].focus();
+  };
+
   const sectionHeaderStyle = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
     cursor: 'pointer',
+    width: '100%',
+    textAlign: 'left' as const,
+    border: 'none',
+    fontFamily: 'inherit',
+    fontSize: 'inherit',
+    color: 'inherit',
     padding: '0.75rem',
     backgroundColor: 'var(--surface-muted)',
     borderRadius: '8px',
@@ -553,18 +585,21 @@ export default function ConfiguratorPage() {
 
           {/* Nom de la Configuration */}
           <div style={{ marginBottom: '1.5rem' }}>
-            <div 
+            <button
+              type="button"
               style={sectionHeaderStyle}
               onClick={() => toggleSection('config')}
+              aria-expanded={expandedSections.config}
+              aria-controls="section-config"
             >
               <div style={{ display: 'flex', alignItems: 'center' }}>
                 <span style={{ marginRight: '0.5rem' }}>📝</span>
                 <span style={{ fontWeight: '500' }}>Nom de la Configuration</span>
               </div>
-              <span>{expandedSections.config ? '▲' : '▼'}</span>
-            </div>
+              <span aria-hidden="true">{expandedSections.config ? '▲' : '▼'}</span>
+            </button>
             {expandedSections.config && (
-              <div style={{ padding: '0 0.75rem' }}>
+              <div id="section-config" style={{ padding: '0 0.75rem' }}>
                 <input
                   type="text"
                   placeholder="Ex: Setup Tournoi 2025"
@@ -578,9 +613,12 @@ export default function ConfiguratorPage() {
 
           {/* Choisir une Raquette */}
           <div style={{ marginBottom: '1.5rem' }}>
-            <div 
+            <button
+              type="button"
               style={sectionHeaderStyle}
               onClick={() => toggleSection('racquet')}
+              aria-expanded={expandedSections.racquet}
+              aria-controls="section-racquet"
             >
               <div style={{ display: 'flex', alignItems: 'center' }}>
                 <span style={{ marginRight: '0.5rem' }}>🎾</span>
@@ -593,10 +631,10 @@ export default function ConfiguratorPage() {
                   )}
                 </span>
               </div>
-              <span>{expandedSections.racquet ? '▲' : '▼'}</span>
-            </div>
+              <span aria-hidden="true">{expandedSections.racquet ? '▲' : '▼'}</span>
+            </button>
             {expandedSections.racquet && (
-              <div className="dropdown-container" style={{ padding: '0 0.75rem', position: 'relative' }}>
+              <div id="section-racquet" className="dropdown-container" onKeyDown={(e) => handleDropdownKeys(e, 'racquet')} style={{ padding: '0 0.75rem', position: 'relative' }}>
                 <input
                   type="text"
                   placeholder="Rechercher une raquette (ex: Babolat, Pure Aero, Wilson)..."
@@ -656,11 +694,20 @@ export default function ConfiguratorPage() {
                     marginTop: '0.25rem'
                   }}>
                     {filteredRacquets.map(racquet => (
-                      <div
+                      <button
+                        type="button"
+                        data-option
                         key={racquet.id}
                         style={{
-                          padding: '0.75rem',
+                          display: 'block',
+                          width: '100%',
+                          textAlign: 'left',
+                          background: 'none',
+                          border: 'none',
                           borderBottom: '1px solid var(--surface-border-soft)',
+                          color: 'inherit',
+                          font: 'inherit',
+                          padding: '0.75rem',
                           cursor: 'pointer',
                           transition: 'background-color 0.2s'
                         }}
@@ -678,7 +725,7 @@ export default function ConfiguratorPage() {
                         <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                           RA: {racquet.stiffness || 'ND'} | {racquet.weight}g | {racquet.headSize} sq in
                         </div>
-                      </div>
+                      </button>
                     ))}
                   </div>
                 )}
@@ -688,9 +735,12 @@ export default function ConfiguratorPage() {
 
           {/* Cordage Principal */}
           <div style={{ marginBottom: '1.5rem' }}>
-            <div 
+            <button
+              type="button"
               style={sectionHeaderStyle}
               onClick={() => toggleSection('principal')}
+              aria-expanded={expandedSections.principal}
+              aria-controls="section-principal"
             >
               <div style={{ display: 'flex', alignItems: 'center' }}>
                 <span style={{ marginRight: '0.5rem' }}>🎯</span>
@@ -703,10 +753,10 @@ export default function ConfiguratorPage() {
                   )}
                 </span>
               </div>
-              <span>{expandedSections.principal ? '▲' : '▼'}</span>
-            </div>
+              <span aria-hidden="true">{expandedSections.principal ? '▲' : '▼'}</span>
+            </button>
             {expandedSections.principal && (
-              <div className="dropdown-container" style={{ padding: '0 0.75rem', position: 'relative' }}>
+              <div id="section-principal" className="dropdown-container" onKeyDown={(e) => handleDropdownKeys(e, 'mainString')} style={{ padding: '0 0.75rem', position: 'relative' }}>
                 <input
                   type="text"
                   placeholder="Rechercher un cordage (ex: Luxilon, ALU Power, Polyester)..."
@@ -738,11 +788,20 @@ export default function ConfiguratorPage() {
                     marginTop: '0.25rem'
                   }}>
                     {filteredMainStrings.map(string => (
-                      <div
+                      <button
+                        type="button"
+                        data-option
                         key={string.id}
                         style={{
-                          padding: '0.75rem',
+                          display: 'block',
+                          width: '100%',
+                          textAlign: 'left',
+                          background: 'none',
+                          border: 'none',
                           borderBottom: '1px solid var(--surface-border-soft)',
+                          color: 'inherit',
+                          font: 'inherit',
+                          padding: '0.75rem',
                           cursor: 'pointer',
                           transition: 'background-color 0.2s'
                         }}
@@ -764,7 +823,7 @@ export default function ConfiguratorPage() {
                         <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                           {string.type} | Raideur: {string.stiffness} lb/in | €{string.price.europe}
                         </div>
-                      </div>
+                      </button>
                     ))}
                   </div>
                 )}
@@ -774,9 +833,12 @@ export default function ConfiguratorPage() {
 
           {/* Cordage Travers (Cross) */}
           <div style={{ marginBottom: '1.5rem' }}>
-            <div 
+            <button
+              type="button"
               style={sectionHeaderStyle}
               onClick={() => toggleSection('cross')}
+              aria-expanded={expandedSections.cross}
+              aria-controls="section-cross"
             >
               <div style={{ display: 'flex', alignItems: 'center' }}>
                 <span style={{ marginRight: '0.5rem' }}>➕</span>
@@ -789,10 +851,10 @@ export default function ConfiguratorPage() {
                   )}
                 </span>
               </div>
-              <span>{expandedSections.cross ? '▲' : '▼'}</span>
-            </div>
+              <span aria-hidden="true">{expandedSections.cross ? '▲' : '▼'}</span>
+            </button>
             {expandedSections.cross && (
-              <div className="dropdown-container" style={{ padding: '0 0.75rem', position: 'relative' }}>
+              <div id="section-cross" className="dropdown-container" onKeyDown={(e) => handleDropdownKeys(e, 'crossString')} style={{ padding: '0 0.75rem', position: 'relative' }}>
                 <div style={{ 
                   padding: '0.5rem',
                   backgroundColor: 'var(--tint-amber-bg)',
@@ -852,11 +914,20 @@ export default function ConfiguratorPage() {
                     marginTop: '0.25rem'
                   }}>
                     {filteredCrossStrings.map(string => (
-                      <div
+                      <button
+                        type="button"
+                        data-option
                         key={string.id}
                         style={{
-                          padding: '0.75rem',
+                          display: 'block',
+                          width: '100%',
+                          textAlign: 'left',
+                          background: 'none',
+                          border: 'none',
                           borderBottom: '1px solid var(--surface-border-soft)',
+                          color: 'inherit',
+                          font: 'inherit',
+                          padding: '0.75rem',
                           cursor: 'pointer',
                           transition: 'background-color 0.2s'
                         }}
@@ -878,7 +949,7 @@ export default function ConfiguratorPage() {
                         <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                           {string.type} | Raideur: {string.stiffness} lb/in | €{string.price.europe}
                         </div>
-                      </div>
+                      </button>
                     ))}
                   </div>
                 )}
@@ -888,25 +959,28 @@ export default function ConfiguratorPage() {
 
           {/* Jauge du Calibre */}
           <div style={{ marginBottom: '1.5rem' }}>
-            <div 
+            <button
+              type="button"
               style={sectionHeaderStyle}
               onClick={() => toggleSection('caliber')}
+              aria-expanded={expandedSections.caliber}
+              aria-controls="section-caliber"
             >
               <div style={{ display: 'flex', alignItems: 'center' }}>
                 <span style={{ marginRight: '0.5rem' }}>📏</span>
                 <span style={{ fontWeight: '500' }}>Jauge du Calibre</span>
               </div>
-              <span>{expandedSections.caliber ? '▲' : '▼'}</span>
-            </div>
+              <span aria-hidden="true">{expandedSections.caliber ? '▲' : '▼'}</span>
+            </button>
             {expandedSections.caliber && (
-              <div style={{ 
+              <div id="section-caliber" style={{ 
                 padding: '0 0.75rem',
                 display: 'grid',
                 gridTemplateColumns: '1fr 1fr',
                 gap: '0.75rem'
               }}>
                 <div>
-                  <label style={{ 
+                  <label htmlFor="gauge-main" style={{ 
                     fontSize: '0.875rem', 
                     color: 'var(--text-muted)',
                     marginBottom: '0.25rem',
@@ -916,7 +990,7 @@ export default function ConfiguratorPage() {
                   </label>
                   <select 
                     style={selectStyle}
-                    value={formData.mainGauge}
+                    id="gauge-main" value={formData.mainGauge}
                     onChange={(e) => handleInputChange('mainGauge', e.target.value)}
                   >
                     {selectedMainString?.gauges.map(gauge => (
@@ -932,7 +1006,7 @@ export default function ConfiguratorPage() {
                   </select>
                 </div>
                 <div>
-                  <label style={{ 
+                  <label htmlFor="gauge-cross" style={{ 
                     fontSize: '0.875rem', 
                     color: 'var(--text-muted)',
                     marginBottom: '0.25rem',
@@ -942,7 +1016,7 @@ export default function ConfiguratorPage() {
                   </label>
                   <select 
                     style={selectStyle}
-                    value={formData.crossGauge}
+                    id="gauge-cross" value={formData.crossGauge}
                     onChange={(e) => handleInputChange('crossGauge', e.target.value)}
                   >
                     {(selectedCrossString || selectedMainString)?.gauges.map(gauge => (
@@ -963,9 +1037,12 @@ export default function ConfiguratorPage() {
 
           {/* Tension */}
           <div style={{ marginBottom: '1.5rem' }}>
-            <div 
+            <button
+              type="button"
               style={sectionHeaderStyle}
               onClick={() => toggleSection('tension')}
+              aria-expanded={expandedSections.tension}
+              aria-controls="section-tension"
             >
               <div style={{ display: 'flex', alignItems: 'center' }}>
                 <span style={{ marginRight: '0.5rem' }}>⚡</span>
@@ -973,24 +1050,24 @@ export default function ConfiguratorPage() {
                   Tension {Math.round((formData.mainTension + formData.crossTension) / 2)} kg
                 </span>
               </div>
-              <span>{expandedSections.tension ? '▲' : '▼'}</span>
-            </div>
+              <span aria-hidden="true">{expandedSections.tension ? '▲' : '▼'}</span>
+            </button>
             {expandedSections.tension && (
-              <div style={{ padding: '0 0.75rem' }}>
+              <div id="section-tension" style={{ padding: '0 0.75rem' }}>
                 <div style={{ marginBottom: '1rem' }}>
                   <div style={{ 
                     display: 'flex', 
                     justifyContent: 'space-between',
                     marginBottom: '0.5rem' 
                   }}>
-                    <label style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>Principal</label>
+                    <label htmlFor="tension-main" style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>Principal</label>
                     <span style={{ fontSize: '0.875rem', fontWeight: '500' }}>{formData.mainTension} kg</span>
                   </div>
                   <input
                     type="range"
                     min="15"
                     max="35"
-                    value={formData.mainTension}
+                    id="tension-main" value={formData.mainTension}
                     onChange={(e) => handleInputChange('mainTension', parseInt(e.target.value))}
                     style={{ width: '100%', cursor: 'pointer' }}
                   />
@@ -1011,14 +1088,14 @@ export default function ConfiguratorPage() {
                     justifyContent: 'space-between',
                     marginBottom: '0.5rem' 
                   }}>
-                    <label style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>Travers</label>
+                    <label htmlFor="tension-cross" style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>Travers</label>
                     <span style={{ fontSize: '0.875rem', fontWeight: '500' }}>{formData.crossTension} kg</span>
                   </div>
                   <input
                     type="range"
                     min="15"
                     max="35"
-                    value={formData.crossTension}
+                    id="tension-cross" value={formData.crossTension}
                     onChange={(e) => handleInputChange('crossTension', parseInt(e.target.value))}
                     style={{ width: '100%', cursor: 'pointer' }}
                   />
@@ -1051,10 +1128,13 @@ export default function ConfiguratorPage() {
               <span style={{ fontWeight: '500', color: 'var(--tint-amber-fg)' }}>Evaluer votre experience</span>
             </div>
             <div style={{ padding: '0.75rem' }}>
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <div role="group" aria-label="Note de l'experience, de 1 a 5" style={{ display: 'flex', gap: '0.5rem' }}>
                 {[1, 2, 3, 4, 5].map((star) => (
                   <button
                     key={star}
+                    type="button"
+                    aria-label={`${star} sur 5`}
+                    aria-pressed={formData.rating === star}
                     onClick={() => handleInputChange('rating', star)}
                     style={{
                       fontSize: '1.5rem',
@@ -1145,6 +1225,11 @@ export default function ConfiguratorPage() {
                   }}>
                     {rcsData.avgRCS.toFixed(1)}
                   </span>
+                </div>
+                {/* Annonce lue par les lecteurs d'ecran : reprend les valeurs
+                    deja affichees, sans relire tout le panneau a chaque reglage. */}
+                <div className="sr-only" role="status" aria-live="polite">
+                  RCS moyen {rcsData.avgRCS.toFixed(1)}, {rcsData.recommendation.level}
                 </div>
                 <div style={{
                   padding: '0.75rem',
