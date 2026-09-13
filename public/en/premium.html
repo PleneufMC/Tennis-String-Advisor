@@ -80,7 +80,7 @@
           <p class="text-gray-500 text-sm">No commitment, cancel anytime</p>
         </div>
         <div class="mb-6">
-          <span class="text-4xl font-bold text-gray-900">€2.99</span>
+          <span class="text-4xl font-bold text-gray-900">€4.99</span>
           <span class="text-gray-500">/month</span>
         </div>
         <ul class="space-y-3 mb-8">
@@ -103,14 +103,14 @@
         </div>
         <div class="mb-6">
           <h3 class="text-lg font-semibold text-gray-900 mb-2">Annual Premium</h3>
-          <p class="text-gray-500 text-sm">Save ~30% compared to monthly</p>
+          <p class="text-gray-500 text-sm">Save ~17% compared to monthly — two months free</p>
         </div>
         <div class="mb-2">
-          <span class="text-4xl font-bold text-gray-900">€24.99</span>
+          <span class="text-4xl font-bold text-gray-900">€49.90</span>
           <span class="text-gray-500">/year</span>
         </div>
         <div class="mb-6 text-sm text-green-600 font-medium">
-          That's €2.08/month • Save €10.89/year
+          That's €4.16/month • Save €9.98/year
         </div>
         <ul class="space-y-3 mb-8">
           <li class="flex items-center gap-2 text-gray-700"><span class="text-green-500">✓</span> Unlimited setups</li>
@@ -268,7 +268,7 @@
       <p class="text-green-100 mb-8 max-w-xl mx-auto">Join hundreds of players who have improved their playing comfort with Tennis String Advisor.</p>
       <div class="flex flex-col sm:flex-row gap-4 justify-center">
         <button onclick="selectPlan('annual')" class="px-8 py-4 bg-white text-green-700 font-bold rounded-xl hover:bg-green-50 transition shadow-lg">
-          Get Started with Annual – €24.99/year
+          Get Started with Annual – €49.90/year
         </button>
       </div>
     </div>
@@ -371,14 +371,21 @@
       console.error('Supabase init error:', e);
     }
 
+    // Ces deux Payment Links facturent 2,99 EUR et 24,99 EUR, la grille
+    // abandonnee au profit du tarif francais (4,99 / 49,90). Tant qu'aucun lien
+    // au tarif en vigueur ne les remplace, aucun bouton ne doit y mener.
+    // Repasser a true une fois les nouveaux liens crees ET verifies.
+    const CHECKOUT_DISPONIBLE = false;
+    const CONTACT_EMAIL = 'pleneuftrading@gmail.com';
+
     const PAYMENT_LINKS = {
       monthly: 'https://buy.stripe.com/bJedR9aD1cZkaNwduk8Vi03',
       annual: 'https://buy.stripe.com/bJe00jeThbVgaNw1LC8Vi04'
     };
     
     const PLANS = {
-      monthly: { name: 'Monthly Premium', price: '€2.99', note: 'Monthly renewal, no commitment', paymentLink: PAYMENT_LINKS.monthly },
-      annual: { name: 'Annual Premium', price: '€24.99', note: 'Annual payment, save 30%', paymentLink: PAYMENT_LINKS.annual }
+      monthly: { name: 'Monthly Premium', price: '€4.99', note: 'Monthly renewal, no commitment', paymentLink: PAYMENT_LINKS.monthly },
+      annual: { name: 'Annual Premium', price: '€49.90', note: 'Annual payment, two months free', paymentLink: PAYMENT_LINKS.annual }
     };
 
     let currentUser = null;
@@ -395,6 +402,7 @@
     }
 
     function selectPlan(planId) {
+      if (!CHECKOUT_DISPONIBLE) return;
       selectedPlan = planId;
       const plan = PLANS[planId];
       if (!plan) return;
@@ -423,6 +431,7 @@
       document.getElementById('paySpinner').classList.remove('hidden');
       document.getElementById('payButton').disabled = true;
       try {
+        if (!CHECKOUT_DISPONIBLE) return;
         let paymentUrl = plan.paymentLink;
         if (currentUser.email) {
           paymentUrl += '?prefilled_email=' + encodeURIComponent(currentUser.email);
@@ -434,6 +443,26 @@
         document.getElementById('paySpinner').classList.add('hidden');
         document.getElementById('payButton').disabled = false;
       }
+    }
+
+    function neutraliserCheckout() {
+      if (CHECKOUT_DISPONIBLE) return;
+      document.querySelectorAll('[onclick^="selectPlan"]').forEach((b) => {
+        b.removeAttribute('onclick');
+        b.disabled = true;
+        b.setAttribute('aria-disabled', 'true');
+        b.classList.add('opacity-60', 'cursor-not-allowed');
+        b.textContent = 'Subscription temporarily unavailable';
+        const note = document.createElement('p');
+        note.className = 'text-xs text-gray-600 mt-2 text-center';
+        note.textContent = 'The configurator and the RCS calculation stay free and complete. Questions: ' + CONTACT_EMAIL;
+        b.insertAdjacentElement('afterend', note);
+      });
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', neutraliserCheckout);
+    } else {
+      neutraliserCheckout();
     }
 
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeCheckoutModal(); });
