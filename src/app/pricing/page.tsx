@@ -12,11 +12,12 @@ const STRIPE_LINKS = {
   lifetime: 'https://buy.stripe.com/6oUbJ19yXcZkbRAcqg8Vi0d',  // 19,99 € une fois
 };
 
-// Les liens ci-dessus sont valides, mais aucun webhook ne consomme le paiement :
-// un client qui paie resterait plafonné à 3 configurations. Tant que
-// src/app/api/stripe/ n'existe pas, annoncer l'indisponibilité plutôt
-// qu'encaisser sans livrer. Repasser à true avec le webhook, pas avant.
-const CHECKOUT_DISPONIBLE = false;
+// Ouvert : les liens ci-dessus sont vérifiés un par un, et le webhook
+// src/app/api/stripe/webhook les consomme — un paiement active réellement le
+// compte. Repasser à false si la chaîne se rompt (endpoint retiré de Stripe,
+// STRIPE_WEBHOOK_SECRET absent de Netlify, lien archivé) : mieux vaut annoncer
+// l'indisponibilité qu'encaisser sans livrer.
+const CHECKOUT_DISPONIBLE = true;
 const CONTACT_EMAIL = 'pleneuftrading@gmail.com';
 
 export default function PricingPage() {
@@ -112,14 +113,21 @@ export default function PricingPage() {
   const handleCheckout = async (plan: any) => {
     if (!plan.stripeLinks || !CHECKOUT_DISPONIBLE) return;
 
+    // Sans compte, le webhook recevrait un encaissement qu'il ne saurait
+    // rattacher à personne : le client paierait et resterait au quota gratuit,
+    // en attente d'une activation manuelle. On passe donc par la connexion
+    // AVANT le paiement, plutôt que d'encaisser sans pouvoir livrer.
+    const userId = (session?.user as { id?: string } | undefined)?.id;
+    if (!userId) {
+      window.location.href = '/auth/signin?callbackUrl=/pricing';
+      return;
+    }
+
     setLoading(plan.id);
 
-    // Redirection vers le Payment Link, en lui transmettant de quoi rattacher
-    // le paiement à un compte. Sans `client_reference_id`, le webhook reçoit un
-    // encaissement qu'il ne sait associer à personne.
+    // Le Payment Link reçoit de quoi rattacher le paiement au compte.
     const params = new URLSearchParams();
-    const userId = (session?.user as { id?: string } | undefined)?.id;
-    if (userId) params.set('client_reference_id', userId);
+    params.set('client_reference_id', userId);
     if (session?.user?.email) params.set('prefilled_email', session.user.email);
     const query = params.toString();
     const checkoutUrl = query
@@ -321,6 +329,15 @@ export default function PricingPage() {
               }}>
                 {plan.oneTime ? 'une fois' : `/${billingPeriod === 'monthly' ? 'mois' : 'an'}`}
               </span>
+              {!session?.user && plan.stripeLinks && (
+                <div style={{
+                  marginTop: '0.5rem',
+                  fontSize: '0.8125rem',
+                  color: 'var(--text-muted)'
+                }}>
+                  Un compte gratuit est nécessaire pour souscrire.
+                </div>
+              )}
               {plan.note && (
                 <div style={{
                   marginTop: '0.5rem',

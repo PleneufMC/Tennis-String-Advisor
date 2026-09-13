@@ -1,11 +1,19 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.1.8
+> **Version** : 2.1.9
 > **Date** : 13 septembre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
 > **Branche de référence** : `genspark_ai_developer`
 > **Repo** : https://github.com/PleneufMC/Tennis-String-Advisor.git
+
+**Changelog v2.1.8 → v2.1.9** — **Le paiement est ouvert.** Endpoint déclaré dans
+Stripe, secrets posés dans Netlify (vérifié : l'endpoint de production répond 400
+« Signature absente » au lieu de 500), les deux drapeaux `CHECKOUT_DISPONIBLE` sont
+à `true`. Un trou repéré à l'ouverture est fermé au passage : un visiteur **non
+connecté** partait vers Stripe sans `client_reference_id`, donc son paiement aurait
+été inrattachable. Le CTA français passe désormais par la connexion avant le
+paiement — le circuit anglais l'exigeait déjà.
 
 **Changelog v2.1.7 → v2.1.8** — Le **webhook Stripe existe** (`src/app/api/stripe/webhook/`),
 priorité 4 enfin traitée : aucune migration n'était nécessaire, le schéma portait
@@ -157,15 +165,16 @@ jamais `emailVerified`. Remboursement et litige retirent l'accès. Les deux circ
 transmettent l'identifiant de compte. Garde-fou : `npm run audit:stripe-webhook`,
 28 contrôles, dans `audit:all`.
 
-⚠️ **Les deux drapeaux `CHECKOUT_DISPONIBLE` restent à `false`** —
-`pricing/page.tsx` et `en/premium.html`. Il ne reste plus que de la configuration,
-côté Pierre : déclarer l'endpoint `https://tennisstringadvisor.org/api/stripe/webhook`
-dans Stripe (`checkout.session.completed`, `checkout.session.async_payment_succeeded`,
-`invoice.payment_succeeded`, `customer.subscription.deleted`, `charge.refunded`,
-`charge.dispute.created`), poser `STRIPE_WEBHOOK_SECRET` et `STRIPE_SECRET_KEY` dans
-Netlify, puis lever les deux drapeaux. **Dette assumée** : pas de table
-`StripeEvent` (migration, donc gate `db-guardian`), donc l'idempotence couvre le
-rejeu mais pas tous les ordres d'arrivée. Deux points non tranchés : la **limite de
+✅ **Le paiement est ouvert** depuis le 13/09/2026 — les deux drapeaux
+`CHECKOUT_DISPONIBLE` sont à `true` (`pricing/page.tsx`, `en/premium.html`).
+L'endpoint est déclaré dans Stripe sur six événements et les deux secrets sont dans
+Netlify ; la preuve est que `POST /api/stripe/webhook` en production répond **400
+« Signature absente »** et non plus 500. **Aucun paiement sans compte** : un visiteur
+non connecté est envoyé vers `/auth/signin?callbackUrl=/pricing` plutôt que vers
+Stripe, sans quoi son paiement arriverait sans `client_reference_id` et resterait
+inrattachable. **Dette assumée** : pas de table `StripeEvent` (migration, donc gate
+`db-guardian`), donc l'idempotence couvre le rejeu mais pas tous les ordres
+d'arrivée. Deux points non tranchés : la **limite de
 quantité** sur le lien à vie — `LIFETIME_SEATS` cesse d'afficher l'offre au 200ᵉ,
 mais ne protège rien, une URL connue restant ouvrable ; seule une limite posée
 dans Stripe l'empêche — et le fait que l'offre à vie, à 19,99 €, **rend les deux
@@ -486,4 +495,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.1.8 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.1.9 — Tennis String Advisor — « Mesurer avant d'affirmer. »*

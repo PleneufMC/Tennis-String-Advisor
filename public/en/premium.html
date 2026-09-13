@@ -394,12 +394,11 @@
       console.error('Supabase init error:', e);
     }
 
-    // Les trois Payment Links ci-dessous sont valides — produit, montant et
-    // recurrence lus sur la page de paiement Stripe. Mais aucun webhook ne
-    // consomme le paiement : un client qui paie resterait plafonne a
-    // 3 configurations. Tant que src/app/api/stripe/ n'existe pas, aucun bouton
-    // ne doit mener a un encaissement. Repasser a true avec le webhook.
-    const CHECKOUT_DISPONIBLE = false;
+    // Ouvert : les trois Payment Links sont verifies — produit, montant et
+    // recurrence lus sur la page de paiement Stripe — et le webhook
+    // src/app/api/stripe/webhook consomme le paiement, donc un achat active
+    // reellement le compte. Repasser a false si la chaine se rompt.
+    const CHECKOUT_DISPONIBLE = true;
     const CONTACT_EMAIL = 'pleneuftrading@gmail.com';
 
     const PAYMENT_LINKS = {
