@@ -1,11 +1,49 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 
+// Payment Links vérifiés un par un : produit, montant et récurrence lus sur la
+// page de paiement Stripe, en français et en anglais.
+const STRIPE_LINKS = {
+  monthly: 'https://buy.stripe.com/4gM6oH8uT2kGaNw4XO8Vi0b',   // 4,99 € par mois
+  yearly: 'https://buy.stripe.com/4gM9AT26v3oK7Bk9e48Vi0f',    // 49,99 € par an
+  lifetime: 'https://buy.stripe.com/6oUbJ19yXcZkbRAcqg8Vi0d',  // 19,99 € une fois
+};
+
+// Les liens ci-dessus sont valides, mais aucun webhook ne consomme le paiement :
+// un client qui paie resterait plafonné à 3 configurations. Tant que
+// src/app/api/stripe/ n'existe pas, annoncer l'indisponibilité plutôt
+// qu'encaisser sans livrer. Repasser à true avec le webhook, pas avant.
+const CHECKOUT_DISPONIBLE = false;
+const CONTACT_EMAIL = 'pleneuftrading@gmail.com';
+
 export default function PricingPage() {
+  const { data: session } = useSession();
   const [loading, setLoading] = useState<string | null>(null);
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
+  // L'offre à vie cesse d'être proposée une fois les places prises. Optimiste
+  // par défaut : on n'efface pas une offre valide tant que rien ne dit qu'elle
+  // est épuisée.
+  const [lifetimeAvailable, setLifetimeAvailable] = useState(true);
+
+  useEffect(() => {
+    let annule = false;
+    fetch('/api/premium/lifetime-seats')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (!annule && data && typeof data.available === 'boolean') {
+          setLifetimeAvailable(data.available);
+        }
+      })
+      .catch(() => {
+        /* Lecture impossible : l'offre reste affichée. */
+      });
+    return () => {
+      annule = true;
+    };
+  }, []);
 
   const plans = [
     {
@@ -31,8 +69,8 @@ export default function PricingPage() {
     {
       id: 'premium',
       name: 'Premium',
-      price: { monthly: 4.99, yearly: 49.90 },
-      savings: '2 mois gratuits',
+      price: { monthly: 4.99, yearly: 49.99 },
+      savings: 'près de 2 mois offerts',
       features: [
         '✅ Tout du plan gratuit',
         '✅ Configurations illimitées',
@@ -43,19 +81,50 @@ export default function PricingPage() {
       buttonStyle: 'primary',
       popular: true,
       stripeLinks: {
-        monthly: 'https://buy.stripe.com/4gMcN56mL5wS3l44XO8Vi01',
-        yearly: 'https://buy.stripe.com/9B600jeThbVgcVEfCs8Vi02'
+        monthly: STRIPE_LINKS.monthly,
+        yearly: STRIPE_LINKS.yearly
+      }
+    },
+    {
+      id: 'lifetime',
+      name: 'À vie',
+      // Paiement unique : le prix ne suit pas la bascule mensuel / annuel.
+      price: { monthly: 19.99, yearly: 19.99 },
+      oneTime: true,
+      features: [
+        '✅ Tout du plan Premium',
+        '✅ Payé une seule fois, sans abonnement',
+        '✅ Configurations illimitées',
+        '✅ Analyse RCS avancée',
+        '✅ Export PDF professionnel'
+      ],
+      note: 'Prix réservé aux 200 premiers.',
+      buttonText: 'Accès à vie',
+      buttonStyle: 'primary',
+      popular: false,
+      stripeLinks: {
+        monthly: STRIPE_LINKS.lifetime,
+        yearly: STRIPE_LINKS.lifetime
       }
     }
   ];
 
   const handleCheckout = async (plan: any) => {
-    if (!plan.stripeLinks) return;
-    
+    if (!plan.stripeLinks || !CHECKOUT_DISPONIBLE) return;
+
     setLoading(plan.id);
-    
-    // Redirection directe vers les liens de paiement Stripe
-    const checkoutUrl = plan.stripeLinks[billingPeriod];
+
+    // Redirection vers le Payment Link, en lui transmettant de quoi rattacher
+    // le paiement à un compte. Sans `client_reference_id`, le webhook reçoit un
+    // encaissement qu'il ne sait associer à personne.
+    const params = new URLSearchParams();
+    const userId = (session?.user as { id?: string } | undefined)?.id;
+    if (userId) params.set('client_reference_id', userId);
+    if (session?.user?.email) params.set('prefilled_email', session.user.email);
+    const query = params.toString();
+    const checkoutUrl = query
+      ? `${plan.stripeLinks[billingPeriod]}?${query}`
+      : plan.stripeLinks[billingPeriod];
     
     // Ajouter un petit délai pour l'animation
     setTimeout(() => {
@@ -195,7 +264,7 @@ export default function PricingPage() {
         position: 'relative',
         zIndex: 1
       }}>
-        {plans.map((plan) => (
+        {plans.filter((plan) => plan.id !== 'lifetime' || lifetimeAvailable).map((plan) => (
           <div
             key={plan.id}
             style={{
@@ -250,8 +319,18 @@ export default function PricingPage() {
                 color: 'var(--text-muted)',
                 marginLeft: '0.5rem'
               }}>
-                /{billingPeriod === 'monthly' ? 'mois' : 'an'}
+                {plan.oneTime ? 'une fois' : `/${billingPeriod === 'monthly' ? 'mois' : 'an'}`}
               </span>
+              {plan.note && (
+                <div style={{
+                  marginTop: '0.5rem',
+                  fontSize: '0.875rem',
+                  color: 'var(--text-muted)',
+                  fontWeight: '500'
+                }}>
+                  {plan.note}
+                </div>
+              )}
               {billingPeriod === 'yearly' && plan.savings && (
                 <div style={{
                   marginTop: '0.5rem',
@@ -286,11 +365,12 @@ export default function PricingPage() {
             
             <button
               onClick={() => plan.id !== 'free' && handleCheckout(plan)}
-              disabled={loading === plan.id || plan.id === 'free'}
+              disabled={loading === plan.id || plan.id === 'free' || (!CHECKOUT_DISPONIBLE && !!plan.stripeLinks)}
               style={{
                 width: '100%',
                 padding: '0.75rem',
-                backgroundColor: 
+                backgroundColor:
+                  !CHECKOUT_DISPONIBLE && plan.stripeLinks ? '#4b5563' :
                   plan.id === 'free' ? '#e5e7eb' :
                   plan.popular ? '#10b981' :
                   plan.buttonStyle === 'enterprise' ? '#3b82f6' : 'var(--text-muted)',
@@ -299,7 +379,7 @@ export default function PricingPage() {
                 border: 'none',
                 fontWeight: 'bold',
                 fontSize: '1rem',
-                cursor: plan.id === 'free' ? 'default' : 'pointer',
+                cursor: plan.id === 'free' || (!CHECKOUT_DISPONIBLE && plan.stripeLinks) ? 'default' : 'pointer',
                 transition: 'all 0.3s',
                 opacity: loading === plan.id ? 0.7 : 1
               }}
@@ -314,8 +394,26 @@ export default function PricingPage() {
                 e.currentTarget.style.boxShadow = 'none';
               }}
             >
-              {loading === plan.id ? 'Chargement...' : plan.buttonText}
+              {!CHECKOUT_DISPONIBLE && plan.stripeLinks
+                ? 'Abonnement temporairement indisponible'
+                : loading === plan.id ? 'Chargement...' : plan.buttonText}
             </button>
+
+            {!CHECKOUT_DISPONIBLE && plan.stripeLinks && (
+              <p style={{
+                marginTop: '0.75rem',
+                fontSize: '0.8125rem',
+                lineHeight: 1.5,
+                color: 'var(--text-muted)',
+                textAlign: 'center'
+              }}>
+                La souscription est momentanément fermée. Le configurateur et le
+                calcul RCS restent gratuits et complets.{' '}
+                <a href={`mailto:${CONTACT_EMAIL}`} style={{ color: '#047857', fontWeight: 600 }}>
+                  {CONTACT_EMAIL}
+                </a>
+              </p>
+            )}
           </div>
         ))}
       </div>
