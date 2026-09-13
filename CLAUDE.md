@@ -1,11 +1,18 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.1.4
+> **Version** : 2.1.5
 > **Date** : 13 septembre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
 > **Branche de référence** : `genspark_ai_developer`
 > **Repo** : https://github.com/PleneufMC/Tennis-String-Advisor.git
+
+**Changelog v2.1.4 → v2.1.5** — Suite du 13/09/2026, même branche. Le
+débordement de 92 px à 1024 px est **corrigé** (nav resserrée entre `lg` et
+`xl`). Côté anglais, deux affirmations fausses sur le prix sont retirées :
+l'offre « Lifetime 19,99 € » — annoncée 7 fois, vendue nulle part — et la
+devise `$` sur 16 montants réellement facturés en euros. L'écart tarifaire
+FR/EN lui-même reste ouvert (UX-05).
 
 **Changelog v2.1.3 → v2.1.4** — Lot 1 de l'audit UX/UI du 13/09/2026
 (UX-01, UX-02, UX-03, volet honnêteté d'UX-04), branche
@@ -113,7 +120,12 @@ corrigé dans la même PR.
 
 | # | Problème | Impact |
 |---|---|---|
-| 1 | **Aucun webhook Stripe.** ⚠️ Complété le 13/09/2026 : les **deux Payment Links FR** renvoient « The link is no longer active. » (navigation réelle, HTTP 200 + page d'erreur Stripe), tandis que les **deux liens EN de `public/en/premium.html` sont actifs** — à **2,99 €/mois et 24,99 €/an**, soit la moitié des tarifs annoncés en FR (4,99 / 49,90). Un visiteur EN peut donc payer aujourd'hui, sans qu'aucun droit ne s'active. Côté FR, le CTA est désamorcé depuis `pricing/page.tsx` (drapeau `CHECKOUT_DISPONIBLE`) et annonce l'indisponibilité. Côté EN, **rien n'est fait : décision commerciale en attente.** Le Payment Link FR ne transporte pas `client_reference_id`, rien n'écrit `isPremium`. Et un **second circuit de paiement EN** existe en parallèle (`public/en/premium.html` : Supabase Auth direct, **2** Payment Links libellés en **€** — et non 3 en $ —, tarifs divergents ; l'offre « Lifetime 19,99 € » affichée sur `public/en/configurator.html` n'a **aucun Payment Link** : son lien mène à `premium.html`, qui vend un abonnement) — **4** Payment Links au total, chacun ouvert et vérifié le 13/09/2026, 2 systèmes d'identité, 0 consommateur serveur. | Un client qui paie reste plafonné à 3 configs. La page `payment-success` a été désamorcée (13/08) : elle annonce désormais une activation manuelle sous 24 h au lieu de mentir. |
+| 1 | **Aucun webhook Stripe.** ⚠️ Complété le 13/09/2026 : les **deux Payment Links FR** renvoient « The link is no longer active. » (navigation réelle, HTTP 200 + page d'erreur Stripe), tandis que les **deux liens EN de `public/en/premium.html` sont actifs** — à **2,99 €/mois et 24,99 €/an**, soit la moitié des tarifs annoncés en FR (4,99 / 49,90). Un visiteur EN peut donc payer aujourd'hui, sans qu'aucun droit ne s'active. Côté FR, le CTA est désamorcé depuis `pricing/page.tsx` (drapeau `CHECKOUT_DISPONIBLE`) et annonce l'indisponibilité. Côté EN, le **checkout reste ouvert** (décision commerciale en attente), mais
+les **affirmations fausses qui l'entouraient sont retirées** : l'offre « Lifetime
+19,99 € », annoncée 7 fois dans `en/configurator.html` et `en/faq.html` sans
+qu'aucun Payment Link ne la vende, et la devise `$` sur 16 montants facturés en
+euros. **Reste entier l'écart de grille** — 4,99 € / 49,90 € affichés en FR contre
+2,99 € / 24,99 € facturés en EN : c'est UX-05, un arbitrage, pas un bug. Le Payment Link FR ne transporte pas `client_reference_id`, rien n'écrit `isPremium`. Et un **second circuit de paiement EN** existe en parallèle (`public/en/premium.html` : Supabase Auth direct, **2** Payment Links libellés en **€** — et non 3 en $ —, tarifs divergents ; l'offre « Lifetime 19,99 € » affichée sur `public/en/configurator.html` n'a **aucun Payment Link** : son lien mène à `premium.html`, qui vend un abonnement) — **4** Payment Links au total, chacun ouvert et vérifié le 13/09/2026, 2 systèmes d'identité, 0 consommateur serveur. | Un client qui paie reste plafonné à 3 configs. La page `payment-success` a été désamorcée (13/08) : elle annonce désormais une activation manuelle sous 24 h au lieu de mentir. |
 | 2 | **Affiliation câblée mais inactive.** `NEXT_PUBLIC_AWIN_ID` et `NEXT_PUBLIC_AWIN_TENNISPOINT_MID` vides → liens directs non rémunérés. ⚠️ Ces variables `NEXT_PUBLIC_*` sont inlinées au build : les renseigner dans Netlify **exige un redéploiement** (les commentaires « sans redéploiement » dans `affiliate.ts` et `.env.example` sont faux). | 0 € sur 100 % des clics. |
 | 3 | **Résolu depuis le 13/08** (`15c6649`), constaté dans le code le 31/08 : import `BuyButton` ligne 16 de `configurator/page.tsx`, trois instances (cordage principal, travers, raquette) sous « Acheter ce setup — liens partenaires », placées après le bloc RCS conformément à la règle 1. Vérifié **en exécution** le 31/08 par `tsa-revenue` (Playwright, stub gtag) : liens `rel="sponsored"` vers tennis-point.fr en HTTP 200, alertes bras `role="alert"` affichées AVANT les liens (règle 2), séquence `configurator_step` → `arm_warning_shown` → `configurator_result_view` → `configurator_complete` → `affiliate_click` complète, bascule Awin vérifiée en dev ET sur build de production (`npm run build` exit 0 dans les deux cas ; sans variables : lien tennis-point.fr direct, `link_type: direct` ; avec `NEXT_PUBLIC_AWIN_ID`/`_TENNISPOINT_MID` factices : lien `awin1.com/cread.php?awinmid=…&awinaffid=…&ued=…`, `link_type: awin` — zéro changement de code entre les deux builds). L'entrée du 13/08 était périmée le jour même de sa rédaction. | Le moment de plus forte intention est équipé. Ces clics restent non rémunérés tant que le point 2 (AWIN) tient — c'est le point 2, pas celui-ci. Verrou `configurator/page.tsx` rendu par `tsa-revenue` le 31/08 (surface d'émission `location` propagée sur les 6 appelants, merge `c93ef38`). Procédure d'activation et de vérification : `reports/r2-activation-awin.md`. |
 | 4 | **Incitation inversée du quota** (reformulé 13/08 — il n'existe **aucun mur d'authentification** : pas de middleware, configurateur 100 % public). L'anonyme sauvegarde en illimité dans `localStorage` ; se connecter impose le quota de 3 (`premium.ts` appliqué seulement dans `POST /api/configurations`). Créer un compte retire une capacité. Les chiffres (160 vues signin vs 45 configurateur, 39 `form_start` → 1 `form_submit`) décrivent un problème de navigation/attractivité, pas un blocage technique. | L'entonnoir compte → premium est à l'envers. Arbitrage A5 en attente. |
@@ -156,10 +168,12 @@ UX/UI du 13/09 puis reproduits en mesure Playwright avant correction :
   la souris par l'audit.
 - **CTA Premium FR** : menait à un Payment Link mort (voir point 1).
 
-Non traité : le débordement de 92 px à 1024 px, commun à toutes les pages,
-causé par un groupe d'actions du header (`div.flex.items-center.gap-1.5`, lien
-`hidden sm:inline-flex` sortant à 1116 px). Fichier partagé, hors périmètre du
-lot — à arbitrer.
+- **Toutes les pages entre 1024 et 1120 px** : la barre de navigation
+  demandait 1061 px pour 960 px de rangée utile — la nav complète s'affiche dès
+  `lg` sans jamais se compresser, au moment même où le bouton de menu mobile
+  disparaît. Corrigé en resserrant la nav entre `lg` et `xl` ; espacements
+  pleins retrouvés dès `xl`, aucun lien masqué. Débordement 69/36 px → 0.
+  Défaut absent de l'audit, qui ne teste que 390 et 1440 px.
 
 ### La mesure (1er janv. → 9 août 2026, 221 jours)
 
@@ -417,4 +431,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.1.4 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.1.5 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
