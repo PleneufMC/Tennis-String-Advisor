@@ -3,6 +3,12 @@
 import { useState } from 'react';
 import Link from 'next/link';
 
+// Les deux Payment Links FR renvoient « The link is no longer active. » côté
+// Stripe. Tant qu'ils ne sont pas remplacés, annoncer l'indisponibilité plutôt
+// que rediriger vers une impasse. Repasser à true quand les liens sont vérifiés.
+const CHECKOUT_DISPONIBLE = false;
+const CONTACT_EMAIL = 'pleneuftrading@gmail.com';
+
 export default function PricingPage() {
   const [loading, setLoading] = useState<string | null>(null);
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
@@ -50,7 +56,7 @@ export default function PricingPage() {
   ];
 
   const handleCheckout = async (plan: any) => {
-    if (!plan.stripeLinks) return;
+    if (!plan.stripeLinks || !CHECKOUT_DISPONIBLE) return;
     
     setLoading(plan.id);
     
@@ -286,11 +292,12 @@ export default function PricingPage() {
             
             <button
               onClick={() => plan.id !== 'free' && handleCheckout(plan)}
-              disabled={loading === plan.id || plan.id === 'free'}
+              disabled={loading === plan.id || plan.id === 'free' || (!CHECKOUT_DISPONIBLE && !!plan.stripeLinks)}
               style={{
                 width: '100%',
                 padding: '0.75rem',
-                backgroundColor: 
+                backgroundColor:
+                  !CHECKOUT_DISPONIBLE && plan.stripeLinks ? '#4b5563' :
                   plan.id === 'free' ? '#e5e7eb' :
                   plan.popular ? '#10b981' :
                   plan.buttonStyle === 'enterprise' ? '#3b82f6' : 'var(--text-muted)',
@@ -299,7 +306,7 @@ export default function PricingPage() {
                 border: 'none',
                 fontWeight: 'bold',
                 fontSize: '1rem',
-                cursor: plan.id === 'free' ? 'default' : 'pointer',
+                cursor: plan.id === 'free' || (!CHECKOUT_DISPONIBLE && plan.stripeLinks) ? 'default' : 'pointer',
                 transition: 'all 0.3s',
                 opacity: loading === plan.id ? 0.7 : 1
               }}
@@ -314,8 +321,26 @@ export default function PricingPage() {
                 e.currentTarget.style.boxShadow = 'none';
               }}
             >
-              {loading === plan.id ? 'Chargement...' : plan.buttonText}
+              {!CHECKOUT_DISPONIBLE && plan.stripeLinks
+                ? 'Abonnement temporairement indisponible'
+                : loading === plan.id ? 'Chargement...' : plan.buttonText}
             </button>
+
+            {!CHECKOUT_DISPONIBLE && plan.stripeLinks && (
+              <p style={{
+                marginTop: '0.75rem',
+                fontSize: '0.8125rem',
+                lineHeight: 1.5,
+                color: 'var(--text-muted)',
+                textAlign: 'center'
+              }}>
+                La souscription est momentanément fermée. Le configurateur et le
+                calcul RCS restent gratuits et complets.{' '}
+                <a href={`mailto:${CONTACT_EMAIL}`} style={{ color: '#047857', fontWeight: 600 }}>
+                  {CONTACT_EMAIL}
+                </a>
+              </p>
+            )}
           </div>
         ))}
       </div>
