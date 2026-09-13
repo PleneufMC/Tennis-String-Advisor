@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 
 // Payment Links vérifiés un par un : produit, montant et récurrence lus sur la
@@ -19,8 +20,30 @@ const CHECKOUT_DISPONIBLE = false;
 const CONTACT_EMAIL = 'pleneuftrading@gmail.com';
 
 export default function PricingPage() {
+  const { data: session } = useSession();
   const [loading, setLoading] = useState<string | null>(null);
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
+  // L'offre à vie cesse d'être proposée une fois les places prises. Optimiste
+  // par défaut : on n'efface pas une offre valide tant que rien ne dit qu'elle
+  // est épuisée.
+  const [lifetimeAvailable, setLifetimeAvailable] = useState(true);
+
+  useEffect(() => {
+    let annule = false;
+    fetch('/api/premium/lifetime-seats')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (!annule && data && typeof data.available === 'boolean') {
+          setLifetimeAvailable(data.available);
+        }
+      })
+      .catch(() => {
+        /* Lecture impossible : l'offre reste affichée. */
+      });
+    return () => {
+      annule = true;
+    };
+  }, []);
 
   const plans = [
     {
@@ -88,11 +111,20 @@ export default function PricingPage() {
 
   const handleCheckout = async (plan: any) => {
     if (!plan.stripeLinks || !CHECKOUT_DISPONIBLE) return;
-    
+
     setLoading(plan.id);
-    
-    // Redirection directe vers les liens de paiement Stripe
-    const checkoutUrl = plan.stripeLinks[billingPeriod];
+
+    // Redirection vers le Payment Link, en lui transmettant de quoi rattacher
+    // le paiement à un compte. Sans `client_reference_id`, le webhook reçoit un
+    // encaissement qu'il ne sait associer à personne.
+    const params = new URLSearchParams();
+    const userId = (session?.user as { id?: string } | undefined)?.id;
+    if (userId) params.set('client_reference_id', userId);
+    if (session?.user?.email) params.set('prefilled_email', session.user.email);
+    const query = params.toString();
+    const checkoutUrl = query
+      ? `${plan.stripeLinks[billingPeriod]}?${query}`
+      : plan.stripeLinks[billingPeriod];
     
     // Ajouter un petit délai pour l'animation
     setTimeout(() => {
@@ -232,7 +264,7 @@ export default function PricingPage() {
         position: 'relative',
         zIndex: 1
       }}>
-        {plans.map((plan) => (
+        {plans.filter((plan) => plan.id !== 'lifetime' || lifetimeAvailable).map((plan) => (
           <div
             key={plan.id}
             style={{

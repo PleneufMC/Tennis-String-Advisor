@@ -42,6 +42,23 @@ export function isPremiumActive(user: PremiumStatusInput | null | undefined): bo
 export const FREE_PLAN_MAX_CONFIGS = 3;
 export const PREMIUM_MAX_CONFIGS = 500;
 
+/**
+ * Offre à vie : nombre de places au prix de lancement.
+ *
+ * ⚠️ Cette constante ne PROTÈGE rien : elle sert à cesser d'afficher l'offre
+ * une fois les places prises. La seule garantie qu'un 201ᵉ acheteur ne puisse
+ * pas payer est une **limite de quantité posée sur le Payment Link dans
+ * Stripe** — une URL connue reste ouvrable sans passer par le site.
+ */
+export const LIFETIME_SEATS = 200;
+
+/**
+ * Signature d'un accès à vie en base : premium actif sans échéance.
+ * Les comptes débloqués manuellement partagent cette signature et sont donc
+ * comptés ici ; c'est assumé, pour ne pas ajouter de colonne au schéma.
+ */
+export const LIFETIME_USER_WHERE = { isPremium: true, premiumUntil: null } as const;
+
 /** Plafond de configurations applicable à un utilisateur selon son statut. */
 export function maxConfigsFor(user: PremiumStatusInput | null | undefined): number {
   return isPremiumActive(user) ? PREMIUM_MAX_CONFIGS : FREE_PLAN_MAX_CONFIGS;

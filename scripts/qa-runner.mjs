@@ -23,6 +23,7 @@ const CHECKS = [
   { name: 'database', cmd: 'npm', args: ['run', '--silent', 'audit:database'] },
   { name: 'ratings', cmd: 'npm', args: ['run', '--silent', 'audit:ratings'] },
   { name: 'blog-funnel', cmd: 'npm', args: ['run', '--silent', 'audit:blog-funnel'] },
+  { name: 'stripe-webhook', cmd: 'npm', args: ['run', '--silent', 'audit:stripe-webhook'] },
   { name: 'security', cmd: 'npm', args: ['run', '--silent', 'audit:security'] },
 ];
 
