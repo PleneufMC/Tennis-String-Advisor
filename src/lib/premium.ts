@@ -53,6 +53,21 @@ export const PREMIUM_MAX_CONFIGS = 500;
 export const LIFETIME_SEATS = 200;
 
 /**
+ * Grille tarifaire, en centimes d'euro. Le webhook refuse d'accorder quoi que
+ * ce soit a un montant qui n'y figure pas : sans cette liste, « tout paiement
+ * unique encaisse sur le compte Stripe » vaudrait acces a vie, et le jour ou un
+ * second produit ponctuel existe — un guide, un don — ses acheteurs
+ * recevraient le premium. Un code promo a 100 % est ecarte par la meme regle.
+ *
+ * A tenir a jour avec les Payment Links : un prix modifie dans Stripe sans
+ * l'etre ici fait echouer l'activation, et la trace le dit, plutot que de
+ * l'accorder a l'aveugle.
+ */
+export const PRIX_A_VIE_CENTIMES = 1999;
+export const PRIX_ABONNEMENT_CENTIMES: ReadonlySet<number> = new Set([499, 4999]);
+export const DEVISE = 'eur';
+
+/**
  * Signature d'un accès à vie en base : premium actif sans échéance.
  * Les comptes débloqués manuellement partagent cette signature et sont donc
  * comptés ici ; c'est assumé, pour ne pas ajouter de colonne au schéma.

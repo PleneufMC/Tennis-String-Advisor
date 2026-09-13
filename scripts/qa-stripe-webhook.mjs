@@ -26,7 +26,26 @@
  *  6. les circuits FR et EN portent exactement les mêmes Payment Links ;
  *  7. aucun lien buy.stripe.com ailleurs que dans ces deux fichiers ;
  *  8. les deux drapeaux CHECKOUT_DISPONIBLE existent (la fermeture reste
- *     pilotable d'un seul endroit par circuit).
+ *     pilotable d'un seul endroit par circuit) ;
+ *  9. « completed » n'est pas confondu avec « payé » : les moyens à
+ *     notification différée (SEPA, ACH...) émettent l'événement avec
+ *     payment_status « unpaid », et un prélèvement qui échouera ensuite
+ *     donnerait un accès à vie irrévocable ;
+ * 10. l'e-mail du payeur ne rattache aucun paiement à un compte : Stripe ne
+ *     vérifie pas qu'il appartient à celui qui le saisit, et l'application ne
+ *     renseigne jamais emailVerified ;
+ * 11. aucun cast `as unknown as` : ils neutralisent le seul vérificateur
+ *     automatique de ce fichier, et masqueraient un changement de forme de
+ *     l'API Stripe qui transformerait chaque abonnement en accès à vie ;
+ * 12. la version d'API Stripe est épinglée, pour qu'une montée de version
+ *     devienne une erreur de compilation plutôt qu'un changement muet ;
+ * 13. remboursement et litige retirent l'accès ;
+ * 14. les retraits d'accès passent par des écritures conditionnelles
+ *     (updateMany), sans lecture préalable : une lecture suivie d'une écriture
+ *     laisse une fenêtre pendant laquelle un autre événement s'intercale ;
+ * 15. une erreur de base permanente est acquittée, pas rejouée : Stripe
+ *     désactive un endpoint durablement en échec, et les événements de tous
+ *     les autres clients seraient perdus avec.
  */
 import { readFileSync, existsSync } from 'node:fs';
 import { execSync } from 'node:child_process';
@@ -76,9 +95,20 @@ verifier(!/sk_(live|test)_[A-Za-z0-9]/.test(webhook), 'aucune clé secrète Stri
 verifier(/process\.env\.STRIPE_WEBHOOK_SECRET/.test(webhook), 'le secret vient de l’environnement');
 
 // 5. L'accès à vie survit à la fin d'un abonnement
+// La protection n'est plus une lecture puis un test, mais une clause SQL :
+// `premiumUntil: { not: null }` exclut les titulaires permanents au moment
+// meme de l'ecriture, ce qui supprime la fenetre de course.
+const blocSubDeleted = webhook.slice(
+  webhook.indexOf("case 'customer.subscription.deleted'"),
+  webhook.indexOf("case 'charge.refunded'")
+);
 verifier(
-  /user\.isPremium\s*&&\s*user\.premiumUntil\s*===\s*null/.test(webhook),
+  /retirerPremium\([^)]*'sauf-a-vie'\)/.test(blocSubDeleted),
   'un accès à vie n’est pas révoqué par customer.subscription.deleted'
+);
+verifier(
+  /'sauf-a-vie'[\s\S]{0,400}premiumUntil:\s*\{\s*not:\s*null\s*\}/.test(webhook),
+  'la portée « sauf-a-vie » se traduit bien par une clause premiumUntil non nul'
 );
 
 // 6 et 7. Une seule grille de liens pour les deux circuits
@@ -104,6 +134,28 @@ try {
 const fichiersAvecLiens = ailleurs.split('\n').map((l) => l.trim().split(String.fromCharCode(92)).join('/')).filter(Boolean);
 const inattendus = fichiersAvecLiens.filter((f) => f !== FR && f !== EN);
 verifier(inattendus.length === 0, `aucun lien de paiement hors des deux circuits${inattendus.length ? ` (trouvés : ${inattendus.join(', ')})` : ''}`);
+
+// 9 a 15. Invariants issus de la revue de securite
+verifier(/payment_status\s*!==\s*'paid'/.test(webhook), 'un paiement non encaisse (SEPA en attente) n active rien');
+verifier(/async_payment_succeeded/.test(webhook), 'la confirmation tardive d un paiement differe est traitee');
+verifier(
+  !/findUnique\(\s*\{\s*where:\s*\{\s*email/.test(webhook),
+  'aucun rattachement de paiement par l e-mail du payeur'
+);
+verifier(!/as unknown as/.test(webhook), 'aucun cast `as unknown as` ne neutralise le typage Stripe');
+verifier(/apiVersion:\s*'[0-9]{4}-[0-9]{2}-[0-9]{2}'/.test(webhook), 'la version d API Stripe est epinglee');
+verifier(/case 'charge\.refunded'/.test(webhook), 'un remboursement retire l acces');
+verifier(/case 'charge\.dispute\.created'/.test(webhook), 'un litige retire l acces');
+verifier(
+  /updateMany\(/.test(webhook) && !/findUnique[\s\S]{0,400}?isPremium:\s*false/.test(webhook),
+  'les retraits d acces sont des ecritures conditionnelles, sans lecture prealable'
+);
+verifier(/PrismaClientKnownRequestError/.test(webhook), 'une erreur de base permanente est acquittee, pas rejouee');
+verifier(/content-length/.test(webhook), 'la taille du corps est bornee avant lecture');
+verifier(
+  /PRIX_A_VIE_CENTIMES/.test(webhook) && /PRIX_ABONNEMENT_CENTIMES/.test(webhook),
+  'seuls les montants au catalogue declenchent une activation'
+);
 
 // 8. La fermeture reste pilotable
 verifier(/const CHECKOUT_DISPONIBLE\s*=/.test(fr), 'le circuit FR garde son drapeau CHECKOUT_DISPONIBLE');

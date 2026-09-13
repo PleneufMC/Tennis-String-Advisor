@@ -1,62 +1,188 @@
 import { NextResponse } from 'next/server';
+import { Prisma } from '@prisma/client';
 import Stripe from 'stripe';
 import { prisma } from '@/lib/db';
+import { PRIX_A_VIE_CENTIMES, PRIX_ABONNEMENT_CENTIMES, DEVISE } from '@/lib/premium';
 
 /**
  * Webhook Stripe — seul consommateur serveur des paiements.
  *
- * Sans cette route, un client qui paie reste plafonné au quota gratuit :
- * les Payment Links encaissent, mais rien n'écrit `isPremium`. C'est elle qui
- * ferme la chaîne entre Stripe et `src/lib/premium.ts`.
+ * Sans cette route, un client qui paie reste plafonné au quota gratuit : les
+ * Payment Links encaissent, mais rien n'écrit `isPremium`. C'est elle qui ferme
+ * la chaîne entre Stripe et `src/lib/premium.ts`.
  *
- * Trois natures d'événements sont traitées :
- *   - `checkout.session.completed`      : première activation (abonnement ou à vie) ;
- *   - `invoice.payment_succeeded`       : renouvellement, repousse l'échéance ;
- *   - `customer.subscription.deleted`   : fin d'abonnement, retrait du premium.
+ * ── Principe directeur : échouer FERMÉ ────────────────────────────────────
+ * `premiumUntil = null` avec `isPremium = true` signifie premium PERMANENT,
+ * c'est-à-dire l'offre à vie (cf. `premium.ts`). C'est l'état le plus coûteux à
+ * accorder : il ne doit jamais être une valeur par défaut, ni le résultat d'un
+ * calcul qui a échoué. Chaque activation exige ici une raison positive — un
+ * mode connu, un montant au catalogue, un paiement réellement encaissé. Tout ce
+ * qui n'est pas reconnu est acquitté sans écriture, avec une trace permettant
+ * la reprise manuelle.
  *
- * Sémantique de `premiumUntil`, fixée par `premium.ts` : une date = échéance ;
- * `null` avec `isPremium` à true = premium permanent, donc l'offre à vie.
+ * ── Identité ──────────────────────────────────────────────────────────────
+ * Seul `client_reference_id` rattache un paiement à un compte. L'e-mail du
+ * payeur n'est PAS accepté en repli : Stripe ne vérifie pas qu'il appartient à
+ * celui qui le saisit, et l'application ne renseigne jamais `emailVerified`.
+ * S'y fier reviendrait à rapprocher deux affirmations non vérifiées, et
+ * permettrait de faire créditer son propre compte du paiement d'autrui.
  *
- * Idempotence : toutes les écritures sont des affectations absolues, jamais des
- * incréments. Un même événement rejoué par Stripe produit le même état final.
+ * ── Dette assumée ─────────────────────────────────────────────────────────
+ * Il n'existe pas de table d'événements traités : l'idempotence repose sur des
+ * affectations absolues et des écritures conditionnelles, ce qui couvre le
+ * rejeu mais pas tous les ordres d'arrivée. Une table `StripeEvent` exigerait
+ * une migration, donc le gate `db-guardian`.
  */
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 const secretKey = process.env.STRIPE_SECRET_KEY;
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+/** Renseigné, il prime sur le contrôle par montant — insensible à un changement de tarif. */
+const priceAVie = process.env.STRIPE_PRICE_LIFETIME;
 
-/** Convertit un timestamp Stripe (secondes) en Date, ou null s'il est absent. */
-function toDate(seconds: number | null | undefined): Date | null {
-  return typeof seconds === 'number' ? new Date(seconds * 1000) : null;
+/** Un événement Stripe pèse quelques kilo-octets ; au-delà, on ne lit même pas. */
+const TAILLE_MAX_OCTETS = 1_048_576;
+
+// Client sans état : l'instancier par requête ne sert à rien. La version d'API
+// est épinglée pour qu'une montée de version devienne une erreur de compilation
+// visible plutôt qu'un changement de comportement silencieux.
+const stripe = secretKey ? new Stripe(secretKey, { apiVersion: '2024-06-20' }) : null;
+
+/** Acquittement explicite : Stripe ne doit pas rejouer ce qu'on refuse sciemment. */
+function acquitte(motif: string, details: Record<string, unknown> = {}) {
+  console.error('[stripe/webhook] non traite :', { motif, ...details });
+  return NextResponse.json({ received: true, matched: false });
 }
 
 /**
- * Retrouve le compte concerné. `client_reference_id` est la source la plus
- * fiable : il porte l'identifiant applicatif, transmis par le CTA. L'e-mail du
- * payeur ne sert que de repli, et n'est retenu que s'il correspond à un compte
- * existant — on ne crée jamais de compte depuis un webhook.
+ * Nature de l'achat, déduite de ce qui a RÉELLEMENT été payé.
+ * `undefined` quand rien ne correspond : l'appelant doit alors s'abstenir.
  */
-async function findUserId(
-  clientReferenceId: string | null | undefined,
-  email: string | null | undefined
-): Promise<string | null> {
-  if (clientReferenceId) {
-    const byId = await prisma.user.findUnique({ where: { id: clientReferenceId } });
-    if (byId) return byId.id;
+async function natureDeLAchat(
+  session: Stripe.Checkout.Session,
+  client: Stripe
+): Promise<'a-vie' | 'abonnement' | undefined> {
+  if (session.currency && session.currency.toLowerCase() !== DEVISE) return undefined;
+  const montant = session.amount_total;
+
+  if (session.mode === 'payment') {
+    if (priceAVie) {
+      const lignes = await client.checkout.sessions.listLineItems(session.id, { limit: 10 });
+      return lignes.data.some((l) => l.price?.id === priceAVie) ? 'a-vie' : undefined;
+    }
+    return montant === PRIX_A_VIE_CENTIMES ? 'a-vie' : undefined;
   }
-  if (email) {
-    const byEmail = await prisma.user.findUnique({ where: { email } });
-    if (byEmail) return byEmail.id;
+
+  if (session.mode === 'subscription') {
+    return typeof montant === 'number' && PRIX_ABONNEMENT_CENTIMES.has(montant)
+      ? 'abonnement'
+      : undefined;
   }
-  return null;
+
+  return undefined;
+}
+
+/** Active le premium à la suite d'une session effectivement réglée. */
+async function activerDepuisSession(session: Stripe.Checkout.Session, client: Stripe) {
+  // « completed » ne veut pas dire « payé » : les moyens à notification
+  // différée (SEPA, ACH, Boleto...) émettent l'événement avec payment_status
+  // « unpaid », puis async_payment_succeeded — ou async_payment_failed.
+  if (session.payment_status !== 'paid') {
+    return acquitte('paiement non encaisse', {
+      sessionId: session.id,
+      paymentStatus: session.payment_status,
+    });
+  }
+
+  const userId = session.client_reference_id;
+  if (!userId) {
+    return acquitte('aucun compte rattache (client_reference_id absent)', {
+      sessionId: session.id,
+    });
+  }
+
+  const nature = await natureDeLAchat(session, client);
+  if (!nature) {
+    return acquitte('achat non reconnu au catalogue', {
+      sessionId: session.id,
+      mode: session.mode,
+      montant: session.amount_total,
+      devise: session.currency,
+    });
+  }
+
+  // Tout ce qui peut invalider l'événement se résout AVANT d'ouvrir la base :
+  // interroger Supabase pour un événement de toute façon inexploitable coûte
+  // une connexion du pooler, et rendrait un 500 là où un acquittement suffit.
+  let echeance: Date | null = null;
+  if (nature === 'abonnement') {
+    if (typeof session.subscription !== 'string') {
+      return acquitte('abonnement sans identifiant exploitable', { sessionId: session.id });
+    }
+    const abonnement = await client.subscriptions.retrieve(session.subscription);
+    if (typeof abonnement.current_period_end !== 'number') {
+      return acquitte('echeance d abonnement illisible', { sessionId: session.id });
+    }
+    echeance = new Date(abonnement.current_period_end * 1000);
+  }
+
+  const utilisateur = await prisma.user.findUnique({ where: { id: userId } });
+  if (!utilisateur) {
+    return acquitte('compte introuvable', { sessionId: session.id });
+  }
+
+  const customerId = typeof session.customer === 'string' ? session.customer : null;
+  // Ne jamais réattribuer un identifiant client Stripe déjà posé : laisser
+  // faire permettrait de détourner les événements d'un abonné existant, et donc
+  // de lui retirer son accès en résiliant.
+  const conflitDeClient =
+    customerId !== null &&
+    utilisateur.stripeCustomerId !== null &&
+    utilisateur.stripeCustomerId !== customerId;
+  if (conflitDeClient) {
+    console.error('[stripe/webhook] identifiant client Stripe divergent, non ecrase :', {
+      userId,
+      sessionId: session.id,
+    });
+  }
+  const clientAEcrire = customerId && !conflitDeClient ? { stripeCustomerId: customerId } : {};
+
+  if (nature === 'a-vie') {
+    await prisma.user.update({
+      where: { id: userId },
+      data: { isPremium: true, premiumUntil: null, ...clientAEcrire },
+    });
+    return NextResponse.json({ received: true, matched: true });
+  }
+
+  // Un accès à vie déjà acquis ne se dégrade jamais en abonnement : la clause
+  // écarte les seuls titulaires permanents (isPremium true ET premiumUntil null).
+  await prisma.user.updateMany({
+    where: { id: userId, NOT: { isPremium: true, premiumUntil: null } },
+    data: { isPremium: true, premiumUntil: echeance, ...clientAEcrire },
+  });
+  return NextResponse.json({ received: true, matched: true });
+}
+
+/** Retire le premium d'un client Stripe, sans lecture préalable : pas de fenêtre de course. */
+async function retirerPremium(customerId: string, portee: 'tous' | 'sauf-a-vie') {
+  const where: Prisma.UserWhereInput =
+    portee === 'tous'
+      ? { stripeCustomerId: customerId }
+      : { stripeCustomerId: customerId, premiumUntil: { not: null } };
+  await prisma.user.updateMany({ where, data: { isPremium: false, premiumUntil: null } });
 }
 
 export async function POST(request: Request) {
-  if (!secretKey || !webhookSecret) {
-    // Mauvaise configuration serveur : on le dit sans détailler quelle clé manque.
+  if (!stripe || !webhookSecret) {
     console.error('[stripe/webhook] STRIPE_SECRET_KEY ou STRIPE_WEBHOOK_SECRET absent.');
-    return NextResponse.json({ error: 'Webhook non configuré.' }, { status: 500 });
+    return NextResponse.json({ error: 'Webhook non configure.' }, { status: 500 });
+  }
+
+  const taille = Number(request.headers.get('content-length') ?? '0');
+  if (taille > TAILLE_MAX_OCTETS) {
+    return NextResponse.json({ error: 'Charge utile trop volumineuse.' }, { status: 413 });
   }
 
   const signature = request.headers.get('stripe-signature');
@@ -64,77 +190,39 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Signature absente.' }, { status: 400 });
   }
 
-  // Corps BRUT obligatoire : toute reserialisation invalide la signature.
+  // Corps BRUT obligatoire : toute resérialisation invalide la signature.
   const payload = await request.text();
-  const stripe = new Stripe(secretKey);
 
   let event: Stripe.Event;
   try {
     event = stripe.webhooks.constructEvent(payload, signature, webhookSecret);
   } catch (error) {
-    // Signature invalide : la requête n'est pas de Stripe, on ne la traite pas.
-    console.error('[stripe/webhook] signature refusée :', (error as Error).message);
+    console.error('[stripe/webhook] signature refusee :', (error as Error).message);
     return NextResponse.json({ error: 'Signature invalide.' }, { status: 400 });
   }
 
   try {
     switch (event.type) {
-      case 'checkout.session.completed': {
-        const session = event.data.object as Stripe.Checkout.Session;
-
-        const userId = await findUserId(
-          session.client_reference_id,
-          session.customer_details?.email ?? session.customer_email
-        );
-        if (!userId) {
-          // Paiement sans compte rattachable : on ne devine pas. L'activation
-          // sera manuelle, et la trace ci-dessous permet de la retrouver.
-          console.error(
-            `[stripe/webhook] session ${session.id} sans compte rattachable ` +
-              `(client_reference_id=${session.client_reference_id ?? 'absent'}).`
-          );
-          return NextResponse.json({ received: true, matched: false });
-        }
-
-        // mode « payment » = achat unique, donc l'offre à vie : premium permanent.
-        // mode « subscription » = échéance portée par l'abonnement.
-        let premiumUntil: Date | null = null;
-        if (session.mode === 'subscription' && typeof session.subscription === 'string') {
-          const subscription = await stripe.subscriptions.retrieve(session.subscription);
-          premiumUntil = toDate((subscription as unknown as { current_period_end?: number }).current_period_end);
-        }
-
-        await prisma.user.update({
-          where: { id: userId },
-          data: {
-            isPremium: true,
-            premiumUntil,
-            ...(typeof session.customer === 'string' ? { stripeCustomerId: session.customer } : {}),
-          },
-        });
-        break;
-      }
+      // Paiement immédiat, et confirmation tardive des moyens différés.
+      case 'checkout.session.completed':
+      case 'checkout.session.async_payment_succeeded':
+        return await activerDepuisSession(event.data.object as Stripe.Checkout.Session, stripe);
 
       case 'invoice.payment_succeeded': {
-        // Renouvellement : on repousse l'échéance sans rien incrémenter.
+        // Renouvellement : on repousse l'échéance sans toucher un accès à vie
+        // ni ressusciter un compte déjà résilié.
         const invoice = event.data.object as Stripe.Invoice;
         const customerId = typeof invoice.customer === 'string' ? invoice.customer : null;
         if (!customerId) break;
 
-        const user = await prisma.user.findUnique({ where: { stripeCustomerId: customerId } });
-        if (!user) break;
+        const fin = invoice.lines?.data?.[0]?.period?.end;
+        if (typeof fin !== 'number') {
+          return acquitte('echeance de facture illisible', { invoiceId: invoice.id });
+        }
 
-        const periodEnd = toDate(
-          (invoice as unknown as { lines?: { data?: Array<{ period?: { end?: number } }> } })
-            .lines?.data?.[0]?.period?.end
-        );
-        // Sans échéance lisible, ne pas transformer un abonnement en premium
-        // permanent : on laisse l'état tel quel plutôt que d'offrir l'à-vie.
-        if (!periodEnd) break;
-
-        await prisma.user.update({
-          where: { id: user.id },
-          data: { isPremium: true, premiumUntil: periodEnd },
+        await prisma.user.updateMany({
+          where: { stripeCustomerId: customerId, premiumUntil: { not: null } },
+          data: { isPremium: true, premiumUntil: new Date(fin * 1000) },
         });
         break;
       }
@@ -144,29 +232,54 @@ export async function POST(request: Request) {
         const customerId =
           typeof subscription.customer === 'string' ? subscription.customer : null;
         if (!customerId) break;
+        // Un accès à vie ne dépend d'aucun abonnement : il survit à sa fin.
+        await retirerPremium(customerId, 'sauf-a-vie');
+        break;
+      }
 
-        const user = await prisma.user.findUnique({ where: { stripeCustomerId: customerId } });
-        if (!user) break;
+      case 'charge.refunded': {
+        // Remboursé : l'accès part avec l'argent, y compris l'accès à vie.
+        const charge = event.data.object as Stripe.Charge;
+        const customerId = typeof charge.customer === 'string' ? charge.customer : null;
+        if (!customerId) break;
+        await retirerPremium(customerId, 'tous');
+        break;
+      }
 
-        // Un premium permanent (offre à vie) ne dépend d'aucun abonnement et
-        // ne doit jamais être retiré par la fin de l'un d'eux.
-        if (user.isPremium && user.premiumUntil === null) break;
-
-        await prisma.user.update({
-          where: { id: user.id },
-          data: { isPremium: false, premiumUntil: null },
-        });
+      case 'charge.dispute.created': {
+        const dispute = event.data.object as Stripe.Dispute;
+        const charge = dispute.charge;
+        const customerId =
+          typeof charge === 'string'
+            ? null
+            : typeof charge.customer === 'string'
+              ? charge.customer
+              : null;
+        if (!customerId) {
+          return acquitte('litige sans client identifiable', { disputeId: dispute.id });
+        }
+        await retirerPremium(customerId, 'tous');
         break;
       }
 
       default:
-        // Les autres événements sont acquittés sans traitement : répondre 200
-        // évite que Stripe ne les rejoue indéfiniment.
+        // Acquitté sans traitement : un 200 évite un rejeu perpétuel.
         break;
     }
   } catch (error) {
-    // Une erreur serveur doit rendre un 500 pour que Stripe rejoue l'événement.
-    console.error(`[stripe/webhook] échec du traitement de ${event.type} :`, error);
+    // Une erreur PERMANENTE ne réussira jamais. La rejouer trois jours durant
+    // finit par faire désactiver l'endpoint par Stripe, et les événements de
+    // tous les autres clients seraient perdus avec.
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      return acquitte('erreur base permanente, reprise manuelle requise', {
+        code: error.code,
+        eventType: event.type,
+      });
+    }
+    console.error('[stripe/webhook] echec transitoire :', {
+      eventType: event.type,
+      message: (error as Error).message,
+    });
     return NextResponse.json({ error: 'Traitement impossible.' }, { status: 500 });
   }
 
