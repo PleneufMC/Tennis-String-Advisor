@@ -1,11 +1,17 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.1.9
+> **Version** : 2.2.0
 > **Date** : 13 septembre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
 > **Branche de référence** : `genspark_ai_developer`
 > **Repo** : https://github.com/PleneufMC/Tennis-String-Advisor.git
+
+**Changelog v2.1.9 → v2.2.0** — Correction d'un fait du §2 point 8 : il y a bien
+**un** événement clé dans GA4, `purchase`, et il n'a jamais rien compté parce que
+**rien ne l'émettait** (« Aucune donnée de flux détectée »). Il est désormais envoyé
+par le webhook. Consigne aussi les **six fonctions de tracking mortes** de
+`public/js/analytics.js`, confirmées côté GA4 par leur absence des événements reçus.
 
 **Changelog v2.1.8 → v2.1.9** — **Le paiement est ouvert.** Endpoint déclaré dans
 Stripe, secrets posés dans Netlify (vérifié : l'endpoint de production répond 400
@@ -197,7 +203,7 @@ abonnements sans objet** tant qu'elle dure. Le Payment Link FR ne transporte pas
 > taux de complétion rapportait deux univers à un seul) et `arm_warning_shown`,
 > sans lequel le respect de la règle 2 n'est vérifiable que par lecture du code.
 
-| 8 | **Aucun événement clé marqué dans GA4.** Le code émet, l'admin GA4 n'enregistre pas (« Taux d'événements clés » = 0 sur tous les pays). ⚠️ Préalable découvert le 13/08 : deux implémentations analytics (React vs `public/js/analytics.js`) émettent les mêmes noms d'événements avec des paramètres incompatibles, et `configurator_complete` se répète à chaque changement de tension (compte les essais, pas les complétions). Unifier le schéma avant de marquer. | Aucune conversion mesurable ; les taux du §2 (53 %) et l'objectif §8 ne sont pas interprétables en l'état. |
+| 8 | **Un seul événement clé dans GA4 — `purchase` — et rien ne l'émettait.** Corrigé le 13/09/2026 : l'admin affichait « Aucune donnée de flux détectée » depuis toujours, d'où les colonnes « Événements clés » et « Revenu total » à zéro sur les 159 lignes des exports, alors que la collecte fonctionne (onze événements actifs sur 28 jours). `purchase` est maintenant envoyé par le webhook via le Measurement Protocol (`src/lib/ga4.ts`), avec l'identifiant de session Stripe en `transaction_id`. ⚠️ Restent **six fonctions de tracking déclarées et jamais appelées** dans `public/js/analytics.js` — `trackBlogView`, `trackProductView`, `trackSignupStart`, `trackRCSCalculation`, `trackCatalogFilter`, `trackConfiguratorSelection` — confirmées mortes par leur absence des événements reçus par GA4. `blog_view` manque alors que le blog est le seul canal qui fonctionne. ⚠️ Ni `configurator_complete` ni `affiliate_click` ne sont marqués comme clés : aucun taux de conversion n'est donc lisible dans l'interface. ⚠️ Préalable découvert le 13/08 : deux implémentations analytics (React vs `public/js/analytics.js`) émettent les mêmes noms d'événements avec des paramètres incompatibles, et `configurator_complete` se répète à chaque changement de tension (compte les essais, pas les complétions). Unifier le schéma avant de marquer. | Aucune conversion mesurable ; les taux du §2 (53 %) et l'objectif §8 ne sont pas interprétables en l'état. |
 
 ### Utilisabilité mobile et clavier — corrigé le 13 septembre 2026
 
@@ -495,4 +501,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.1.9 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.2.0 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
