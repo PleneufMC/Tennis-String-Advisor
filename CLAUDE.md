@@ -1,11 +1,19 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.2.0
-> **Date** : 13 septembre 2026
+> **Version** : 2.2.1
+> **Date** : 28 septembre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
 > **Branche de référence** : `genspark_ai_developer`
 > **Repo** : https://github.com/PleneufMC/Tennis-String-Advisor.git
+
+**Changelog v2.2.0 → v2.2.1** — Nettoyage du catalogue cordages (audit du
+28/09/2026, lot 1 `tsa-core`) : **190 → 174 cordages**. Huit entrées fausses
+retirées (trois cordages de badminton, quatre produits introuvables, une
+référence article), huit doublons de renommage fusionnés via
+`LEGACY_STRING_ALIASES`, marque et type de `neh-bio` et type de
+`yonex-dynawire` corrigés. Garde-fou ajouté dans `audit:ratings`. Supabase
+(pages EN) n'est **pas** nettoyé : il porte toujours ces entrées.
 
 **Changelog v2.1.9 → v2.2.0** — Correction d'un fait du §2 point 8 : il y a bien
 **un** événement clé dans GA4, `purchase`, et il n'a jamais rien compté parce que
@@ -122,7 +130,8 @@ Links, déploiement Netlify (adaptateur OpenNext). (Zustand est déclaré dans
 **HTML statiques** dans `public/blog/*.html` et `public/en/*.html`. Le
 `route-map.ts` fait le pont entre les deux univers.
 
-**Base** : 129 raquettes, 190 cordages (`src/data/*.ts`).
+**Base** : 129 raquettes, 174 cordages (`src/data/*.ts`, 190 avant le
+nettoyage du 28/09/2026).
 
 **Écosystème** : tennismatchfinder.net (même propriétaire) référence TSA.
 ⚠️ **Corrigé le 31/08/2026** — ce site était présenté ici comme « un canal de
@@ -501,4 +510,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.2.0 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.2.1 — Tennis String Advisor — « Mesurer avant d'affirmer. »*

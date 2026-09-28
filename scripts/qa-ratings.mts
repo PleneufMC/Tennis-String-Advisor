@@ -24,7 +24,13 @@
  */
 import { readFileSync } from 'node:fs';
 import { racquetsDatabase, calculateCompatibility } from '../src/data/racquets-database';
-import { stringsDatabase, calculateRCS, getStringRecommendation } from '../src/data/strings-database';
+import {
+  stringsDatabase,
+  calculateRCS,
+  getStringRecommendation,
+  LEGACY_STRING_ALIASES,
+  REMOVED_STRING_IDS,
+} from '../src/data/strings-database';
 import { calculateAdvancedRcs, stringTypeToFamily } from '../src/lib/advanced-rcs';
 import {
   DEFAULT_RACQUET_RA,
@@ -578,6 +584,49 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
     } else {
       ok(`${surface} : chemin d'appel vers l'alerte santé présent`);
     }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 10. INTÉGRITÉ DU CATALOGUE CORDAGES — nettoyage du 28/09/2026
+// ---------------------------------------------------------------------------
+// La fusion Supabase -> TS du 07/08/2026 (b4e74ad) avait fait entrer des
+// cordages de badminton (0,66-0,68 mm), des produits inexistants et des
+// doublons de renommage. Ces contrôles empêchent leur retour silencieux.
+{
+  const before = failures.length;
+  const ids = new Set(stringsDatabase.map((s) => s.id));
+
+  // a) jauge < 1.00 mm : aucun cordage de tennis n'en a, le badminton si.
+  for (const s of stringsDatabase) {
+    const thin = s.gauges.filter((g) => !(parseFloat(g) >= 1.0));
+    if (thin.length > 0) fail(`${s.id} : jauge(s) ${thin.join(', ')} < 1.00 mm ou illisible(s) — cordage de badminton ?`);
+  }
+
+  // b) doublon (marque, modèle) après normalisation de la casse et des espaces.
+  const seen = new Map<string, string>();
+  for (const s of stringsDatabase) {
+    const key = `${s.brand} ${s.model}`.toLowerCase().replace(/\s+/g, ' ').trim();
+    if (seen.has(key)) fail(`doublon (marque, modèle) « ${key} » : ${seen.get(key)} et ${s.id}`);
+    else seen.set(key, s.id);
+  }
+
+  // c) liste de refus : aucun identifiant retiré ne doit réapparaître.
+  const refused = [...REMOVED_STRING_IDS, ...Object.keys(LEGACY_STRING_ALIASES)];
+  if (refused.length !== 16) fail(`liste de refus : ${refused.length} identifiants au lieu des 16 retirés le 28/09/2026`);
+  for (const id of refused) if (ids.has(id)) fail(`identifiant retiré réapparu dans la base : ${id}`);
+
+  // d) chaque alias doit pointer vers un identifiant présent.
+  for (const [from, to] of Object.entries(LEGACY_STRING_ALIASES)) {
+    if (!ids.has(to)) fail(`alias ${from} -> ${to} : cible absente de la base`);
+  }
+
+  if (failures.length === before) {
+    ok(
+      `catalogue cordages : ${stringsDatabase.length} fiches, jauges >= 1.00 mm, aucun doublon ` +
+        `(marque, modèle), ${refused.length} identifiants retirés absents, ` +
+        `${Object.keys(LEGACY_STRING_ALIASES).length} alias vers des cibles présentes`
+    );
   }
 }
 

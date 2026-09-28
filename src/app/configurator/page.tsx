@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, useRef, type KeyboardEvent as ReactKeyboardEvent } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
-import { stringsDatabase, calculateRCS, getStringRecommendation } from '@/data/strings-database';
+import { stringsDatabase, calculateRCS, getStringRecommendation, getStringById } from '@/data/strings-database';
 import { racquetsDatabase, calculateCompatibility } from '@/data/racquets-database';
 import { ConfigurationStorage, SavedConfiguration } from '@/lib/storage';
 import {
@@ -1804,7 +1804,7 @@ export default function ConfiguratorPage() {
               {savedConfigs.length > 0 ? (
                 savedConfigs.map((config) => {
                   const racquet = racquetsDatabase.find(r => r.id === config.racquetId);
-                  const string = stringsDatabase.find(s => s.id === config.mainStringId);
+                  const string = getStringById(config.mainStringId);
                   return (
                     <div key={config.id} style={{
                       display: 'flex',
@@ -1819,7 +1819,7 @@ export default function ConfiguratorPage() {
                       <div>
                         <div style={{ fontSize: '0.875rem', fontWeight: '500' }}>{config.name}</div>
                         <div style={{ fontSize: '0.625rem', color: 'var(--text-faint)' }}>
-                          {racquet?.brand} {racquet?.model} | {string?.brand} {string?.model}
+                          {racquet?.brand} {racquet?.model} | {string ? `${string.brand} ${string.model}` : config.mainStringId}
                         </div>
                       </div>
                       <div style={{ textAlign: 'right' }}>

@@ -27,7 +27,7 @@
  */
 
 import { racquetsDatabase, calculateCompatibility } from '@/data/racquets-database';
-import { stringsDatabase, calculateRCS } from '@/data/strings-database';
+import { getStringById, calculateRCS } from '@/data/strings-database';
 import {
   calculateAdvancedRcs,
   stringTypeToFamily,
@@ -82,10 +82,9 @@ export function buildConfigurationPdfData(
   config: StoredConfiguration,
 ): ConfigurationPdfData {
   const racquet = racquetsDatabase.find((r) => r.id === config.racquetId);
-  const mainString = stringsDatabase.find((s) => s.id === config.mainStringId);
-  const crossString = config.crossStringId
-    ? stringsDatabase.find((s) => s.id === config.crossStringId)
-    : undefined;
+  // Alias hérités résolus (doublons fusionnés le 28/09/2026).
+  const mainString = getStringById(config.mainStringId);
+  const crossString = getStringById(config.crossStringId);
 
   // ---------------------------------------------------------------- Libellés
   const racquetLabel = racquet
@@ -279,7 +278,7 @@ export function buildConfigurationPdfData(
  */
 export function recomputeRcs(config: StoredConfiguration): number | null {
   const racquet = racquetsDatabase.find((r) => r.id === config.racquetId);
-  const mainString = stringsDatabase.find((s) => s.id === config.mainStringId);
+  const mainString = getStringById(config.mainStringId);
   if (!racquet || !mainString) return null;
   const avgTension = (config.mainTension + config.crossTension) / 2;
   return calculateRCS(effectiveRacquetRA(racquet), mainString.stiffness, avgTension);
