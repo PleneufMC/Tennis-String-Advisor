@@ -103,6 +103,18 @@ const nextConfig = {
       // Liens de navigation de l'app vers des routes inexistantes (404 en
       // prod). On redirige vers la cible réelle pour ne plus exposer de 404
       // et préserver d'éventuels partages/indexations.
+      // --- 301 : fiches cordage retirees du catalogue (lot 1, 28/09/2026).
+      // Doublons -> fiche conservee (miroir de LEGACY_STRING_ALIASES) ;
+      // entrees fausses (badminton, produits inexistants) -> catalogue.
+      { source: '/tennis-strings/babolat-pro-hurricane-tour', destination: '/tennis-strings/babolat-rpm-hurricane', permanent: true },
+      { source: '/tennis-strings/babolat-rpm-blast-rough', destination: '/tennis-strings/babolat-rpm-rough', permanent: true },
+      { source: '/tennis-strings/babolat-addiction', destination: '/tennis-strings/babolat-addixion', permanent: true },
+      { source: '/tennis-strings/babolat-vs-touch', destination: '/tennis-strings/babolat-touch-vs', permanent: true },
+      { source: '/tennis-strings/babolat-vs-team', destination: '/tennis-strings/babolat-touch-vs', permanent: true },
+      { source: '/tennis-strings/luxilon-big-banger', destination: '/tennis-strings/luxilon-original', permanent: true },
+      { source: '/tennis-strings/wilson-element', destination: '/tennis-strings/luxilon-element', permanent: true },
+      { source: '/tennis-strings/wilson-savage', destination: '/tennis-strings/luxilon-savage', permanent: true },
+      { source: '/tennis-strings/:slug(yonex-aerobite|babolat-ifeel-66|babolat-ifeel-68|head-hawk-xtreme|head-triumphant|wilson-zone-pro|wilson-velocity|luxilon-wrz)', destination: '/tennis-strings', permanent: true },
       { source: '/premium', destination: '/pricing', permanent: true },
       { source: '/guides', destination: '/blog/', permanent: true },
       { source: '/recommendations', destination: '/configurator', permanent: true },
