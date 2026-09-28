@@ -1732,7 +1732,8 @@ export const stringsDatabase: TennisString[] = [
     brand: 'Babolat',
     model: 'Touch VS',
     type: 'Natural Gut',
-    gauges: ['1.30'],
+    // Jauges : tennis-warehouse.com/BabolatString.html (17/1.25, 16/1.30, 15L/1.35), lu le 28/09/2026
+    gauges: ['1.25', '1.30', '1.35'],
     stiffness: 92,
     performance: 10,
     control: 8,

@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { racquetsDatabase } from '@/data/racquets-database';
-import { stringsDatabase } from '@/data/strings-database';
+import { getStringById } from '@/data/strings-database';
 import { exportConfigurationPdf } from '@/lib/pdf-export';
 import { buildConfigurationPdfData } from '@/lib/pdf-configuration-data';
 
@@ -39,7 +39,7 @@ function racquetLabel(id: string): string {
 
 function stringLabel(id: string | null): string | null {
   if (!id) return null;
-  const s = stringsDatabase.find((x) => x.id === id);
+  const s = getStringById(id);
   return s ? `${s.brand} ${s.model}`.trim() : id;
 }
 
