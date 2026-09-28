@@ -179,27 +179,6 @@ export const stringsDatabase: TennisString[] = [
     color: 'Natural/Silver'
   },
   {
-    id: 'babolat-vs-touch',
-    brand: 'Babolat',
-    model: 'VS Touch',
-    type: 'Natural Gut',
-    gauges: ['1.25', '1.30', '1.35'],
-    stiffness: 95,
-    performance: 9.5,
-    control: 8.0,
-    comfort: 9.5,
-    durability: 10.0,
-    versatility: 8.5,
-    innovation: 7.0,
-    spin: 7.5,
-    power: 9.5,
-    recommendedTension: { min: 23, max: 32 },
-    price: { europe: 48, usa: 48 },
-    description: 'Le meilleur boyau naturel avec technologie Thermogut. Sensation incomparable.',
-    proUsage: 'Nombreux pros en hybride',
-    color: 'Natural'
-  },
-  {
     id: 'solinco-mach-10',
     brand: 'Solinco',
     model: 'Mach-10',
@@ -835,26 +814,6 @@ export const stringsDatabase: TennisString[] = [
   },
 
   // BABOLAT
-  {
-    id: 'babolat-rpm-blast-rough',
-    brand: 'Babolat',
-    model: 'RPM Blast Rough',
-    type: 'Polyester',
-    gauges: ['1.25', '1.30'],
-    stiffness: 235,
-    performance: 9.0,
-    control: 8.8,
-    comfort: 7.3,
-    durability: 8.0,
-    versatility: 8.3,
-    innovation: 8.0,
-    spin: 9.7,
-    power: 7.0,
-    recommendedTension: { min: 23, max: 28 },
-    price: { europe: 19, usa: 19 },
-    description: 'RPM Blast avec surface texturée pour un mordant et un spin encore supérieurs.',
-    color: 'Black'
-  },
   {
     id: 'babolat-rpm-soft',
     brand: 'Babolat',
@@ -1642,42 +1601,6 @@ export const stringsDatabase: TennisString[] = [
     color: 'Yellow'
   },
   {
-    id: 'babolat-pro-hurricane-tour',
-    brand: 'Babolat',
-    model: 'Pro Hurricane Tour',
-    type: 'Polyester',
-    gauges: ['1.20', '1.25', '1.30'],
-    stiffness: 250,
-    performance: 9,
-    control: 9.5,
-    comfort: 6,
-    durability: 9,
-    spin: 9.5,
-    power: 6.5,
-    recommendedTension: { min: 22, max: 28 },
-    price: { europe: 14, usa: 16 },
-    description: 'Version améliorée du Pro Hurricane avec profil octogonal pour plus de spin.',
-    color: 'Yellow'
-  },
-  {
-    id: 'babolat-vs-team',
-    brand: 'Babolat',
-    model: 'VS Team',
-    type: 'Natural Gut',
-    gauges: ['1.25', '1.30'],
-    stiffness: 100,
-    performance: 9.5,
-    control: 8,
-    comfort: 10,
-    durability: 5.5,
-    spin: 7,
-    power: 9,
-    recommendedTension: { min: 24, max: 28 },
-    price: { europe: 38, usa: 44 },
-    description: 'Boyau naturel plus accessible que le VS Touch. Excellent rapport qualité/prix en boyau.',
-    color: 'Natural'
-  },
-  {
     id: 'babolat-xcel-power',
     brand: 'Babolat',
     model: 'Xcel Power',
@@ -1694,24 +1617,6 @@ export const stringsDatabase: TennisString[] = [
     price: { europe: 24, usa: 27 },
     description: 'Version orientée puissance du Xcel avec encore plus de dynamisme.',
     color: 'Blue'
-  },
-  {
-    id: 'babolat-addiction',
-    brand: 'Babolat',
-    model: 'Addiction',
-    type: 'Multifilament',
-    gauges: ['1.25', '1.30', '1.35'],
-    stiffness: 165,
-    performance: 8,
-    control: 8,
-    comfort: 8.5,
-    durability: 7,
-    spin: 7.5,
-    power: 8.5,
-    recommendedTension: { min: 23, max: 27 },
-    price: { europe: 16, usa: 18 },
-    description: 'Multifilament polyvalent avec bon équilibre entre confort, contrôle et durabilité.',
-    color: 'White'
   },
   {
     id: 'babolat-origin',
@@ -1857,42 +1762,6 @@ export const stringsDatabase: TennisString[] = [
     price: { europe: 42, usa: 48 },
     description: 'Boyau naturel avec traitement Thermogut pour plus de durabilité. Jauges épaisses disponibles.',
     color: 'Natural'
-  },
-  {
-    id: 'babolat-ifeel-66',
-    brand: 'Babolat',
-    model: 'iFeel 66',
-    type: 'Multifilament',
-    gauges: ['1.27'],
-    stiffness: 160,
-    performance: 8,
-    control: 8,
-    comfort: 8.5,
-    durability: 7,
-    spin: 7.5,
-    power: 8,
-    recommendedTension: { min: 23, max: 26 },
-    price: { europe: 14, usa: 16 },
-    description: 'Multifilament accessible avec bon équilibre général. Idéal pour les joueurs de club.',
-    color: 'White'
-  },
-  {
-    id: 'babolat-ifeel-68',
-    brand: 'Babolat',
-    model: 'iFeel 68',
-    type: 'Multifilament',
-    gauges: ['1.30'],
-    stiffness: 155,
-    performance: 7.5,
-    control: 7.5,
-    comfort: 9,
-    durability: 7,
-    spin: 7,
-    power: 8.5,
-    recommendedTension: { min: 23, max: 26 },
-    price: { europe: 14, usa: 16 },
-    description: 'Version plus souple de l\'iFeel pour plus de confort et de puissance.',
-    color: 'White'
   },
   {
     id: 'babolat-revenge',
@@ -2203,24 +2072,6 @@ export const stringsDatabase: TennisString[] = [
     color: 'Grey'
   },
   {
-    id: 'luxilon-big-banger',
-    brand: 'Luxilon',
-    model: 'Big Banger',
-    type: 'Polyester',
-    gauges: ['1.20', '1.25', '1.30'],
-    stiffness: 235,
-    performance: 9,
-    control: 9,
-    comfort: 6.5,
-    durability: 8.5,
-    spin: 8.5,
-    power: 7.5,
-    recommendedTension: { min: 21, max: 27 },
-    price: { europe: 17, usa: 19 },
-    description: 'Le classique Luxilon. Bon contrôle et durabilité à un prix accessible.',
-    color: 'Silver'
-  },
-  {
     id: 'luxilon-big-banger-rough',
     brand: 'Luxilon',
     model: 'Big Banger Rough',
@@ -2291,24 +2142,6 @@ export const stringsDatabase: TennisString[] = [
     price: { europe: 16, usa: 18 },
     description: 'Cordage polyester éco-responsable avec des matériaux recyclés. Performance comparable à l\'ALU Power.',
     color: 'Green'
-  },
-  {
-    id: 'luxilon-wrz',
-    brand: 'Luxilon',
-    model: 'WRZ',
-    type: 'Polyester',
-    gauges: ['1.25'],
-    stiffness: 218,
-    performance: 8.5,
-    control: 8.5,
-    comfort: 7.5,
-    durability: 8,
-    spin: 8.5,
-    power: 8,
-    recommendedTension: { min: 21, max: 26 },
-    price: { europe: 17, usa: 19 },
-    description: 'Polyester polyvalent avec bon équilibre pour joueurs de club exigeants.',
-    color: 'Grey/Blue'
   },
   {
     id: 'head-hawk',
@@ -2637,24 +2470,6 @@ export const stringsDatabase: TennisString[] = [
     color: 'Natural'
   },
   {
-    id: 'head-hawk-xtreme',
-    brand: 'Head',
-    model: 'Hawk Xtreme',
-    type: 'Polyester',
-    gauges: ['1.25', '1.30'],
-    stiffness: 208,
-    performance: 9,
-    control: 8.5,
-    comfort: 7.5,
-    durability: 8.5,
-    spin: 9.5,
-    power: 8,
-    recommendedTension: { min: 21, max: 27 },
-    price: { europe: 15, usa: 17 },
-    description: 'Hawk version spin extrême avec profil optimisé pour maximum de rotation.',
-    color: 'Red'
-  },
-  {
     id: 'head-ultra-tour',
     brand: 'Head',
     model: 'Ultra Tour',
@@ -2671,24 +2486,6 @@ export const stringsDatabase: TennisString[] = [
     price: { europe: 17, usa: 19 },
     description: 'Polyester tour avec excellent toucher et contrôle pour joueurs avancés.',
     color: 'Blue/Black'
-  },
-  {
-    id: 'head-triumphant',
-    brand: 'Head',
-    model: 'Triumphant',
-    type: 'Polyester',
-    gauges: ['1.25', '1.30'],
-    stiffness: 215,
-    performance: 8.5,
-    control: 9,
-    comfort: 7,
-    durability: 8.5,
-    spin: 8.5,
-    power: 7.5,
-    recommendedTension: { min: 22, max: 27 },
-    price: { europe: 13, usa: 15 },
-    description: 'Polyester polyvalent avec bon rapport qualité/prix.',
-    color: 'Green'
   },
   {
     id: 'tecnifibre-black-code',
@@ -3124,24 +2921,6 @@ export const stringsDatabase: TennisString[] = [
     color: 'Black'
   },
   {
-    id: 'wilson-savage',
-    brand: 'Wilson',
-    model: 'Savage',
-    type: 'Polyester',
-    gauges: ['1.25', '1.30'],
-    stiffness: 228,
-    performance: 8.5,
-    control: 8.5,
-    comfort: 6.5,
-    durability: 8.5,
-    spin: 9,
-    power: 7.5,
-    recommendedTension: { min: 21, max: 27 },
-    price: { europe: 12, usa: 14 },
-    description: 'Polyester avec profil octogonal pour spin accru.',
-    color: 'Lime'
-  },
-  {
     id: 'wilson-optimus-16',
     brand: 'Wilson',
     model: 'Optimus 16',
@@ -3158,60 +2937,6 @@ export const stringsDatabase: TennisString[] = [
     price: { europe: 7, usa: 9 },
     description: 'Synthetic gut économique pour débutants et entraînement.',
     color: 'White'
-  },
-  {
-    id: 'wilson-element',
-    brand: 'Wilson',
-    model: 'Element',
-    type: 'Polyester',
-    gauges: ['1.25', '1.30'],
-    stiffness: 195,
-    performance: 8.5,
-    control: 8,
-    comfort: 8,
-    durability: 8,
-    spin: 8,
-    power: 8.5,
-    recommendedTension: { min: 22, max: 27 },
-    price: { europe: 14, usa: 16 },
-    description: 'Polyester souple avec bon confort. Idéal pour hybrides.',
-    color: 'Bronze'
-  },
-  {
-    id: 'wilson-velocity',
-    brand: 'Wilson',
-    model: 'Velocity',
-    type: 'Multifilament',
-    gauges: ['1.25', '1.30'],
-    stiffness: 152,
-    performance: 7.5,
-    control: 7,
-    comfort: 9,
-    durability: 6.5,
-    spin: 7,
-    power: 8.5,
-    recommendedTension: { min: 23, max: 27 },
-    price: { europe: 14, usa: 16 },
-    description: 'Multifilament accessible avec bon confort pour joueurs occasionnels.',
-    color: 'White'
-  },
-  {
-    id: 'wilson-zone-pro',
-    brand: 'Wilson',
-    model: 'Zone Pro',
-    type: 'Polyester',
-    gauges: ['1.23', '1.28'],
-    stiffness: 215,
-    performance: 8.5,
-    control: 8.5,
-    comfort: 7.5,
-    durability: 8,
-    spin: 8.5,
-    power: 8,
-    recommendedTension: { min: 21, max: 26 },
-    price: { europe: 15, usa: 17 },
-    description: 'Polyester moderne avec bon toucher et spin.',
-    color: 'Black/Blue'
   },
   {
     id: 'wilson-duo-control',
@@ -3379,7 +3104,7 @@ export const stringsDatabase: TennisString[] = [
     id: 'yonex-dynawire',
     brand: 'Yonex',
     model: 'Dynawire',
-    type: 'Multifilament',
+    type: 'Synthetic', // âme nylon monofilament + film métallique (yonex.com/tennis/strings/tgdw125)
     gauges: ['1.25', '1.30'],
     stiffness: 165,
     performance: 8,
@@ -3390,7 +3115,7 @@ export const stringsDatabase: TennisString[] = [
     power: 8.5,
     recommendedTension: { min: 23, max: 27 },
     price: { europe: 16, usa: 18 },
-    description: 'Multifilament polyvalent avec bon équilibre entre confort et contrôle.',
+    description: 'Synthétique à âme nylon monofilament recouverte d\'un film métallique, avec bon équilibre entre confort et contrôle.',
     color: 'White/Gold'
   },
   {
@@ -3464,24 +3189,6 @@ export const stringsDatabase: TennisString[] = [
     price: { europe: 15, usa: 17 },
     description: 'Multifilament accessible avec bon confort et toucher.',
     color: 'White'
-  },
-  {
-    id: 'yonex-aerobite',
-    brand: 'Yonex',
-    model: 'Aerobite',
-    type: 'Hybrid',
-    gauges: ['1.27/1.32'],
-    stiffness: 205,
-    performance: 8.5,
-    control: 8.5,
-    comfort: 7,
-    durability: 7.5,
-    spin: 9.5,
-    power: 7.5,
-    recommendedTension: { min: 21, max: 26 },
-    price: { europe: 18, usa: 20 },
-    description: 'Set hybride avec montants spin et travers confort pour maximum de rotation.',
-    color: 'Red/White'
   },
   {
     id: 'yonex-aeron-super-850',
@@ -3630,9 +3337,9 @@ export const stringsDatabase: TennisString[] = [
   },
   {
     id: 'neh-bio',
-    brand: 'NEH',
-    model: 'Bio',
-    type: 'Multifilament',
+    brand: 'Velociti', // velocititennis.com : « NEH » est un modèle Velociti, pas une marque
+    model: 'NEH Bio',
+    type: 'Synthetic', // âme monofilament enrobée, pas un multifilament
     gauges: ['1.25', '1.30'],
     stiffness: 180,
     performance: 8,
@@ -3643,10 +3350,44 @@ export const stringsDatabase: TennisString[] = [
     power: 8.5,
     recommendedTension: { min: 20, max: 26 },
     price: { europe: 12, usa: 14 },
-    description: 'Cordage multifilament biodégradable avec sensation proche du boyau naturel. Confort exceptionnel et puissance naturelle. Alternative écologique aux multifilaments synthétiques traditionnels. Décomposition en 3-5 ans.',
+    description: 'Cordage synthétique biodégradable à âme monofilament enrobée, avec sensation proche du boyau naturel. Confort exceptionnel et puissance naturelle. Alternative écologique aux multifilaments synthétiques traditionnels. Décomposition en 3-5 ans.',
     color: 'Natural'
   }
 ];
+
+/**
+ * Nettoyage du 28/09/2026 (audit catalogue, entrées issues de la fusion b4e74ad).
+ * Doublons retirés : ancien identifiant -> identifiant conservé (nom commercial
+ * actuel). Une configuration sauvegardée sous l'ancien identifiant retrouve
+ * ainsi le produit conservé — avec les valeurs de CELUI-CI, pas une moyenne.
+ */
+export const LEGACY_STRING_ALIASES: Readonly<Record<string, string>> = {
+  'babolat-pro-hurricane-tour': 'babolat-rpm-hurricane',
+  'babolat-rpm-blast-rough': 'babolat-rpm-rough',
+  'babolat-addiction': 'babolat-addixion',
+  'babolat-vs-touch': 'babolat-touch-vs',
+  'babolat-vs-team': 'babolat-touch-vs',
+  'luxilon-big-banger': 'luxilon-original',
+  'wilson-element': 'luxilon-element',
+  'wilson-savage': 'luxilon-savage',
+};
+
+/** Entrées fausses retirées sans remplaçant (badminton, produits inexistants). */
+export const REMOVED_STRING_IDS: readonly string[] = [
+  'yonex-aerobite', 'babolat-ifeel-66', 'babolat-ifeel-68', 'head-hawk-xtreme',
+  'head-triumphant', 'wilson-zone-pro', 'wilson-velocity', 'luxilon-wrz',
+];
+
+/**
+ * Recherche d'un cordage par identifiant, alias hérités compris. Renvoie
+ * `undefined` pour un identifiant retiré ou inconnu : l'appelant affiche alors
+ * l'identifiant brut et ne calcule aucun RCS (aucune valeur inventée).
+ */
+export function getStringById(id: string | null | undefined): TennisString | undefined {
+  if (!id) return undefined;
+  const resolved = LEGACY_STRING_ALIASES[id] ?? id;
+  return stringsDatabase.find((s) => s.id === resolved);
+}
 
 // Fonction helper pour filtrer les cordages
 export function filterStrings(
