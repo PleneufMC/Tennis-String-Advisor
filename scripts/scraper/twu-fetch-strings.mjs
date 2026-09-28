@@ -26,8 +26,9 @@
  * une page. Aucune charge n'est imposée au site.
  */
 import { writeFileSync, existsSync, mkdirSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
-const OUT_DIR = new URL('./out/', import.meta.url).pathname;
+const OUT_DIR = fileURLToPath(new URL('./out/', import.meta.url));
 const URL_DB = 'https://twu.tennis-warehouse.com/learning_center/reporter2.php';
 
 const HEADERS = {
