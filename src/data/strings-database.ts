@@ -3284,6 +3284,114 @@ export const stringsDatabase: TennisString[] = [
     proUsage: 'Steve Johnson',
     color: 'Orange'
   },
+  // Lot 3 Toroline (option A) — fiche officielle : https://toroline.com/collections/single-sets/products/absolute
+  // Rigidité : TWU « Toroline Absolute 17 (1.20) », https://twu.tennis-warehouse.com/learning_center/reporter2.php (POST zmaterial=all, 51 lbs, Fast),
+  // relevé du 28/09/2026, revérifié le 29/09/2026. Prix : og:price toroline.com (USD).
+  // Aucune note /10, tension ni prix EUR publiés : champs absents (non comblés).
+  // TWU n'indique pas de jauge nominale pour cette mesure (colonne à 0) ; le nom de l'échantillon porte 1.20.
+  {
+    id: 'toroline-absolute',
+    brand: 'Toroline',
+    model: 'Absolute',
+    type: 'Polyester',
+    gauges: ['1.20'],
+    stiffness: 180.6,
+    price: { usa: 12 },
+    description: 'Co-poly à section hexagonale (six faces), jauge 1,20 mm. Le fabricant le décrit comme un co-poly souple et vif, orienté effet.',
+    color: 'Black'
+  },
+  // Lot 3 Toroline (option A) — fiche officielle : https://toroline.com/collections/single-sets/products/o-toro-snap-sample
+  // Rigidité : TWU « Toroline O-TORO Snap 16L (1.25) », https://twu.tennis-warehouse.com/learning_center/reporter2.php (POST zmaterial=all, 51 lbs, Fast),
+  // relevé du 28/09/2026, revérifié le 29/09/2026. Prix : og:price toroline.com (USD).
+  // Aucune note /10, tension ni prix EUR publiés : champs absents (non comblés).
+  {
+    id: 'toroline-o-toro-snap',
+    brand: 'Toroline',
+    model: 'O-Toro Snap',
+    type: 'Polyester',
+    gauges: ['1.25'],
+    stiffness: 164.6,
+    price: { usa: 15 },
+    description: "Déclinaison de l'O-Toro à section ronde, jauge 1,25 mm. Le fabricant met en avant le snapback et une trajectoire plus basse.",
+    color: 'White / Neon Yellow'
+  },
+  // Lot 3 Toroline (option A) — fiche officielle : https://toroline.com/collections/single-sets/products/o-toro-spin
+  // Rigidité : TWU « Toroline O-Toro Spin 17 (1.23) », https://twu.tennis-warehouse.com/learning_center/reporter2.php (POST zmaterial=all, 51 lbs, Fast),
+  // relevé du 28/09/2026, revérifié le 29/09/2026. Prix : og:price toroline.com (USD).
+  // Aucune note /10, tension ni prix EUR publiés : champs absents (non comblés).
+  {
+    id: 'toroline-o-toro-spin',
+    brand: 'Toroline',
+    model: 'O-Toro Spin',
+    type: 'Polyester',
+    gauges: ['1.23'],
+    stiffness: 173.2,
+    price: { usa: 15 },
+    description: "Déclinaison de l'O-Toro à section pentagonale, jauge 1,23 mm. Selon le fabricant : plus de morsure et un angle de sortie plus haut que l'O-Toro.",
+    color: 'Neon Pink / Neon Green / White / Lavender'
+  },
+  // Lot 3 Toroline (option A) — fiche officielle : https://toroline.com/collections/single-sets/products/super-toro-single-set
+  // Rigidité : TWU « Toroline Super Toro 17 (1.23) », https://twu.tennis-warehouse.com/learning_center/reporter2.php (POST zmaterial=all, 51 lbs, Fast),
+  // relevé du 28/09/2026, revérifié le 29/09/2026. Prix : og:price toroline.com (USD).
+  // Aucune note /10, tension ni prix EUR publiés : champs absents (non comblés).
+  {
+    id: 'toroline-super-toro',
+    brand: 'Toroline',
+    model: 'Super Toro',
+    type: 'Polyester',
+    gauges: ['1.23'],
+    stiffness: 189.7,
+    price: { usa: 12 },
+    description: 'Co-poly à section hexagonale (six faces), jauge 1,23 mm. Présenté par le fabricant comme un cordage de précision et de contrôle.',
+    color: 'Dark Blue'
+  },
+  // Lot 3 Toroline (option A) — fiche officielle : https://toroline.com/collections/single-sets/products/o-toro-tour
+  // Rigidité : TWU « Toroline O-Toro Tour 17 (1.23) », https://twu.tennis-warehouse.com/learning_center/reporter2.php (POST zmaterial=all, 51 lbs, Fast),
+  // relevé du 28/09/2026, revérifié le 29/09/2026. Prix : og:price toroline.com (USD).
+  // Aucune note /10, tension ni prix EUR publiés : champs absents (non comblés).
+  // Jauges : liste de la fiche officielle (1.23 et 1.20). La rigidité est celle MESURÉE en 1.23 :
+  // aucune mesure TWU en 1.20. 1.23 est placée en tête pour être la jauge présélectionnée.
+  {
+    id: 'toroline-o-toro-tour',
+    brand: 'Toroline',
+    model: 'O-Toro Tour',
+    type: 'Polyester',
+    gauges: ['1.23', '1.20'],
+    stiffness: 216.6,
+    price: { usa: 15 },
+    description: "Version plus rigide de l'O-Toro, section hexagonale, jauges 1,23 et 1,20 mm. Le fabricant la destine aux joueurs avancés recherchant contrôle et durabilité.",
+    color: 'Mint / Neon Green'
+  },
+  // Lot 3 Toroline (option A) — fiche officielle : https://toroline.com/collections/single-sets/products/cash-copy
+  // Rigidité : TWU « Toroline Cash 16L (1.25) », https://twu.tennis-warehouse.com/learning_center/reporter2.php (POST zmaterial=all, 51 lbs, Fast),
+  // relevé du 28/09/2026, revérifié le 29/09/2026. Prix : og:price toroline.com (USD).
+  // Aucune note /10, tension ni prix EUR publiés : champs absents (non comblés).
+  {
+    id: 'toroline-cash',
+    brand: 'Toroline',
+    model: 'Cash',
+    type: 'Polyester',
+    gauges: ['1.25'],
+    stiffness: 182.9,
+    price: { usa: 17 },
+    description: "Cordage rond de 1,25 mm développé avec Julian Cash, dérivé de l'A5 avec une flexibilité plus souple selon le fabricant ; conçu pour le double.",
+    color: 'Benjamin Green'
+  },
+  // Lot 3 Toroline (option A) — fiche officielle : https://toroline.com/collections/single-sets/products/snapper
+  // Rigidité : TWU « Toroline Snapper 17 (1.23) », https://twu.tennis-warehouse.com/learning_center/reporter2.php (POST zmaterial=all, 51 lbs, Fast),
+  // relevé du 28/09/2026, revérifié le 29/09/2026. Prix : og:price toroline.com (USD).
+  // Aucune note /10, tension ni prix EUR publiés : champs absents (non comblés).
+  {
+    id: 'toroline-snapper',
+    brand: 'Toroline',
+    model: 'Snapper',
+    type: 'Polyester',
+    gauges: ['1.23'],
+    stiffness: 190.9,
+    price: { usa: 12 },
+    description: 'Section octogonale, jauge 1,23 mm. Le fabricant met en avant un snapback accru par une surface plus glissante.',
+    color: 'Lavender'
+  },
   {
     id: 'restring-zero',
     brand: 'ReString',
