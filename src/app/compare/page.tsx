@@ -75,13 +75,15 @@ const stringTypeConfig: Record<string, { variant: 'polyester' | 'multifilament' 
  * `minValue` reste optionnel : sans lui, le comportement d'origine (base 0)
  * est conservé.
  */
-function ComparisonBar({ label, values, maxValue, minValue = 0, unit, colors }: {
+function ComparisonBar({ label, values, maxValue, minValue = 0, unit, colors, missingLabel = 'N/A' }: {
   label: string;
   values: (number | null)[];
   maxValue: number;
   minValue?: number;
   unit?: string;
   colors: string[];
+  /** Libellé d'une valeur absente (« Non publié » pour les notes cordage). */
+  missingLabel?: string;
 }) {
   const span = maxValue - minValue;
   const widthOf = (value: number) => {
@@ -99,20 +101,25 @@ function ComparisonBar({ label, values, maxValue, minValue = 0, unit, colors }: 
         <div className="flex gap-2">
           {values.map((value, index) => (
             <span key={index} className={cn('text-xs font-semibold', colors[index])}>
-              {value !== null ? value.toFixed(1) : 'N/A'}
+              {value !== null ? value.toFixed(1) : missingLabel}
             </span>
           ))}
         </div>
       </div>
       <div className="flex gap-1 h-3">
-        {values.map((value, index) => (
-          <div key={index} className="flex-1 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
-            <div
-              className={cn('h-full rounded-full transition-all duration-500', colors[index].replace('text-', 'bg-'))}
-              style={{ width: value !== null ? `${widthOf(value)}%` : '0%' }}
-            />
-          </div>
-        ))}
+        {values.map((value, index) =>
+          // Valeur absente : aucune barre, pas même une piste vide (zéro serait faux).
+          value === null ? (
+            <div key={index} className="flex-1" />
+          ) : (
+            <div key={index} className="flex-1 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+              <div
+                className={cn('h-full rounded-full transition-all duration-500', colors[index].replace('text-', 'bg-'))}
+                style={{ width: `${widthOf(value)}%` }}
+              />
+            </div>
+          )
+        )}
       </div>
       {/* L'échelle ne démarrant plus à 0, elle doit être annoncée explicitement,
           sinon une barre courte se lirait à tort comme une valeur proche de 0. */}
@@ -214,12 +221,13 @@ export default function ComparePage() {
     } else {
       const strings = selectedItems.map(si => si.item as TennisString);
       return {
-        control: strings.map(s => s.control),
-        comfort: strings.map(s => s.comfort),
-        spin: strings.map(s => s.spin),
-        durability: strings.map(s => s.durability),
-        power: strings.map(s => s.power),
-        price: strings.map(s => s.price.europe),
+        // Valeur absente => null => « Non publié » (option A, 29/09/2026).
+        control: strings.map(s => s.control ?? null),
+        comfort: strings.map(s => s.comfort ?? null),
+        spin: strings.map(s => s.spin ?? null),
+        durability: strings.map(s => s.durability ?? null),
+        power: strings.map(s => s.power ?? null),
+        price: strings.map(s => s.price?.europe ?? null),
       };
     }
   }, [selectedItems, mode]);
@@ -371,25 +379,27 @@ export default function ComparePage() {
                       <div className="space-y-1 text-xs text-gray-600">
                         <div className="flex items-center gap-1">
                           <Target className="h-3 w-3" />
-                          Ctrl: {stringItem.control.toFixed(1)}
+                          Ctrl: {stringItem.control?.toFixed(1) ?? 'Non publié'}
                         </div>
                         <div className="flex items-center gap-1">
                           <Shield className="h-3 w-3" />
-                          Conf: {stringItem.comfort.toFixed(1)}
+                          Conf: {stringItem.comfort?.toFixed(1) ?? 'Non publié'}
                         </div>
                         <div className="flex items-center gap-1">
                           <TrendingUp className="h-3 w-3" />
-                          Spin: {stringItem.spin.toFixed(1)}
+                          Spin: {stringItem.spin?.toFixed(1) ?? 'Non publié'}
                         </div>
                       </div>
                     </>
                   )}
 
-                  <div className="mt-3 pt-3 border-t border-gray-100">
-                    <span className={cn('text-lg font-bold', colors[index])}>
-                      {isRacquet ? racquet?.price?.europe : stringItem?.price.europe}€
-                    </span>
-                  </div>
+                  {(isRacquet ? racquet?.price?.europe : stringItem?.price?.europe) !== undefined && (
+                    <div className="mt-3 pt-3 border-t border-gray-100">
+                      <span className={cn('text-lg font-bold', colors[index])}>
+                        {isRacquet ? racquet?.price?.europe : stringItem?.price?.europe}€
+                      </span>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             );
@@ -458,20 +468,23 @@ export default function ComparePage() {
                   </div>
                   <ComparisonBar
                     label="Puissance"
-                    values={comparisonSpecs.power as number[]}
+                    values={comparisonSpecs.power as (number | null)[]}
                     maxValue={10}
+                    missingLabel="Non publié"
                     colors={colors.slice(0, selectedItems.length)}
                   />
                   <ComparisonBar
                     label="Contrôle"
-                    values={comparisonSpecs.control as number[]}
+                    values={comparisonSpecs.control as (number | null)[]}
                     maxValue={10}
+                    missingLabel="Non publié"
                     colors={colors.slice(0, selectedItems.length)}
                   />
                   <ComparisonBar
                     label="Confort"
-                    values={comparisonSpecs.comfort as number[]}
+                    values={comparisonSpecs.comfort as (number | null)[]}
                     maxValue={10}
+                    missingLabel="Non publié"
                     colors={colors.slice(0, selectedItems.length)}
                   />
                   <ComparisonBar
@@ -491,39 +504,45 @@ export default function ComparePage() {
                 <>
                   <ComparisonBar
                     label="Contrôle"
-                    values={comparisonSpecs.control as number[]}
+                    values={comparisonSpecs.control as (number | null)[]}
                     maxValue={10}
+                    missingLabel="Non publié"
                     colors={colors.slice(0, selectedItems.length)}
                   />
                   <ComparisonBar
                     label="Confort"
-                    values={comparisonSpecs.comfort as number[]}
+                    values={comparisonSpecs.comfort as (number | null)[]}
                     maxValue={10}
+                    missingLabel="Non publié"
                     colors={colors.slice(0, selectedItems.length)}
                   />
                   <ComparisonBar
                     label="Spin"
-                    values={comparisonSpecs.spin as number[]}
+                    values={comparisonSpecs.spin as (number | null)[]}
                     maxValue={10}
+                    missingLabel="Non publié"
                     colors={colors.slice(0, selectedItems.length)}
                   />
                   <ComparisonBar
                     label="Durabilité"
-                    values={comparisonSpecs.durability as number[]}
+                    values={comparisonSpecs.durability as (number | null)[]}
                     maxValue={10}
+                    missingLabel="Non publié"
                     colors={colors.slice(0, selectedItems.length)}
                   />
                   <ComparisonBar
                     label="Puissance"
-                    values={comparisonSpecs.power as number[]}
+                    values={comparisonSpecs.power as (number | null)[]}
                     maxValue={10}
+                    missingLabel="Non publié"
                     colors={colors.slice(0, selectedItems.length)}
                   />
                   {/* 65 € est le maximum réel mesuré ; la borne à 50 € produisait
                       une largeur de 130 % rognée en silence par overflow-hidden. */}
                   <ComparisonBar
                     label="Prix (€)"
-                    values={comparisonSpecs.price as number[]}
+                    values={comparisonSpecs.price as (number | null)[]}
+                    missingLabel="Non publié"
                     minValue={6}
                     maxValue={65}
                     unit=" €"
@@ -629,14 +648,19 @@ export default function ComparePage() {
                           {isRacquet ? (
                             <span>{racquet?.weight}g • {racquet?.headSize}in² • RA {racquet?.stiffness || 'N/A'}</span>
                           ) : (
-                            <span>{stringItem?.type} • Ctrl: {stringItem?.control.toFixed(1)} • Conf: {stringItem?.comfort.toFixed(1)}</span>
+                            <span>
+                              {stringItem?.type} • Ctrl: {stringItem?.control?.toFixed(1) ?? 'Non publié'} • Conf:{' '}
+                              {stringItem?.comfort?.toFixed(1) ?? 'Non publié'}
+                            </span>
                           )}
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className="font-bold text-green-600">
-                          {isRacquet ? racquet?.price?.europe : stringItem?.price.europe}€
-                        </span>
+                        {(isRacquet ? racquet?.price?.europe : stringItem?.price?.europe) !== undefined && (
+                          <span className="font-bold text-green-600">
+                            {isRacquet ? racquet?.price?.europe : stringItem?.price?.europe}€
+                          </span>
+                        )}
                         {alreadySelected ? (
                           <Badge variant="secondary">Sélectionné</Badge>
                         ) : (

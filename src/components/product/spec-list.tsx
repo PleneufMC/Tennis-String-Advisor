@@ -58,7 +58,15 @@ export function SpecList({ specs }: { specs: Spec[] }) {
 
 /** Note sur 10, affichée en barre. Valeur absente => rien (pas de zéro inventé). */
 export function RatingBar({ label, value }: { label: string; value?: number | null }) {
-  if (value === null || value === undefined) return null;
+  // Note absente : « Non publié » à la place de la barre (zéro serait faux).
+  if (value === null || value === undefined) {
+    return (
+      <div className="flex items-center gap-3 py-1">
+        <span className="w-28 shrink-0 text-sm text-slate-600 dark:text-slate-400">{label}</span>
+        <span className="text-sm italic text-slate-500 dark:text-slate-400">Non publié</span>
+      </div>
+    );
+  }
   const pct = Math.max(0, Math.min(100, (value / 10) * 100));
   return (
     <div className="flex items-center gap-3 py-1">
