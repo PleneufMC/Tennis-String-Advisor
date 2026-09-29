@@ -1,11 +1,21 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.2.2
+> **Version** : 2.2.3
 > **Date** : 29 septembre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
 > **Branche de référence** : `genspark_ai_developer`
 > **Repo** : https://github.com/PleneufMC/Tennis-String-Advisor.git
+
+**Changelog v2.2.2 → v2.2.3** — **Photos produit** (décision de Pierre du 29/09/2026,
+en connaissance du risque : les conditions de Tennis Warehouse interdisent la
+reproduction sans permission écrite, demande en cours). 52 raquettes sur 129 et
+52 cordages sur 181 illustrés par une photo TW **hébergée chez nous**
+(`public/images/products/`, 3,7 Mo, pas de hotlink) ; 206 fiches en quarantaine
+(visuel neutre). Un seul drapeau, `PRODUCT_IMAGES_ENABLED`
+(`src/lib/product-images.ts`), coupe tout ; `python scripts/scraper/tw_product_images.py purge`
+supprime images et manifeste. Aucune photo dans le JSON-LD ni `og:image`.
+Contrôle 12 ajouté dans `audit:ratings`.
 
 **Changelog v2.2.1 → v2.2.2** — **Option A** (décision de Pierre du 29/09/2026) :
 aucune source ne publie les notes /10 des cordages, ni la tension recommandée,
@@ -170,6 +180,10 @@ corrigé dans la même PR.
   vérité unique, `POST /api/configurations` renvoie 403 au-delà de 3 configs.
 - Échelle d'alerte bras remise en monotonie (43,9 % → 13,9 % d'alertes).
 - Export PDF, thème sombre, i18n FR/EN livrés.
+- Photos produit Tennis Warehouse (29/09/2026) : 52/129 raquettes, 52/181
+  cordages, hébergées chez nous ; drapeau `PRODUCT_IMAGES_ENABLED` et commande
+  `purge` pour le retrait ; associations vérifiées par script (tamis, plan de
+  cordage, RA, jauge, coloris), quarantaine sinon. Autorisation TW non obtenue.
 
 ### Cassé ou incomplet
 
@@ -374,6 +388,7 @@ fichier dans la même semaine.
 | `src/app/sitemap.ts`, `src/app/robots.ts`, `public/robots.txt` | `tsa-acquisition` |
 | blocs `export const metadata` et JSON-LD dans les `page.tsx` | `tsa-acquisition` |
 | `src/data/`, `src/lib/advanced-rcs.ts`, `src/lib/racquet-scoring.ts` | `tsa-core` |
+| `src/lib/product-images.ts`, `src/components/product/product-image.tsx`, `public/images/products/` | `tsa-core` |
 | `scripts/scraper/`, `scripts/qa-ratings.mts` | `tsa-core` |
 | `src/components/analytics/` | `tsa-measure` |
 | `scripts/qa-*` (hors `qa-ratings`), `reports/` | `tsa-measure` |
@@ -523,4 +538,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.2.2 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.2.3 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
