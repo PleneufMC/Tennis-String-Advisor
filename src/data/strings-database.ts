@@ -3271,7 +3271,11 @@ export const stringsDatabase: TennisString[] = [
     model: 'O-Toro',
     type: 'Polyester',
     gauges: ['1.23'],
-    stiffness: 210,
+    // Rigidité : TWU « Toroline O-Toro 17 (1.23) », même jauge que la fiche,
+    // https://twu.tennis-warehouse.com/learning_center/reporter2.php (POST zmaterial=all, 51 lbs, Fast),
+    // relevé du 28/09/2026, revérifié le 29/09/2026. Remplace 210 (sans source).
+    // Notes /10, tension et prix inchangés : non sourcés, arbitrage C4 global hors lot.
+    stiffness: 165.7,
     performance: 9.5,
     control: 8,
     comfort: 7,
