@@ -6,25 +6,27 @@ export interface TennisString {
   model: string;
   type: 'Polyester' | 'Multifilament' | 'Natural Gut' | 'Synthetic' | 'Hybrid' | 'Biodegradable';
   gauges: string[];
-  stiffness: number; // lb/in
-  performance: number; // /10
-  control: number; // /10
-  comfort: number; // /10
-  durability: number; // /10
-  // Optionnels : absents du schéma Supabase et non lus par l'UI (0 usage pour
-  // versatility, 2 mentions de type seulement pour innovation). Les rendre
-  // optionnels permet d'importer la base sans fabriquer de fausses notes.
+  stiffness: number; // lb/in — seul champ numérique requis : le RCS n'utilise que lui
+  // Option A (décision de Pierre, 29/09/2026) : les notes /10, la tension
+  // recommandée et le prix sont optionnels. Aucune source ne publie les notes
+  // /10 ; absentes = « non publié », jamais comblées (règle 3).
+  performance?: number; // /10
+  control?: number; // /10
+  comfort?: number; // /10
+  durability?: number; // /10
   versatility?: number; // /10
   innovation?: number; // /10
-  spin: number; // /10
-  power: number; // /10
-  recommendedTension: {
+  spin?: number; // /10
+  power?: number; // /10
+  recommendedTension?: {
     min: number; // kg
     max: number; // kg
   };
-  price: {
-    europe: number; // EUR
-    usa: number; // USD
+  // Chaque devise est indépendante : un prix fabricant USD sourcé n'implique
+  // aucun prix EUR (pas de conversion). Objet absent = aucun prix connu.
+  price?: {
+    europe?: number; // EUR
+    usa?: number; // USD
   };
   description: string;
   proUsage?: string;
