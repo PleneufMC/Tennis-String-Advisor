@@ -3390,6 +3390,27 @@ export function getStringById(id: string | null | undefined): TennisString | und
   return stringsDatabase.find((s) => s.id === resolved);
 }
 
+/**
+ * Seuil minimal sur une note optionnelle (option A, 29/09/2026). Seuil nul ou
+ * absent : tout passe. Seuil posé : une note absente ne passe pas — on ne peut
+ * pas affirmer qu'un cordage sans note publiée atteint le seuil.
+ */
+export function meetsMinRating(value: number | undefined, min: number | undefined): boolean {
+  if (!min) return true;
+  return value !== undefined && value >= min;
+}
+
+/**
+ * Comparateur décroissant pour une valeur optionnelle : les valeurs absentes
+ * vont en fin de liste, jamais à zéro (zéro serait une donnée fausse).
+ */
+export function compareOptionalDesc(a: number | undefined, b: number | undefined): number {
+  if (a === undefined && b === undefined) return 0;
+  if (a === undefined) return 1;
+  if (b === undefined) return -1;
+  return b - a;
+}
+
 // Fonction helper pour filtrer les cordages
 export function filterStrings(
   strings: TennisString[],
@@ -3403,10 +3424,11 @@ export function filterStrings(
 ): TennisString[] {
   return strings.filter(string => {
     if (filters.type && string.type !== filters.type) return false;
-    if (filters.maxPrice && string.price.europe > filters.maxPrice) return false;
-    if (filters.minComfort && string.comfort < filters.minComfort) return false;
-    if (filters.minControl && string.control < filters.minControl) return false;
-    if (filters.minSpin && string.spin < filters.minSpin) return false;
+    // Prix plafond posé : un cordage sans prix EUR connu est exclu.
+    if (filters.maxPrice && !(string.price?.europe !== undefined && string.price.europe <= filters.maxPrice)) return false;
+    if (!meetsMinRating(string.comfort, filters.minComfort)) return false;
+    if (!meetsMinRating(string.control, filters.minControl)) return false;
+    if (!meetsMinRating(string.spin, filters.minSpin)) return false;
     return true;
   });
 }
@@ -3507,7 +3529,7 @@ export function getStringRecommendationByProfile(profile: {
   
   // Filtrage selon le niveau
   if (profile.level === 'beginner') {
-    filtered = filtered.filter(s => s.comfort >= 7 && s.stiffness < 200);
+    filtered = filtered.filter(s => meetsMinRating(s.comfort, 7) && s.stiffness < 200);
   } else if (profile.level === 'intermediate') {
     // `versatility` est optionnel : absent du schéma Supabase, il manque sur les
     // cordages importés depuis la base. Une note inconnue ne doit pas valoir
@@ -3515,38 +3537,38 @@ export function getStringRecommendationByProfile(profile: {
     // on n'exclut que les cordages dont la polyvalence est connue ET trop faible.
     filtered = filtered.filter(s => s.versatility === undefined || s.versatility >= 7.5);
   } else if (profile.level === 'advanced' || profile.level === 'pro') {
-    filtered = filtered.filter(s => s.control >= 8);
+    filtered = filtered.filter(s => meetsMinRating(s.control, 8));
   }
   
   // Filtrage selon le style
   if (profile.style === 'baseline') {
-    filtered = filtered.filter(s => s.spin >= 7.5 && s.control >= 8);
+    filtered = filtered.filter(s => meetsMinRating(s.spin, 7.5) && meetsMinRating(s.control, 8));
   } else if (profile.style === 'serve-volley') {
-    filtered = filtered.filter(s => s.control >= 8.5 && s.comfort >= 7);
+    filtered = filtered.filter(s => meetsMinRating(s.control, 8.5) && meetsMinRating(s.comfort, 7));
   }
   
   // Filtrage selon la priorité
   switch (profile.priority) {
     case 'control':
-      filtered.sort((a, b) => b.control - a.control);
+      filtered.sort((a, b) => compareOptionalDesc(a.control, b.control));
       break;
     case 'power':
-      filtered.sort((a, b) => b.power - a.power);
+      filtered.sort((a, b) => compareOptionalDesc(a.power, b.power));
       break;
     case 'comfort':
-      filtered.sort((a, b) => b.comfort - a.comfort);
+      filtered.sort((a, b) => compareOptionalDesc(a.comfort, b.comfort));
       break;
     case 'spin':
-      filtered.sort((a, b) => b.spin - a.spin);
+      filtered.sort((a, b) => compareOptionalDesc(a.spin, b.spin));
       break;
     case 'durability':
-      filtered.sort((a, b) => b.durability - a.durability);
+      filtered.sort((a, b) => compareOptionalDesc(a.durability, b.durability));
       break;
   }
   
   // Si problèmes de bras, filtrer les cordages trop rigides
   if (profile.armIssues) {
-    filtered = filtered.filter(s => s.stiffness < 200 && s.comfort >= 8);
+    filtered = filtered.filter(s => s.stiffness < 200 && meetsMinRating(s.comfort, 8));
   }
   
   return filtered.slice(0, 5); // Retourner le top 5

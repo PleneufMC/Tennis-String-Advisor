@@ -201,7 +201,7 @@ export function buildConfigurationPdfData(
 
     advanced = {
       overall: result.overall,
-      level: LEVEL_LABEL[result.level] ?? result.level,
+      level: result.level === null ? 'Non disponible' : LEVEL_LABEL[result.level] ?? result.level,
       firmnessIndex: result.rcs,
       subScores: result.subScores,
       recommendations: result.recommendations,

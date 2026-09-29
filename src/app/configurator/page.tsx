@@ -71,8 +71,9 @@ function SelectedStringSummary({
         {string.brand} {string.model}
       </strong>
       <div style={{ color: 'var(--tint-green-fg)', fontSize: '0.75rem' }}>
-        {string.type} | Raideur: {string.stiffness} lb/in | Contrôle: {string.control}/10 | Confort:{' '}
-        {string.comfort}/10
+        {string.type} | Raideur: {string.stiffness} lb/in | Contrôle:{' '}
+        {string.control !== undefined ? `${string.control}/10` : 'non publié'} | Confort:{' '}
+        {string.comfort !== undefined ? `${string.comfort}/10` : 'non publié'}
       </div>
       {children}
     </div>
@@ -821,7 +822,8 @@ export default function ConfiguratorPage() {
                           {string.brand} {string.model}
                         </div>
                         <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                          {string.type} | Raideur: {string.stiffness} lb/in | €{string.price.europe}
+                          {string.type} | Raideur: {string.stiffness} lb/in
+                          {string.price?.europe !== undefined && ` | €${string.price.europe}`}
                         </div>
                       </button>
                     ))}
@@ -947,7 +949,8 @@ export default function ConfiguratorPage() {
                           {string.brand} {string.model}
                         </div>
                         <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                          {string.type} | Raideur: {string.stiffness} lb/in | €{string.price.europe}
+                          {string.type} | Raideur: {string.stiffness} lb/in
+                          {string.price?.europe !== undefined && ` | €${string.price.europe}`}
                         </div>
                       </button>
                     ))}
@@ -1407,8 +1410,14 @@ export default function ConfiguratorPage() {
                             : 'var(--state-bad)',
                       }}
                     >
-                      {advancedRcs.overall}
-                      <span style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>/100</span>
+                      {advancedRcs.overall === null ? (
+                        <span style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>Non disponible</span>
+                      ) : (
+                        <>
+                          {advancedRcs.overall}
+                          <span style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>/100</span>
+                        </>
+                      )}
                     </span>
                     <span style={{ color: 'var(--text-strong)', fontSize: '0.9rem' }}>
                       {advancedRcs.summary}
@@ -1423,8 +1432,24 @@ export default function ConfiguratorPage() {
                       ['Confort', advancedRcs.subScores.comfort],
                       ['Spin', advancedRcs.subScores.spin],
                       ['Durabilité', advancedRcs.subScores.durability],
-                    ] as [string, number][]
-                  ).map(([label, value]) => (
+                    ] as [string, number | null][]
+                  ).map(([label, value]) =>
+                    value === null ? (
+                      // Note du cordage non publiée : pas de barre (zéro serait faux).
+                      <div
+                        key={label}
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          fontSize: '0.8rem',
+                          color: 'var(--text-strong)',
+                          marginBottom: '0.5rem',
+                        }}
+                      >
+                        <span>{label}</span>
+                        <span style={{ color: 'var(--text-muted)' }}>non disponible</span>
+                      </div>
+                    ) : (
                     <div key={label} style={{ marginBottom: '0.5rem' }}>
                       <div
                         style={{

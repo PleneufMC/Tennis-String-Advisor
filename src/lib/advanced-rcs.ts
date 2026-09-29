@@ -65,12 +65,17 @@ export interface AdvancedRcsInput {
   profile?: PlayerProfile;
 }
 
+/**
+ * Notes /10 optionnelles (option A, 29/09/2026) : aucune source ne les publie.
+ * Un sous-score qui dépend d'une note absente vaut `null` (« non disponible »),
+ * jamais une valeur par défaut.
+ */
 export interface StringRatings {
-  control: number; // /10
-  comfort: number; // /10
-  spin: number; // /10
-  power: number; // /10
-  durability: number; // /10
+  control?: number; // /10
+  comfort?: number; // /10
+  spin?: number; // /10
+  power?: number; // /10
+  durability?: number; // /10
 }
 
 export interface PlayerProfile {
@@ -83,17 +88,17 @@ export interface PlayerProfile {
 export interface AdvancedRcsResult {
   /** Indice de fermeté global (réutilise la formule RCS simple existante). */
   rcs: number;
-  /** Niveau de synthèse. */
-  level: RcsLevel;
-  /** Score global 0-100. */
-  overall: number;
-  /** Sous-scores 0-100. */
+  /** Niveau de synthèse — `null` si un sous-score n'est pas calculable. */
+  level: RcsLevel | null;
+  /** Score global 0-100 — `null` si un sous-score n'est pas calculable. */
+  overall: number | null;
+  /** Sous-scores 0-100 — `null` quand la note /10 dont ils dépendent est absente. */
   subScores: {
-    power: number;
-    control: number;
-    comfort: number;
-    spin: number;
-    durability: number;
+    power: number | null;
+    control: number | null;
+    comfort: number | null;
+    spin: number | null;
+    durability: number | null;
   };
   /** Recommandations actionnables (personnalisées si profil fourni). */
   recommendations: string[];
@@ -197,9 +202,16 @@ export function calculateAdvancedRcs(input: AdvancedRcsInput): AdvancedRcsResult
   const effStringStiffness = blend(mainStringStiffness, crossStringStiffness);
   const effGauge = blend(mainGaugeMm ?? 1.25, crossGaugeMm);
 
-  // Ratings effectifs (pondérés hybride, sur 10).
-  const r = (key: keyof StringRatings) =>
-    blend(mainRatings[key], crossRatings ? crossRatings[key] : undefined);
+  // Ratings effectifs (pondérés hybride, sur 10). Note absente sur le montant
+  // ou sur le travers d'un hybride => `null` : on ne mélange pas une note
+  // connue avec une note inconnue, et on n'en fabrique pas.
+  const r = (key: keyof StringRatings): number | null => {
+    const main = mainRatings[key];
+    if (main === undefined) return null;
+    if (!crossRatings) return main;
+    const cross = crossRatings[key];
+    return cross === undefined ? null : blend(main, cross);
+  };
 
   // Indice de fermeté global (socle, formule existante).
   const rcs = rcsIndex(racquetStiffness, effStringStiffness, avgTension);
@@ -217,49 +229,73 @@ export function calculateAdvancedRcs(input: AdvancedRcsInput): AdvancedRcsResult
   // --- Sous-score CONTRÔLE ---
   // Ratings contrôle + tension haute + cordage/cadre rigides.
   // On part d'une base à 90% du rating pour laisser de la marge aux bonus.
-  let control = r('control') * 9;
-  control += tDev * 1.3; // +1 kg ≈ +1.3 contrôle
-  control += stiffDev * 0.05;
-  control += raDev * 0.35;
-  control = clamp(control);
+  const rControl = r('control');
+  let control: number | null = null;
+  if (rControl !== null) {
+    let c = rControl * 9;
+    c += tDev * 1.3; // +1 kg ≈ +1.3 contrôle
+    c += stiffDev * 0.05;
+    c += raDev * 0.35;
+    control = clamp(c);
+  }
 
   // --- Sous-score PUISSANCE (souvent inverse du contrôle) ---
-  let power = r('power') * 10;
-  power -= tDev * 1.8; // tension basse => plus de puissance
-  if (racquetHeadSize) power += (racquetHeadSize - 98) * 0.6; // grand tamis => trampoline
-  power += raDev * 0.5; // cadre rigide => restitue plus d'énergie
-  power = clamp(power);
+  const rPower = r('power');
+  let power: number | null = null;
+  if (rPower !== null) {
+    let p = rPower * 10;
+    p -= tDev * 1.8; // tension basse => plus de puissance
+    if (racquetHeadSize) p += (racquetHeadSize - 98) * 0.6; // grand tamis => trampoline
+    p += raDev * 0.5; // cadre rigide => restitue plus d'énergie
+    power = clamp(p);
+  }
 
   // --- Sous-score CONFORT (pénalisé par la rigidité globale) ---
-  let comfort = r('comfort') * 10;
-  comfort += familyComfortBonus(mainStringFamily);
-  comfort -= raDev * 0.7; // cadre rigide => moins confortable
-  comfort -= stiffDev * 0.08; // cordage raide => moins confortable
-  comfort -= tDev * 1.2; // tension haute => moins confortable
-  if (racquetWeight && racquetWeight >= 300) comfort += 4; // masse => absorbe les vibrations
-  comfort = clamp(comfort);
+  const rComfort = r('comfort');
+  let comfort: number | null = null;
+  if (rComfort !== null) {
+    let c = rComfort * 10;
+    c += familyComfortBonus(mainStringFamily);
+    c -= raDev * 0.7; // cadre rigide => moins confortable
+    c -= stiffDev * 0.08; // cordage raide => moins confortable
+    c -= tDev * 1.2; // tension haute => moins confortable
+    if (racquetWeight && racquetWeight >= 300) c += 4; // masse => absorbe les vibrations
+    comfort = clamp(c);
+  }
 
   // --- Sous-score SPIN ---
-  let spin = r('spin') * 9;
-  spin += familySpinBonus(mainStringFamily);
-  if (effGauge) spin += (1.25 - effGauge) * 25; // jauge fine => plus de morsure
-  spin = clamp(spin);
+  const rSpin = r('spin');
+  let spin: number | null = null;
+  if (rSpin !== null) {
+    let s = rSpin * 9;
+    s += familySpinBonus(mainStringFamily);
+    if (effGauge) s += (1.25 - effGauge) * 25; // jauge fine => plus de morsure
+    spin = clamp(s);
+  }
 
   // --- Sous-score DURABILITÉ ---
-  let durability = r('durability') * 10;
-  if (effGauge) durability += (effGauge - 1.25) * 40; // jauge épaisse => plus durable
-  if (mainStringFamily === 'polyester') durability += 6;
-  if (mainStringFamily === 'gut') durability -= 8;
-  durability = clamp(durability);
+  const rDurability = r('durability');
+  let durability: number | null = null;
+  if (rDurability !== null) {
+    let d = rDurability * 10;
+    if (effGauge) d += (effGauge - 1.25) * 40; // jauge épaisse => plus durable
+    if (mainStringFamily === 'polyester') d += 6;
+    if (mainStringFamily === 'gut') d -= 8;
+    durability = clamp(d);
+  }
 
   // --- Score global (moyenne pondérée) ---
   // Le confort pèse plus lourd (santé du bras = priorité TSA).
-  const overall = round(
-    control * 0.22 + power * 0.2 + comfort * 0.3 + spin * 0.18 + durability * 0.1
-  );
+  // Un seul sous-score absent suffit à rendre le score global non calculable.
+  const overall =
+    control === null || power === null || comfort === null || spin === null || durability === null
+      ? null
+      : round(control * 0.22 + power * 0.2 + comfort * 0.3 + spin * 0.18 + durability * 0.1);
 
-  const level: RcsLevel =
-    overall >= 82 ? 'excellent' : overall >= 68 ? 'good' : overall >= 52 ? 'moderate' : 'poor';
+  const level: RcsLevel | null =
+    overall === null
+      ? null
+      : overall >= 82 ? 'excellent' : overall >= 68 ? 'good' : overall >= 52 ? 'moderate' : 'poor';
 
   // --- Recommandations & alertes personnalisées ---
   const recommendations: string[] = [];
@@ -296,7 +332,11 @@ export function calculateAdvancedRcs(input: AdvancedRcsInput): AdvancedRcsResult
   //
   // Les conditions de confort restent en second filet et rattrapent les setups
   // souples-mais-inconfortables que l'indice de fermeté seul ignore.
-  const armRisk = armSensitive ? rcs >= 32 || comfort < 55 : rcs >= 35 || comfort < 45;
+  // Option A (29/09/2026) : ce second filet n'existe que si la note de confort
+  // existe ; le seuil sur l'indice de fermeté s'applique, lui, à toute fiche.
+  const armRisk = armSensitive
+    ? rcs >= 32 || (comfort !== null && comfort < 55)
+    : rcs >= 35 || (comfort !== null && comfort < 45);
   if (armRisk) {
     if (armSensitive) {
       warnings.push(
@@ -332,19 +372,19 @@ export function calculateAdvancedRcs(input: AdvancedRcsInput): AdvancedRcsResult
         `et plus confortable qu'un polyester rigide.`
     );
   }
-  if (profile?.level === 'pro' && comfort > 75 && control < 55) {
+  if (profile?.level === 'pro' && comfort !== null && control !== null && comfort > 75 && control < 55) {
     recommendations.push(
       `Profil expert : vous pourriez gagner en contrôle avec un cordage plus rigide ou +1 kg de tension.`
     );
   }
-  if (profile?.style === 'baseline' && spin < 55) {
+  if (profile?.style === 'baseline' && spin !== null && spin < 55) {
     recommendations.push(
       `Jeu de fond de court : un polyester texturé en jauge fine (1.20–1.25) maximiserait le lift.`
     );
   }
 
   // Renfort durabilité.
-  if (durability < 40) {
+  if (durability !== null && durability < 40) {
     recommendations.push(
       `Faible durabilité : si vous cassez souvent, optez pour une jauge plus épaisse (1.30+) ou un polyester.`
     );
@@ -362,20 +402,25 @@ export function calculateAdvancedRcs(input: AdvancedRcsInput): AdvancedRcsResult
     poor: 'Configuration déséquilibrée : voir les recommandations ci-dessous.',
   };
 
+  const roundOrNull = (v: number | null) => (v === null ? null : round(v));
+
   return {
     rcs,
     level,
     overall,
     subScores: {
-      power: round(power),
-      control: round(control),
-      comfort: round(comfort),
-      spin: round(spin),
-      durability: round(durability),
+      power: roundOrNull(power),
+      control: roundOrNull(control),
+      comfort: roundOrNull(comfort),
+      spin: roundOrNull(spin),
+      durability: roundOrNull(durability),
     },
     recommendations,
     warnings,
-    summary: summaryByLevel[level],
+    summary:
+      level === null
+        ? 'Analyse détaillée non disponible : les notes de ce cordage ne sont pas publiées.'
+        : summaryByLevel[level],
   };
 }
 
