@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 250" width="640" height="250">
+<title>Tension recommandée et tension à éviter pour un bras sensible</title>
+<symbol id="schema" viewBox="0 0 640 250">
+<g font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif">
+<rect x="120.0" y="94" width="200.0" height="52" rx="6" style="fill:var(--tsa-a1-soft,#d1fae5)"/>
+<rect x="420.0" y="94" width="200.0" height="52" rx="6" style="fill:var(--tsa-a4-soft,#fee2e2)"/>
+<line x1="20" y1="120" x2="620" y2="120" style="stroke:currentColor;stroke-width:3"/>
+<path d="M608,112 L622,120 L608,128" style="stroke:currentColor;stroke-width:3;fill:none"/>
+<line x1="120.0" y1="106" x2="120.0" y2="134" style="stroke:currentColor;stroke-width:3"/>
+<text x="120.0" y="168.0" font-size="21.4" text-anchor="middle" font-weight="700" fill="currentColor">20 kg</text>
+<line x1="320.0" y1="106" x2="320.0" y2="134" style="stroke:currentColor;stroke-width:3"/>
+<text x="320.0" y="168.0" font-size="21.4" text-anchor="middle" font-weight="700" fill="currentColor">24 kg</text>
+<line x1="420.0" y1="106" x2="420.0" y2="134" style="stroke:currentColor;stroke-width:3"/>
+<text x="420.0" y="168.0" font-size="21.4" text-anchor="middle" font-weight="700" fill="currentColor">26 kg</text>
+<text x="220.0" y="60.0" font-size="20" text-anchor="middle" font-weight="700" style="fill:var(--tsa-a1-text,#047857)">Recommandé</text>
+<text x="220.0" y="84.0" font-size="20.3" text-anchor="middle" font-weight="normal" style="fill:var(--tsa-muted,#4b5563)">20–24 kg</text>
+<text x="520.0" y="60.0" font-size="20" text-anchor="middle" font-weight="700" style="fill:var(--tsa-a4-text,#b91c1c)">À éviter</text>
+<text x="520.0" y="84.0" font-size="20.3" text-anchor="middle" font-weight="normal" style="fill:var(--tsa-muted,#4b5563)">> 26 kg, poly rigide</text>
+<text x="20.0" y="234.0" font-size="19.2" text-anchor="start" font-weight="normal" style="fill:var(--tsa-muted,#4b5563)">Soit 2 à 4 kg sous votre tension habituelle</text>
+</g>
+</symbol>
+<use href="#schema" width="640" height="250"/>
+</svg>
