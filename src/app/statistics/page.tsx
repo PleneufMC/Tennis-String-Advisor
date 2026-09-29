@@ -2,7 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { stringsDatabase } from '@/data/strings-database';
+import { stringsDatabase, type TennisString } from '@/data/strings-database';
+
+/** Nombre de fiches dont la note de performance est publiée. */
+const ratedStringsCount = stringsDatabase.filter(s => s.performance !== undefined).length;
 import { racquetsDatabase } from '@/data/racquets-database';
 import { ConfigurationStorage } from '@/lib/storage';
 
@@ -16,7 +19,7 @@ export default function StatisticsPage() {
   });
 
   const [topProducts, setTopProducts] = useState({
-    strings: [] as any[],
+    strings: [] as (TennisString & { performance: number })[],
     racquets: [] as any[]
   });
 
@@ -25,14 +28,13 @@ export default function StatisticsPage() {
     const configStats = ConfigurationStorage.getStats();
     setStats(configStats);
 
-    // Calculate top products
-    const topStrings = [...stringsDatabase]
+    // Calculate top products — classement sur les seules fiches dont la note
+    // de performance est publiée (option A, 29/09/2026) : une fiche sans note
+    // n'est ni classée ni comptée comme zéro.
+    const topStrings = stringsDatabase
+      .filter((s): s is TennisString & { performance: number } => s.performance !== undefined)
       .sort((a, b) => b.performance - a.performance)
-      .slice(0, 10)
-      .map(s => ({
-        ...s,
-        avgScore: ((s.performance + s.control + s.comfort + s.durability) / 4).toFixed(1)
-      }));
+      .slice(0, 10);
 
     const topRacquets = [...racquetsDatabase]
       .filter(r => r.stiffness !== null)
@@ -232,6 +234,10 @@ export default function StatisticsPage() {
             <span style={{ marginRight: '0.5rem' }}>🎯</span>
             Top 10 Cordages
           </h2>
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '-1rem', marginBottom: '1rem' }}>
+            Classement établi sur {ratedStringsCount} fiches dont la note est publiée
+            (sur {stringsDatabase.length}).
+          </p>
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
@@ -290,8 +296,12 @@ export default function StatisticsPage() {
                         </div>
                       </div>
                     </td>
-                    <td style={tableCellStyle}>{string.control}/10</td>
-                    <td style={tableCellStyle}>€{string.price.europe}</td>
+                    <td style={tableCellStyle}>
+                      {string.control !== undefined ? `${string.control}/10` : 'Non publié'}
+                    </td>
+                    <td style={tableCellStyle}>
+                      {string.price?.europe !== undefined ? `€${string.price.europe}` : '—'}
+                    </td>
                   </tr>
                 ))}
               </tbody>

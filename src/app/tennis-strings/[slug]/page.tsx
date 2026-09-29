@@ -34,11 +34,19 @@ export function generateMetadata({ params }: { params: { slug: string } }): Meta
 
   const name = `${string.brand} ${string.model}`;
   const title = `${name} — cordage ${string.type.toLowerCase()}`;
+  // Chaque fragment n'est émis que si la valeur existe (option A, 29/09/2026) :
+  // jamais « undefined/10 » ni une tension inventée dans un extrait de recherche.
+  const tension = string.recommendedTension;
+  const notes = [
+    string.control !== undefined ? `Contrôle ${string.control}/10` : null,
+    string.comfort !== undefined ? `confort ${string.comfort}/10` : null,
+  ].filter(Boolean);
   const description =
-    `${name} : rigidité ${string.stiffness} lb/in, tension recommandée ` +
-    `${string.recommendedTension.min}-${string.recommendedTension.max} kg, ` +
-    `jauges ${string.gauges.join(', ')} mm. Contrôle ${string.control}/10, ` +
-    `confort ${string.comfort}/10. Calculez le RCS de ce cordage avec votre raquette.`;
+    `${name} : rigidité ${string.stiffness} lb/in, ` +
+    (tension ? `tension recommandée ${tension.min}-${tension.max} kg, ` : '') +
+    `jauges ${string.gauges.join(', ')} mm.` +
+    (notes.length > 0 ? ` ${notes.join(', ')}.` : '') +
+    ` Calculez le RCS de ce cordage avec votre raquette.`;
   const canonical = `${resolveSiteUrl()}/tennis-strings/${string.id}`;
 
   return {
@@ -62,7 +70,9 @@ export default function StringPage({ params }: { params: { slug: string } }) {
     { label: 'Rigidité', value: string.stiffness, unit: 'lb/in' },
     {
       label: 'Tension recommandée',
-      value: `${string.recommendedTension.min} – ${string.recommendedTension.max}`,
+      value: string.recommendedTension
+        ? `${string.recommendedTension.min} – ${string.recommendedTension.max}`
+        : undefined,
       unit: 'kg',
     },
     { label: 'Jauges disponibles', value: string.gauges.join(', '), unit: 'mm' },
@@ -83,11 +93,16 @@ export default function StringPage({ params }: { params: { slug: string } }) {
     url: `${siteUrl}/tennis-strings/${string.id}`,
     additionalProperty: [
       { '@type': 'PropertyValue', name: 'Rigidité', value: `${string.stiffness} lb/in` },
-      {
-        '@type': 'PropertyValue',
-        name: 'Tension recommandée',
-        value: `${string.recommendedTension.min}-${string.recommendedTension.max} kg`,
-      },
+      // Tension absente : la propriété n'est pas émise (aucune valeur inventée).
+      ...(string.recommendedTension
+        ? [
+            {
+              '@type': 'PropertyValue',
+              name: 'Tension recommandée',
+              value: `${string.recommendedTension.min}-${string.recommendedTension.max} kg`,
+            },
+          ]
+        : []),
       { '@type': 'PropertyValue', name: 'Jauges', value: string.gauges.join(', ') + ' mm' },
     ],
   };

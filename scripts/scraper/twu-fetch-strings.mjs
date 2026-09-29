@@ -24,11 +24,37 @@
  * IP). Le sous-domaine `twu.tennis-warehouse.com` répond normalement, et
  * surtout ce script ne fait qu'UNE SEULE requête : toute la base tient dans
  * une page. Aucune charge n'est imposée au site.
+ *
+ * FILTRE MATÉRIAU (29/09/2026) : un simple GET renvoie la page filtrée par
+ * défaut sur « Polyester » — les multifilaments, boyaux et nylons n'y
+ * figuraient donc pas. On soumet le formulaire (POST) avec `zmaterial=all`,
+ * en gardant les conditions de référence du reste de la base : 51 lbs
+ * (`zref_tension=23`) et vitesse « Fast » (`zhammer=1`). Les champs
+ * `sort1`…`sort5` sont obligatoires : sans eux, TWU renvoie un tableau vide.
+ * La colonne « Gauge Nominal » est demandée en plus pour apparier sur
+ * (modèle, jauge) ; les colonnes sont lues par leur en-tête, pas leur rang.
  */
 import { writeFileSync, existsSync, mkdirSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
-const OUT_DIR = new URL('./out/', import.meta.url).pathname;
+const OUT_DIR = fileURLToPath(new URL('./out/', import.meta.url));
 const URL_DB = 'https://twu.tennis-warehouse.com/learning_center/reporter2.php';
+
+const FORM = new URLSearchParams([
+  ['zbrand', 'all'],
+  ['zstring[]', 'all'],
+  ['zref_tension', '23'], // 51 lbs
+  ['zhammer', '1'], // Fast
+  ['zmaterial', 'all'],
+  ...['xbrand', 'xstring', 'xref_tension', 'xhammer', 'xmaterial', 'xgauge_nominal', 'xstiffness', 'xloss_percent', 'xspinratio'].map(
+    (v) => ['display[]', v],
+  ),
+  ['sort1', 'brand'],
+  ['sort2', 'model'],
+  ['sort3', 'gauge_nominal'],
+  ['sort4', ''],
+  ['sort5', ''],
+]);
 
 const HEADERS = {
   'User-Agent':
@@ -57,32 +83,57 @@ async function main() {
   if (!existsSync(OUT_DIR)) mkdirSync(OUT_DIR, { recursive: true });
 
   console.log('Lecture de la base TWU (1 requête)...');
-  const res = await fetch(URL_DB, { headers: HEADERS });
+  const res = await fetch(URL_DB, {
+    method: 'POST',
+    headers: { ...HEADERS, 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: FORM.toString(),
+  });
   if (!res.ok) throw new Error(`TWU inaccessible (HTTP ${res.status})`);
   const html = await res.text();
 
-  const rows = [...html.matchAll(/<tr>(.*?)<\/tr>/gs)].map((m) => m[1]);
-  const records = [];
-  for (const row of rows) {
-    const cells = [...row.matchAll(/<t[dh][^>]*>(.*?)<\/t[dh]>/gs)].map((c) =>
+  const rows = [...html.matchAll(/<tr>(.*?)<\/tr>/gs)].map((m) =>
+    [...m[1].matchAll(/<t[dh][^>]*>(.*?)<\/t[dh]>/gs)].map((c) =>
       unescapeHtml(stripTags(c[1])).replace(/\s+/g, ' ').trim()
-    );
-    // Colonnes attendues :
-    // Item | String | Ref. Ten. (lbs) | Swing Speed | Material | Stiffness (lb/in) | Tension Loss (%) | Spin Potential
-    if (cells.length < 8) continue;
+    )
+  );
+  // Colonnes repérées par leur en-tête (l'ordre dépend des colonnes demandées).
+  const header = rows.find((c) => c[0] === 'Item' && c.includes('String'));
+  if (!header) throw new Error("En-tête du tableau TWU introuvable : format de page changé ?");
+  const col = (label) => {
+    const i = header.findIndex((h) => h.startsWith(label));
+    if (i < 0) throw new Error(`Colonne TWU absente : ${label}`);
+    return i;
+  };
+  const C = {
+    name: col('String'),
+    ref: col('Ref. Ten.'),
+    speed: col('Swing Speed'),
+    material: col('Material'),
+    gauge: col('Gauge Nominal'),
+    stiffness: col('Stiffness'),
+    loss: col('Tension Loss'),
+    spin: col('Spin Potential'),
+  };
+  const records = [];
+  for (const cells of rows) {
+    if (cells.length !== header.length) continue;
     if (!/^\d+$/.test(cells[0])) continue; // ignore la ligne d'en-tête
-    const stiffness = numOrNull(cells[5]);
+    const stiffness = numOrNull(cells[C.stiffness]);
     if (stiffness === null) continue;
+    const gauge = numOrNull(cells[C.gauge]);
     records.push({
-      name: cells[1],
-      refTensionLbs: numOrNull(cells[2]),
-      swingSpeed: cells[3] || null,
-      material: cells[4] || null,
+      name: cells[C.name],
+      refTensionLbs: numOrNull(cells[C.ref]),
+      swingSpeed: cells[C.speed] || null,
+      material: cells[C.material] || null,
+      // TWU publie parfois « 0 » : jauge non renseignée, pas une jauge nulle.
+      gaugeNominalMm: gauge ? gauge : null,
       stiffnessLbIn: stiffness,
-      tensionLossPct: numOrNull(cells[6]),
-      spinPotential: numOrNull(cells[7]),
+      tensionLossPct: numOrNull(cells[C.loss]),
+      spinPotential: numOrNull(cells[C.spin]),
     });
   }
+  if (records.length === 0) throw new Error('TWU a renvoyé un tableau vide (champs sort1…sort5 ?)');
 
   writeFileSync(`${OUT_DIR}twu-strings.json`, JSON.stringify(records, null, 2));
 

@@ -30,6 +30,8 @@ import {
   getStringRecommendation,
   LEGACY_STRING_ALIASES,
   REMOVED_STRING_IDS,
+  meetsMinRating,
+  compareOptionalDesc,
 } from '../src/data/strings-database';
 import { calculateAdvancedRcs, stringTypeToFamily } from '../src/lib/advanced-rcs';
 import {
@@ -360,7 +362,10 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
   }
 
   // Le prix des cordages était le cas concret : borne 50 € pour des données à 65 €.
-  const stringMax = Math.max(...stringsDatabase.map((s) => s.price.europe));
+  // Prix optionnel depuis l'option A (29/09/2026) : maximum sur les prix présents.
+  const stringMax = Math.max(
+    ...stringsDatabase.map((s) => s.price?.europe).filter((p): p is number => p !== undefined),
+  );
   const priceBars = [...src.matchAll(/maxValue=\{(\d+)\}[\s\S]{0,120}?unit=" €"/g)].map((m) => Number(m[1]));
   if (priceBars.length > 0 && !priceBars.some((v) => v >= stringMax)) {
     fail(
@@ -626,6 +631,100 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
       `catalogue cordages : ${stringsDatabase.length} fiches, jauges >= 1.00 mm, aucun doublon ` +
         `(marque, modèle), ${refused.length} identifiants retirés absents, ` +
         `${Object.keys(LEGACY_STRING_ALIASES).length} alias vers des cibles présentes`
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 11. OPTION A (29/09/2026) — notes /10, tension recommandée et prix optionnels.
+// ---------------------------------------------------------------------------
+// Le RCS ne dépend que de la rigidité : elle seule est obligatoire. Une fiche
+// sans notes doit rester calculable, et l'alerte bras fondée sur l'indice de
+// fermeté doit s'appliquer à elle comme aux autres (règle 2).
+{
+  const before = failures.length;
+
+  // a) aucune fiche sans rigidité exploitable.
+  const noStiff = stringsDatabase.filter((s) => !(Number.isFinite(s.stiffness) && s.stiffness > 0));
+  for (const s of noStiff) fail(`${s.id} : rigidité absente ou invalide (${s.stiffness}) — le RCS n'est pas calculable`);
+
+  // b) RCS fini pour toutes les fiches, toutes raquettes, toutes tensions.
+  let combos = 0;
+  for (const s of stringsDatabase) {
+    for (const rq of racquetsDatabase) {
+      const ra = effectiveRacquetRA(rq);
+      for (const t of TENSIONS) {
+        combos++;
+        const v = calculateRCS(ra, s.stiffness, t);
+        if (!Number.isFinite(v)) {
+          fail(`${s.id} + ${rq.id} @ ${t} kg : RCS non fini (${v})`);
+          break;
+        }
+      }
+    }
+  }
+
+  // c) aucun rendu de note sans garde : `.toFixed` direct sur une note optionnelle
+  //    planterait (TypeError) sur une fiche sans notes.
+  const UI = [
+    'src/components/product/string-card.tsx',
+    'src/app/compare/page.tsx',
+    'src/app/tennis-strings/[slug]/page.tsx',
+    'src/app/statistics/page.tsx',
+  ];
+  for (const path of UI) {
+    const src = readFileSync(path, 'utf8');
+    const hits = src.match(/\b(?:string|stringItem|s)\??\.(?:performance|control|comfort|durability|spin|power)\.toFixed\(/g);
+    if (hits) fail(`${path} : ${hits.length} rendu(s) de note sans garde (${hits.join(', ')})`);
+  }
+
+  // d) fiche synthétique sans notes, sans tension, sans prix : RCS calculé,
+  //    sous-scores null (jamais 0), alerte bras émise sur un setup rigide.
+  const bare = calculateAdvancedRcs({
+    racquetStiffness: 72,
+    mainStringStiffness: 262,
+    mainStringFamily: 'polyester',
+    mainRatings: {},
+    mainTension: 28,
+  });
+  const subs = Object.values(bare.subScores);
+  if (!Number.isFinite(bare.rcs)) fail(`fiche sans notes : RCS non fini (${bare.rcs})`);
+  if (subs.some((v) => v !== null) || bare.overall !== null) {
+    fail(`fiche sans notes : sous-scores ou score global fabriqués (${JSON.stringify(bare.subScores)}, ${bare.overall})`);
+  }
+  if (!bare.warnings.some((w) => /bras|elbow/i.test(w))) {
+    fail(`fiche sans notes : aucune alerte bras sur un setup rigide (indice ${bare.rcs}) — règle 2`);
+  }
+  const bareSensitive = calculateAdvancedRcs({
+    racquetStiffness: 64,
+    mainStringStiffness: 220,
+    mainStringFamily: 'polyester',
+    mainRatings: {},
+    mainTension: 26,
+    profile: { armSensitive: true },
+  });
+  if (bareSensitive.rcs >= 32 && !bareSensitive.warnings.some((w) => /bras|elbow/i.test(w))) {
+    fail(`fiche sans notes, profil sensible : indice ${bareSensitive.rcs} >= 32 sans alerte — règle 2`);
+  }
+
+  // e) filtres et tris : note absente => exclue d'un seuil > 0, rangée en fin de tri.
+  if (meetsMinRating(undefined, 5) || !meetsMinRating(undefined, 0) || !meetsMinRating(7, 5)) {
+    fail(`meetsMinRating : une fiche sans note passe un seuil > 0, ou le seuil nul exclut`);
+  }
+  // (objets, car Array.sort range les `undefined` nus sans appeler le comparateur)
+  const sorted = [{ v: undefined }, { v: 3 }, { v: 8 }]
+    .sort((a, b) => compareOptionalDesc(a.v, b.v))
+    .map((o) => o.v);
+  if (sorted[0] !== 8 || sorted[2] !== undefined) {
+    fail(`compareOptionalDesc : les notes absentes ne sont pas en fin de liste (${JSON.stringify(sorted)})`);
+  }
+
+  if (failures.length === before) {
+    const unrated = stringsDatabase.filter((s) => s.comfort === undefined).length;
+    ok(
+      `option A : ${stringsDatabase.length} fiches avec rigidité, RCS fini sur ${combos} combinaisons, ` +
+        `aucune note rendue sans garde (${UI.length} fichiers), fiche sans notes => sous-scores null + ` +
+        `alerte bras émise (indice ${bare.rcs}) ; ${unrated} fiche(s) sans note de confort`
     );
   }
 }

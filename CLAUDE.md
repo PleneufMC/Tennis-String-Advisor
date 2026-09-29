@@ -1,11 +1,24 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.2.1
-> **Date** : 28 septembre 2026
+> **Version** : 2.2.2
+> **Date** : 29 septembre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
 > **Branche de référence** : `genspark_ai_developer`
 > **Repo** : https://github.com/PleneufMC/Tennis-String-Advisor.git
+
+**Changelog v2.2.1 → v2.2.2** — **Option A** (décision de Pierre du 29/09/2026) :
+aucune source ne publie les notes /10 des cordages, ni la tension recommandée,
+ni pour certaines marques le prix EUR. Ces champs deviennent **optionnels** dans
+`TennisString` ; absents = « Non publié », jamais comblés. Seule la rigidité
+reste obligatoire — le RCS n'utilise qu'elle. Un sous-score avancé qui dépend
+d'une note absente vaut `null` ; l'alerte bras fondée sur l'indice de fermeté
+s'applique à toute fiche, le second filet « confort » seulement si la note
+existe. Contrôle 11 ajouté dans `audit:ratings`. Puis lot 3 Toroline :
+**174 → 181 cordages** (7 fiches à rigidité mesurée TWU, sans note ni tension
+ni prix EUR) et `toroline-o-toro` passe de 210 (sans source) à **165,7 lb/in**
+(TWU, 1.23). Le script TWU relève désormais tous les matériaux (il ne voyait
+que le polyester). Supabase (pages EN) n'est **pas** mis à jour.
 
 **Changelog v2.2.0 → v2.2.1** — Nettoyage du catalogue cordages (audit du
 28/09/2026, lot 1 `tsa-core`) : **190 → 174 cordages**. Huit entrées fausses
@@ -130,8 +143,8 @@ Links, déploiement Netlify (adaptateur OpenNext). (Zustand est déclaré dans
 **HTML statiques** dans `public/blog/*.html` et `public/en/*.html`. Le
 `route-map.ts` fait le pont entre les deux univers.
 
-**Base** : 129 raquettes, 174 cordages (`src/data/*.ts`, 190 avant le
-nettoyage du 28/09/2026).
+**Base** : 129 raquettes, 181 cordages (`src/data/*.ts` ; 190 avant le
+nettoyage du 28/09/2026, 174 après, 181 depuis le lot 3 Toroline du 29/09/2026).
 
 **Écosystème** : tennismatchfinder.net (même propriétaire) référence TSA.
 ⚠️ **Corrigé le 31/08/2026** — ce site était présenté ici comme « un canal de
@@ -510,4 +523,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.2.1 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.2.2 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
