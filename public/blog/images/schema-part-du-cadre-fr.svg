@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400" width="640" height="400">
+<title>Part du cadre dans la vitesse du coup selon la situation de jeu</title>
+<symbol id="schema" viewBox="0 0 640 400">
+<g font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif">
+<text x="10.0" y="36.0" font-size="21.4" text-anchor="start" font-weight="normal" fill="currentColor">Service, balle immobile</text>
+<rect x="10" y="46" width="620" height="26" rx="5" style="fill:var(--tsa-grid,#d1d5db)"/>
+<rect x="10" y="46" width="177.3" height="26" rx="5" style="fill:var(--tsa-a1,#047857)"/>
+<text x="197.3" y="66.0" font-size="21.4" text-anchor="start" font-weight="700" fill="currentColor">28,6 %</text>
+<text x="10.0" y="104.0" font-size="21.4" text-anchor="start" font-weight="normal" fill="currentColor">Balle molle, geste complet</text>
+<rect x="10" y="114" width="620" height="26" rx="5" style="fill:var(--tsa-grid,#d1d5db)"/>
+<rect x="10" y="114" width="197.8" height="26" rx="5" style="fill:var(--tsa-a1,#047857)"/>
+<text x="217.8" y="134.0" font-size="21.4" text-anchor="start" font-weight="700" fill="currentColor">31,9 %</text>
+<text x="10.0" y="172.0" font-size="21.4" text-anchor="start" font-weight="normal" fill="currentColor">Échange équilibré</text>
+<rect x="10" y="182" width="620" height="26" rx="5" style="fill:var(--tsa-grid,#d1d5db)"/>
+<rect x="10" y="182" width="257.9" height="26" rx="5" style="fill:var(--tsa-a1,#047857)"/>
+<text x="277.9" y="202.0" font-size="21.4" text-anchor="start" font-weight="700" fill="currentColor">41,6 %</text>
+<text x="10.0" y="240.0" font-size="21.4" text-anchor="start" font-weight="normal" fill="currentColor">Retour bloqué sur balle rapide</text>
+<rect x="10" y="250" width="620" height="26" rx="5" style="fill:var(--tsa-grid,#d1d5db)"/>
+<rect x="10" y="250" width="456.9" height="26" rx="5" style="fill:var(--tsa-a1,#047857)"/>
+<text x="476.9" y="270.0" font-size="21.4" text-anchor="start" font-weight="700" fill="currentColor">73,7 %</text>
+<text x="10.0" y="308.0" font-size="21.4" text-anchor="start" font-weight="normal" fill="currentColor">Balle encaissée sans geste</text>
+<rect x="10" y="318" width="620" height="26" rx="5" style="fill:var(--tsa-grid,#d1d5db)"/>
+<rect x="10" y="318" width="620.0" height="26" rx="5" style="fill:var(--tsa-a1,#047857)"/>
+<rect x="546.0" y="320" width="78" height="22" rx="4" style="fill:var(--tsa-card,#ffffff)"/>
+<text x="585.0" y="338.0" font-size="21.4" text-anchor="middle" font-weight="700" fill="currentColor">100 %</text>
+<rect x="10" y="358" width="18" height="18" rx="3" style="fill:var(--tsa-a1,#047857)"/>
+<text x="36.0" y="373.0" font-size="20.3" text-anchor="start" font-weight="normal" style="fill:var(--tsa-muted,#4b5563)">Part du cadre</text>
+<rect x="210" y="358" width="18" height="18" rx="3" style="fill:var(--tsa-grid,#d1d5db)"/>
+<text x="236.0" y="373.0" font-size="20.3" text-anchor="start" font-weight="normal" style="fill:var(--tsa-muted,#4b5563)">Part du geste</text>
+<text x="630.0" y="373.0" font-size="17.0" text-anchor="end" font-weight="normal" style="fill:var(--tsa-muted,#4b5563)">TWU, power potential 40 %</text>
+</g>
+</symbol>
+<use href="#schema" width="640" height="400"/>
+</svg>
