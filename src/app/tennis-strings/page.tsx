@@ -1,7 +1,12 @@
 'use client';
 
 import React, { useState, useMemo, useCallback } from 'react';
-import { stringsDatabase } from '@/data/strings-database';
+import {
+  stringsDatabase,
+  meetsMinRating,
+  compareOptionalDesc,
+  type TennisString,
+} from '@/data/strings-database';
 import { StringCard } from '@/components/product/string-card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -38,9 +43,29 @@ interface Filters {
 const brands = [...new Set(stringsDatabase.map(s => s.brand))].sort();
 const types = [...new Set(stringsDatabase.map(s => s.type))].sort();
 
-// Get min/max values for ranges
-const minPrice = Math.min(...stringsDatabase.map(s => s.price.europe));
-const maxPrice = Math.max(...stringsDatabase.map(s => s.price.europe));
+// Bornes de la plage de prix : calculées sur les seuls prix EUR présents.
+const knownPrices = stringsDatabase
+  .map(s => s.price?.europe)
+  .filter((p): p is number => p !== undefined);
+const minPrice = knownPrices.length > 0 ? Math.min(...knownPrices) : 0;
+const maxPrice = knownPrices.length > 0 ? Math.max(...knownPrices) : 0;
+
+/** Note globale (moyenne de 4 notes) — `undefined` si l'une manque. */
+function overallRating(s: TennisString): number | undefined {
+  const { performance, control, comfort, durability } = s;
+  if (performance === undefined || control === undefined || comfort === undefined || durability === undefined) {
+    return undefined;
+  }
+  return (performance + control + comfort + durability) / 4;
+}
+
+/** Tri croissant par prix, fiches sans prix en fin de liste. */
+function compareOptionalAsc(a: number | undefined, b: number | undefined): number {
+  if (a === undefined && b === undefined) return 0;
+  if (a === undefined) return 1;
+  if (b === undefined) return -1;
+  return a - b;
+}
 
 const defaultFilters: Filters = {
   search: '',
@@ -101,16 +126,21 @@ export default function StringsPage() {
         return false;
       }
 
-      // Price range filter
-      if (stringItem.price.europe < filters.priceRange[0] || stringItem.price.europe > filters.priceRange[1]) {
-        return false;
+      // Price range filter : plage intacte => aucun filtrage ; plage resserrée
+      // => une fiche sans prix EUR est exclue (on ne sait pas si elle y entre).
+      const priceNarrowed = filters.priceRange[0] !== minPrice || filters.priceRange[1] !== maxPrice;
+      if (priceNarrowed) {
+        const price = stringItem.price?.europe;
+        if (price === undefined || price < filters.priceRange[0] || price > filters.priceRange[1]) {
+          return false;
+        }
       }
 
-      // Rating filters
-      if (stringItem.control < filters.controlMin) return false;
-      if (stringItem.comfort < filters.comfortMin) return false;
-      if (stringItem.spin < filters.spinMin) return false;
-      if (stringItem.power < filters.powerMin) return false;
+      // Rating filters : seuil > 0 => une fiche sans la note est exclue.
+      if (!meetsMinRating(stringItem.control, filters.controlMin)) return false;
+      if (!meetsMinRating(stringItem.comfort, filters.comfortMin)) return false;
+      if (!meetsMinRating(stringItem.spin, filters.spinMin)) return false;
+      if (!meetsMinRating(stringItem.power, filters.powerMin)) return false;
 
       return true;
     });
@@ -120,24 +150,23 @@ export default function StringsPage() {
       switch (sortBy) {
         case 'name':
           return `${a.brand} ${a.model}`.localeCompare(`${b.brand} ${b.model}`);
+        // Valeur absente => fin de liste, quel que soit le sens du tri.
         case 'price-asc':
-          return a.price.europe - b.price.europe;
+          return compareOptionalAsc(a.price?.europe, b.price?.europe);
         case 'price-desc':
-          return b.price.europe - a.price.europe;
+          return compareOptionalDesc(a.price?.europe, b.price?.europe);
         case 'control':
-          return b.control - a.control;
+          return compareOptionalDesc(a.control, b.control);
         case 'comfort':
-          return b.comfort - a.comfort;
+          return compareOptionalDesc(a.comfort, b.comfort);
         case 'spin':
-          return b.spin - a.spin;
+          return compareOptionalDesc(a.spin, b.spin);
         case 'power':
-          return b.power - a.power;
+          return compareOptionalDesc(a.power, b.power);
         case 'durability':
-          return b.durability - a.durability;
+          return compareOptionalDesc(a.durability, b.durability);
         case 'rating':
-          const ratingA = (a.performance + a.control + a.comfort + a.durability) / 4;
-          const ratingB = (b.performance + b.control + b.comfort + b.durability) / 4;
-          return ratingB - ratingA;
+          return compareOptionalDesc(overallRating(a), overallRating(b));
         default:
           return 0;
       }

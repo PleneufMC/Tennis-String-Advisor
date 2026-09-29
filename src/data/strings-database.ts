@@ -6,25 +6,27 @@ export interface TennisString {
   model: string;
   type: 'Polyester' | 'Multifilament' | 'Natural Gut' | 'Synthetic' | 'Hybrid' | 'Biodegradable';
   gauges: string[];
-  stiffness: number; // lb/in
-  performance: number; // /10
-  control: number; // /10
-  comfort: number; // /10
-  durability: number; // /10
-  // Optionnels : absents du schéma Supabase et non lus par l'UI (0 usage pour
-  // versatility, 2 mentions de type seulement pour innovation). Les rendre
-  // optionnels permet d'importer la base sans fabriquer de fausses notes.
+  stiffness: number; // lb/in — seul champ numérique requis : le RCS n'utilise que lui
+  // Option A (décision de Pierre, 29/09/2026) : les notes /10, la tension
+  // recommandée et le prix sont optionnels. Aucune source ne publie les notes
+  // /10 ; absentes = « non publié », jamais comblées (règle 3).
+  performance?: number; // /10
+  control?: number; // /10
+  comfort?: number; // /10
+  durability?: number; // /10
   versatility?: number; // /10
   innovation?: number; // /10
-  spin: number; // /10
-  power: number; // /10
-  recommendedTension: {
+  spin?: number; // /10
+  power?: number; // /10
+  recommendedTension?: {
     min: number; // kg
     max: number; // kg
   };
-  price: {
-    europe: number; // EUR
-    usa: number; // USD
+  // Chaque devise est indépendante : un prix fabricant USD sourcé n'implique
+  // aucun prix EUR (pas de conversion). Objet absent = aucun prix connu.
+  price?: {
+    europe?: number; // EUR
+    usa?: number; // USD
   };
   description: string;
   proUsage?: string;
@@ -3269,7 +3271,11 @@ export const stringsDatabase: TennisString[] = [
     model: 'O-Toro',
     type: 'Polyester',
     gauges: ['1.23'],
-    stiffness: 210,
+    // Rigidité : TWU « Toroline O-Toro 17 (1.23) », même jauge que la fiche,
+    // https://twu.tennis-warehouse.com/learning_center/reporter2.php (POST zmaterial=all, 51 lbs, Fast),
+    // relevé du 28/09/2026, revérifié le 29/09/2026. Remplace 210 (sans source).
+    // Notes /10, tension et prix inchangés : non sourcés, arbitrage C4 global hors lot.
+    stiffness: 165.7,
     performance: 9.5,
     control: 8,
     comfort: 7,
@@ -3281,6 +3287,114 @@ export const stringsDatabase: TennisString[] = [
     description: 'Co-développé avec Steve Johnson (ex-ATP Top 25). Potentiel de spin +104% supérieur au RPM Blast selon tests Racketpedia. Snapback exceptionnel pour un lift maximum.',
     proUsage: 'Steve Johnson',
     color: 'Orange'
+  },
+  // Lot 3 Toroline (option A) — fiche officielle : https://toroline.com/collections/single-sets/products/absolute
+  // Rigidité : TWU « Toroline Absolute 17 (1.20) », https://twu.tennis-warehouse.com/learning_center/reporter2.php (POST zmaterial=all, 51 lbs, Fast),
+  // relevé du 28/09/2026, revérifié le 29/09/2026. Prix : og:price toroline.com (USD).
+  // Aucune note /10, tension ni prix EUR publiés : champs absents (non comblés).
+  // TWU n'indique pas de jauge nominale pour cette mesure (colonne à 0) ; le nom de l'échantillon porte 1.20.
+  {
+    id: 'toroline-absolute',
+    brand: 'Toroline',
+    model: 'Absolute',
+    type: 'Polyester',
+    gauges: ['1.20'],
+    stiffness: 180.6,
+    price: { usa: 12 },
+    description: 'Co-poly à section hexagonale (six faces), jauge 1,20 mm. Le fabricant le décrit comme un co-poly souple et vif, orienté effet.',
+    color: 'Black'
+  },
+  // Lot 3 Toroline (option A) — fiche officielle : https://toroline.com/collections/single-sets/products/o-toro-snap-sample
+  // Rigidité : TWU « Toroline O-TORO Snap 16L (1.25) », https://twu.tennis-warehouse.com/learning_center/reporter2.php (POST zmaterial=all, 51 lbs, Fast),
+  // relevé du 28/09/2026, revérifié le 29/09/2026. Prix : og:price toroline.com (USD).
+  // Aucune note /10, tension ni prix EUR publiés : champs absents (non comblés).
+  {
+    id: 'toroline-o-toro-snap',
+    brand: 'Toroline',
+    model: 'O-Toro Snap',
+    type: 'Polyester',
+    gauges: ['1.25'],
+    stiffness: 164.6,
+    price: { usa: 15 },
+    description: "Déclinaison de l'O-Toro à section ronde, jauge 1,25 mm. Le fabricant met en avant le snapback et une trajectoire plus basse.",
+    color: 'White / Neon Yellow'
+  },
+  // Lot 3 Toroline (option A) — fiche officielle : https://toroline.com/collections/single-sets/products/o-toro-spin
+  // Rigidité : TWU « Toroline O-Toro Spin 17 (1.23) », https://twu.tennis-warehouse.com/learning_center/reporter2.php (POST zmaterial=all, 51 lbs, Fast),
+  // relevé du 28/09/2026, revérifié le 29/09/2026. Prix : og:price toroline.com (USD).
+  // Aucune note /10, tension ni prix EUR publiés : champs absents (non comblés).
+  {
+    id: 'toroline-o-toro-spin',
+    brand: 'Toroline',
+    model: 'O-Toro Spin',
+    type: 'Polyester',
+    gauges: ['1.23'],
+    stiffness: 173.2,
+    price: { usa: 15 },
+    description: "Déclinaison de l'O-Toro à section pentagonale, jauge 1,23 mm. Selon le fabricant : plus de morsure et un angle de sortie plus haut que l'O-Toro.",
+    color: 'Neon Pink / Neon Green / White / Lavender'
+  },
+  // Lot 3 Toroline (option A) — fiche officielle : https://toroline.com/collections/single-sets/products/super-toro-single-set
+  // Rigidité : TWU « Toroline Super Toro 17 (1.23) », https://twu.tennis-warehouse.com/learning_center/reporter2.php (POST zmaterial=all, 51 lbs, Fast),
+  // relevé du 28/09/2026, revérifié le 29/09/2026. Prix : og:price toroline.com (USD).
+  // Aucune note /10, tension ni prix EUR publiés : champs absents (non comblés).
+  {
+    id: 'toroline-super-toro',
+    brand: 'Toroline',
+    model: 'Super Toro',
+    type: 'Polyester',
+    gauges: ['1.23'],
+    stiffness: 189.7,
+    price: { usa: 12 },
+    description: 'Co-poly à section hexagonale (six faces), jauge 1,23 mm. Présenté par le fabricant comme un cordage de précision et de contrôle.',
+    color: 'Dark Blue'
+  },
+  // Lot 3 Toroline (option A) — fiche officielle : https://toroline.com/collections/single-sets/products/o-toro-tour
+  // Rigidité : TWU « Toroline O-Toro Tour 17 (1.23) », https://twu.tennis-warehouse.com/learning_center/reporter2.php (POST zmaterial=all, 51 lbs, Fast),
+  // relevé du 28/09/2026, revérifié le 29/09/2026. Prix : og:price toroline.com (USD).
+  // Aucune note /10, tension ni prix EUR publiés : champs absents (non comblés).
+  // Jauges : liste de la fiche officielle (1.23 et 1.20). La rigidité est celle MESURÉE en 1.23 :
+  // aucune mesure TWU en 1.20. 1.23 est placée en tête pour être la jauge présélectionnée.
+  {
+    id: 'toroline-o-toro-tour',
+    brand: 'Toroline',
+    model: 'O-Toro Tour',
+    type: 'Polyester',
+    gauges: ['1.23', '1.20'],
+    stiffness: 216.6,
+    price: { usa: 15 },
+    description: "Version plus rigide de l'O-Toro, section hexagonale, jauges 1,23 et 1,20 mm. Le fabricant la destine aux joueurs avancés recherchant contrôle et durabilité.",
+    color: 'Mint / Neon Green'
+  },
+  // Lot 3 Toroline (option A) — fiche officielle : https://toroline.com/collections/single-sets/products/cash-copy
+  // Rigidité : TWU « Toroline Cash 16L (1.25) », https://twu.tennis-warehouse.com/learning_center/reporter2.php (POST zmaterial=all, 51 lbs, Fast),
+  // relevé du 28/09/2026, revérifié le 29/09/2026. Prix : og:price toroline.com (USD).
+  // Aucune note /10, tension ni prix EUR publiés : champs absents (non comblés).
+  {
+    id: 'toroline-cash',
+    brand: 'Toroline',
+    model: 'Cash',
+    type: 'Polyester',
+    gauges: ['1.25'],
+    stiffness: 182.9,
+    price: { usa: 17 },
+    description: "Cordage rond de 1,25 mm développé avec Julian Cash, dérivé de l'A5 avec une flexibilité plus souple selon le fabricant ; conçu pour le double.",
+    color: 'Benjamin Green'
+  },
+  // Lot 3 Toroline (option A) — fiche officielle : https://toroline.com/collections/single-sets/products/snapper
+  // Rigidité : TWU « Toroline Snapper 17 (1.23) », https://twu.tennis-warehouse.com/learning_center/reporter2.php (POST zmaterial=all, 51 lbs, Fast),
+  // relevé du 28/09/2026, revérifié le 29/09/2026. Prix : og:price toroline.com (USD).
+  // Aucune note /10, tension ni prix EUR publiés : champs absents (non comblés).
+  {
+    id: 'toroline-snapper',
+    brand: 'Toroline',
+    model: 'Snapper',
+    type: 'Polyester',
+    gauges: ['1.23'],
+    stiffness: 190.9,
+    price: { usa: 12 },
+    description: 'Section octogonale, jauge 1,23 mm. Le fabricant met en avant un snapback accru par une surface plus glissante.',
+    color: 'Lavender'
   },
   {
     id: 'restring-zero',
@@ -3390,6 +3504,27 @@ export function getStringById(id: string | null | undefined): TennisString | und
   return stringsDatabase.find((s) => s.id === resolved);
 }
 
+/**
+ * Seuil minimal sur une note optionnelle (option A, 29/09/2026). Seuil nul ou
+ * absent : tout passe. Seuil posé : une note absente ne passe pas — on ne peut
+ * pas affirmer qu'un cordage sans note publiée atteint le seuil.
+ */
+export function meetsMinRating(value: number | undefined, min: number | undefined): boolean {
+  if (!min) return true;
+  return value !== undefined && value >= min;
+}
+
+/**
+ * Comparateur décroissant pour une valeur optionnelle : les valeurs absentes
+ * vont en fin de liste, jamais à zéro (zéro serait une donnée fausse).
+ */
+export function compareOptionalDesc(a: number | undefined, b: number | undefined): number {
+  if (a === undefined && b === undefined) return 0;
+  if (a === undefined) return 1;
+  if (b === undefined) return -1;
+  return b - a;
+}
+
 // Fonction helper pour filtrer les cordages
 export function filterStrings(
   strings: TennisString[],
@@ -3403,10 +3538,11 @@ export function filterStrings(
 ): TennisString[] {
   return strings.filter(string => {
     if (filters.type && string.type !== filters.type) return false;
-    if (filters.maxPrice && string.price.europe > filters.maxPrice) return false;
-    if (filters.minComfort && string.comfort < filters.minComfort) return false;
-    if (filters.minControl && string.control < filters.minControl) return false;
-    if (filters.minSpin && string.spin < filters.minSpin) return false;
+    // Prix plafond posé : un cordage sans prix EUR connu est exclu.
+    if (filters.maxPrice && !(string.price?.europe !== undefined && string.price.europe <= filters.maxPrice)) return false;
+    if (!meetsMinRating(string.comfort, filters.minComfort)) return false;
+    if (!meetsMinRating(string.control, filters.minControl)) return false;
+    if (!meetsMinRating(string.spin, filters.minSpin)) return false;
     return true;
   });
 }
@@ -3507,7 +3643,7 @@ export function getStringRecommendationByProfile(profile: {
   
   // Filtrage selon le niveau
   if (profile.level === 'beginner') {
-    filtered = filtered.filter(s => s.comfort >= 7 && s.stiffness < 200);
+    filtered = filtered.filter(s => meetsMinRating(s.comfort, 7) && s.stiffness < 200);
   } else if (profile.level === 'intermediate') {
     // `versatility` est optionnel : absent du schéma Supabase, il manque sur les
     // cordages importés depuis la base. Une note inconnue ne doit pas valoir
@@ -3515,38 +3651,38 @@ export function getStringRecommendationByProfile(profile: {
     // on n'exclut que les cordages dont la polyvalence est connue ET trop faible.
     filtered = filtered.filter(s => s.versatility === undefined || s.versatility >= 7.5);
   } else if (profile.level === 'advanced' || profile.level === 'pro') {
-    filtered = filtered.filter(s => s.control >= 8);
+    filtered = filtered.filter(s => meetsMinRating(s.control, 8));
   }
   
   // Filtrage selon le style
   if (profile.style === 'baseline') {
-    filtered = filtered.filter(s => s.spin >= 7.5 && s.control >= 8);
+    filtered = filtered.filter(s => meetsMinRating(s.spin, 7.5) && meetsMinRating(s.control, 8));
   } else if (profile.style === 'serve-volley') {
-    filtered = filtered.filter(s => s.control >= 8.5 && s.comfort >= 7);
+    filtered = filtered.filter(s => meetsMinRating(s.control, 8.5) && meetsMinRating(s.comfort, 7));
   }
   
   // Filtrage selon la priorité
   switch (profile.priority) {
     case 'control':
-      filtered.sort((a, b) => b.control - a.control);
+      filtered.sort((a, b) => compareOptionalDesc(a.control, b.control));
       break;
     case 'power':
-      filtered.sort((a, b) => b.power - a.power);
+      filtered.sort((a, b) => compareOptionalDesc(a.power, b.power));
       break;
     case 'comfort':
-      filtered.sort((a, b) => b.comfort - a.comfort);
+      filtered.sort((a, b) => compareOptionalDesc(a.comfort, b.comfort));
       break;
     case 'spin':
-      filtered.sort((a, b) => b.spin - a.spin);
+      filtered.sort((a, b) => compareOptionalDesc(a.spin, b.spin));
       break;
     case 'durability':
-      filtered.sort((a, b) => b.durability - a.durability);
+      filtered.sort((a, b) => compareOptionalDesc(a.durability, b.durability));
       break;
   }
   
   // Si problèmes de bras, filtrer les cordages trop rigides
   if (profile.armIssues) {
-    filtered = filtered.filter(s => s.stiffness < 200 && s.comfort >= 8);
+    filtered = filtered.filter(s => s.stiffness < 200 && meetsMinRating(s.comfort, 8));
   }
   
   return filtered.slice(0, 5); // Retourner le top 5

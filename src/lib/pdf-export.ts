@@ -102,13 +102,13 @@ function loadJsPdf(): Promise<JsPdfConstructor> {
 //  Données d'entrée
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Notes /10 d'un cordage, telles qu'elles figurent dans la base. */
+/** Notes /10 d'un cordage, telles qu'elles figurent dans la base (absentes = non publiées). */
 export interface PdfStringRatings {
-  control: number;
-  comfort: number;
-  spin: number;
-  power: number;
-  durability: number;
+  control?: number;
+  comfort?: number;
+  spin?: number;
+  power?: number;
+  durability?: number;
 }
 
 /** Specs de la raquette. `raEstimated` signale une valeur non constructeur. */
@@ -147,15 +147,15 @@ export interface PdfStringDetail {
 
 /** Analyse avancée — le coeur de la valeur Premium. */
 export interface PdfAdvancedAnalysis {
-  overall: number;
+  overall: number | null;
   level: string;
   firmnessIndex: number;
   subScores: {
-    power: number;
-    control: number;
-    comfort: number;
-    spin: number;
-    durability: number;
+    power: number | null;
+    control: number | null;
+    comfort: number | null;
+    spin: number | null;
+    durability: number | null;
   };
   recommendations: string[];
   warnings: string[];
@@ -299,13 +299,26 @@ function keyValueTable(L: Layout, rows: Array<[string, string]>, labelW = 52): v
  * Barre horizontale de score.
  * @param max échelle haute (100 pour les sous-scores, 10 pour les notes).
  */
-function scoreBar(L: Layout, label: string, value: number, max: number): void {
+function scoreBar(
+  L: Layout,
+  label: string,
+  value: number | null | undefined,
+  max: number,
+  missing = 'non publie',
+): void {
   L.ensure(9);
   const barX = MARGIN_X + 46;
   const barW = CONTENT_W - 46 - 20;
   const barH = 3.6;
 
   L.text(label, MARGIN_X + 2.5, { size: 9 });
+
+  // Valeur absente : aucune barre (une barre à zéro serait une donnée fausse).
+  if (value === null || value === undefined) {
+    L.text(missing, barX, { size: 8.5, color: GRAY });
+    L.y += 7;
+    return;
+  }
 
   L.doc.setFillColor(...BAR_BG);
   L.doc.roundedRect(barX, L.y - 2.8, barW, barH, 1, 1, 'F');
@@ -409,7 +422,7 @@ export async function exportConfigurationPdf(data: ConfigurationPdfData): Promis
     doc.setFillColor(...LIGHT);
     doc.roundedRect(MARGIN_X, L.y, CONTENT_W, 22, 2, 2, 'F');
     L.y += 8.5;
-    L.text(`Score global : ${a.overall}/100`, MARGIN_X + 4, {
+    L.text(a.overall === null ? 'Score global : non disponible' : `Score global : ${a.overall}/100`, MARGIN_X + 4, {
       size: 13,
       bold: true,
       color: BRAND_GREEN,
@@ -492,7 +505,8 @@ export async function exportConfigurationPdf(data: ConfigurationPdfData): Promis
 
   if (m?.stiffness) stringRows.push(['Rigidite montants', `${m.stiffness} lb/in`]);
   if (c?.stiffness) stringRows.push(['Rigidite travers', `${c.stiffness} lb/in`]);
-  if (typeof m?.priceEur === 'number') {
+  // Hybride dont le travers n'a pas de prix : aucun total plutôt qu'un total faux.
+  if (typeof m?.priceEur === 'number' && (!c || typeof c.priceEur === 'number')) {
     const total = m.priceEur + (typeof c?.priceEur === 'number' ? c.priceEur : 0);
     stringRows.push([
       'Cout indicatif',
@@ -527,11 +541,11 @@ export async function exportConfigurationPdf(data: ConfigurationPdfData): Promis
       { size: 8.2, color: GRAY },
     );
     L.y += 6;
-    scoreBar(L, 'Puissance', a.subScores.power, 100);
-    scoreBar(L, 'Controle', a.subScores.control, 100);
-    scoreBar(L, 'Confort', a.subScores.comfort, 100);
-    scoreBar(L, 'Effet (spin)', a.subScores.spin, 100);
-    scoreBar(L, 'Durabilite', a.subScores.durability, 100);
+    scoreBar(L, 'Puissance', a.subScores.power, 100, 'non disponible');
+    scoreBar(L, 'Controle', a.subScores.control, 100, 'non disponible');
+    scoreBar(L, 'Confort', a.subScores.comfort, 100, 'non disponible');
+    scoreBar(L, 'Effet (spin)', a.subScores.spin, 100, 'non disponible');
+    scoreBar(L, 'Durabilite', a.subScores.durability, 100, 'non disponible');
 
     if (a.warnings.length > 0) {
       sectionTitle(L, 'Points de vigilance');

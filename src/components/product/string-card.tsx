@@ -38,13 +38,27 @@ const typeConfig: Record<string, { variant: 'polyester' | 'multifilament' | 'nat
   'Biodegradable': { variant: 'secondary', label: 'Biodégradable' },
 };
 
+/** Note /10 affichée, ou « Non publié » : jamais de zéro à la place d'une absence. */
+function formatRating(value: number | undefined): string {
+  return value === undefined ? 'Non publié' : value.toFixed(1);
+}
+
 // Rating bar component
 function RatingBar({ label, value, maxValue = 10, color = 'green' }: { 
   label: string; 
-  value: number; 
+  value: number | undefined; 
   maxValue?: number;
   color?: 'green' | 'blue' | 'amber' | 'purple' | 'red';
 }) {
+  // Note absente : pas de barre (une barre à zéro serait une donnée fausse).
+  if (value === undefined) {
+    return (
+      <div className="flex items-center gap-2">
+        <span className="text-xs text-gray-500 w-20 flex-shrink-0">{label}</span>
+        <span className="text-xs text-gray-500">Non publié</span>
+      </div>
+    );
+  }
   const percentage = (value / maxValue) * 100;
   const colorClasses = {
     green: 'bg-green-500',
@@ -78,10 +92,14 @@ export function StringCard({
 }: StringCardProps) {
   const typeInfo = typeConfig[string.type] || { variant: 'secondary' as const, label: string.type };
   
-  // Calculate overall rating
-  const overallRating = (
-    (string.performance + string.control + string.comfort + string.durability) / 4
-  ).toFixed(1);
+  // Note globale : seulement si les quatre notes existent (sinon non affichée).
+  const { performance, control, comfort, durability } = string;
+  const overallRating =
+    performance !== undefined && control !== undefined && comfort !== undefined && durability !== undefined
+      ? ((performance + control + comfort + durability) / 4).toFixed(1)
+      : null;
+  const priceEur = string.price?.europe;
+  const priceUsd = string.price?.usa;
 
   if (compact) {
     return (
@@ -103,27 +121,29 @@ export function StringCard({
               <div className="flex items-center gap-3 mt-2 text-sm text-gray-600">
                 <span className="flex items-center gap-1">
                   <Target className="h-3.5 w-3.5" />
-                  {string.control.toFixed(1)}
+                  {formatRating(string.control)}
                 </span>
                 <span className="flex items-center gap-1">
                   <Shield className="h-3.5 w-3.5" />
-                  {string.comfort.toFixed(1)}
+                  {formatRating(string.comfort)}
                 </span>
                 <span className="flex items-center gap-1">
                   <TrendingUp className="h-3.5 w-3.5" />
-                  {string.spin.toFixed(1)}
+                  {formatRating(string.spin)}
                 </span>
                 <span className="flex items-center gap-1">
                   <Zap className="h-3.5 w-3.5" />
-                  {string.power.toFixed(1)}
+                  {formatRating(string.power)}
                 </span>
               </div>
             </div>
-            <div className="text-right">
-              <span className="text-lg font-bold text-green-600">
-                {string.price.europe}€
-              </span>
-            </div>
+            {priceEur !== undefined && (
+              <div className="text-right">
+                <span className="text-lg font-bold text-green-600">
+                  {priceEur}€
+                </span>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -173,10 +193,12 @@ export function StringCard({
             <CardTitle className="text-xl">
               {string.model}
             </CardTitle>
-            <div className="flex items-center gap-1 bg-green-100 text-green-700 px-2 py-1 rounded-lg">
-              <Star className="h-4 w-4 fill-green-500 text-green-500" />
-              <span className="font-bold text-sm">{overallRating}</span>
-            </div>
+            {overallRating !== null && (
+              <div className="flex items-center gap-1 bg-green-100 text-green-700 px-2 py-1 rounded-lg">
+                <Star className="h-4 w-4 fill-green-500 text-green-500" />
+                <span className="font-bold text-sm">{overallRating}</span>
+              </div>
+            )}
           </div>
           {string.proUsage && (
             <p className="text-sm text-amber-600 flex items-center gap-1 mt-1">
@@ -198,7 +220,9 @@ export function StringCard({
           <div className="text-center p-2 bg-gray-50 rounded-lg">
             <p className="text-xs text-gray-500 mb-1">Tension</p>
             <p className="text-sm font-semibold text-gray-900">
-              {string.recommendedTension.min}-{string.recommendedTension.max}kg
+              {string.recommendedTension
+                ? `${string.recommendedTension.min}-${string.recommendedTension.max}kg`
+                : 'Non publiée'}
             </p>
           </div>
           {string.color && (
@@ -229,12 +253,16 @@ export function StringCard({
         {/* Footer with price and action */}
         <div className="flex items-center justify-between pt-4 border-t border-gray-100">
           <div>
-            <span className="text-2xl font-bold text-green-600">
-              {string.price.europe}€
-            </span>
-            <span className="text-sm text-gray-500 ml-2">
-              / ${string.price.usa}
-            </span>
+            {priceEur !== undefined && (
+              <span className="text-2xl font-bold text-green-600">
+                {priceEur}€
+              </span>
+            )}
+            {priceUsd !== undefined && (
+              <span className={priceEur !== undefined ? 'text-sm text-gray-500 ml-2' : 'text-sm text-gray-600'}>
+                {priceEur !== undefined ? '/ ' : ''}${priceUsd}
+              </span>
+            )}
           </div>
 
           {showActions && (
