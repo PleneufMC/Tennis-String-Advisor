@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { BuyButton } from '@/components/product/buy-button';
+import { ProductImage } from '@/components/product/product-image';
 import { cn } from '@/lib/utils';
 import { 
   Target, 
@@ -187,6 +188,13 @@ export function StringCard({
       </div>
 
       <CardContent className="p-6">
+        <ProductImage
+          kind="string"
+          id={string.id}
+          alt={`Cordage ${string.brand} ${string.model}`}
+          className="mb-4"
+        />
+
         {/* Model name and rating */}
         <CardHeader className="p-0 mb-4">
           <div className="flex items-start justify-between">
