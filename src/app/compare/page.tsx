@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { ProductImage } from '@/components/product/product-image';
 import { cn } from '@/lib/utils';
 import {
   deriveRacquetProfile,
@@ -340,6 +341,14 @@ export default function ComparePage() {
                 )} />
 
                 <CardContent className="p-4">
+                  <ProductImage
+                    kind={isRacquet ? 'racquet' : 'string'}
+                    id={item.item.id}
+                    alt={isRacquet
+                      ? `Raquette ${racquet?.brand} ${racquet?.model} ${racquet?.variant}`
+                      : `Cordage ${stringItem?.brand} ${stringItem?.model}`}
+                    className="mb-3"
+                  />
                   <div className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">
                     {isRacquet ? racquet?.brand : stringItem?.brand}
                   </div>

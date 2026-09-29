@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { racquetsDatabase } from '@/data/racquets-database';
 import { BuyButton } from '@/components/product/buy-button';
+import { ProductImage } from '@/components/product/product-image';
 import { SpecList, type Spec } from '@/components/product/spec-list';
 import { resolveSiteUrl } from '@/lib/seo/route-metadata';
 import { effectiveRacquetRA, isRacquetStiffnessEstimated } from '@/lib/racquet-scoring';
@@ -139,6 +140,16 @@ export default function RacquetPage({ params }: { params: { slug: string } }) {
       <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-4xl">
         {name}
       </h1>
+      {/* Photo hébergée chez nous, jamais reprise dans le JSON-LD ni og:image. */}
+      <ProductImage
+        kind="racquet"
+        id={racquet.id}
+        alt={`Raquette ${name}`}
+        size="detail"
+        eager
+        credit
+        className="mt-6"
+      />
       {racquet.description && (
         <p className="mt-3 text-lg leading-relaxed text-slate-600 dark:text-slate-300">
           {racquet.description}

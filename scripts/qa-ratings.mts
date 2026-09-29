@@ -730,6 +730,65 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
 }
 
 // ---------------------------------------------------------------------------
+// 12. PHOTOS PRODUIT (Tennis Warehouse, décision de Pierre du 29/09/2026)
+// ---------------------------------------------------------------------------
+// Dispositif désactivable et purgeable (src/lib/product-images.ts). Une photo
+// fausse est une information fausse : chaque entrée du manifeste doit viser un
+// produit existant, du bon type, avec un fichier hébergé chez nous et sa
+// provenance. Aucune URL de TW ne doit servir une image (hotlink), et aucune
+// page ne doit propager ces photos (JSON-LD, og:image).
+{
+  const before = failures.length;
+  const { PRODUCT_IMAGES } = await import('../src/data/product-images');
+  const { existsSync, readdirSync, statSync } = await import('node:fs');
+  const racquetIds = new Set(racquetsDatabase.map((r) => r.id));
+  const stringIds = new Set(stringsDatabase.map((s) => s.id));
+  let bytes = 0;
+  const listed = new Set<string>();
+  for (const [id, e] of Object.entries(PRODUCT_IMAGES)) {
+    const folder = racquetIds.has(id) ? 'racquets' : stringIds.has(id) ? 'strings' : null;
+    if (!folder) { fail(`photo ${id} : aucun produit de ce nom dans la base`); continue; }
+    if (e.file !== `/images/products/${folder}/${id}.webp`) fail(`photo ${id} : chemin inattendu ${e.file}`);
+    const disk = `public${e.file}`;
+    listed.add(disk.replace(/\\/g, '/'));
+    if (!existsSync(disk)) { fail(`photo ${id} : fichier absent ${disk}`); continue; }
+    const size = statSync(disk).size;
+    bytes += size;
+    if (size > 120_000) fail(`photo ${id} : ${Math.round(size / 1024)} Ko (> 120 Ko)`);
+    if (e.source !== 'tennis-warehouse') fail(`photo ${id} : source inattendue ${e.source}`);
+    if (!e.sourcePageUrl.startsWith('https://www.tennis-warehouse.com/')) fail(`photo ${id} : page source invalide`);
+    if (!e.sourceImageUrl.startsWith('https://img.tennis-warehouse.com/')) fail(`photo ${id} : image source invalide`);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(e.retrievedAt)) fail(`photo ${id} : date de collecte invalide`);
+  }
+  for (const folder of ['racquets', 'strings']) {
+    const dir = `public/images/products/${folder}`;
+    if (!existsSync(dir)) continue;
+    for (const f of readdirSync(dir)) {
+      if (!listed.has(`${dir}/${f}`)) fail(`${dir}/${f} : fichier hors manifeste (purge incomplète ?)`);
+    }
+  }
+  const flag = readFileSync('src/lib/product-images.ts', 'utf8');
+  if (!/^export const PRODUCT_IMAGES_ENABLED = (true|false);$/m.test(flag)) {
+    fail('src/lib/product-images.ts : le drapeau PRODUCT_IMAGES_ENABLED doit rester un littéral booléen unique');
+  }
+  // Pas de hotlink ni de propagation : seuls le manifeste, l'accesseur et le
+  // composant d'affichage connaissent ces photos.
+  const allowed = new Set(['src/data/product-images.ts', 'src/lib/product-images.ts', 'src/components/product/product-image.tsx']);
+  const walk = (d: string): string[] =>
+    readdirSync(d).flatMap((n) => (statSync(`${d}/${n}`).isDirectory() ? walk(`${d}/${n}`) : [`${d}/${n}`]));
+  for (const file of walk('src').filter((f) => /\.(tsx?|mts)$/.test(f) && !allowed.has(f))) {
+    const src = readFileSync(file, 'utf8');
+    if (/img\.tennis-warehouse\.com|\/images\/products\/|PRODUCT_IMAGES|getProductImage/.test(src)) {
+      fail(`${file} : référence directe aux photos TW (hotlink ou propagation hors du composant)`);
+    }
+  }
+  if (failures.length === before) {
+    const n = Object.keys(PRODUCT_IMAGES).length;
+    ok(`photos produit : ${n} entrée(s) valides, ${(bytes / 1e6).toFixed(2)} Mo hébergés, aucun hotlink ni propagation`);
+  }
+}
+
+// ---------------------------------------------------------------------------
 console.log('--- audit notation raquettes/cordages ---');
 notes.forEach((n) => console.log(n));
 if (failures.length > 0) {

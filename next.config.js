@@ -14,8 +14,8 @@ const nextConfig = {
   images: {
     domains: [
       'tennisstringadvisor.org',
-      'tennis-warehouse.com',
-      'www.tennis-warehouse.com',
+      // Pas de tennis-warehouse.com ici : leurs photos sont hébergées chez
+      // nous (public/images/products/), jamais servies en hotlink.
       'lh3.googleusercontent.com',
       'avatars.githubusercontent.com',
       'images.unsplash.com',
