@@ -1,11 +1,15 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.2.3
+> **Version** : 2.2.4
 > **Date** : 29 septembre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
-> **Branche de référence** : `genspark_ai_developer`
+> **Branche de référence** : `main` (seule branche longue ; la production Netlify en déploie)
 > **Repo** : https://github.com/PleneufMC/Tennis-String-Advisor.git
+
+**Changelog v2.2.3 → v2.2.4** — Branche unique : les chantiers partent de `main`
+et y reviennent par PR. `genspark_ai_developer` n'est plus la branche de
+référence (décision de Pierre, 29/09/2026).
 
 **Changelog v2.2.2 → v2.2.3** — **Photos produit** (décision de Pierre du 29/09/2026,
 en connaissance du risque : les conditions de Tennis Warehouse interdisent la
@@ -447,8 +451,10 @@ description d'un agent global au sujet de TSA, ce fichier gagne.
 
 ## 6. Conventions de travail
 
-- **Branche** : `agent/<nom-agent>/<slug-chantier>`, partant de
-  `genspark_ai_developer`.
+- **Branche** : `agent/<nom-agent>/<slug-chantier>`, partant de `main`.
+- **PR** : toujours **vers `main`**. Décision de Pierre du 29/09/2026 : plus
+  aucun passage par `genspark_ai_developer`, qui n'est plus une branche de
+  travail. Un merge dans `main` met en ligne en ~2 min 30 (Netlify).
 - **Commits** : conventional commits en français —
   `fix(affiliate): ajouter le lien d'achat au résultat du configurateur`.
 - **PR** : une par chantier, diff ≤ 400 lignes. Au-delà, découper.
@@ -538,4 +544,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.2.3 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.2.4 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
