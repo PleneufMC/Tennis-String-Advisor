@@ -62,6 +62,7 @@ const BLOG_SLUGS: string[] = [
   'actualite-materiel-tennis-2026-guerre-du-spin.html',
   'cordage-mono-vs-multifilament.html',
   'cordage-tennis-chaleur.html',
+  'tension-cordage-hiver.html',
   'raquette-point-fort-ou-point-faible.html',
 ];
 
