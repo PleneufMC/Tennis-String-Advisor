@@ -62,6 +62,7 @@ const BLOG_SLUGS: string[] = [
   'actualite-materiel-tennis-2026-guerre-du-spin.html',
   'cordage-mono-vs-multifilament.html',
   'cordage-tennis-chaleur.html',
+  'tension-cordage-hiver.html',
   'raquette-point-fort-ou-point-faible.html',
   // Adapté de l'EN next-gen (01/10/2026), appairé en hreflang.
   'materiel-next-gen-fonseca-mensik-cobolli-jodar.html',
