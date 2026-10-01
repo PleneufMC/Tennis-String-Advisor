@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400" width="640" height="400">
+<title>US gauge to diameter in millimetres</title>
+<symbol id="schema" viewBox="0 0 640 400">
+<g font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif">
+<line x1="100.0" y1="44" x2="100.0" y2="340" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1;fill:none"/>
+<text x="100.0" y="366.0" font-size="20.3" text-anchor="middle" font-weight="normal" style="fill:var(--tsa-muted,#4b5563)">1.10</text>
+<line x1="223.3" y1="44" x2="223.3" y2="340" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1;fill:none"/>
+<text x="223.3" y="366.0" font-size="20.3" text-anchor="middle" font-weight="normal" style="fill:var(--tsa-muted,#4b5563)">1.20</text>
+<line x1="346.7" y1="44" x2="346.7" y2="340" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1;fill:none"/>
+<text x="346.7" y="366.0" font-size="20.3" text-anchor="middle" font-weight="normal" style="fill:var(--tsa-muted,#4b5563)">1.30</text>
+<line x1="470.0" y1="44" x2="470.0" y2="340" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1;fill:none"/>
+<text x="470.0" y="366.0" font-size="20.3" text-anchor="middle" font-weight="normal" style="fill:var(--tsa-muted,#4b5563)">1.40</text>
+<text x="504.0" y="366.0" font-size="20.3" text-anchor="start" font-weight="normal" style="fill:var(--tsa-muted,#4b5563)">mm</text>
+<text x="0.0" y="26.0" font-size="20.3" text-anchor="start" font-weight="600" style="fill:var(--tsa-muted,#4b5563)">US gauge</text>
+<text x="106.0" y="26.0" font-size="20.3" text-anchor="start" font-weight="normal" style="fill:var(--tsa-muted,#4b5563)">← thinner</text>
+<text x="470.0" y="26.0" font-size="20.3" text-anchor="end" font-weight="normal" style="fill:var(--tsa-muted,#4b5563)">thicker →</text>
+<text x="0.0" y="71.0" font-size="20" text-anchor="start" font-weight="600" fill="currentColor">15</text>
+<rect x="408.3" y="50" width="61.7" height="28" rx="5" style="fill:var(--tsa-a3,#1d4ed8)"/>
+<text x="482.0" y="71.0" font-size="20.3" text-anchor="start" font-weight="normal" fill="currentColor">1.35–1.40</text>
+<text x="0.0" y="112.0" font-size="20" text-anchor="start" font-weight="600" fill="currentColor">15L</text>
+<rect x="383.7" y="91" width="24.7" height="28" rx="5" style="fill:var(--tsa-a3,#1d4ed8)"/>
+<text x="420.3" y="112.0" font-size="20.3" text-anchor="start" font-weight="normal" fill="currentColor">1.33–1.35</text>
+<text x="0.0" y="153.0" font-size="20" text-anchor="start" font-weight="600" fill="currentColor">16</text>
+<rect x="322.0" y="132" width="49.3" height="28" rx="5" style="fill:var(--tsa-a3,#1d4ed8)"/>
+<text x="383.3" y="153.0" font-size="20.3" text-anchor="start" font-weight="normal" fill="currentColor">1.28–1.32</text>
+<text x="0.0" y="194.0" font-size="20" text-anchor="start" font-weight="600" fill="currentColor">16L</text>
+<rect x="260.3" y="173" width="61.7" height="28" rx="5" style="fill:var(--tsa-a3,#1d4ed8)"/>
+<text x="334.0" y="194.0" font-size="20.3" text-anchor="start" font-weight="normal" fill="currentColor">1.23–1.28</text>
+<text x="0.0" y="235.0" font-size="20" text-anchor="start" font-weight="600" fill="currentColor">17</text>
+<rect x="223.3" y="214" width="61.7" height="28" rx="5" style="fill:var(--tsa-a3,#1d4ed8)"/>
+<text x="297.0" y="235.0" font-size="20.3" text-anchor="start" font-weight="normal" fill="currentColor">1.20–1.25</text>
+<text x="0.0" y="276.0" font-size="20" text-anchor="start" font-weight="600" fill="currentColor">17L</text>
+<rect x="198.7" y="255" width="24.7" height="28" rx="5" style="fill:var(--tsa-a3,#1d4ed8)"/>
+<text x="235.3" y="276.0" font-size="20.3" text-anchor="start" font-weight="normal" fill="currentColor">1.18–1.20</text>
+<text x="0.0" y="317.0" font-size="20" text-anchor="start" font-weight="600" fill="currentColor">18</text>
+<rect x="161.7" y="296" width="61.7" height="28" rx="5" style="fill:var(--tsa-a3,#1d4ed8)"/>
+<text x="235.3" y="317.0" font-size="20.3" text-anchor="start" font-weight="normal" fill="currentColor">1.15–1.20</text>
+<text x="0.0" y="394.0" font-size="17.0" text-anchor="start" font-weight="normal" style="fill:var(--tsa-muted,#4b5563)">Approximate diameters; gauge numbering is not standardised across brands.</text>
+</g>
+</symbol>
+<use href="#schema" width="640" height="400"/>
+</svg>

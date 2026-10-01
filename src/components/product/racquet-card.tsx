@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { BuyButton } from '@/components/product/buy-button';
+import { ProductImage } from '@/components/product/product-image';
 import { cn } from '@/lib/utils';
 import { 
   Scale, 
@@ -149,6 +150,13 @@ export function RacquetCard({
       </div>
 
       <CardContent className="p-6">
+        <ProductImage
+          kind="racquet"
+          id={racquet.id}
+          alt={`Raquette ${racquet.brand} ${racquet.model}${racquet.variant && racquet.variant !== 'Standard' ? ` ${racquet.variant}` : ''}`}
+          className="mb-4"
+        />
+
         {/* Model name */}
         <CardHeader className="p-0 mb-4">
           <CardTitle className="text-xl">

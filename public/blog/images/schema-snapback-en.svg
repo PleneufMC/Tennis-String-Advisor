@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 300" width="640" height="300">
+<title>Snapback: the mains slide, then snap back into place</title>
+<symbol id="schema" viewBox="0 0 640 300">
+<g font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif">
+<line x1="15" y1="75" x2="205" y2="75" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:5;fill:none"/>
+<line x1="15" y1="118" x2="205" y2="118" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:5;fill:none"/>
+<line x1="15" y1="161" x2="205" y2="161" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:5;fill:none"/>
+<line x1="15" y1="204" x2="205" y2="204" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:5;fill:none"/>
+<line x1="45" y1="50" x2="45" y2="230" style="stroke:var(--tsa-a1,#047857);stroke-width:6;fill:none;stroke-linecap:round"/>
+<line x1="88" y1="50" x2="88" y2="230" style="stroke:var(--tsa-a1,#047857);stroke-width:6;fill:none;stroke-linecap:round"/>
+<line x1="131" y1="50" x2="131" y2="230" style="stroke:var(--tsa-a1,#047857);stroke-width:6;fill:none;stroke-linecap:round"/>
+<line x1="174" y1="50" x2="174" y2="230" style="stroke:var(--tsa-a1,#047857);stroke-width:6;fill:none;stroke-linecap:round"/>
+<text x="110.0" y="30.0" font-size="21" text-anchor="middle" font-weight="600" fill="currentColor">1. At rest</text>
+<line x1="225" y1="75" x2="415" y2="75" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:5;fill:none"/>
+<line x1="225" y1="118" x2="415" y2="118" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:5;fill:none"/>
+<line x1="225" y1="161" x2="415" y2="161" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:5;fill:none"/>
+<line x1="225" y1="204" x2="415" y2="204" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:5;fill:none"/>
+<line x1="255" y1="50" x2="255" y2="230" style="stroke:var(--tsa-a1,#047857);stroke-width:6;fill:none;stroke-linecap:round"/>
+<path d="M298,50 C298,110 320,120 320,140.0 S298,170 298,230" style="stroke:var(--tsa-a1,#047857);stroke-width:6;fill:none;stroke-linecap:round"/>
+<path d="M341,50 C341,110 357,120 357,140.0 S341,170 341,230" style="stroke:var(--tsa-a1,#047857);stroke-width:6;fill:none;stroke-linecap:round"/>
+<line x1="384" y1="50" x2="384" y2="230" style="stroke:var(--tsa-a1,#047857);stroke-width:6;fill:none;stroke-linecap:round"/>
+<circle cx="320.0" cy="140.0" r="34" style="stroke:var(--tsa-a2,#b45309);stroke-width:3;fill:none;stroke-dasharray:6 5"/>
+<path d="M302.0,88.0 L350.0,88.0" style="stroke:var(--tsa-a2,#b45309);stroke-width:4;fill:none"/>
+<path d="M342.0,80.0 L354.0,88.0 L342.0,96.0" style="stroke:var(--tsa-a2,#b45309);stroke-width:4;fill:none"/>
+<text x="320.0" y="30.0" font-size="21" text-anchor="middle" font-weight="600" fill="currentColor">2. Impact</text>
+<line x1="435" y1="75" x2="625" y2="75" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:5;fill:none"/>
+<line x1="435" y1="118" x2="625" y2="118" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:5;fill:none"/>
+<line x1="435" y1="161" x2="625" y2="161" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:5;fill:none"/>
+<line x1="435" y1="204" x2="625" y2="204" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:5;fill:none"/>
+<line x1="465" y1="50" x2="465" y2="230" style="stroke:var(--tsa-a1,#047857);stroke-width:6;fill:none;stroke-linecap:round"/>
+<line x1="508" y1="50" x2="508" y2="230" style="stroke:var(--tsa-a1,#047857);stroke-width:6;fill:none;stroke-linecap:round"/>
+<line x1="551" y1="50" x2="551" y2="230" style="stroke:var(--tsa-a1,#047857);stroke-width:6;fill:none;stroke-linecap:round"/>
+<line x1="594" y1="50" x2="594" y2="230" style="stroke:var(--tsa-a1,#047857);stroke-width:6;fill:none;stroke-linecap:round"/>
+<path d="M560.0,88.0 L512.0,88.0" style="stroke:var(--tsa-a2,#b45309);stroke-width:4;fill:none"/>
+<path d="M520.0,80.0 L508.0,88.0 L520.0,96.0" style="stroke:var(--tsa-a2,#b45309);stroke-width:4;fill:none"/>
+<circle cx="530.0" cy="142.0" r="30" style="fill:var(--tsa-a2-soft,#fef3c7)"/>
+<circle cx="530.0" cy="142.0" r="30" style="stroke:var(--tsa-a2,#b45309);stroke-width:3;fill:none"/>
+<path d="M488.7,127.0 A44,44 0 0 1 568.1,120.0" style="stroke:var(--tsa-a3,#1d4ed8);stroke-width:4;fill:none"/>
+<path d="M556.1,114.0 L568.1,120.0 L564.1,132.0" style="stroke:var(--tsa-a3,#1d4ed8);stroke-width:4;fill:none"/>
+<text x="530.0" y="30.0" font-size="21" text-anchor="middle" font-weight="600" fill="currentColor">3. Snapback</text>
+<text x="15.0" y="272.0" font-size="20.3" text-anchor="start" font-weight="normal" style="fill:var(--tsa-muted,#4b5563)">Mains</text>
+<line x1="77" y1="266" x2="107" y2="266" style="stroke:var(--tsa-a1,#047857);stroke-width:6;fill:none;stroke-linecap:round"/>
+<text x="150.0" y="272.0" font-size="20.3" text-anchor="start" font-weight="normal" style="fill:var(--tsa-muted,#4b5563)">Crosses</text>
+<line x1="228" y1="266" x2="258" y2="266" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:5;fill:none"/>
+<path d="M290,266 L320,266" style="stroke:var(--tsa-a2,#b45309);stroke-width:4;fill:none"/>
+<text x="328.0" y="272.0" font-size="20.3" text-anchor="start" font-weight="normal" style="fill:var(--tsa-muted,#4b5563)">Movement</text>
+<path d="M450,270 A12,12 0 0 1 474,270" style="stroke:var(--tsa-a3,#1d4ed8);stroke-width:4;fill:none"/>
+<text x="482.0" y="272.0" font-size="20.3" text-anchor="start" font-weight="normal" style="fill:var(--tsa-muted,#4b5563)">Topspin</text>
+</g>
+</symbol>
+<use href="#schema" width="640" height="300"/>
+</svg>

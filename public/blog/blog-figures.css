@@ -1,0 +1,67 @@
+/* Figures du blog (photos d'en-tête et schémas) — FR et EN.
+   Les schémas SVG sont appelés par <use> : ils héritent de currentColor et
+   des variables --tsa-* définies ici, et suivent donc le thème de la page
+   (classe html.dark posée par /js/theme.js sur les pages qui l'ont). */
+
+.tsa-fig { margin: 2rem 0; }
+.tsa-fig--hero { margin: 0 0 2rem; }
+.tsa-fig img,
+.tsa-fig .tsa-schema {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.75rem;
+}
+.tsa-fig img { background-color: #e5e7eb; }
+
+.tsa-schema {
+  box-sizing: border-box;
+  padding: 0.75rem;
+  color: #1f2937;
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  --tsa-card: #ffffff;
+  --tsa-muted: #4b5563;
+  --tsa-grid: #d1d5db;
+  --tsa-a1: #047857;
+  --tsa-a2: #b45309;
+  --tsa-a3: #1d4ed8;
+  --tsa-a4: #b91c1c;
+  --tsa-a1-soft: #d1fae5;
+  --tsa-a2-soft: #fef3c7;
+  --tsa-a3-soft: #dbeafe;
+  --tsa-a4-soft: #fee2e2;
+  --tsa-a1-text: #047857;
+  --tsa-a4-text: #b91c1c;
+}
+@media (max-width: 480px) {
+  .tsa-schema { padding: 0.25rem; }
+}
+html.dark .tsa-schema {
+  color: #f3f4f6;
+  background-color: #1f2937;
+  border-color: #374151;
+  --tsa-card: #1f2937;
+  --tsa-muted: #d1d5db;
+  --tsa-grid: #4b5563;
+  --tsa-a1: #34d399;
+  --tsa-a2: #fbbf24;
+  --tsa-a3: #60a5fa;
+  --tsa-a4: #f87171;
+  --tsa-a1-soft: #064e3b;
+  --tsa-a2-soft: #78350f;
+  --tsa-a3-soft: #1e3a8a;
+  --tsa-a4-soft: #7f1d1d;
+  --tsa-a1-text: #6ee7b7;
+  --tsa-a4-text: #fca5a5;
+}
+
+.tsa-fig figcaption {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: #4b5563;
+}
+.tsa-fig figcaption a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+html.dark .tsa-fig figcaption { color: #d1d5db; }

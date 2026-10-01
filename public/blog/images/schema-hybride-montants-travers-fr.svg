@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" width="640" height="360">
+<title>Montage hybride : deux cordages différents en montants et en travers</title>
+<symbol id="schema" viewBox="0 0 640 360">
+<g font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif">
+<line x1="117.3" y1="40.3" x2="242.7" y2="40.3" style="stroke:var(--tsa-a2,#b45309);stroke-width:3;fill:none"/>
+<line x1="101.7" y1="55.3" x2="258.3" y2="55.3" style="stroke:var(--tsa-a2,#b45309);stroke-width:3;fill:none"/>
+<line x1="90.2" y1="70.2" x2="269.8" y2="70.2" style="stroke:var(--tsa-a2,#b45309);stroke-width:3;fill:none"/>
+<line x1="81.3" y1="85.2" x2="278.7" y2="85.2" style="stroke:var(--tsa-a2,#b45309);stroke-width:3;fill:none"/>
+<line x1="74.3" y1="100.2" x2="285.7" y2="100.2" style="stroke:var(--tsa-a2,#b45309);stroke-width:3;fill:none"/>
+<line x1="68.9" y1="115.1" x2="291.1" y2="115.1" style="stroke:var(--tsa-a2,#b45309);stroke-width:3;fill:none"/>
+<line x1="64.9" y1="130.1" x2="295.1" y2="130.1" style="stroke:var(--tsa-a2,#b45309);stroke-width:3;fill:none"/>
+<line x1="62.2" y1="145.1" x2="297.8" y2="145.1" style="stroke:var(--tsa-a2,#b45309);stroke-width:3;fill:none"/>
+<line x1="60.5" y1="160.0" x2="299.5" y2="160.0" style="stroke:var(--tsa-a2,#b45309);stroke-width:3;fill:none"/>
+<line x1="60.0" y1="175.0" x2="300.0" y2="175.0" style="stroke:var(--tsa-a2,#b45309);stroke-width:3;fill:none"/>
+<line x1="60.5" y1="190.0" x2="299.5" y2="190.0" style="stroke:var(--tsa-a2,#b45309);stroke-width:3;fill:none"/>
+<line x1="62.2" y1="204.9" x2="297.8" y2="204.9" style="stroke:var(--tsa-a2,#b45309);stroke-width:3;fill:none"/>
+<line x1="64.9" y1="219.9" x2="295.1" y2="219.9" style="stroke:var(--tsa-a2,#b45309);stroke-width:3;fill:none"/>
+<line x1="68.9" y1="234.9" x2="291.1" y2="234.9" style="stroke:var(--tsa-a2,#b45309);stroke-width:3;fill:none"/>
+<line x1="74.3" y1="249.8" x2="285.7" y2="249.8" style="stroke:var(--tsa-a2,#b45309);stroke-width:3;fill:none"/>
+<line x1="81.3" y1="264.8" x2="278.7" y2="264.8" style="stroke:var(--tsa-a2,#b45309);stroke-width:3;fill:none"/>
+<line x1="90.2" y1="279.8" x2="269.8" y2="279.8" style="stroke:var(--tsa-a2,#b45309);stroke-width:3;fill:none"/>
+<line x1="101.7" y1="294.7" x2="258.3" y2="294.7" style="stroke:var(--tsa-a2,#b45309);stroke-width:3;fill:none"/>
+<line x1="117.3" y1="309.7" x2="242.7" y2="309.7" style="stroke:var(--tsa-a2,#b45309);stroke-width:3;fill:none"/>
+<line x1="78.8" y1="90.2" x2="78.8" y2="259.8" style="stroke:var(--tsa-a1,#047857);stroke-width:4;fill:none"/>
+<line x1="92.2" y1="67.2" x2="92.2" y2="282.8" style="stroke:var(--tsa-a1,#047857);stroke-width:4;fill:none"/>
+<line x1="105.8" y1="50.9" x2="105.8" y2="299.1" style="stroke:var(--tsa-a1,#047857);stroke-width:4;fill:none"/>
+<line x1="119.2" y1="38.7" x2="119.2" y2="311.3" style="stroke:var(--tsa-a1,#047857);stroke-width:4;fill:none"/>
+<line x1="132.8" y1="29.8" x2="132.8" y2="320.2" style="stroke:var(--tsa-a1,#047857);stroke-width:4;fill:none"/>
+<line x1="146.2" y1="23.4" x2="146.2" y2="326.6" style="stroke:var(--tsa-a1,#047857);stroke-width:4;fill:none"/>
+<line x1="159.8" y1="19.3" x2="159.8" y2="330.7" style="stroke:var(--tsa-a1,#047857);stroke-width:4;fill:none"/>
+<line x1="173.2" y1="17.3" x2="173.2" y2="332.7" style="stroke:var(--tsa-a1,#047857);stroke-width:4;fill:none"/>
+<line x1="186.8" y1="17.3" x2="186.8" y2="332.7" style="stroke:var(--tsa-a1,#047857);stroke-width:4;fill:none"/>
+<line x1="200.2" y1="19.3" x2="200.2" y2="330.7" style="stroke:var(--tsa-a1,#047857);stroke-width:4;fill:none"/>
+<line x1="213.8" y1="23.4" x2="213.8" y2="326.6" style="stroke:var(--tsa-a1,#047857);stroke-width:4;fill:none"/>
+<line x1="227.2" y1="29.8" x2="227.2" y2="320.2" style="stroke:var(--tsa-a1,#047857);stroke-width:4;fill:none"/>
+<line x1="240.8" y1="38.7" x2="240.8" y2="311.3" style="stroke:var(--tsa-a1,#047857);stroke-width:4;fill:none"/>
+<line x1="254.2" y1="50.9" x2="254.2" y2="299.1" style="stroke:var(--tsa-a1,#047857);stroke-width:4;fill:none"/>
+<line x1="267.8" y1="67.2" x2="267.8" y2="282.8" style="stroke:var(--tsa-a1,#047857);stroke-width:4;fill:none"/>
+<line x1="281.2" y1="90.2" x2="281.2" y2="259.8" style="stroke:var(--tsa-a1,#047857);stroke-width:4;fill:none"/>
+<ellipse cx="180" cy="175" rx="120" ry="158" style="stroke:currentColor;stroke-width:7;fill:none"/>
+<line x1="345" y1="70" x2="345" y2="130" style="stroke:var(--tsa-a1,#047857);stroke-width:8;fill:none;stroke-linecap:round"/>
+<text x="369.0" y="88.0" font-size="23" text-anchor="start" font-weight="700" fill="currentColor">Montants</text>
+<text x="369.0" y="116.0" font-size="20.3" text-anchor="start" font-weight="normal" style="fill:var(--tsa-muted,#4b5563)">cordes verticales</text>
+<text x="369.0" y="140.0" font-size="20.3" text-anchor="start" font-weight="normal" style="fill:var(--tsa-muted,#4b5563)">cordage A</text>
+<line x1="335" y1="225" x2="355" y2="225" style="stroke:var(--tsa-a2,#b45309);stroke-width:7;fill:none;stroke-linecap:round"/>
+<text x="369.0" y="220.0" font-size="23" text-anchor="start" font-weight="700" fill="currentColor">Travers</text>
+<text x="369.0" y="248.0" font-size="20.3" text-anchor="start" font-weight="normal" style="fill:var(--tsa-muted,#4b5563)">cordes horizontales</text>
+<text x="369.0" y="272.0" font-size="20.3" text-anchor="start" font-weight="normal" style="fill:var(--tsa-muted,#4b5563)">cordage B</text>
+</g>
+</symbol>
+<use href="#schema" width="640" height="360"/>
+</svg>

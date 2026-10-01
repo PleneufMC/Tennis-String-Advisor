@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 230" width="640" height="230">
+<title>Profils de cordage : rond, carré, hexagonal, octogonal</title>
+<symbol id="schema" viewBox="0 0 640 230">
+<g font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif">
+<circle cx="80" cy="95" r="58" style="fill:var(--tsa-a1,#047857)"/>
+<text x="80.0" y="190.0" font-size="20" text-anchor="middle" font-weight="700" fill="currentColor">Rond</text>
+<polygon points="285.3,140.3 194.7,140.3 194.7,49.7 285.3,49.7" style="fill:var(--tsa-a1,#047857)"/>
+<text x="240.0" y="190.0" font-size="20" text-anchor="middle" font-weight="700" fill="currentColor">Carré</text>
+<polygon points="460.0,95.0 430.0,147.0 370.0,147.0 340.0,95.0 370.0,43.0 430.0,43.0" style="fill:var(--tsa-a1,#047857)"/>
+<text x="400.0" y="190.0" font-size="20" text-anchor="middle" font-weight="700" fill="currentColor">Hexagonal</text>
+<polygon points="615.4,118.0 583.0,150.4 537.0,150.4 504.6,118.0 504.6,72.0 537.0,39.6 583.0,39.6 615.4,72.0" style="fill:var(--tsa-a1,#047857)"/>
+<text x="560.0" y="190.0" font-size="20" text-anchor="middle" font-weight="700" fill="currentColor">Octogonal</text>
+<text x="320.0" y="222.0" font-size="17.0" text-anchor="middle" font-weight="normal" style="fill:var(--tsa-muted,#4b5563)">Coupes schématiques : les arêtes accrochent davantage la balle</text>
+</g>
+</symbol>
+<use href="#schema" width="640" height="230"/>
+</svg>

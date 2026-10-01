@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 340" width="640" height="340">
+<title>Baisse de rigidité à la chaleur selon la famille de cordage</title>
+<symbol id="schema" viewBox="0 0 640 340">
+<g font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif">
+<line x1="170.0" y1="30" x2="170.0" y2="250" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1;fill:none"/>
+<text x="170.0" y="276.0" font-size="20.3" text-anchor="middle" font-weight="normal" style="fill:var(--tsa-muted,#4b5563)">0 %</text>
+<line x1="300.0" y1="30" x2="300.0" y2="250" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1;fill:none"/>
+<text x="300.0" y="276.0" font-size="20.3" text-anchor="middle" font-weight="normal" style="fill:var(--tsa-muted,#4b5563)">−5 %</text>
+<line x1="430.0" y1="30" x2="430.0" y2="250" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1;fill:none"/>
+<text x="430.0" y="276.0" font-size="20.3" text-anchor="middle" font-weight="normal" style="fill:var(--tsa-muted,#4b5563)">−10 %</text>
+<line x1="560.0" y1="30" x2="560.0" y2="250" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1;fill:none"/>
+<text x="560.0" y="276.0" font-size="20.3" text-anchor="middle" font-weight="normal" style="fill:var(--tsa-muted,#4b5563)">−15 %</text>
+<text x="156.0" y="66.0" font-size="20" text-anchor="end" font-weight="normal" fill="currentColor">Polyester</text>
+<line x1="300.0" y1="59" x2="482.0" y2="59" style="stroke:var(--tsa-a2,#b45309);stroke-width:10;fill:none;stroke-linecap:round"/>
+<circle cx="300.0" cy="59" r="9" style="fill:var(--tsa-a2,#b45309)"/>
+<circle cx="482.0" cy="59" r="9" style="fill:var(--tsa-a2,#b45309)"/>
+<text x="300.0" y="94.0" font-size="19.2" text-anchor="middle" font-weight="normal" fill="currentColor">−5,0 %</text>
+<text x="482.0" y="94.0" font-size="19.2" text-anchor="middle" font-weight="normal" fill="currentColor">−12,0 %</text>
+<text x="391.0" y="48.0" font-size="18.1" text-anchor="middle" font-weight="normal" style="fill:var(--tsa-muted,#4b5563)">facteur 2,4</text>
+<text x="156.0" y="140.0" font-size="20" text-anchor="end" font-weight="normal" fill="currentColor">Nylon</text>
+<line x1="201.2" y1="133" x2="549.6" y2="133" style="stroke:var(--tsa-a2,#b45309);stroke-width:10;fill:none;stroke-linecap:round"/>
+<circle cx="201.2" cy="133" r="9" style="fill:var(--tsa-a2,#b45309)"/>
+<circle cx="549.6" cy="133" r="9" style="fill:var(--tsa-a2,#b45309)"/>
+<text x="201.2" y="168.0" font-size="19.2" text-anchor="middle" font-weight="normal" fill="currentColor">−1,2 %</text>
+<text x="549.6" y="168.0" font-size="19.2" text-anchor="middle" font-weight="normal" fill="currentColor">−14,6 %</text>
+<text x="375.4" y="122.0" font-size="18.1" text-anchor="middle" font-weight="normal" style="fill:var(--tsa-muted,#4b5563)">facteur 12</text>
+<text x="156.0" y="214.0" font-size="20" text-anchor="end" font-weight="normal" fill="currentColor">Boyau naturel</text>
+<circle cx="222.0" cy="207" r="9" style="fill:var(--tsa-a2,#b45309)"/>
+<text x="238.0" y="213.0" font-size="19.2" text-anchor="start" font-weight="normal" fill="currentColor">−2,0 %</text>
+<text x="170.0" y="304.0" font-size="19.2" text-anchor="start" font-weight="normal" style="fill:var(--tsa-muted,#4b5563)">Baisse de rigidité entre 20 °C et 40 °C,</text>
+<text x="170.0" y="326.0" font-size="19.2" text-anchor="start" font-weight="normal" style="fill:var(--tsa-muted,#4b5563)">écart min–max mesuré par TWU dans chaque famille</text>
+</g>
+</symbol>
+<use href="#schema" width="640" height="340"/>
+</svg>
