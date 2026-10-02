@@ -64,6 +64,8 @@ const BLOG_SLUGS: string[] = [
   'cordage-tennis-chaleur.html',
   'tension-cordage-hiver.html',
   'raquette-point-fort-ou-point-faible.html',
+  // Adapté de l'EN next-gen (01/10/2026), appairé en hreflang.
+  'materiel-next-gen-fonseca-mensik-cobolli-jodar.html',
 ];
 
 // Pages anglaises statiques publiques (`public/en/*.html`).
