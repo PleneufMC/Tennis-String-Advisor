@@ -63,6 +63,8 @@ const BLOG_SLUGS: string[] = [
   'cordage-mono-vs-multifilament.html',
   'cordage-tennis-chaleur.html',
   'raquette-point-fort-ou-point-faible.html',
+  // Adapté de l'EN next-gen (01/10/2026), appairé en hreflang.
+  'materiel-next-gen-fonseca-mensik-cobolli-jodar.html',
   'combien-de-temps-dure-un-cordage.html',
 ];
 
