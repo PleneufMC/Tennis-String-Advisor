@@ -64,6 +64,9 @@ const BLOG_SLUGS: string[] = [
   'cordage-tennis-chaleur.html',
   'tension-cordage-hiver.html',
   'raquette-point-fort-ou-point-faible.html',
+  // Adapté de l'EN next-gen (01/10/2026), appairé en hreflang.
+  'materiel-next-gen-fonseca-mensik-cobolli-jodar.html',
+  'combien-de-temps-dure-un-cordage.html',
 ];
 
 // Pages anglaises statiques publiques (`public/en/*.html`).
@@ -97,6 +100,9 @@ const EN_BLOG_SLUGS: string[] = [
   'tennis-strings-heat-tension.html',
   // Adapté du FR raquette-point-fort-ou-point-faible (27/08/2026), appairé en hreflang.
   'racquet-strengths-or-weaknesses.html',
+  // Pilier durée de vie (01/10/2026), appairé en hreflang avec
+  // /blog/combien-de-temps-dure-un-cordage.html.
+  'how-long-do-tennis-strings-last.html',
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
