@@ -1,11 +1,20 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.2.7
+> **Version** : 2.2.8
 > **Date** : 9 octobre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
 > **Branche de référence** : `main` (seule branche longue ; la production Netlify en déploie)
 > **Repo** : https://github.com/PleneufMC/Tennis-String-Advisor.git
+
+**Changelog v2.2.7 → v2.2.8** — **Source de vérité unique du catalogue (C3)**, demande
+de Pierre du 09/10/2026 (« harmoniser les sites anglais et français ») : `src/data/*.ts`
+fait foi. Les 7 pages EN qui lisaient les tables Supabase `racquets` / `strings`
+lisent `public/data/catalog.json`, **généré à chaque build** (`prebuild`) par
+`scripts/catalog/build-catalog-json.mjs`, non versionné, jamais édité. FR et EN
+affichent donc les mêmes 129 raquettes / 181 cordages et le même RCS. Supabase garde
+l'auth EN, `profiles`, `user_setups`, la newsletter ; ses tables catalogue ne sont plus
+lues ni écrites par le site (rien n'y est supprimé). Contrôle 15 de `audit:ratings`.
 
 **Changelog v2.2.6 → v2.2.7** — **Sept raquettes alignées sur la dernière génération**
 (information de Pierre du 09/10/2026 : le document de notation porte sur les générations
@@ -262,7 +271,7 @@ abonnements sans objet** tant qu'elle dure. Le Payment Link FR ne transporte pas
 | 3 | **Résolu depuis le 13/08** (`15c6649`), constaté dans le code le 31/08 : import `BuyButton` ligne 16 de `configurator/page.tsx`, trois instances (cordage principal, travers, raquette) sous « Acheter ce setup — liens partenaires », placées après le bloc RCS conformément à la règle 1. Vérifié **en exécution** le 31/08 par `tsa-revenue` (Playwright, stub gtag) : liens `rel="sponsored"` vers tennis-point.fr en HTTP 200, alertes bras `role="alert"` affichées AVANT les liens (règle 2), séquence `configurator_step` → `arm_warning_shown` → `configurator_result_view` → `configurator_complete` → `affiliate_click` complète, bascule Awin vérifiée en dev ET sur build de production (`npm run build` exit 0 dans les deux cas ; sans variables : lien tennis-point.fr direct, `link_type: direct` ; avec `NEXT_PUBLIC_AWIN_ID`/`_TENNISPOINT_MID` factices : lien `awin1.com/cread.php?awinmid=…&awinaffid=…&ued=…`, `link_type: awin` — zéro changement de code entre les deux builds). L'entrée du 13/08 était périmée le jour même de sa rédaction. | Le moment de plus forte intention est équipé. Ces clics restent non rémunérés tant que le point 2 (AWIN) tient — c'est le point 2, pas celui-ci. Verrou `configurator/page.tsx` rendu par `tsa-revenue` le 31/08 (surface d'émission `location` propagée sur les 6 appelants, merge `c93ef38`). Procédure d'activation et de vérification : `reports/r2-activation-awin.md`. |
 | 4 | **Incitation inversée du quota** (reformulé 13/08 — il n'existe **aucun mur d'authentification** : pas de middleware, configurateur 100 % public). L'anonyme sauvegarde en illimité dans `localStorage` ; se connecter impose le quota de 3 (`premium.ts` appliqué seulement dans `POST /api/configurations`). Créer un compte retire une capacité. Les chiffres (160 vues signin vs 45 configurateur, 39 `form_start` → 1 `form_submit`) décrivent un problème de navigation/attractivité, pas un blocage technique. | L'entonnoir compte → premium est à l'envers. Arbitrage A5 en attente. |
 | 5 | **Largement résorbé le 14/08** (`b227ba7`, vérifié dans le code le 31/08) : `calculateRCS` (`strings-database.ts`, gain 2 / offset −27) est l'unique source de vérité ; `rcsIndex` y **délègue** (plus une copie) ; `public/js/rcs-calculator*.js` en est un **miroir exact**, comparé valeur par valeur à chaque `audit:ratings` (le script charge les moteurs JS). Reste : le miroir est une duplication par convention (toute évolution se fait dans `strings-database.ts` PUIS dans les 2 JS), et `calculateCompatibility` (`racquets-database.ts`) demeure une échelle homonyme distincte, documentée dans `racquet-scoring.ts`. | Un même montage affiche le même RCS FR/EN. La dette restante (miroir manuel, homonyme) est contrôlée par script, plus silencieuse. |
-| 6 | **Divergence non résolue et creusée** : le site FR lit les fichiers TypeScript, les 6 pages EN lisent Supabase. Catalogues raquettes quasi disjoints (12 ids communs sur 129 TS / 107 base), 98 conflits de valeurs cordages dont 16 changent le RCS. | Chaque correction d'un côté recrée l'écart de l'autre. Arbitrage A1 en attente. |
+| 6 | **Résolu le 09/10/2026 (C3)** — la divergence FR/EN était structurelle : FR lisait `src/data/*.ts`, 7 pages EN lisaient les tables Supabase `racquets` (107) / `strings` (173) — 12 raquettes communes sur 129, 61 cordages communs en conflit hors description, 30 rigidités différentes (O-Toro 210 vs 165,7). **Le TypeScript fait foi** : `npm run build:catalog` (branché en `prebuild` et `predev`, donc exécuté par Netlify à chaque `npm run build`) sérialise `racquetsDatabase` / `stringsDatabase` au schéma snake_case que les pages EN consommaient, dans `public/data/catalog.json` (non versionné, `null` pour tout champ absent, aucune provenance testeurs) ; les pages le lisent via `public/js/catalog.js`. Le contrôle 15 de `audit:ratings` échoue si un fichier de `public/` relit le catalogue dans Supabase (`.from('racquets'|'strings')`, `/rest/v1/…`, jointure `racquets(*)`), si le JSON diffère du TS, s'il est versionné ou n'est plus généré au build. Les 95 raquettes et 17 cordages présents seulement dans Supabase disparaissent de l'EN ; aucune URL EN ne portait d'id produit. | Une correction de donnée se fait **une fois**, dans `src/data/`. Les tables Supabase `racquets` / `strings` sont orphelines : leur sort (miroir, archivage, suppression) relève de `deploy-captain` + GO de Pierre. |
 | 7 | **0 fichier de test** dans le dépôt (`vitest` et `playwright` installés, aucune spec). Ni husky actif, ni CI, ni suivi d'erreurs en production. Les garde-fous réels sont les scripts `qa-*` — `audit:all` a été recâblé le 13/08 (4 maillons pointaient vers des fichiers inexistants et la chaîne mourait avant les scripts fonctionnels). | La garantie repose sur l'exécution manuelle de `audit:all` avant PR. |
 > ⚠️ **RUPTURE DE SÉRIE — 14/08/2026.** `configurator_complete` était émis à
 > chaque recalcul, sa signature de déduplication incluant les tensions : cinq
@@ -427,6 +436,7 @@ fichier dans la même semaine.
 | `src/data/`, `src/lib/advanced-rcs.ts`, `src/lib/racquet-scoring.ts` | `tsa-core` |
 | `src/lib/product-images.ts`, `src/components/product/product-image.tsx`, `public/images/products/` | `tsa-core` |
 | `scripts/scraper/`, `scripts/qa-ratings.mts` | `tsa-core` |
+| `scripts/catalog/` (générateur), `public/js/catalog.js` (chargeur EN), `public/data/catalog.json` (généré, non versionné) | `tsa-core` |
 | `src/components/analytics/` | `tsa-measure` |
 | `scripts/qa-*` (hors `qa-ratings`), `reports/` | `tsa-measure` |
 
@@ -577,4 +587,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.2.7 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.2.8 — Tennis String Advisor — « Mesurer avant d'affirmer. »*

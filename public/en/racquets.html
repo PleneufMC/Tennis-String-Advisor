@@ -71,6 +71,7 @@
   </script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/js/catalog.js"></script>
   <link rel="stylesheet" href="/css/dark-mode.css">
   <script src="/js/theme.js"></script>
   <script>
@@ -449,20 +450,10 @@
       'Junior': 'bg-indigo-100 text-indigo-800'
     };
     
-    // Fetch racquets from Supabase
+    // Catalogue généré depuis src/data (C3) — plus de lecture Supabase
     async function fetchRacquets() {
-      if (!supabase) {
-        console.error('❌ Supabase client not initialized');
-        document.getElementById('racquetCount').textContent = 'Erreur de chargement - Rafraîchissez la page';
-        return;
-      }
       try {
-        const { data, error } = await supabaseClient
-          .from('racquets')
-          .select('*')
-          .order('brand', { ascending: true });
-        
-        if (error) throw error;
+        const { racquets: data } = await TSACatalog.load();
         
         allRacquets = data;
         filteredRacquets = data;
@@ -524,10 +515,6 @@
               Not available
             </span>
           </span>
-          <button onclick="openRaModal('${racquet.id}', '${racquet.brand} ${racquet.model} ${racquet.variant || ''}')" 
-                  class="ml-2 text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded hover:bg-amber-200 transition">
-            + Add RA
-          </button>
         `;
       }
     }
@@ -784,37 +771,10 @@
       currentRacquetId = null;
     }
     
-    async function saveRa() {
-      const raValue = parseInt(document.getElementById('raInput').value);
-      
-      if (isNaN(raValue) || raValue < 45 || raValue > 80) {
-        alert('Please enter a valid RA value between 45 and 80.');
-        return;
-      }
-      
-      try {
-        const { error } = await supabaseClient
-          .from('racquets')
-          .update({ stiffness: raValue })
-          .eq('id', currentRacquetId);
-        
-        if (error) throw error;
-        
-        // Show success message
-        document.getElementById('raModalContent').classList.add('hidden');
-        document.getElementById('raSuccessMessage').classList.remove('hidden');
-        document.getElementById('saveRaBtn').classList.add('hidden');
-        
-        // Refresh data after 1.5s
-        setTimeout(() => {
-          closeRaModal();
-          fetchRacquets();
-        }, 1500);
-        
-      } catch (error) {
-        console.error('Error updating RA:', error);
-        alert('Error updating. Please try again.');
-      }
+    // C3 (09/10/2026) : le catalogue fait foi dans src/data ; la page ne propose
+    // plus d'écrire un RA dans la table Supabase (bouton « + Add RA » retiré).
+    function saveRa() {
+      closeRaModal();
     }
     
     // Close modal on escape key
