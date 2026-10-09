@@ -15,6 +15,8 @@ out/
 # Build
 dist/
 build/
+# Exports locaux (classeurs du catalogue, rapprochements) — jamais versionnés
+exports/
 
 # IDE & OS
 .DS_Store
@@ -59,6 +61,3 @@ tmp-analysis/
 # un worktree, l'intégration sur genspark_ai_developer passe par le lead).
 # Répertoires de travail locaux, jamais versionnés.
 .claude/worktrees/
-
-# Exports locaux (classeurs du catalogue, rapprochements) — jamais versionnés
-exports/
