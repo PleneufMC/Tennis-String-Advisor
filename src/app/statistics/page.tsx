@@ -3,11 +3,89 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { stringsDatabase, type TennisString } from '@/data/strings-database';
-
-/** Nombre de fiches dont la note de performance est publiée. */
-const ratedStringsCount = stringsDatabase.filter(s => s.performance !== undefined).length;
-import { racquetsDatabase } from '@/data/racquets-database';
+import { racquetsDatabase, type TennisRacquet } from '@/data/racquets-database';
+import { STRING_TESTER_RATINGS } from '@/data/tester-ratings';
+import { RACQUET_TESTER_RATINGS } from '@/data/racquet-tester-ratings';
+import { rankRacquetsByTesterAverage } from '@/lib/racquet-scoring';
 import { ConfigurationStorage } from '@/lib/storage';
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Top 10 — classement par la moyenne des avis de testeurs (09/10/2026)
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// Ancien critère raquettes : (100 − |68 − RA|) + tamis/10, sans fondement ;
+// ancien critère cordages : la note `performance`, sans équivalent sourcé.
+// Le seul jugement d'ensemble sourcé du site est la moyenne des critères des
+// avis de testeurs (provenance : src/data/tester-ratings.ts et
+// racquet-tester-ratings.ts). On ne classe donc QUE les produits rapprochés ;
+// les autres ne sont ni classés ni comptés comme zéro.
+//
+// Affichage sur 20, comme la synthèse : ramener sur 10 créerait des écarts et
+// des égalités qui n'existent pas (14,6 et 14,5 donneraient tous deux 7,3).
+// Rang partagé seulement en cas d'égalité exacte ; un écart < 0,5 /20 est dans
+// la marge d'erreur de la synthèse — le texte le dit, le niveau (S à D) aussi.
+// Classement dynamique : une raquette ajoutée à `RACQUET_TESTER_RATINGS` par
+// tsa-core y entre sans retouche de cette page.
+
+const TOP_N = 10;
+
+interface RankedRow<T> {
+  item: T;
+  average20: number;
+  tier: string;
+  rank: number;
+}
+
+/** Rang « de compétition » : égalité exacte -> même rang ; coupe à TOP_N, ex aequo du dernier inclus. */
+function topWithRanks<T>(sorted: readonly { item: T; average20: number; tier: string }[]): RankedRow<T>[] {
+  const ranked = sorted.map((e, i) => ({ ...e, rank: i + 1 }));
+  for (let i = 1; i < ranked.length; i++) {
+    if (Math.abs(ranked[i].average20 - ranked[i - 1].average20) < 1e-9) ranked[i].rank = ranked[i - 1].rank;
+  }
+  if (ranked.length <= TOP_N) return ranked;
+  const cutoff = ranked[TOP_N - 1].average20;
+  return ranked.filter((r, i) => i < TOP_N || Math.abs(r.average20 - cutoff) < 1e-9);
+}
+
+/** Cordages rapprochés, triés par moyenne testeurs décroissante (même règle que les raquettes). */
+function rankStringsByTesterAverage(strings: readonly TennisString[]) {
+  return strings
+    .filter((s) => STRING_TESTER_RATINGS[s.id] !== undefined)
+    .map((s) => ({ item: s, average20: STRING_TESTER_RATINGS[s.id].docxAverage20, tier: STRING_TESTER_RATINGS[s.id].tier }))
+    .sort((a, b) => b.average20 - a.average20 || a.item.id.localeCompare(b.item.id));
+}
+
+const rankedStrings = rankStringsByTesterAverage(stringsDatabase);
+const rankedRacquets = rankRacquetsByTesterAverage(racquetsDatabase).map((r) => ({
+  item: r.racquet,
+  average20: r.testerAverage20,
+  tier: RACQUET_TESTER_RATINGS[r.racquet.id]?.tier ?? '—',
+}));
+
+/** « Standard » n'apporte rien au lecteur ; « Standard (2025) » devient « (2025) ». */
+const displayVariant = (v?: string) => {
+  const rest = (v ?? '').replace(/^Standard\b\s*/, '');
+  return rest ? ` ${rest}` : '';
+};
+
+const fmt20 = (v: number) => v.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 2 });
+
+const TIER_TINT: Record<string, string> = { S: 'green', A: 'green', B: 'blue', C: 'amber', D: 'red' };
+function TierBadge({ tier }: { tier: string }) {
+  const tint = TIER_TINT[tier] ?? 'blue';
+  return (
+    <span style={{
+      padding: '0.25rem 0.5rem',
+      backgroundColor: `var(--tint-${tint}-bg)`,
+      color: `var(--tint-${tint}-fg)`,
+      borderRadius: '4px',
+      fontSize: '0.75rem',
+      fontWeight: 600
+    }}>
+      {tier}
+    </span>
+  );
+}
 
 export default function StatisticsPage() {
   const [stats, setStats] = useState({
@@ -19,8 +97,8 @@ export default function StatisticsPage() {
   });
 
   const [topProducts, setTopProducts] = useState({
-    strings: [] as (TennisString & { performance: number })[],
-    racquets: [] as any[]
+    strings: [] as RankedRow<TennisString>[],
+    racquets: [] as RankedRow<TennisRacquet>[]
   });
 
   useEffect(() => {
@@ -28,27 +106,9 @@ export default function StatisticsPage() {
     const configStats = ConfigurationStorage.getStats();
     setStats(configStats);
 
-    // Calculate top products — classement sur les seules fiches dont la note
-    // de performance est publiée (option A, 29/09/2026) : une fiche sans note
-    // n'est ni classée ni comptée comme zéro.
-    const topStrings = stringsDatabase
-      .filter((s): s is TennisString & { performance: number } => s.performance !== undefined)
-      .sort((a, b) => b.performance - a.performance)
-      .slice(0, 10);
-
-    const topRacquets = [...racquetsDatabase]
-      .filter(r => r.stiffness !== null)
-      .sort((a, b) => {
-        // Sort by a combination of popularity and specs
-        const aScore = (100 - Math.abs(68 - (a.stiffness || 68))) + (a.headSize / 10);
-        const bScore = (100 - Math.abs(68 - (b.stiffness || 68))) + (b.headSize / 10);
-        return bScore - aScore;
-      })
-      .slice(0, 10);
-
     setTopProducts({
-      strings: topStrings,
-      racquets: topRacquets
+      strings: topWithRanks(rankedStrings),
+      racquets: topWithRanks(rankedRacquets)
     });
   }, []);
 
@@ -221,6 +281,28 @@ export default function StatisticsPage() {
           </div>
         </div>
 
+        {/* Méthode commune aux deux classements */}
+        <div style={{ ...cardStyle, fontSize: '0.875rem', lineHeight: 1.6 }}>
+          <h2 style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--text-strong)', marginBottom: '0.5rem' }}>
+            Comment ces classements sont établis
+          </h2>
+          <p style={{ margin: 0 }}>
+            Chaque produit est classé par la <strong>moyenne d&apos;une synthèse d&apos;avis de testeurs
+            spécialisés</strong> sur les dernières générations (10 critères pour les cordages, 20 pour les
+            raquettes, notés sur 20). Seuls les produits dont la fiche correspond au modèle testé sont
+            classés : les autres ne sont ni classés ni comptés comme zéro. C&apos;est une appréciation, pas
+            une mesure : un écart de moins de 0,5 point se lit comme une égalité, d&apos;où le niveau
+            (S, A, B, C, D) à côté du rang.
+          </p>
+          <p style={{ margin: '0.5rem 0 0' }}>
+            <strong>Un classement d&apos;ensemble n&apos;est pas un conseil pour votre bras.</strong> Le confort
+            d&apos;un montage dépend de la rigidité du cordage, de la tension et de la raquette : vérifiez votre
+            indice RCS dans le{' '}
+            <Link href="/configurator" style={{ color: 'var(--tint-blue-fg)', textDecoration: 'underline' }}>configurateur</Link>{' '}
+            avant d&apos;acheter, surtout si vous avez déjà eu mal au coude.
+          </p>
+        </div>
+
         {/* Top Strings */}
         <div style={cardStyle}>
           <h2 style={{
@@ -232,75 +314,46 @@ export default function StatisticsPage() {
             alignItems: 'center'
           }}>
             <span style={{ marginRight: '0.5rem' }}>🎯</span>
-            Top 10 Cordages
+            {rankedStrings.length >= TOP_N ? `Top ${TOP_N} Cordages` : `Classement des cordages (${rankedStrings.length})`}
           </h2>
           <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '-1rem', marginBottom: '1rem' }}>
-            Classement établi sur {ratedStringsCount} fiches dont la note est publiée
-            (sur {stringsDatabase.length}).
+            Classement établi sur les {rankedStrings.length} cordages couverts par la synthèse de tests
+            (sur {stringsDatabase.length} au catalogue). Contrôle et confort : notes /10 des fiches.
           </p>
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr>
                   <th style={tableHeaderStyle}>#</th>
-                  <th style={tableHeaderStyle}>Marque</th>
-                  <th style={tableHeaderStyle}>Modèle</th>
+                  <th style={tableHeaderStyle}>Cordage</th>
+                  <th style={tableHeaderStyle}>Avis testeurs</th>
+                  <th style={tableHeaderStyle}>Niveau</th>
                   <th style={tableHeaderStyle}>Type</th>
-                  <th style={tableHeaderStyle}>Raideur</th>
-                  <th style={tableHeaderStyle}>Performance</th>
+                  <th style={tableHeaderStyle}>Rigidité</th>
                   <th style={tableHeaderStyle}>Contrôle</th>
-                  <th style={tableHeaderStyle}>Prix</th>
+                  <th style={tableHeaderStyle}>Confort</th>
                 </tr>
               </thead>
               <tbody>
-                {topProducts.strings.map((string, idx) => (
+                {topProducts.strings.map(({ item: string, average20, tier, rank }) => (
                   <tr key={string.id}>
-                    <td style={{ ...tableCellStyle, fontWeight: 'bold', color: '#3b82f6' }}>
-                      {idx + 1}
+                    <td style={{ ...tableCellStyle, fontWeight: 'bold', color: 'var(--tint-blue-fg)' }}>
+                      {rank}
                     </td>
-                    <td style={tableCellStyle}>{string.brand}</td>
-                    <td style={{ ...tableCellStyle, fontWeight: '500' }}>{string.model}</td>
-                    <td style={tableCellStyle}>
-                      <span style={{
-                        padding: '0.25rem 0.5rem',
-                        backgroundColor: string.type === 'Polyester' ? 'var(--tint-blue-bg)' : 
-                                        string.type === 'Multifilament' ? 'var(--tint-green-bg)' : 'var(--tint-amber-bg)',
-                        color: string.type === 'Polyester' ? 'var(--tint-blue-fg)' : 
-                               string.type === 'Multifilament' ? 'var(--tint-green-fg)' : 'var(--tint-amber-fg)',
-                        borderRadius: '4px',
-                        fontSize: '0.75rem'
-                      }}>
-                        {string.type}
-                      </span>
+                    <td style={{ ...tableCellStyle, fontWeight: '500' }}>
+                      <Link href={`/tennis-strings/${string.id}`} style={{ color: 'inherit' }}>
+                        {string.brand} {string.model}
+                      </Link>
                     </td>
+                    <td style={{ ...tableCellStyle, fontWeight: 600 }}>{fmt20(average20)}/20</td>
+                    <td style={tableCellStyle}><TierBadge tier={tier} /></td>
+                    <td style={tableCellStyle}>{string.type}</td>
                     <td style={tableCellStyle}>{string.stiffness} lb/in</td>
                     <td style={tableCellStyle}>
-                      <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.25rem'
-                      }}>
-                        <span>{string.performance}/10</span>
-                        <div style={{
-                          width: '60px',
-                          height: '6px',
-                          backgroundColor: '#e5e7eb',
-                          borderRadius: '3px',
-                          overflow: 'hidden'
-                        }}>
-                          <div style={{
-                            width: `${string.performance * 10}%`,
-                            height: '100%',
-                            backgroundColor: '#10b981'
-                          }} />
-                        </div>
-                      </div>
+                      {string.control !== undefined ? `${string.control.toLocaleString('fr-FR')}/10` : 'Non publié'}
                     </td>
                     <td style={tableCellStyle}>
-                      {string.control !== undefined ? `${string.control}/10` : 'Non publié'}
-                    </td>
-                    <td style={tableCellStyle}>
-                      {string.price?.europe !== undefined ? `€${string.price.europe}` : '—'}
+                      {string.comfort !== undefined ? `${string.comfort.toLocaleString('fr-FR')}/10` : 'Non publié'}
                     </td>
                   </tr>
                 ))}
@@ -320,35 +373,46 @@ export default function StatisticsPage() {
             alignItems: 'center'
           }}>
             <span style={{ marginRight: '0.5rem' }}>🎾</span>
-            Top 10 Raquettes
+            {rankedRacquets.length >= TOP_N ? `Top ${TOP_N} Raquettes` : `Classement des raquettes (${rankedRacquets.length})`}
           </h2>
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '-1rem', marginBottom: '1rem' }}>
+            Classement établi sur les {rankedRacquets.length} raquettes dont la fiche correspond à la
+            génération testée (sur {racquetsDatabase.length} au catalogue).
+            {rankedRacquets.length < TOP_N &&
+              ' Moins de dix raquettes sont classables à ce jour : la liste s’allongera à mesure que les fiches seront alignées sur la dernière génération.'}
+          </p>
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr>
                   <th style={tableHeaderStyle}>#</th>
-                  <th style={tableHeaderStyle}>Marque</th>
-                  <th style={tableHeaderStyle}>Modèle</th>
-                  <th style={tableHeaderStyle}>Variante</th>
-                  <th style={tableHeaderStyle}>RA</th>
-                  <th style={tableHeaderStyle}>Poids</th>
+                  <th style={tableHeaderStyle}>Raquette</th>
+                  <th style={tableHeaderStyle}>Avis testeurs</th>
+                  <th style={tableHeaderStyle}>Niveau</th>
                   <th style={tableHeaderStyle}>Tamis</th>
-                  <th style={tableHeaderStyle}>Catégorie</th>
+                  <th style={tableHeaderStyle}>Poids</th>
+                  <th style={tableHeaderStyle}>RA</th>
                 </tr>
               </thead>
               <tbody>
-                {topProducts.racquets.map((racquet, idx) => (
+                {topProducts.racquets.map(({ item: racquet, average20, tier, rank }) => (
                   <tr key={racquet.id}>
-                    <td style={{ ...tableCellStyle, fontWeight: 'bold', color: '#3b82f6' }}>
-                      {idx + 1}
+                    <td style={{ ...tableCellStyle, fontWeight: 'bold', color: 'var(--tint-blue-fg)' }}>
+                      {rank}
                     </td>
-                    <td style={tableCellStyle}>{racquet.brand}</td>
-                    <td style={{ ...tableCellStyle, fontWeight: '500' }}>{racquet.model}</td>
-                    <td style={tableCellStyle}>{racquet.variant}</td>
+                    <td style={{ ...tableCellStyle, fontWeight: '500' }}>
+                      <Link href={`/racquets/${racquet.id}`} style={{ color: 'inherit' }}>
+                        {racquet.brand} {racquet.model}{displayVariant(racquet.variant)}
+                      </Link>
+                    </td>
+                    <td style={{ ...tableCellStyle, fontWeight: 600 }}>{fmt20(average20)}/20</td>
+                    <td style={tableCellStyle}><TierBadge tier={tier} /></td>
+                    <td style={tableCellStyle}>{racquet.headSize} in²</td>
+                    <td style={tableCellStyle}>{racquet.weight} g</td>
                     <td style={tableCellStyle}>
                       <span style={{
                         padding: '0.25rem 0.5rem',
-                        backgroundColor: 
+                        backgroundColor:
                           racquet.stiffness && racquet.stiffness < 65 ? 'var(--tint-green-bg)' :
                           racquet.stiffness && racquet.stiffness < 70 ? 'var(--tint-amber-bg)' : 'var(--tint-red-bg)',
                         color:
@@ -358,19 +422,6 @@ export default function StatisticsPage() {
                         fontSize: '0.75rem'
                       }}>
                         {racquet.stiffness || 'ND'}
-                      </span>
-                    </td>
-                    <td style={tableCellStyle}>{racquet.weight}g</td>
-                    <td style={tableCellStyle}>{racquet.headSize} sq in</td>
-                    <td style={tableCellStyle}>
-                      <span style={{
-                        padding: '0.25rem 0.5rem',
-                        backgroundColor: '#e0e7ff',
-                        color: '#3730a3',
-                        borderRadius: '4px',
-                        fontSize: '0.75rem'
-                      }}>
-                        {racquet.category || 'Standard'}
                       </span>
                     </td>
                   </tr>
