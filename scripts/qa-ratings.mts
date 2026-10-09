@@ -940,8 +940,25 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
   const ranked = rankRacquetsByTesterAverage(racquetsDatabase);
   if (ranked.length !== entries.length) fail(`classement raquettes : ${ranked.length} classées, ${entries.length} attendues`);
   if (ranked.some((x, i) => i > 0 && ranked[i - 1].testerAverage20 < x.testerAverage20)) fail('classement raquettes : ordre non décroissant');
+  // Les 7 fiches alignées sur la dernière génération (09/10/2026) doivent
+  // porter leur source et leur RA publié : un retour à l'ancienne valeur, ou
+  // une source retirée, fait échouer l'audit.
+  const ALIGNED: Readonly<Record<string, number>> = {
+    'babolat-pure-aero-standard': 66, 'babolat-pure-drive-standard': 69, 'yonex-ezone-100': 68,
+    'yonex-percept-100': 66, 'yonex-percept-100d': 66, 'tecnifibre-tfight-305s-id': 63, 'head-boom-pro-2024': 64,
+  };
+  const dbSrc = readFileSync('src/data/racquets-database.ts', 'utf8');
+  for (const [id, ra] of Object.entries(ALIGNED)) {
+    const r = racquetsDatabase.find((x) => x.id === id);
+    if (!r) { fail(`génération alignée : ${id} absent (id public à conserver)`); continue; }
+    if (r.stiffness !== ra) fail(`génération alignée : ${id} RA ${r.stiffness}, ${ra} publié pour la génération en vente`);
+    const i = dbSrc.indexOf(`id: '${id}'`);
+    const comment = dbSrc.slice(Math.max(0, i - 400), i);
+    if (!/Source[s]? : https:\/\/www\.tenniswarehouse-europe\.com\//.test(comment)) fail(`génération alignée : ${id} sans source de specs en commentaire`);
+    if (!RACQUET_TESTER_RATINGS[id]) fail(`génération alignée : ${id} non rapproché`);
+  }
   if (failures.length === before) {
-    ok(`raquettes testeurs : ${entries.length} fiches harmonisées (génération vérifiée), ${quarantined} en quarantaine, ` +
+    ok(`raquettes testeurs : ${entries.length} fiches harmonisées (génération vérifiée, dont ${Object.keys(ALIGNED).length} alignées sur la dernière génération), ${quarantined} en quarantaine, ` +
       `${entries.length * axes.length} notes recalculées à l'identique, ${untouched} profils dérivés intacts, libellés justes`);
   }
 }

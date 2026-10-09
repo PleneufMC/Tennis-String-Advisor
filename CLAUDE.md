@@ -1,11 +1,23 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.2.6
+> **Version** : 2.2.7
 > **Date** : 9 octobre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
 > **Branche de référence** : `main` (seule branche longue ; la production Netlify en déploie)
 > **Repo** : https://github.com/PleneufMC/Tennis-String-Advisor.git
+
+**Changelog v2.2.6 → v2.2.7** — **Sept raquettes alignées sur la dernière génération**
+(information de Pierre du 09/10/2026 : le document de notation porte sur les générations
+en vente ; ce sont les fiches qui décrivaient une génération antérieure). Mise à jour
+**en place**, id conservés (URL publiques au sitemap, configurations sauvegardées) :
+Pure Aero 100 (2026) RA 69 → 66, Pure Drive (2025) 72 → 69, EZONE 100 (2025) 64 → 68,
+Percept 100 et 100D 61 → 66, T-Fight 305S (2025, ex-« 305S ID ») 65 → 63, Boom Pro
+datée 2026 (specs identiques). Source Tennis Warehouse Europe en commentaire de chaque
+fiche. Elles reçoivent l'harmonisation testeurs (**18 raquettes**, décalages d'ancrage
+recalculés sur les 18) ; seule Fire reste non rapprochable. **Effet RCS** : alerte bras
+globale standard 5,12 % → 5,12 %, sensible 19,47 % → 19,56 %, compatibilité 13,23 % →
+13,29 % (détail par fiche dans la PR). Contrôle 14 étendu.
 
 **Changelog v2.2.5 → v2.2.6** — **Profil des raquettes harmonisé** avec des avis de
 testeurs (mandat de Pierre du 09/10/2026, méthode tranchée par `tsa-core`) : même
@@ -565,4 +577,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.2.6 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.2.7 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
