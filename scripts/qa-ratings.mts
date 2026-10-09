@@ -22,7 +22,10 @@
  *
  * Usage : npm run audit:ratings
  */
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+// @ts-ignore -- module JS sans déclaration de types (générateur du catalogue EN, C3)
+import { buildCatalog, serializeCatalog, CATALOG_JSON_PATH } from './catalog/catalog-json.mjs';
 import { racquetsDatabase, calculateCompatibility } from '../src/data/racquets-database';
 import {
   stringsDatabase,
@@ -960,6 +963,42 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
   if (failures.length === before) {
     ok(`raquettes testeurs : ${entries.length} fiches harmonisées (génération vérifiée, dont ${Object.keys(ALIGNED).length} alignées sur la dernière génération), ${quarantined} en quarantaine, ` +
       `${entries.length * axes.length} notes recalculées à l'identique, ${untouched} profils dérivés intacts, libellés justes`);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 15. SOURCE UNIQUE DU CATALOGUE (C3, 09/10/2026)
+// ---------------------------------------------------------------------------
+// Le TypeScript fait foi ; les pages EN lisent public/data/catalog.json, généré
+// au build. Échoue si : (b) le JSON servi diffère du TS ; (c) le JSON est
+// versionné (il serait éditable à la main) ou n'est plus généré au build ;
+// (d) il cite une chaîne de testeurs ; (e) une valeur absente y est comblée.
+{
+  const before = failures.length;
+  const expected = serializeCatalog(buildCatalog(racquetsDatabase, stringsDatabase));
+  let state = 'absent (généré au build)';
+  if (existsSync(CATALOG_JSON_PATH)) {
+    const served = readFileSync(CATALOG_JSON_PATH, 'utf8');
+    if (served !== expected) fail(`source unique : ${CATALOG_JSON_PATH} diffère du TS — relancer npm run build:catalog, ne jamais l'éditer`);
+    state = 'identique au TS';
+  }
+  const tracked = execFileSync('git', ['ls-files', '--', CATALOG_JSON_PATH], { encoding: 'utf8' }).trim();
+  if (tracked) fail(`source unique : ${CATALOG_JSON_PATH} est versionné — il doit rester généré (.gitignore)`);
+  const pkg = JSON.parse(readFileSync('package.json', 'utf8'));
+  if (!/build:catalog/.test(pkg.scripts?.prebuild ?? '')) fail('source unique : prebuild ne génère plus le catalogue EN (Netlify servirait un JSON absent)');
+  const channels = [...TESTER_RATINGS_SOURCE.channels, ...RACQUET_TESTER_SOURCE.channels];
+  for (const c of channels) if (expected.includes(c)) fail(`source unique : le catalogue public cite la chaîne « ${c} »`);
+  const cat = JSON.parse(expected);
+  const absentR = racquetsDatabase.filter((r) => r.stiffness === null).length;
+  const nullR = cat.racquets.filter((r: { stiffness: number | null }) => r.stiffness === null).length;
+  if (absentR !== nullR) fail(`source unique : ${absentR} RA absents dans le TS, ${nullR} null dans le JSON (valeur comblée ?)`);
+  const absentS = stringsDatabase.filter((s) => s.comfort === undefined).length;
+  const nullS = cat.strings.filter((s: { comfort: number | null }) => s.comfort === null).length;
+  if (absentS !== nullS) fail(`source unique : ${absentS} notes confort absentes dans le TS, ${nullS} null dans le JSON`);
+  if (cat.racquets.length !== racquetsDatabase.length || cat.strings.length !== stringsDatabase.length) fail('source unique : comptes JSON ≠ TS');
+  if (failures.length === before) {
+    ok(`source unique : catalog.json ${state} ` +
+      `(${cat.racquets.length} raquettes / ${cat.strings.length} cordages, ${nullR} RA null, ${nullS} notes null), non versionné, généré en prebuild, aucune chaîne citée`);
   }
 }
 
