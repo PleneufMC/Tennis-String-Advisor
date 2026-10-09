@@ -1,13 +1,13 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.2.9
+> **Version** : 2.2.10
 > **Date** : 9 octobre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
 > **Branche de référence** : `main` (seule branche longue ; la production Netlify en déploie)
 > **Repo** : https://github.com/PleneufMC/Tennis-String-Advisor.git
 
-**Changelog v2.2.8 → v2.2.9** — **Fiches produit anglaises** (`tsa-acquisition`,
+**Changelog v2.2.9 → v2.2.10** — **Fiches produit anglaises** (`tsa-acquisition`,
 09/10/2026) : 129 raquettes et 181 cordages ont leur fiche EN, `/en/racquets/<id>.html`
 et `/en/strings/<id>.html`, **HTML statique généré à chaque build** (`prebuild`/`predev`)
 par `scripts/en-products/build-en-product-pages.mjs` depuis le catalogue TS (même
@@ -17,6 +17,19 @@ chargeur que `catalog.json`), non versionné. Pas de route Next : le layout raci
 sélecteur de langue d'une fiche FR vers sa jumelle. Champ absent = « Not published » ;
 descriptions du catalogue (en français) non reprises ; JSON-LD `Product` sans
 `offers`, note, avis ni image ; aucun lien d'achat sur ces fiches.
+**Changelog v2.2.8 → v2.2.9** — **Circuit de paiement EN fermé** (`tsa-revenue`,
+09/10/2026). Le §2 point 1 affirmait que les deux circuits transmettent l'identifiant de
+compte : c'est vrai, mais l'identifiant EN est un uuid **Supabase Auth**, et le webhook
+ne cherche que dans la table Prisma `User` (cuid NextAuth) — recouvrement 0 sur 5
+comptes. Un achat EN était acquitté « compte introuvable » et rien n'écrivait
+`profiles.is_premium`, seul drapeau lu par les pages EN : **on encaissait sans rien
+activer**. `CHECKOUT_DISPONIBLE = false` dans `en/premium.html`. Constats associés,
+consignés au §2 point 1 : `profiles` est modifiable colonne par colonne par son
+propriétaire (RLS `auth.uid() = id`, `UPDATE` accordé sur `is_premium`) — un compte EN
+peut se déclarer premium ; aucun quota EN n'est appliqué côté serveur. Corrections
+client dans #87 (configurateur et calculateur EN, quota aligné sur 3 setups sauvegardés,
+paywall du calculateur qui masquait le RCS — règle 2 —, colonne `tension_mains`) et #88
+(liens EN).
 
 **Changelog v2.2.7 → v2.2.8** — **Source de vérité unique du catalogue (C3)**, demande
 de Pierre du 09/10/2026 (« harmoniser les sites anglais et français ») : `src/data/*.ts`
@@ -261,7 +274,16 @@ un mode connu, un montant au catalogue (`premium.ts`) et un paiement encaissé
 et consorts). **Seul `client_reference_id` rattache un paiement** : l'e-mail du
 payeur n'est pas un repli, Stripe ne le vérifie pas et l'application ne renseigne
 jamais `emailVerified`. Remboursement et litige retirent l'accès. Les deux circuits
-transmettent l'identifiant de compte. Garde-fou : `npm run audit:stripe-webhook`,
+transmettent l'identifiant de compte — ⚠️ **mais seul le circuit FR est activable**
+(constat du 09/10/2026) : l'id EN est un uuid Supabase Auth absent de la table Prisma
+`User`, le webhook acquitte « compte introuvable » et n'écrit jamais
+`profiles.is_premium`. Checkout EN **fermé** (`CHECKOUT_DISPONIBLE = false`) jusqu'à ce
+que le webhook sache activer un compte Supabase (option à arbitrer par Pierre ; toute
+écriture dans `profiles` passe par `db-guardian`). ⚠️ **`profiles.is_premium` est
+auto-attribuable** : la policy `Users can update own profile` (`auth.uid() = id`, sans
+restriction de colonne) et le `GRANT UPDATE` sur toutes les colonnes laissent un compte
+EN écrire `is_premium = true` depuis le navigateur. Correctif = migration (révoquer
+l'UPDATE sur les colonnes premium/Stripe) → `db-guardian` + GO de Pierre. Garde-fou : `npm run audit:stripe-webhook`,
 28 contrôles, dans `audit:all`.
 
 ✅ **Le paiement est ouvert** depuis le 13/09/2026 — les deux drapeaux
@@ -598,4 +620,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.2.9 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.2.10 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
