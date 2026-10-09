@@ -37,7 +37,7 @@
           <a href="/en/" class="text-gray-600 hover:text-green-600 transition">Home</a>
           <a href="/en/racquets.html" class="text-gray-600 hover:text-green-600 transition">Racquets</a>
           <a href="/en/strings.html" class="text-gray-600 hover:text-green-600 transition">Strings</a>
-          <a href="/auth.html" class="text-blue-600 hover:text-blue-700 transition">🇫🇷 FR</a>
+          <a href="/auth/signin" class="text-blue-600 hover:text-blue-700 transition">🇫🇷 FR</a>
         </nav>
       </div>
     </div>
@@ -209,6 +209,23 @@
         </div>
       </div>
 
+      <!-- New password (lien de reinitialisation recu par e-mail) -->
+      <div id="resetForm" class="p-6 hidden">
+        <form onsubmit="handleNewPassword(event)">
+          <h2 class="text-lg font-bold text-gray-900 mb-4">Choose a new password</h2>
+          <label for="newPassword" class="block text-sm font-medium text-gray-700 mb-1">New password</label>
+          <input type="password" id="newPassword" required minlength="6" autocomplete="new-password"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+          <label for="newPasswordConfirm" class="block text-sm font-medium text-gray-700 mb-1 mt-4">Confirm the new password</label>
+          <input type="password" id="newPasswordConfirm" required minlength="6" autocomplete="new-password"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+          <button type="submit" id="resetBtn"
+            class="mt-6 w-full py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition">
+            Save the new password
+          </button>
+        </form>
+      </div>
+
       <!-- Messages -->
       <div id="authMessage" class="hidden px-6 pb-6">
         <div id="authMessageContent" class="p-4 rounded-lg"></div>
@@ -295,8 +312,41 @@
       console.error('❌ Supabase init error:', e);
     }
 
+    // Retour du lien « mot de passe oublie » : on reste sur la page pour saisir
+    // le nouveau mot de passe (avant : redirection vers /reset-password.html, 404).
+    const IS_RECOVERY = new URLSearchParams(window.location.search).get('mode') === 'reset'
+      || window.location.hash.includes('type=recovery');
+
+    function showResetForm() {
+      document.getElementById('loginForm').classList.add('hidden');
+      document.getElementById('registerForm').classList.add('hidden');
+      document.getElementById('loginTab').parentElement.classList.add('hidden');
+      document.getElementById('resetForm').classList.remove('hidden');
+    }
+
+    async function handleNewPassword(e) {
+      e.preventDefault();
+      const pwd = document.getElementById('newPassword').value;
+      if (pwd !== document.getElementById('newPasswordConfirm').value) {
+        showMessage('The two passwords do not match.');
+        return;
+      }
+      const { error } = await supabaseClient.auth.updateUser({ password: pwd });
+      if (error) {
+        showMessage(error.message + ' — request a new reset link if this one has expired.');
+        return;
+      }
+      showMessage('Password updated. Redirecting to your account...', 'success');
+      setTimeout(() => { window.location.href = '/en/account.html'; }, 1000);
+    }
+
     async function checkAuth() {
       const queryParams = new URLSearchParams(window.location.search);
+
+      if (IS_RECOVERY) {
+        showResetForm();
+        return;
+      }
       
       if (queryParams.get('error')) {
         const errorDescription = queryParams.get('error_description') || 'Unknown error';
@@ -317,6 +367,10 @@
     
     supabaseClient.auth.onAuthStateChange((event, session) => {
       console.log('Auth event:', event);
+      if (event === 'PASSWORD_RECOVERY' || IS_RECOVERY) {
+        showResetForm();
+        return;
+      }
       if (event === 'SIGNED_IN' && session) {
         showMessage('Login successful! Redirecting...', 'success');
         setTimeout(() => {
@@ -499,7 +553,7 @@
       
       try {
         const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
-          redirectTo: window.location.origin + '/reset-password.html'
+          redirectTo: window.location.origin + '/en/auth.html?mode=reset'
         });
         
         if (error) throw error;

@@ -41,7 +41,7 @@
           <a href="/en/racquets.html" class="text-gray-600 hover:text-green-600 transition">Racquets</a>
           <a href="/en/strings.html" class="text-gray-600 hover:text-green-600 transition">Strings</a>
           <a href="/en/rcs-calculator.html" class="text-gray-600 hover:text-green-600 transition">🩺 RCS</a>
-          <a href="/setups.html" class="text-blue-600 hover:text-blue-700 transition">🇫🇷 FR</a>
+          <a href="/account/configurations" class="text-blue-600 hover:text-blue-700 transition">🇫🇷 FR</a>
         </nav>
         <div class="flex items-center gap-4">
           <a href="/en/account.html" class="text-sm text-green-600 hover:underline">My Account</a>
@@ -401,19 +401,15 @@
             document.getElementById('premiumLink').classList.add('hidden');
           }
         } catch (e) {
-          isPremium = localStorage.getItem('tsa_premium_demo') === 'true';
+          isPremium = false;
         }
 
         document.getElementById('loadingState').classList.add('hidden');
         
-        if (!isPremium) {
-          document.getElementById('premiumRequired').classList.remove('hidden');
-          document.getElementById('premiumContent').classList.add('hidden');
-          document.querySelector('.flex.flex-col.md\\:flex-row.md\\:items-center.justify-between')?.classList.add('hidden');
-          document.querySelector('.bg-white.rounded-xl.border.border-gray-200.p-4.mb-6')?.classList.add('hidden');
-          return;
-        }
-        
+        // Quota aligne sur le FR (src/lib/premium.ts, FREE_PLAN_MAX_CONFIGS = 3) :
+        // compte gratuit = 3 setups sauvegardes, premium = illimite. Cette page
+        // reservait toute sauvegarde au premium tout en affichant « / 3 ».
+        // Limite appliquee cote client seulement (RLS user_setups : aucun plafond).
         document.getElementById('premiumRequired').classList.add('hidden');
         document.getElementById('premiumContent').classList.remove('hidden');
         await loadSetups();
@@ -501,7 +497,7 @@
             <div class="flex items-center gap-3 mb-4">
               <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center text-lg">⚡</div>
               <div>
-                <div class="font-semibold text-gray-900">${setup.tension || '?'} kg</div>
+                <div class="font-semibold text-gray-900">${setup.tension_mains ?? '?'} kg</div>
                 <div class="text-xs text-gray-500">Tension</div>
               </div>
             </div>
@@ -514,7 +510,7 @@
                 </div>
                 <div class="text-xs text-gray-500">${rcsLabel}</div>
               </div>
-              <a href="/en/rcs-calculator.html?ra=${racquet.stiffness || ''}&cordage=${string.stiffness || ''}&tension=${setup.tension || ''}" class="text-sm text-green-600 hover:underline">Details →</a>
+              <a href="/en/rcs-calculator.html?ra=${racquet.stiffness || ''}&cordage=${string.stiffness || ''}&tension=${setup.tension_mains ?? ''}" class="text-sm text-green-600 hover:underline">Details →</a>
             </div>
             ${setup.notes ? `<div class="mt-3 p-3 bg-amber-50 rounded-lg border border-amber-100"><div class="text-xs text-amber-800">${escapeHtml(setup.notes)}</div></div>` : ''}
             <div class="mt-3 text-xs text-gray-400 text-right">Created ${new Date(setup.created_at).toLocaleDateString('en-US')}</div>
@@ -591,8 +587,9 @@
       }
 
       if (ra && cordage && tension && typeof RCS !== 'undefined') {
-        const score = RCS.calculate(ra, cordage, tension);
-        const decile = RCS.getDecile(score);
+        const result = RCS.calculate(ra, cordage, tension);
+        const score = result.rcs;
+        const decile = result.decile;
         document.getElementById('rcsPreview').textContent = Math.round(score);
         document.getElementById('rcsLabel').textContent = decile.label;
         const gauge = document.getElementById('rcsGauge');
@@ -632,8 +629,8 @@
       document.getElementById('setupName').value = setup.name || '';
       document.getElementById('racquetSelect').value = setup.racquet_id || '';
       document.getElementById('stringSelect').value = setup.string_id || '';
-      document.getElementById('tensionInput').value = setup.tension || 24;
-      document.getElementById('tensionSlider').value = setup.tension || 24;
+      document.getElementById('tensionInput').value = setup.tension_mains ?? 24;
+      document.getElementById('tensionSlider').value = setup.tension_mains ?? 24;
       document.getElementById('setupNotes').value = setup.notes || '';
       updateRcsPreview();
       document.getElementById('setupModal').classList.remove('hidden');
@@ -648,8 +645,9 @@
       const stringSelect = document.getElementById('stringSelect');
       const racquetOption = racquetSelect.options[racquetSelect.selectedIndex];
       const stringOption = stringSelect.options[stringSelect.selectedIndex];
-      const ra = parseFloat(racquetOption?.dataset?.stiffness) || 63;
-      const cordage = parseFloat(stringOption?.dataset?.stiffness) || 180;
+      // Regle 3 : RA ou rigidite inconnus = RCS non calcule (null), jamais 63 / 180 inventes.
+      const ra = parseFloat(racquetOption?.dataset?.stiffness);
+      const cordage = parseFloat(stringOption?.dataset?.stiffness);
       const tension = parseFloat(document.getElementById('tensionInput').value);
       let rcsScore = null;
       if (typeof RCS !== 'undefined' && ra && cordage && tension) {
@@ -661,7 +659,10 @@
         name: document.getElementById('setupName').value.trim(),
         racquet_id: document.getElementById('racquetSelect').value || null,
         string_id: document.getElementById('stringSelect').value || null,
-        tension: tension,
+        // Schema reel de user_setups : tension_mains / tension_unit — la
+        // colonne `tension` n'existe pas, PostgREST rejetait tout INSERT/UPDATE.
+        tension_mains: tension,
+        tension_unit: 'kg',
         rcs_score: rcsScore,
         notes: document.getElementById('setupNotes').value.trim() || null,
         updated_at: new Date().toISOString()

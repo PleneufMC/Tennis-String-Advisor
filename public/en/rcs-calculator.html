@@ -521,7 +521,7 @@
           </a>
         </div>
         <p class="text-xs text-gray-500 text-center mt-4">
-          Free account includes 1 RCS calculation. Premium = unlimited.
+          The RCS calculator is free and unlimited. Premium = unlimited saved setups.
         </p>
       </div>
     </div>
@@ -529,14 +529,14 @@
 
   <!-- Free Trial Banner -->
   <div id="freeTrialBanner" class="hidden bg-gradient-to-r from-green-500 to-green-600 text-white py-3 px-4 text-center">
-    <span class="font-medium">🎁 Free trial: <span id="remainingCalculations">1</span> RCS calculation remaining</span>
+    <span class="font-medium">🎁 The RCS calculator is free and unlimited</span>
     <span class="mx-2">|</span>
-    <a href="/en/premium.html" class="underline font-semibold hover:text-green-100">Go Premium for unlimited →</a>
+    <a href="/en/premium.html" class="underline font-semibold hover:text-green-100">Premium: unlimited saved setups →</a>
   </div>
 
   <!-- Premium Banner -->
   <div id="premiumBanner" class="hidden bg-gradient-to-r from-amber-500 to-orange-500 text-white py-2 px-4 text-center">
-    <span class="font-medium">✨ Premium Member - Unlimited calculations</span>
+    <span class="font-medium">✨ Premium Member - Unlimited saved setups</span>
   </div>
 
   <script>
@@ -621,25 +621,12 @@
     function updateUsageBanners() {
       const freeTrialBanner = document.getElementById('freeTrialBanner');
       const premiumBanner = document.getElementById('premiumBanner');
-      const remainingEl = document.getElementById('remainingCalculations');
       
       if (isPremium) {
         freeTrialBanner.classList.add('hidden');
         premiumBanner.classList.remove('hidden');
       } else {
         premiumBanner.classList.add('hidden');
-        const remaining = Math.max(0, FREE_CALCULATIONS - (currentUser ? calculationCount : (hasUsedFreeCalculation ? 1 : 0)));
-        remainingEl.textContent = remaining;
-        
-        if (remaining === 0) {
-          freeTrialBanner.innerHTML = `
-            <span class="font-medium">🔒 Free trial ended</span>
-            <span class="mx-2">|</span>
-            <a href="/en/premium.html" class="underline font-semibold hover:text-green-100">Go Premium to continue →</a>
-          `;
-          freeTrialBanner.classList.remove('from-green-500', 'to-green-600');
-          freeTrialBanner.classList.add('from-amber-500', 'to-orange-500');
-        }
         freeTrialBanner.classList.remove('hidden');
       }
     }
@@ -651,33 +638,16 @@
       document.body.style.overflow = 'hidden';
     }
     
+    // REGLE 2 (§4) — la sante prime sur la conversion. Cette page bloquait le
+    // calcul (showPaywall(); return;) des le 2e changement de reglage pour un
+    // visiteur : le RCS et l'alerte bras du setup modifie n'etaient plus
+    // affiches. Comme au FR, le calcul est libre et illimite ; le quota
+    // (src/lib/premium.ts, 3) porte sur les setups sauvegardes.
     function canCalculate() {
-      if (isPremium) return true;
-      if (currentUser) {
-        return calculationCount < FREE_CALCULATIONS;
-      } else {
-        return !hasUsedFreeCalculation;
-      }
+      return true;
     }
     
-    async function recordCalculationUsage() {
-      if (isPremium) return;
-      
-      if (currentUser) {
-        calculationCount++;
-        await supabaseClient
-          .from('profiles')
-          .update({ rcs_calculations_used: calculationCount })
-          .eq('id', currentUser.id);
-        
-        hasUsedFreeCalculation = calculationCount >= FREE_CALCULATIONS;
-      } else {
-        localStorage.setItem(LOCAL_STORAGE_KEY, 'true');
-        hasUsedFreeCalculation = true;
-      }
-      
-      updateUsageBanners();
-    }
+    function recordCalculationUsage() {}
 
     async function init() {
       await checkUserStatus();

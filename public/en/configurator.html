@@ -29,7 +29,7 @@
       "@type": "Offer",
       "price": "0",
       "priceCurrency": "EUR",
-      "description": "2 free configurations, then a Premium subscription from €4.99 per month"
+      "description": "Free and unlimited recommendations; a free account saves up to 3 setups, Premium from €4.99 per month for unlimited setups"
     },
     "featureList": [
       "Personalized racquet recommendations",
@@ -139,12 +139,7 @@
             <span>✨</span> Go Premium to continue
           </h3>
           <ul class="mt-3 space-y-2 text-sm text-green-700">
-            <li class="flex items-center gap-2"><span>✓</span> Unlimited configurations</li>
-            <li class="flex items-center gap-2"><span>✓</span> Unlimited RCS calculations</li>
-            <li class="flex items-center gap-2"><span>✓</span> Save your setups</li>
-            <li class="flex items-center gap-2"><span>✓</span> String journal</li>
-            <li class="flex items-center gap-2"><span>✓</span> Price alerts</li>
-            <li class="flex items-center gap-2"><span>✓</span> PDF Export</li>
+            <li class="flex items-center gap-2"><span>✓</span> Unlimited saved setups (free account: 3)</li>
           </ul>
         </div>
         <div class="text-center mb-4">
@@ -164,7 +159,7 @@
           </a>
         </div>
         <p class="text-xs text-gray-500 text-center mt-4">
-          Free account includes 2 configurations. Premium = unlimited, monthly or yearly.
+          Recommendations are always free. A free account saves up to 3 setups; Premium = unlimited setups.
         </p>
       </div>
     </div>
@@ -172,14 +167,14 @@
 
   <!-- Free Trial Banner -->
   <div id="freeTrialBanner" class="hidden bg-gradient-to-r from-green-500 to-green-600 text-white py-3 px-4 text-center">
-    <span class="font-medium">🎁 Free trial: <span id="remainingConfigurations">2</span> configuration(s) remaining</span>
+    <span class="font-medium">🎁 Recommendations are free and unlimited · a free account saves up to 3 setups</span>
     <span class="mx-2">|</span>
-    <a href="/en/premium.html" class="underline font-semibold hover:text-green-100">Premium from €4.99 per month →</a>
+    <a href="/en/premium.html" class="underline font-semibold hover:text-green-100">Premium: unlimited setups →</a>
   </div>
 
   <!-- Premium Banner -->
   <div id="premiumBanner" class="hidden bg-gradient-to-r from-amber-500 to-orange-500 text-white py-2 px-4 text-center">
-    <span class="font-medium">✨ Premium member - Unlimited configurations</span>
+    <span class="font-medium">✨ Premium member - Unlimited saved setups</span>
   </div>
   <!-- Header -->
   <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
@@ -579,7 +574,7 @@
               <span class="text-sm text-green-600 font-medium" id="rec-racquet-brand">Babolat</span>
               <h4 class="text-lg font-bold text-gray-900" id="rec-racquet-name">Pure Drive</h4>
             </div>
-            <span class="bg-green-100 text-green-800 text-sm font-medium px-3 py-1 rounded-full" id="rec-racquet-category">Polyvalent</span>
+            <span class="bg-green-100 text-green-800 text-sm font-medium px-3 py-1 rounded-full" id="rec-racquet-category">All-round</span>
           </div>
           <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
             <div>
@@ -596,7 +591,7 @@
             </div>
             <div>
               <span class="text-sm text-gray-500">Price</span>
-              <p class="font-semibold text-green-600" id="rec-racquet-price">269€</p>
+              <p class="font-semibold text-green-600" id="rec-racquet-price">—</p>
             </div>
           </div>
           <p class="text-gray-600 mt-4" id="rec-racquet-reason">Ideal for players looking for versatility and power.</p>
@@ -633,7 +628,7 @@
             </div>
             <div>
               <span class="text-sm text-gray-500">Price</span>
-              <p class="font-semibold text-green-600" id="rec-string-price">18€</p>
+              <p class="font-semibold text-green-600" id="rec-string-price">—</p>
             </div>
           </div>
           <p class="text-gray-600 mt-4" id="rec-string-reason">Built for spin and control.</p>
@@ -752,24 +747,19 @@
         <div class="text-center mb-6">
           <span class="text-4xl mb-3 block">🎾</span>
           <h3 class="text-2xl font-bold text-gray-900 mb-2">Love your personalized setup?</h3>
-          <p class="text-gray-600">Go Premium to unlock all features</p>
+          <p class="text-gray-600">Save it to your account</p>
         </div>
         
-        <div class="grid md:grid-cols-3 gap-4 mb-6">
+        <div class="grid md:grid-cols-2 gap-4 mb-6">
           <div class="bg-white rounded-xl p-4 text-center shadow-sm">
-            <span class="text-2xl mb-2 block">♾️</span>
-            <h4 class="font-semibold text-gray-900">Unlimited configurations</h4>
-            <p class="text-sm text-gray-500 mt-1">Test as many profiles as you want</p>
-          </div>
-          <div class="bg-white rounded-xl p-4 text-center shadow-sm">
-            <span class="text-2xl mb-2 block">📔</span>
-            <h4 class="font-semibold text-gray-900">String journal</h4>
-            <p class="text-sm text-gray-500 mt-1">Track your strings and get restring reminders</p>
+            <span class="text-2xl mb-2 block">🆓</span>
+            <h4 class="font-semibold text-gray-900">Free account: 3 saved setups</h4>
+            <p class="text-sm text-gray-500 mt-1">Recommendations stay free and unlimited</p>
           </div>
           <div class="bg-white rounded-xl p-4 text-center shadow-sm">
             <span class="text-2xl mb-2 block">💾</span>
-            <h4 class="font-semibold text-gray-900">Save setups</h4>
-            <p class="text-sm text-gray-500 mt-1">Find your favorite configurations</p>
+            <h4 class="font-semibold text-gray-900">Premium: unlimited saved setups</h4>
+            <p class="text-sm text-gray-500 mt-1">Keep every racquet + string + tension you try</p>
           </div>
         </div>
 
@@ -795,7 +785,7 @@
           <span class="text-2xl">🎾</span>
           <div>
             <p class="font-semibold text-gray-900 text-sm">Your setup is ready!</p>
-            <p class="text-xs text-gray-500">Save it with Premium</p>
+            <p class="text-xs text-gray-500">Save up to 3 setups free, unlimited with Premium</p>
           </div>
         </div>
         <div class="flex items-center gap-3 flex-1 sm:flex-none justify-end">
@@ -883,11 +873,14 @@
     // Configuration usage tracking
     let currentUser = null;
     let userProfile = null;
-    let hasUsedFreeConfiguration = false;
     let isPremium = false;
-    let configurationCount = 0;
-    const FREE_CONFIGURATIONS = 2;
-    const LOCAL_STORAGE_KEY = 'configurator_free_used';
+    // Quota aligne sur la source de verite FR (src/lib/premium.ts,
+    // FREE_PLAN_MAX_CONFIGS = 3) : il porte sur les SETUPS SAUVEGARDES, jamais
+    // sur la generation d'une recommandation, qui reste libre et illimitee
+    // (regle 2 : un quota ne retient jamais un retour de sante). L'ancien
+    // compteur « 2 configurations » decrementait puis annoncait « Essai gratuit
+    // termine » sans rien bloquer : il est retire.
+    const FREE_SAVED_SETUPS = 3;
     
     // Database cache
     // SOLUTION B: Use 'var' instead of 'let' to avoid Temporal Dead Zone
@@ -1010,13 +1003,7 @@
 
     // Check if user can configure
     function canConfigure() {
-      if (isPremium) return true;
-      
-      if (currentUser) {
-        return configurationCount < FREE_CONFIGURATIONS;
-      } else {
-        return !hasUsedFreeConfiguration;
-      }
+      return true;
     }
 
     // Show paywall
@@ -1030,48 +1017,19 @@
     }
 
     // Record configuration usage
-    async function recordConfigurationUsage() {
-      if (isPremium) return;
-      
-      if (currentUser) {
-        configurationCount++;
-        await supabaseClient
-          .from('profiles')
-          .update({ configurator_uses: configurationCount })
-          .eq('id', currentUser.id);
-        
-        hasUsedFreeConfiguration = configurationCount >= FREE_CONFIGURATIONS;
-      } else {
-        localStorage.setItem(LOCAL_STORAGE_KEY, 'true');
-        hasUsedFreeConfiguration = true;
-      }
-      
-      updateUsageBanners();
-    }
+    // Plus de decompte des generations (voir FREE_SAVED_SETUPS).
+    function recordConfigurationUsage() {}
 
     // Update banners
     function updateUsageBanners() {
       const freeTrialBanner = document.getElementById('freeTrialBanner');
       const premiumBanner = document.getElementById('premiumBanner');
-      const remainingEl = document.getElementById('remainingConfigurations');
       
       if (isPremium) {
         freeTrialBanner.classList.add('hidden');
         premiumBanner.classList.remove('hidden');
       } else {
         premiumBanner.classList.add('hidden');
-        const remaining = Math.max(0, FREE_CONFIGURATIONS - (currentUser ? configurationCount : (hasUsedFreeConfiguration ? 1 : 0)));
-        remainingEl.textContent = remaining;
-        
-        if (remaining === 0) {
-          freeTrialBanner.innerHTML = `
-            <span class="font-medium">🔒 Essai gratuit terminé</span>
-            <span class="mx-2">|</span>
-            <a href="/premium.html" class="underline font-semibold hover:text-green-100">Passer Premium pour continuer →</a>
-          `;
-          freeTrialBanner.classList.remove('from-green-500', 'to-green-600');
-          freeTrialBanner.classList.add('from-amber-500', 'to-orange-500');
-        }
         freeTrialBanner.classList.remove('hidden');
       }
     }
@@ -1079,8 +1037,7 @@
     // Check user status
     async function checkUserStatus() {
       if (!supabaseClient) {
-        console.log('⏳ Supabase not ready, using local storage');
-        hasUsedFreeConfiguration = localStorage.getItem(LOCAL_STORAGE_KEY) === 'true';
+        console.log('⏳ Supabase not ready');
         updateUsageBanners();
         return;
       }
@@ -1092,21 +1049,17 @@
           
           const { data: profile } = await supabaseClient
             .from('profiles')
-            .select('is_premium, configurator_uses')
+            .select('is_premium')
             .eq('id', currentUser.id)
             .single();
           
           if (profile) {
             userProfile = profile;
             isPremium = profile.is_premium === true;
-            configurationCount = profile.configurator_uses || 0;
-            hasUsedFreeConfiguration = configurationCount >= FREE_CONFIGURATIONS;
           }
           
-          document.getElementById('paywallAuthLink').textContent = 'Retour à mon compte';
-          document.getElementById('paywallAuthLink').href = '/account.html';
-        } else {
-          hasUsedFreeConfiguration = localStorage.getItem(LOCAL_STORAGE_KEY) === 'true';
+          document.getElementById('paywallAuthLink').textContent = 'Back to my account';
+          document.getElementById('paywallAuthLink').href = '/en/account.html';
         }
         
         updateUsageBanners();
@@ -1285,9 +1238,9 @@
       console.log('✅ Generating recommendations...');
       
       // Defaults (fallback if DB not loaded)
-      let racquet = { brand: 'Babolat', name: 'Pure Drive', category: 'Polyvalent', weight: '300g', head: '100 sq in', stiffness: 72, stiffnessDisplay: 'RA 72', price: '269€', reason: 'Raquette polyvalente idéale pour progresser.', stringStiffness: 240 };
-      let string = { brand: 'Babolat', name: 'RPM Blast', type: 'Polyester', spin: '10/10', control: '8/10', comfort: '5/10', price: '18€', reason: 'Excellent pour générer du spin.', stiffness: 240 };
-      let tension = { value: '23-25 kg', numValue: 24, reason: 'Tension moyenne pour équilibre puissance/contrôle.' };
+      let racquet = { brand: 'Babolat', name: 'Pure Drive', category: 'All-round', weight: '300g', head: '100 sq in', stiffness: 72, stiffnessDisplay: 'RA 72', price: TSACatalog.display(null), reason: 'All-round racquet, ideal for improving.', stringStiffness: 240 };
+      let string = { brand: 'Babolat', name: 'RPM Blast', type: 'Polyester', spin: '10/10', control: '8/10', comfort: '5/10', price: TSACatalog.display(null), reason: 'Excellent for generating spin.', stiffness: 240 };
+      let tension = { value: '23-25 kg', numValue: 24, reason: 'Mid-range tension for a balance of power and control.' };
       let rcsProfile = null;
       
       let racquetCriteria = {};
@@ -1306,7 +1259,7 @@
           types: ['Multifilament', 'Natural Gut'],
           preferComfort: true
         };
-        tension = { value: '20-22 kg', numValue: 21, reason: 'Tension basse pour maximiser le confort et la puissance.' };
+        tension = { value: '20-22 kg', numValue: 21, reason: 'Low tension to maximise comfort and power.' };
         rcsProfile = 'debutant';
         
         const dbRacquet = pickBestRacquet(racquetCriteria);
@@ -1321,12 +1274,12 @@
             head: `${dbRacquet.head_size} sq in`,
             stiffness: dbRacquet.stiffness || 55,
             stiffnessDisplay: `RA ${dbRacquet.stiffness || 55}`,
-            price: `${dbRacquet.price_eur}€`,
-            reason: 'Raquette flexible et confortable, idéale pour débuter sans forcer.'
+            price: TSACatalog.display(dbRacquet.price_eur, '€'),
+            reason: 'Flexible, comfortable racquet, ideal for starting out without strain.'
           };
         } else {
           // Fallback
-          racquet = { brand: 'Wilson', name: 'Clash 100', category: 'Comfort', weight: '295g', head: '100 sq in', stiffness: 55, stiffnessDisplay: 'RA 55', price: '249€', reason: 'Raquette très flexible et confortable, idéale pour débuter sans forcer.' };
+          racquet = { brand: 'Wilson', name: 'Clash 100', category: 'Comfort', weight: '295g', head: '100 sq in', stiffness: 55, stiffnessDisplay: 'RA 55', price: TSACatalog.display(null), reason: 'Very flexible, comfortable racquet, ideal for starting out without strain.' };
         }
         
         if (dbString) {
@@ -1338,11 +1291,11 @@
             control: `${TSACatalog.display(dbString.control, '/10')}`,
             comfort: `${TSACatalog.display(dbString.comfort, '/10')}`,
             price: TSACatalog.display(dbString.price_eur, '€'),
-            reason: 'Cordage doux qui protège le bras et offre de la puissance.',
+            reason: 'Soft string that protects the arm and adds power.',
             stiffness: dbString.stiffness || 150
           };
         } else {
-          string = { brand: 'Tecnifibre', name: 'NRG2', type: 'Multifilament', spin: '6/10', control: '7/10', comfort: '10/10', price: '16€', reason: 'Multifilament doux qui protège le bras et offre de la puissance.', stiffness: 145 };
+          string = { brand: 'Tecnifibre', name: 'NRG2', type: 'Multifilament', spin: '6/10', control: '7/10', comfort: '10/10', price: TSACatalog.display(null), reason: 'Soft multifilament that protects the arm and adds power.', stiffness: 145 };
         }
       } else if (currentSelections.level === 'intermediaire') {
         racquetCriteria = {
@@ -1355,7 +1308,7 @@
           types: ['Multifilament', 'Hybrid'],
           preferComfort: true
         };
-        tension = { value: '22-24 kg', numValue: 23, reason: 'Tension modérée pour confort et contrôle.' };
+        tension = { value: '22-24 kg', numValue: 23, reason: 'Moderate tension for comfort and control.' };
         rcsProfile = 'club';
         
         const dbRacquet = pickBestRacquet(racquetCriteria);
@@ -1365,16 +1318,16 @@
           racquet = {
             brand: dbRacquet.brand,
             name: dbRacquet.model,
-            category: dbRacquet.category || 'Polyvalent',
+            category: dbRacquet.category || 'All-round',
             weight: `${dbRacquet.weight}g`,
             head: `${dbRacquet.head_size} sq in`,
             stiffness: dbRacquet.stiffness || 62,
             stiffnessDisplay: `RA ${dbRacquet.stiffness || 62}`,
-            price: `${dbRacquet.price_eur}€`,
-            reason: 'Raquette équilibrée pour joueur en progression.'
+            price: TSACatalog.display(dbRacquet.price_eur, '€'),
+            reason: 'Balanced racquet for an improving player.'
           };
         } else {
-          racquet = { brand: 'Head', name: 'Speed MP', category: 'Polyvalent', weight: '300g', head: '100 sq in', stiffness: 62, stiffnessDisplay: 'RA 62', price: '259€', reason: 'Raquette équilibrée pour joueur en progression.' };
+          racquet = { brand: 'Head', name: 'Speed MP', category: 'All-round', weight: '300g', head: '100 sq in', stiffness: 62, stiffnessDisplay: 'RA 62', price: TSACatalog.display(null), reason: 'Balanced racquet for an improving player.' };
         }
         
         if (dbString) {
@@ -1386,11 +1339,11 @@
             control: `${TSACatalog.display(dbString.control, '/10')}`,
             comfort: `${TSACatalog.display(dbString.comfort, '/10')}`,
             price: TSACatalog.display(dbString.price_eur, '€'),
-            reason: 'Cordage confortable avec bon retour d\'énergie.',
+            reason: 'Comfortable string with good energy return.',
             stiffness: dbString.stiffness || 160
           };
         } else {
-          string = { brand: 'Wilson', name: 'NXT', type: 'Multifilament', spin: '6/10', control: '7/10', comfort: '9/10', price: '22€', reason: 'Multifilament confortable avec bon retour d\'énergie.', stiffness: 155 };
+          string = { brand: 'Wilson', name: 'NXT', type: 'Multifilament', spin: '6/10', control: '7/10', comfort: '9/10', price: TSACatalog.display(null), reason: 'Comfortable multifilament with good energy return.', stiffness: 155 };
         }
       }
 
@@ -1406,7 +1359,7 @@
           types: ['Multifilament', 'Natural Gut'],
           preferComfort: true
         };
-        tension = { value: '21-23 kg', numValue: 22, reason: 'Tension basse pour plus de confort et moins de vibrations.' };
+        tension = { value: '21-23 kg', numValue: 22, reason: 'Low tension for more comfort and fewer vibrations.' };
         rcsProfile = 'tennis_elbow';
         
         const dbRacquet = pickBestRacquet(racquetCriteria);
@@ -1421,11 +1374,11 @@
             head: `${dbRacquet.head_size} sq in`,
             stiffness: dbRacquet.stiffness || 62,
             stiffnessDisplay: `RA ${dbRacquet.stiffness || 62}`,
-            price: `${dbRacquet.price_eur}€`,
-            reason: 'Raquette confortable qui absorbe bien les vibrations.'
+            price: TSACatalog.display(dbRacquet.price_eur, '€'),
+            reason: 'Comfortable racquet that absorbs vibrations well.'
           };
         } else {
-          racquet = { brand: 'Yonex', name: 'EZONE 100', category: 'Comfort', weight: '300g', head: '100 sq in', stiffness: 62, stiffnessDisplay: 'RA 62', price: '249€', reason: 'Raquette très confortable, absorbe bien les vibrations.' };
+          racquet = { brand: 'Yonex', name: 'EZONE 100', category: 'Comfort', weight: '300g', head: '100 sq in', stiffness: 62, stiffnessDisplay: 'RA 62', price: TSACatalog.display(null), reason: 'Very comfortable racquet, absorbs vibrations well.' };
         }
         
         if (dbString) {
@@ -1437,11 +1390,11 @@
             control: `${TSACatalog.display(dbString.control, '/10')}`,
             comfort: `${TSACatalog.display(dbString.comfort, '/10')}`,
             price: TSACatalog.display(dbString.price_eur, '€'),
-            reason: 'Cordage ultra-confortable, excellent pour protéger le bras.',
+            reason: 'Very comfortable string, excellent for protecting the arm.',
             stiffness: dbString.stiffness || 155
           };
         } else {
-          string = { brand: 'Wilson', name: 'NXT', type: 'Multifilament', spin: '6/10', control: '7/10', comfort: '10/10', price: '22€', reason: 'Multifilament ultra-confortable, excellent pour protéger le bras.', stiffness: 155 };
+          string = { brand: 'Wilson', name: 'NXT', type: 'Multifilament', spin: '6/10', control: '7/10', comfort: '10/10', price: TSACatalog.display(null), reason: 'Very comfortable multifilament, excellent for protecting the arm.', stiffness: 155 };
         }
       }
       // PRIORITY 3: Customize based on style (ONLY for advanced/competition players)
@@ -1456,7 +1409,7 @@
             types: ['Polyester', 'Co-Polyester'],
             preferControl: true
           };
-          tension = { value: '24-26 kg', numValue: 25, reason: 'Tension plus haute pour plus de contrôle.' };
+          tension = { value: '24-26 kg', numValue: 25, reason: 'Higher tension for more control.' };
           rcsProfile = 'competiteur';
           
           const dbRacquet = pickBestRacquet(racquetCriteria);
@@ -1471,11 +1424,11 @@
               head: `${dbRacquet.head_size} sq in`,
               stiffness: dbRacquet.stiffness || 70,
               stiffnessDisplay: `RA ${dbRacquet.stiffness || 70}`,
-              price: `${dbRacquet.price_eur}€`,
-              reason: 'Raquette puissante avec excellent retour d\'énergie.'
+              price: TSACatalog.display(dbRacquet.price_eur, '€'),
+              reason: 'Powerful racquet with excellent energy return.'
             };
           } else {
-            racquet = { brand: 'Babolat', name: 'Pure Drive', category: 'Power', weight: '300g', head: '100 sq in', stiffness: 72, stiffnessDisplay: 'RA 72', price: '269€', reason: 'Raquette puissante avec excellent retour d\'énergie.' };
+            racquet = { brand: 'Babolat', name: 'Pure Drive', category: 'Power', weight: '300g', head: '100 sq in', stiffness: 72, stiffnessDisplay: 'RA 72', price: TSACatalog.display(null), reason: 'Powerful racquet with excellent energy return.' };
           }
           
           if (dbString) {
@@ -1487,11 +1440,11 @@
               control: `${TSACatalog.display(dbString.control, '/10')}`,
               comfort: `${TSACatalog.display(dbString.comfort, '/10')}`,
               price: TSACatalog.display(dbString.price_eur, '€'),
-              reason: 'Control optimal pour canaliser votre puissance.',
+              reason: 'Optimal control to channel your power.',
               stiffness: dbString.stiffness || 230
             };
           } else {
-            string = { brand: 'Luxilon', name: 'ALU Power', type: 'Polyester', spin: '8/10', control: '9/10', comfort: '6/10', price: '19€', reason: 'Control optimal pour canaliser votre puissance.', stiffness: 230 };
+            string = { brand: 'Luxilon', name: 'ALU Power', type: 'Polyester', spin: '8/10', control: '9/10', comfort: '6/10', price: TSACatalog.display(null), reason: 'Optimal control to channel your power.', stiffness: 230 };
           }
         } else if (currentSelections.style === 'controle') {
           racquetCriteria = {
@@ -1502,7 +1455,7 @@
             types: ['Polyester'],
             preferControl: true
           };
-          tension = { value: '25-27 kg', numValue: 26, reason: 'Tension haute pour maximiser le contrôle.' };
+          tension = { value: '25-27 kg', numValue: 26, reason: 'High tension to maximise control.' };
           rcsProfile = 'confirme';
           
           const dbRacquet = pickBestRacquet(racquetCriteria);
@@ -1517,11 +1470,11 @@
               head: `${dbRacquet.head_size} sq in`,
               stiffness: dbRacquet.stiffness || 63,
               stiffnessDisplay: `RA ${dbRacquet.stiffness || 63}`,
-              price: `${dbRacquet.price_eur}€`,
-              reason: 'Raquette de contrôle pour précision maximale.'
+              price: TSACatalog.display(dbRacquet.price_eur, '€'),
+              reason: 'Control racquet for maximum precision.'
             };
           } else {
-            racquet = { brand: 'Wilson', name: 'Pro Staff 97', category: 'Control', weight: '315g', head: '97 sq in', stiffness: 63, stiffnessDisplay: 'RA 63', price: '299€', reason: 'Raquette de contrôle ultime, utilisée par Federer.' };
+            racquet = { brand: 'Wilson', name: 'Pro Staff 97', category: 'Control', weight: '315g', head: '97 sq in', stiffness: 63, stiffnessDisplay: 'RA 63', price: TSACatalog.display(null), reason: 'Classic control racquet.' };
           }
           
           if (dbString) {
@@ -1533,11 +1486,11 @@
               control: `${TSACatalog.display(dbString.control, '/10')}`,
               comfort: `${TSACatalog.display(dbString.comfort, '/10')}`,
               price: TSACatalog.display(dbString.price_eur, '€'),
-              reason: 'Précision et durabilité excellentes.',
+              reason: 'Excellent precision and durability.',
               stiffness: dbString.stiffness || 220
             };
           } else {
-            string = { brand: 'Head', name: 'Hawk', type: 'Polyester', spin: '7/10', control: '9/10', comfort: '5/10', price: '12€', reason: 'Précision et durabilité excellentes.', stiffness: 215 };
+            string = { brand: 'Head', name: 'Hawk', type: 'Polyester', spin: '7/10', control: '9/10', comfort: '5/10', price: TSACatalog.display(null), reason: 'Excellent precision and durability.', stiffness: 215 };
           }
         } else if (currentSelections.style === 'spin') {
           racquetCriteria = {
@@ -1548,7 +1501,7 @@
             types: ['Polyester', 'Co-Polyester'],
             preferSpin: true
           };
-          tension = { value: '23-25 kg', numValue: 24, reason: 'Tension moyenne pour maximiser l\'accroche.' };
+          tension = { value: '23-25 kg', numValue: 24, reason: 'Mid-range tension to maximise string bite.' };
           rcsProfile = 'club';
           
           const dbRacquet = pickBestRacquet(racquetCriteria);
@@ -1563,11 +1516,11 @@
               head: `${dbRacquet.head_size} sq in`,
               stiffness: dbRacquet.stiffness || 67,
               stiffnessDisplay: `RA ${dbRacquet.stiffness || 67}`,
-              price: `${dbRacquet.price_eur}€`,
-              reason: 'Raquette optimisée pour générer un maximum de spin.'
+              price: TSACatalog.display(dbRacquet.price_eur, '€'),
+              reason: 'Racquet built to generate maximum spin.'
             };
           } else {
-            racquet = { brand: 'Babolat', name: 'Pure Aero', category: 'Spin', weight: '300g', head: '100 sq in', stiffness: 67, stiffnessDisplay: 'RA 67', price: '279€', reason: 'La raquette de Nadal et Alcaraz, roi du spin.' };
+            racquet = { brand: 'Babolat', name: 'Pure Aero', category: 'Spin', weight: '300g', head: '100 sq in', stiffness: 67, stiffnessDisplay: 'RA 67', price: TSACatalog.display(null), reason: 'Spin-oriented racquet.' };
           }
           
           if (dbString) {
@@ -1579,11 +1532,11 @@
               control: `${TSACatalog.display(dbString.control, '/10')}`,
               comfort: `${TSACatalog.display(dbString.comfort, '/10')}`,
               price: TSACatalog.display(dbString.price_eur, '€'),
-              reason: 'Cordage pour un spin maximum.',
+              reason: 'String for maximum spin.',
               stiffness: dbString.stiffness || 240
             };
           } else {
-            string = { brand: 'Babolat', name: 'RPM Blast', type: 'Polyester', spin: '10/10', control: '8/10', comfort: '5/10', price: '18€', reason: 'Le cordage de Nadal pour un spin maximum.', stiffness: 240 };
+            string = { brand: 'Babolat', name: 'RPM Blast', type: 'Polyester', spin: '10/10', control: '8/10', comfort: '5/10', price: TSACatalog.display(null), reason: 'String for maximum spin.', stiffness: 240 };
           }
         }
       }
@@ -1735,11 +1688,11 @@
         const { data: { session } } = await supabaseClient.auth.getSession();
         const authLink = document.getElementById('authLink');
         if (session) {
-          authLink.href = '/account.html';
-          authLink.innerHTML = '👤 Mon Compte';
+          authLink.href = '/en/account.html';
+          authLink.innerHTML = '👤 My account';
         } else {
-          authLink.href = '/auth.html';
-          authLink.innerHTML = '👤 Connexion';
+          authLink.href = '/en/auth.html';
+          authLink.innerHTML = '👤 Sign in';
         }
       } catch (e) { console.log('Auth check skipped:', e.message); }
     }
@@ -1762,7 +1715,7 @@
         generateResult();
       } catch (error) {
         console.error('❌ Error in generateResult:', error);
-        alert('Erreur: ' + error.message);
+        alert('Error: ' + error.message);
       }
       return false; // Prevent form submission
     }
@@ -1773,8 +1726,8 @@
       const string = document.getElementById('rec-string-brand').textContent + ' ' + document.getElementById('rec-string-name').textContent;
       const tension = document.getElementById('rec-tension').textContent;
       
-      const text = `🎾 Mon setup Tennis String Advisor:\n\n🎾 Raquette: ${racquet}\n🧵 Cordage: ${string}\n⚙️ Tension: ${tension}\n\nTrouve ton setup idéal sur:`;
-      const url = 'https://tennisstringadvisor.org/configurator.html';
+      const text = `🎾 My Tennis String Advisor setup:\n\n🎾 Racquet: ${racquet}\n🧵 String: ${string}\n⚙️ Tension: ${tension}\n\nFind your ideal setup at:`;
+      const url = 'https://tennisstringadvisor.org/en/configurator.html';
       
       if (method === 'copy') {
         navigator.clipboard.writeText(text + '\n' + url).then(() => {
