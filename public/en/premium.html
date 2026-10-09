@@ -394,18 +394,21 @@
       console.error('Supabase init error:', e);
     }
 
-    // Ouvert : les trois Payment Links sont verifies — produit, montant et
-    // recurrence lus sur la page de paiement Stripe — et le webhook
-    // src/app/api/stripe/webhook consomme le paiement, donc un achat active
-    // reellement le compte. Repasser a false si la chaine se rompt.
-    const CHECKOUT_DISPONIBLE = true;
+    // FERME le 09/10/2026 (tsa-revenue) : la chaine est rompue pour ce circuit.
+    // client_reference_id transporte l'id Supabase Auth (uuid), mais le webhook
+    // (src/app/api/stripe/webhook) ne cherche que dans la table Prisma « User »
+    // (id cuid, comptes NextAuth du site FR) : recouvrement 0 / 5 comptes. Il
+    // acquitte « compte introuvable » et n'ecrit jamais profiles.is_premium,
+    // seul drapeau lu par les pages EN. Un acheteur EN payait sans rien obtenir.
+    // Rouvrir seulement quand le webhook sait activer un compte Supabase.
+    const CHECKOUT_DISPONIBLE = false;
     const CONTACT_EMAIL = 'pleneuftrading@gmail.com';
 
-    const PAYMENT_LINKS = {
-      monthly: 'https://buy.stripe.com/4gM6oH8uT2kGaNw4XO8Vi0b',   // 4,99 EUR par mois
-      annual: 'https://buy.stripe.com/4gM9AT26v3oK7Bk9e48Vi0f',    // 49,99 EUR par an
-      lifetime: 'https://buy.stripe.com/6oUbJ19yXcZkbRAcqg8Vi0d'   // 19,99 EUR une fois
-    };
+    // Circuit ferme : aucune URL de paiement dans la page (CWE-602 — un drapeau
+    // client ne protege rien tant que l'URL est lisible dans la source). Les
+    // liens restent actifs chez Stripe : le circuit FR (src/app/pricing) les
+    // utilise. A la reouverture, recopier les trois liens de pricing/page.tsx.
+    const PAYMENT_LINKS = { monthly: null, annual: null, lifetime: null };
     
     const PLANS = {
       monthly: { name: 'Monthly Premium', price: '€4.99', note: 'Monthly renewal, no commitment', paymentLink: PAYMENT_LINKS.monthly },
@@ -456,7 +459,7 @@
       document.getElementById('paySpinner').classList.remove('hidden');
       document.getElementById('payButton').disabled = true;
       try {
-        if (!CHECKOUT_DISPONIBLE) return;
+        if (!CHECKOUT_DISPONIBLE || !plan.paymentLink) return;
         let paymentUrl = plan.paymentLink;
         if (currentUser.email) {
           paymentUrl += '?prefilled_email=' + encodeURIComponent(currentUser.email);
@@ -477,10 +480,10 @@
         b.disabled = true;
         b.setAttribute('aria-disabled', 'true');
         b.classList.add('opacity-60', 'cursor-not-allowed');
-        b.textContent = 'Subscription temporarily unavailable';
+        b.textContent = 'Not available on the English site yet';
         const note = document.createElement('p');
         note.className = 'text-xs text-gray-600 mt-2 text-center';
-        note.textContent = 'The configurator and the RCS calculation stay free and complete. Questions: ' + CONTACT_EMAIL;
+        note.textContent = 'Premium cannot be activated on English accounts yet, so we do not take payment here. The configurator, the RCS calculator and 3 saved setups stay free. Questions: ' + CONTACT_EMAIL;
         b.insertAdjacentElement('afterend', note);
       });
     }
