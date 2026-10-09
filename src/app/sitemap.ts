@@ -66,6 +66,7 @@ const BLOG_SLUGS: string[] = [
   'raquette-point-fort-ou-point-faible.html',
   // Adapté de l'EN next-gen (01/10/2026), appairé en hreflang.
   'materiel-next-gen-fonseca-mensik-cobolli-jodar.html',
+  'combien-de-temps-dure-un-cordage.html',
   // Classement polyester 2026 (09/10/2026), appairé en hreflang.
   'meilleur-cordage-polyester-2026.html',
 ];
@@ -101,6 +102,9 @@ const EN_BLOG_SLUGS: string[] = [
   'tennis-strings-heat-tension.html',
   // Adapté du FR raquette-point-fort-ou-point-faible (27/08/2026), appairé en hreflang.
   'racquet-strengths-or-weaknesses.html',
+  // Pilier durée de vie (01/10/2026), appairé en hreflang avec
+  // /blog/combien-de-temps-dure-un-cordage.html.
+  'how-long-do-tennis-strings-last.html',
   // Adapté du FR meilleur-cordage-polyester-2026 (09/10/2026), appairé en hreflang.
   'best-polyester-tennis-strings-2026.html',
   // Adapté du FR tension-cordage-hiver (09/10/2026), appairé en hreflang.
