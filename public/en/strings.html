@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Catalog of 165 analyzed tennis strings. Filter by type (polyester, multifilament, natural gut), spin, comfort, price. Find the ideal string.">
+  <meta name="description" content="Catalog of 181 analyzed tennis strings. Filter by type (polyester, multifilament, natural gut), spin, comfort, price. Find the ideal string.">
   <meta name="keywords" content="tennis string, catalog, polyester, multifilament, natural gut, RPM Blast, Luxilon">
   <meta property="og:title" content="String Catalog - Tennis String Advisor">
-  <meta property="og:description" content="165 tennis strings analyzed. Filter by type, spin, comfort and find the perfect string.">
+  <meta property="og:description" content="181 tennis strings analyzed. Filter by type, spin, comfort and find the perfect string.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://tennisstringadvisor.org/en/strings.html">
   <link rel="canonical" href="https://tennisstringadvisor.org/en/strings.html">
@@ -20,9 +20,9 @@
   {
     "@context": "https://schema.org",
     "@type": "ItemList",
-    "name": "String Catalog de Tennis",
-    "description": "Plus de 160 strings from tennis analysés avec ratings de spin, confort et durabilité",
-    "numberOfItems": 165,
+    "name": "Tennis String Catalog",
+    "description": "Tennis strings analyzed with their stiffness (lb/in), the value the RCS firmness index uses",
+    "numberOfItems": 181,
     "itemListElement": [
       {
         "@type": "ListItem",
@@ -31,7 +31,7 @@
           "@type": "Product",
           "name": "Babolat RPM Blast",
           "brand": {"@type": "Brand", "name": "Babolat"},
-          "category": "Cordage de Tennis - Polyester"
+          "category": "Tennis String - Polyester"
         }
       },
       {
@@ -41,7 +41,7 @@
           "@type": "Product",
           "name": "Luxilon ALU Power",
           "brand": {"@type": "Brand", "name": "Luxilon"},
-          "category": "Cordage de Tennis - Polyester"
+          "category": "Tennis String - Polyester"
         }
       }
     ]
@@ -57,7 +57,7 @@
       {
         "@type": "ListItem",
         "position": 1,
-        "name": "Accueil",
+        "name": "Home",
         "item": "https://tennisstringadvisor.org/en/"
       },
       {
@@ -71,6 +71,7 @@
   </script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/js/catalog.js"></script>
   <link rel="stylesheet" href="/css/dark-mode.css">
   <script src="/js/theme.js"></script>
   <script>
@@ -112,14 +113,14 @@
           <a href="/en/racquets.html" class="text-gray-600 hover:text-green-600 transition">Racquets</a>
           <a href="/en/strings.html" class="text-green-600 font-semibold">Strings</a>
           <a href="/en/compare.html" class="text-gray-600 hover:text-green-600 transition">Compare</a>
-          <a href="/rcs-calculator.html" class="text-gray-600 hover:text-green-600 transition">🩺 RCS</a>
+          <a href="/en/rcs-calculator.html" class="text-gray-600 hover:text-green-600 transition">🩺 RCS</a>
         </nav>
         <div class="flex items-center gap-3">
           <button onclick="toggleDarkMode()" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition" aria-label="Toggle dark mode">
             <span class="theme-icon text-xl">🌙</span>
           </button>
-          <a href="/auth.html" id="authLink" class="hidden md:flex items-center gap-2 px-4 py-2 text-sm font-medium text-green-600 hover:bg-green-50 dark:text-green-400 dark:hover:bg-gray-700 rounded-lg transition">
-            👤 Mon Compte
+          <a href="/en/auth.html" id="authLink" class="hidden md:flex items-center gap-2 px-4 py-2 text-sm font-medium text-green-600 hover:bg-green-50 dark:text-green-400 dark:hover:bg-gray-700 rounded-lg transition">
+            👤 My account
           </a>
         </div>
       </div>
@@ -317,7 +318,7 @@
         </div>
       </div>
       <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400 text-sm">
-        <p>© 2025 Tennis String Advisor. A brand of Pleneuf Trading LLC. All droits réservés.</p>
+        <p>© 2026 Tennis String Advisor. A brand of Pleneuf Trading LLC. All rights reserved.</p>
       </div>
     </div>
   </footer>
@@ -388,15 +389,10 @@
       return 'bg-red-500';
     }
     
-    // Fetch strings from Supabase
+    // Catalogue généré depuis src/data (C3) — plus de lecture Supabase
     async function fetchStrings() {
       try {
-        const { data, error } = await supabaseClient
-          .from('strings')
-          .select('*')
-          .order('brand', { ascending: true });
-        
-        if (error) throw error;
+        const { strings: data } = await TSACatalog.load();
         
         allStrings = data;
         filteredStrings = data;
@@ -457,30 +453,30 @@
               <div>
                 <div class="flex justify-between text-sm mb-1">
                   <span class="text-gray-500 dark:text-gray-400">Spin</span>
-                  <span class="font-medium dark:text-white">${string.spin}/10</span>
+                  <span class="font-medium dark:text-white">${TSACatalog.display(string.spin, '/10')}</span>
                 </div>
-                <div class="rating-bar"><div class="rating-fill ${getRatingColor(string.spin)}" style="width: ${string.spin * 10}%"></div></div>
+                <div class="rating-bar"><div class="rating-fill ${getRatingColor(string.spin)}" style="width: ${(string.spin ?? 0) * 10}%"></div></div>
               </div>
               <div>
                 <div class="flex justify-between text-sm mb-1">
                   <span class="text-gray-500 dark:text-gray-400">Control</span>
-                  <span class="font-medium dark:text-white">${string.control}/10</span>
+                  <span class="font-medium dark:text-white">${TSACatalog.display(string.control, '/10')}</span>
                 </div>
-                <div class="rating-bar"><div class="rating-fill ${getRatingColor(string.control)}" style="width: ${string.control * 10}%"></div></div>
+                <div class="rating-bar"><div class="rating-fill ${getRatingColor(string.control)}" style="width: ${(string.control ?? 0) * 10}%"></div></div>
               </div>
               <div>
                 <div class="flex justify-between text-sm mb-1">
                   <span class="text-gray-500 dark:text-gray-400">Comfort</span>
-                  <span class="font-medium dark:text-white">${string.comfort}/10</span>
+                  <span class="font-medium dark:text-white">${TSACatalog.display(string.comfort, '/10')}</span>
                 </div>
-                <div class="rating-bar"><div class="rating-fill ${getRatingColor(string.comfort)}" style="width: ${string.comfort * 10}%"></div></div>
+                <div class="rating-bar"><div class="rating-fill ${getRatingColor(string.comfort)}" style="width: ${(string.comfort ?? 0) * 10}%"></div></div>
               </div>
               <div>
                 <div class="flex justify-between text-sm mb-1">
                   <span class="text-gray-500 dark:text-gray-400">Durability</span>
-                  <span class="font-medium dark:text-white">${string.durability}/10</span>
+                  <span class="font-medium dark:text-white">${TSACatalog.display(string.durability, '/10')}</span>
                 </div>
-                <div class="rating-bar"><div class="rating-fill ${getRatingColor(string.durability)}" style="width: ${string.durability * 10}%"></div></div>
+                <div class="rating-bar"><div class="rating-fill ${getRatingColor(string.durability)}" style="width: ${(string.durability ?? 0) * 10}%"></div></div>
               </div>
             </div>
 
@@ -495,7 +491,7 @@
             </div>
             
             <div class="flex items-center justify-between pt-4 border-t">
-              <span class="text-2xl font-bold text-green-600">${string.price_eur}€</span>
+              <span class="text-2xl font-bold text-green-600">${TSACatalog.display(string.price_eur, '€')}</span>
               <div class="flex items-center gap-2">
                 <button onclick="showAffiliate('${string.brand}', '${string.model}')" class="bg-amber-500 text-white px-3 py-2 rounded-lg hover:bg-amber-600 transition text-sm" title="Acheter">
                   🛒

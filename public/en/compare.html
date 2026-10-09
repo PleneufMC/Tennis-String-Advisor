@@ -10,6 +10,7 @@
   <link rel="alternate" hreflang="en" href="https://tennisstringadvisor.org/en/compare.html">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/js/catalog.js"></script>
   <script>
     tailwind.config = {
       theme: {
@@ -47,7 +48,7 @@
           <a href="/en/rcs-calculator.html" class="text-gray-600 hover:text-green-600 transition">🩺 RCS</a>
           <a href="/" class="text-blue-600 hover:text-blue-700 transition flex items-center gap-1">🇫🇷 FR</a>
         </nav>
-        <a href="/auth.html" id="authLink" class="hidden md:flex items-center gap-2 px-4 py-2 text-sm font-medium text-green-600 hover:bg-green-50 rounded-lg transition">
+        <a href="/en/auth.html" id="authLink" class="hidden md:flex items-center gap-2 px-4 py-2 text-sm font-medium text-green-600 hover:bg-green-50 rounded-lg transition">
           👤 My Account
         </a>
       </div>
@@ -325,7 +326,7 @@
         </div>
       </div>
       <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400 text-sm">
-        <p>© 2025 Tennis String Advisor. A brand of Pleneuf Trading LLC. All rights reserved.</p>
+        <p>© 2026 Tennis String Advisor. A brand of Pleneuf Trading LLC. All rights reserved.</p>
       </div>
     </div>
   </footer>
@@ -348,24 +349,10 @@
     let racquetsData = {};
     let stringsData = {};
     
-    // Fetch data from Supabase
+    // Catalogue généré depuis src/data (C3) — plus de lecture Supabase
     async function fetchData() {
       try {
-        // Fetch racquets
-        const { data: racquets, error: rError } = await supabaseClient
-          .from('racquets')
-          .select('*')
-          .order('brand', { ascending: true });
-        
-        if (rError) throw rError;
-        
-        // Fetch strings
-        const { data: strings, error: sError } = await supabaseClient
-          .from('strings')
-          .select('*')
-          .order('brand', { ascending: true });
-        
-        if (sError) throw sError;
+        const { racquets, strings } = await TSACatalog.load();
         
         // Build data maps and populate selects
         racquets.forEach(r => {
@@ -456,10 +443,10 @@
           document.getElementById(prefix + '-name').textContent = s.model;
           document.getElementById(prefix + '-brand').textContent = s.brand;
           document.getElementById(prefix + '-type').textContent = s.type;
-          document.getElementById(prefix + '-spin').textContent = s.spin + '/10';
-          document.getElementById(prefix + '-control').textContent = s.control + '/10';
-          document.getElementById(prefix + '-comfort').textContent = s.comfort + '/10';
-          document.getElementById(prefix + '-durability').textContent = s.durability + '/10';
+          document.getElementById(prefix + '-spin').textContent = TSACatalog.display(s.spin, '/10');
+          document.getElementById(prefix + '-control').textContent = TSACatalog.display(s.control, '/10');
+          document.getElementById(prefix + '-comfort').textContent = TSACatalog.display(s.comfort, '/10');
+          document.getElementById(prefix + '-durability').textContent = TSACatalog.display(s.durability, '/10');
           document.getElementById(prefix + '-pro').textContent = s.pro_usage || '-';
           document.getElementById(prefix + '-price').textContent = '$' + s.price_usd;
         } else {
