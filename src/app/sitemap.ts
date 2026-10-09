@@ -71,6 +71,8 @@ const BLOG_SLUGS: string[] = [
   'meilleur-cordage-polyester-2026.html',
   // Meilleures raquettes 2026 par profil (09/10/2026), appairé en hreflang.
   'meilleures-raquettes-tennis-2026.html',
+  // Polyester et tennis elbow, tri par rigidité (09/10/2026), appairé en hreflang.
+  'cordage-polyester-tennis-elbow.html',
 ];
 
 // Pages anglaises statiques publiques (`public/en/*.html`).
@@ -115,6 +117,8 @@ const EN_BLOG_SLUGS: string[] = [
   'best-tennis-strings-for-tennis-elbow.html',
   // Adapté du FR meilleures-raquettes-tennis-2026 (09/10/2026), appairé en hreflang.
   'best-tennis-racquets-2026.html',
+  // Adapté du FR cordage-polyester-tennis-elbow (09/10/2026), appairé en hreflang.
+  'polyester-strings-tennis-elbow.html',
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
