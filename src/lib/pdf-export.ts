@@ -124,7 +124,7 @@ export interface PdfRacquetSpecs {
   balance?: number;
   swingWeight?: number;
   playerLevel?: string[];
-  /** Profil dérivé des specs (0-10). Marqué comme dérivé dans le rendu. */
+  /** Profil de jeu (0-10) : dérivé des specs, ou combiné avec des avis de testeurs. `label` le dit. */
   profile?: {
     power: number;
     control: number;
@@ -132,6 +132,7 @@ export interface PdfRacquetSpecs {
     maneuverability: number;
     stability: number;
     basis: string;
+    label: string;
   };
 }
 
@@ -460,7 +461,7 @@ export async function exportConfigurationPdf(data: ConfigurationPdfData): Promis
     if (r.profile) {
       L.y += 3;
       L.ensure(14);
-      L.text('Profil de jeu derive des specifications', MARGIN_X + 2.5, { size: 9, bold: true });
+      L.text(latin1(r.profile.label), MARGIN_X + 2.5, { size: 9, bold: true });
       L.y += 4.4;
       const basisLines = doc.splitTextToSize(latin1(r.profile.basis), CONTENT_W - 5);
       basisLines.forEach((line: string) => {

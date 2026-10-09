@@ -1,11 +1,24 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.2.5
+> **Version** : 2.2.6
 > **Date** : 9 octobre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
 > **Branche de référence** : `main` (seule branche longue ; la production Netlify en déploie)
 > **Repo** : https://github.com/PleneufMC/Tennis-String-Advisor.git
+
+**Changelog v2.2.5 → v2.2.6** — **Profil des raquettes harmonisé** avec des avis de
+testeurs (mandat de Pierre du 09/10/2026, méthode tranchée par `tsa-core`) : même
+méthode que les cordages — note affichée = moyenne (profil dérivé des specs, avis /20
+recalé par décalage d'ancrage). **11 raquettes** sur 27 notées, celles dont la
+génération testée est établie (tamis, poids, plan égaux et RA à ±1 de la fiche Tennis
+Warehouse Europe) ; 7 en quarantaine de génération (dont Pure Aero 100, Pure Drive,
+EZONE 100, Percept 100/100D : RA du catalogue à 3-5 points de la génération testée),
+Fire non rapprochable, 8 absentes sans fiche créée. Libellé « Profil combiné : specs et
+avis de testeurs » pour ces 11, « Profil dérivé des specs » inchangé ailleurs ;
+`deriveRacquetProfile` reste purement dérivé. Provenance :
+`src/data/racquet-tester-ratings.ts` ; contrôle 14 de `audit:ratings`. RCS et alertes
+bras inchangés. Cordages : décisions a) et b) sans changement.
 
 **Changelog v2.2.4 → v2.2.5** — **Notes /10 des cordages harmonisées** avec des avis
 de testeurs (décision de Pierre du 09/10/2026) : 18 cordages couverts par sa notation
@@ -552,4 +565,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.2.5 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.2.6 — Tennis String Advisor — « Mesurer avant d'affirmer. »*

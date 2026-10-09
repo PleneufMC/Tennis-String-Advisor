@@ -24,7 +24,7 @@ import {
 import {
   effectiveRacquetRA,
   isRacquetStiffnessEstimated,
-  deriveRacquetProfile,
+  racquetProfile,
 } from '@/lib/racquet-scoring';
 import type { TennisString } from '@/data/strings-database';
 
@@ -667,10 +667,10 @@ export default function ConfiguratorPage() {
                       {' '}| Poids: {selectedRacquet.weight}g | Tamis: {selectedRacquet.headSize} sq in
                     </div>
                     {(() => {
-                      const p = deriveRacquetProfile(selectedRacquet);
+                      const p = racquetProfile(selectedRacquet);
                       return (
                         <div style={{ color: 'var(--tint-blue-fg)', fontSize: '0.75rem', marginTop: '0.25rem' }}>
-                          Profil derive des specs : puissance {p.power}/10 · controle {p.control}/10 ·
+                          {p.label} : puissance {p.power}/10 · controle {p.control}/10 ·
                           confort {p.comfort}/10 · maniabilite {p.maneuverability}/10 ·
                           stabilite {p.stability}/10
                         </div>

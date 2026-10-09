@@ -48,7 +48,21 @@ import {
   RA_RANGE,
   effectiveRacquetRA,
   deriveRacquetProfile,
+  racquetProfile,
+  rankRacquetsByTesterAverage,
+  PROFILE_LABEL_SPECS,
+  PROFILE_LABEL_BLENDED,
 } from '../src/lib/racquet-scoring';
+import {
+  RACQUET_TESTER_RATINGS,
+  RACQUET_TESTER_QUARANTINE,
+  RACQUET_TESTER_SOURCE,
+  RACQUET_AXIS_TO_CRITERION,
+  RACQUET_ANCHOR_SHIFT,
+  recalibratedTesterNote,
+  type RacquetProfileAxis,
+  type RacquetTesterCriterion,
+} from '../src/data/racquet-tester-ratings';
 
 const TENSIONS = [18, 20, 22, 24, 26, 28];
 const failures: string[] = [];
@@ -838,6 +852,97 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
   }
   if (failures.length === before) {
     ok(`notes testeurs : ${entries.length} cordages harmonisés, provenance complète, ${entries.length * fields.length} notes recalculées à l'identique, toutes les notes dans [0, 10]`);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 14. RAQUETTES — PROFIL HARMONISÉ AVEC LES AVIS DE TESTEURS (09/10/2026)
+// ---------------------------------------------------------------------------
+// Garde quatre choses : (a) aucun avis n'est appliqué à une fiche dont les specs
+// ne correspondent pas à la génération testée ; (b) chaque note affichée se
+// recalcule depuis sa provenance ; (c) une raquette sans avis garde EXACTEMENT
+// le profil dérivé et son libellé ; (d) aucune surface n'affiche un profil
+// combiné sous le libellé « dérivé des specs » (règle 3).
+{
+  const before = failures.length;
+  const axes = Object.keys(RACQUET_AXIS_TO_CRITERION) as RacquetProfileAxis[];
+  const crit = Object.keys(RACQUET_TESTER_SOURCE.criteria) as RacquetTesterCriterion[];
+  const entries = Object.entries(RACQUET_TESTER_RATINGS);
+  const quarantined = Object.keys(RACQUET_TESTER_QUARANTINE).length;
+  if (crit.length !== 20) fail(`raquettes testeurs : ${crit.length} critères, 20 attendus`);
+  if (entries.length + quarantined + 8 !== 27) {
+    fail(`raquettes testeurs : ${entries.length} appliquées + ${quarantined} en quarantaine + 8 absentes ≠ 27 du document`);
+  }
+  for (const [id, e] of entries) {
+    const r = racquetsDatabase.find((x) => x.id === id);
+    if (!r) { fail(`raquettes testeurs : ${id} absent du catalogue`); continue; }
+    if (crit.some((c) => !Number.isInteger(e.raw20[c]) || e.raw20[c] < 0 || e.raw20[c] > RACQUET_TESTER_SOURCE.scale)) {
+      fail(`raquettes testeurs : ${id} porte une note source hors de l'échelle /20`);
+    }
+    const avg = crit.reduce((a, c) => a + e.raw20[c], 0) / crit.length;
+    if (Math.abs(avg - e.docxAverage20) > 0.005) fail(`raquettes testeurs : ${id} moyenne source ${avg} ≠ ${e.docxAverage20}`);
+    // (a) rapprochement de génération : specs égales, RA à ±1.
+    const sc = e.specCheck;
+    if (!sc.url.startsWith('https://www.tenniswarehouse-europe.com/')) fail(`raquettes testeurs : ${id} source de specs hors TWE`);
+    if (r.headSize !== sc.headSize || r.weight !== sc.unstrungWeight || r.stringPattern !== sc.pattern) {
+      fail(`raquettes testeurs : ${id} specs catalogue (${r.headSize}/${r.weight} g/${r.stringPattern}) ≠ génération testée (${sc.headSize}/${sc.unstrungWeight} g/${sc.pattern})`);
+    }
+    if (r.stiffness === null || Math.abs(r.stiffness - sc.ra) > 1) {
+      fail(`raquettes testeurs : ${id} RA catalogue ${r.stiffness} hors de ±1 du RA publié ${sc.ra} — génération non établie`);
+    }
+    // (b) recalcul à l'identique et échelle.
+    const d = deriveRacquetProfile(r);
+    const p = racquetProfile(r);
+    if (!p.withTesters || p.label !== PROFILE_LABEL_BLENDED) fail(`raquettes testeurs : ${id} n'est pas affiché comme profil combiné`);
+    for (const a of axes) {
+      const expected = Math.round(Math.min(10, Math.max(0, (d[a] + recalibratedTesterNote(e, a)) / 2)) * 10 + 1e-9) / 10;
+      if (p[a] !== expected) fail(`raquettes testeurs : ${id}.${a} = ${p[a]}, ${expected} attendu par la provenance`);
+      if (!(p[a] >= 0 && p[a] <= 10)) fail(`raquettes testeurs : ${id}.${a} = ${p[a]} hors de [0, 10]`);
+    }
+  }
+  for (const name of Object.keys(RACQUET_TESTER_QUARANTINE)) {
+    if (entries.some(([, e]) => e.docxName === name)) fail(`raquettes testeurs : « ${name} » à la fois appliquée et en quarantaine`);
+  }
+  // Décalages d'ancrage = mesure sur les raquettes rapprochées.
+  for (const a of axes) {
+    const shift = entries.reduce((acc, [id, e]) => {
+      const r = racquetsDatabase.find((x) => x.id === id)!;
+      return acc + deriveRacquetProfile(r)[a] - e.raw20[RACQUET_AXIS_TO_CRITERION[a]] / 2;
+    }, 0) / entries.length;
+    if (Math.abs(Math.round(shift * 10 + 1e-9) / 10 - RACQUET_ANCHOR_SHIFT[a]) > 1e-9) {
+      fail(`raquettes testeurs : décalage d'ancrage ${a} = ${RACQUET_ANCHOR_SHIFT[a]}, ${shift.toFixed(3)} mesuré`);
+    }
+  }
+  // (c) sans avis : profil dérivé intact.
+  let untouched = 0;
+  for (const r of racquetsDatabase.filter((x) => !RACQUET_TESTER_RATINGS[x.id])) {
+    const d = deriveRacquetProfile(r);
+    const p = racquetProfile(r);
+    if (p.withTesters || p.label !== PROFILE_LABEL_SPECS || p.basis !== d.basis || axes.some((a) => p[a] !== d[a])) {
+      fail(`raquettes testeurs : ${r.id} sans avis mais profil affiché ≠ profil dérivé`);
+    } else untouched++;
+  }
+  if (racquetsDatabase.some((r) => !deriveRacquetProfile(r).basis.startsWith('Dérivé des specs'))) {
+    fail('deriveRacquetProfile ne doit contenir que des specs : son libellé « Dérivé des specs » doit rester vrai');
+  }
+  // (d) surfaces d'affichage : profil via racquetProfile, libellé non codé en dur.
+  for (const file of ['src/app/configurator/page.tsx', 'src/app/compare/page.tsx', 'src/lib/pdf-configuration-data.ts']) {
+    const src = readFileSync(file, 'utf8');
+    if (/deriveRacquetProfile\s*\(/.test(src)) fail(`${file} : affiche deriveRacquetProfile() au lieu de racquetProfile() — libellé faux pour les raquettes à avis`);
+  }
+  if (/Profil derive des specs/i.test(readFileSync('src/app/configurator/page.tsx', 'utf8'))) {
+    fail('configurator/page.tsx : libellé « Profil derive des specs » codé en dur');
+  }
+  if (/derive des specifications/i.test(readFileSync('src/lib/pdf-export.ts', 'utf8'))) {
+    fail('pdf-export.ts : titre « derive des specifications » codé en dur');
+  }
+  // Classement Top raquettes : uniquement les fiches à avis, ordre décroissant.
+  const ranked = rankRacquetsByTesterAverage(racquetsDatabase);
+  if (ranked.length !== entries.length) fail(`classement raquettes : ${ranked.length} classées, ${entries.length} attendues`);
+  if (ranked.some((x, i) => i > 0 && ranked[i - 1].testerAverage20 < x.testerAverage20)) fail('classement raquettes : ordre non décroissant');
+  if (failures.length === before) {
+    ok(`raquettes testeurs : ${entries.length} fiches harmonisées (génération vérifiée), ${quarantined} en quarantaine, ` +
+      `${entries.length * axes.length} notes recalculées à l'identique, ${untouched} profils dérivés intacts, libellés justes`);
   }
 }
 

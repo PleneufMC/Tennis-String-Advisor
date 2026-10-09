@@ -36,7 +36,7 @@ import {
 import {
   effectiveRacquetRA,
   isRacquetStiffnessEstimated,
-  deriveRacquetProfile,
+  racquetProfile,
 } from '@/lib/racquet-scoring';
 import type {
   ConfigurationPdfData,
@@ -100,7 +100,7 @@ export function buildConfigurationPdfData(
   // ------------------------------------------------------- Bloc raquette
   let racquetSpecs: PdfRacquetSpecs | undefined;
   if (racquet) {
-    const profile = deriveRacquetProfile(racquet);
+    const profile = racquetProfile(racquet);
     racquetSpecs = {
       label: racquetLabel,
       brand: racquet.brand,
@@ -120,6 +120,7 @@ export function buildConfigurationPdfData(
         maneuverability: profile.maneuverability,
         stability: profile.stability,
         basis: profile.basis,
+        label: profile.label,
       },
     };
   }

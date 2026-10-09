@@ -124,6 +124,7 @@
  */
 
 import type { TennisRacquet } from '@/data/racquets-database';
+import { RACQUET_TESTER_RATINGS, blendRacquetNote } from '@/data/racquet-tester-ratings';
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  Constantes mesurées sur la base réelle (129 raquettes, 8 août 2026)
@@ -315,4 +316,77 @@ export function deriveRacquetProfile(racquet: TennisRacquet): RacquetProfile {
       ? `Dérivé des specs (tamis ${head} in², poids ${weight} g, RA ${ra} estimé, plan ${racquet.stringPattern ?? 'ND'})`
       : `Dérivé des specs (tamis ${head} in², poids ${weight} g, RA ${ra}, plan ${racquet.stringPattern ?? 'ND'})`,
   };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Profil affiché : dérivé des specs, harmonisé avec les avis de testeurs
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// Décision tsa-core du 09/10/2026 (mandat de Pierre : « harmoniser les notes »),
+// même méthode que les cordages (PR #73) : pour les 11 raquettes rapprochées
+// avec certitude de génération, chaque note = moyenne (profil dérivé des specs,
+// avis de testeurs recalé sur l'échelle du profil). Les autres gardent le profil
+// dérivé seul. `deriveRacquetProfile` reste PUREMENT dérivé des specs : son
+// libellé n'est donc jamais rendu faux (règle 3). Provenance et règles de
+// rapprochement : `src/data/racquet-tester-ratings.ts`.
+
+export interface DisplayedRacquetProfile extends Omit<RacquetProfile, 'derived'> {
+  /** `true` si l'avis de testeurs entre dans les notes. */
+  withTesters: boolean;
+  /** Libellé à afficher au-dessus des notes : il dit ce que les notes contiennent. */
+  label: string;
+}
+
+export const PROFILE_LABEL_SPECS = 'Profil dérivé des specs';
+export const PROFILE_LABEL_BLENDED = 'Profil combiné : specs et avis de testeurs';
+
+/** Profil à afficher (configurateur, comparateur, PDF). */
+export function racquetProfile(racquet: TennisRacquet): DisplayedRacquetProfile {
+  const d = deriveRacquetProfile(racquet);
+  const entry = RACQUET_TESTER_RATINGS[racquet.id];
+  if (!entry) {
+    return {
+      power: d.power, control: d.control, comfort: d.comfort,
+      maneuverability: d.maneuverability, stability: d.stability,
+      basis: d.basis, withTesters: false, label: PROFILE_LABEL_SPECS,
+    };
+  }
+  return {
+    power: blendRacquetNote(d.power, entry, 'power'),
+    control: blendRacquetNote(d.control, entry, 'control'),
+    comfort: blendRacquetNote(d.comfort, entry, 'comfort'),
+    maneuverability: blendRacquetNote(d.maneuverability, entry, 'maneuverability'),
+    stability: blendRacquetNote(d.stability, entry, 'stability'),
+    basis:
+      `Moyenne de deux lectures : ${d.basis.charAt(0).toLowerCase()}${d.basis.slice(1)} ; ` +
+      `avis de testeurs consolidés (génération ${entry.testedGeneration.split(' ')[0]}). ` +
+      `Appréciation, pas une mesure.`,
+    withTesters: true,
+    label: PROFILE_LABEL_BLENDED,
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Classement « Top raquettes » — critère recommandé pour /statistics
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// Pourquoi pas le profil dérivé : il décrit des COMPROMIS (puissance et contrôle
+// sont inverses par construction), pas une qualité — sa moyenne classe des
+// specs, pas des raquettes. Pourquoi pas le RA : « proche de 68 » n'a aucun
+// fondement. Le seul jugement global sourcé est la moyenne des 20 critères des
+// avis de testeurs. On ne classe donc QUE les raquettes rapprochées ; une
+// raquette sans avis n'est ni classée ni comptée comme zéro (même règle que
+// le Top cordages). Un écart < 0,5 /20 se lit comme une égalité (document source).
+
+export interface RankedRacquet {
+  racquet: TennisRacquet;
+  /** Moyenne des 20 critères testeurs, /20. */
+  testerAverage20: number;
+}
+
+export function rankRacquetsByTesterAverage(racquets: readonly TennisRacquet[]): RankedRacquet[] {
+  return racquets
+    .filter((r) => RACQUET_TESTER_RATINGS[r.id] !== undefined)
+    .map((r) => ({ racquet: r, testerAverage20: RACQUET_TESTER_RATINGS[r.id].docxAverage20 }))
+    .sort((a, b) => b.testerAverage20 - a.testerAverage20 || a.racquet.id.localeCompare(b.racquet.id));
 }
