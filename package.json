@@ -5,6 +5,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "build:catalog": "node scripts/catalog/build-catalog-json.mjs",
+    "prebuild": "npm run build:catalog",
+    "predev": "npm run build:catalog",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -32,7 +35,8 @@
     "export": "next export",
     "audit:rls": "node scripts/qa-rls-anon.mjs",
     "audit:ratings": "npx --yes tsx scripts/qa-ratings.mts",
-    "rcs:recompute": "npx --yes tsx scripts/recompute-rcs.mts"
+    "rcs:recompute": "npx --yes tsx scripts/recompute-rcs.mts",
+    "export:catalogue": "python scripts/export-catalogue/export_catalogue.py --repo ."
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",

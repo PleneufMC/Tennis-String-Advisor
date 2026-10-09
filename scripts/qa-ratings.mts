@@ -22,7 +22,11 @@
  *
  * Usage : npm run audit:ratings
  */
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import path from 'node:path';
+// @ts-ignore -- module JS sans déclaration de types (générateur du catalogue EN, C3)
+import { buildCatalog, serializeCatalog, CATALOG_JSON_PATH } from './catalog/catalog-json.mjs';
 import { racquetsDatabase, calculateCompatibility } from '../src/data/racquets-database';
 import {
   stringsDatabase,
@@ -33,13 +37,36 @@ import {
   meetsMinRating,
   compareOptionalDesc,
 } from '../src/data/strings-database';
+import {
+  STRING_TESTER_RATINGS,
+  TESTER_RATINGS_SOURCE,
+  FIELD_TO_CRITERION,
+  ANCHOR_SHIFT,
+  harmonizedRating,
+  type HarmonizedField,
+  type TesterCriterion,
+} from '../src/data/tester-ratings';
 import { calculateAdvancedRcs, stringTypeToFamily } from '../src/lib/advanced-rcs';
 import {
   DEFAULT_RACQUET_RA,
   RA_RANGE,
   effectiveRacquetRA,
   deriveRacquetProfile,
+  racquetProfile,
+  rankRacquetsByTesterAverage,
+  PROFILE_LABEL_SPECS,
+  PROFILE_LABEL_BLENDED,
 } from '../src/lib/racquet-scoring';
+import {
+  RACQUET_TESTER_RATINGS,
+  RACQUET_TESTER_QUARANTINE,
+  RACQUET_TESTER_SOURCE,
+  RACQUET_AXIS_TO_CRITERION,
+  RACQUET_ANCHOR_SHIFT,
+  recalibratedTesterNote,
+  type RacquetProfileAxis,
+  type RacquetTesterCriterion,
+} from '../src/data/racquet-tester-ratings';
 
 const TENSIONS = [18, 20, 22, 24, 26, 28];
 const failures: string[] = [];
@@ -785,6 +812,214 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
   if (failures.length === before) {
     const n = Object.keys(PRODUCT_IMAGES).length;
     ok(`photos produit : ${n} entrée(s) valides, ${(bytes / 1e6).toFixed(2)} Mo hébergés, aucun hotlink ni propagation`);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 13. NOTES HARMONISÉES AVEC LES AVIS DE TESTEURS (décision de Pierre, 09/10/2026)
+// ---------------------------------------------------------------------------
+// Toute note harmonisée doit porter sa provenance et se recalculer depuis elle :
+// une retouche à la main d'une note couverte, ou un décalage d'ancrage modifié
+// sans ses données, fait échouer l'audit.
+{
+  const before = failures.length;
+  const fields = Object.keys(FIELD_TO_CRITERION) as HarmonizedField[];
+  const entries = Object.entries(STRING_TESTER_RATINGS);
+  if (entries.length !== 18) fail(`notes testeurs : ${entries.length} cordages en provenance, 18 attendus (17 exacts + Signum validé)`);
+  for (const [id, e] of entries) {
+    const s = stringsDatabase.find((x) => x.id === id);
+    if (!s) { fail(`notes testeurs : ${id} absent du catalogue`); continue; }
+    const crit = Object.keys(TESTER_RATINGS_SOURCE.criteria) as TesterCriterion[];
+    if (crit.some((c) => !Number.isInteger(e.raw20[c]) || e.raw20[c] < 0 || e.raw20[c] > TESTER_RATINGS_SOURCE.scale)) {
+      fail(`notes testeurs : ${id} porte une note source hors de l'échelle /20`);
+    }
+    const avg = crit.reduce((a, c) => a + e.raw20[c], 0) / crit.length;
+    if (Math.abs(avg - e.docxAverage20) > 0.005) fail(`notes testeurs : ${id} moyenne source ${avg} ≠ ${e.docxAverage20}`);
+    for (const f of fields) {
+      const expected = harmonizedRating(e, f);
+      if (s[f] !== expected) fail(`notes testeurs : ${id}.${f} = ${s[f]} au catalogue, ${expected} attendu par la provenance`);
+    }
+  }
+  for (const f of fields) {
+    const pts = entries.filter(([, e]) => e.before10[f] !== undefined);
+    const shift = pts.reduce((a, [, e]) => a + (e.before10[f] as number) - e.raw20[FIELD_TO_CRITERION[f]] / 2, 0) / pts.length;
+    if (Math.abs(Math.round(shift * 10 + 1e-9) / 10 - ANCHOR_SHIFT[f]) > 1e-9) {
+      fail(`notes testeurs : décalage d'ancrage ${f} = ${ANCHOR_SHIFT[f]}, ${shift.toFixed(3)} mesuré sur les produits communs`);
+    }
+  }
+  const ratingKeys = ['performance', 'control', 'comfort', 'durability', 'versatility', 'innovation', 'spin', 'power'] as const;
+  for (const s of stringsDatabase) {
+    for (const k of ratingKeys) {
+      const v = s[k];
+      if (v !== undefined && !(v >= 0 && v <= 10)) fail(`${s.id}.${k} = ${v} hors de l'échelle /10`);
+    }
+  }
+  if (failures.length === before) {
+    ok(`notes testeurs : ${entries.length} cordages harmonisés, provenance complète, ${entries.length * fields.length} notes recalculées à l'identique, toutes les notes dans [0, 10]`);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 14. RAQUETTES — PROFIL HARMONISÉ AVEC LES AVIS DE TESTEURS (09/10/2026)
+// ---------------------------------------------------------------------------
+// Garde quatre choses : (a) aucun avis n'est appliqué à une fiche dont les specs
+// ne correspondent pas à la génération testée ; (b) chaque note affichée se
+// recalcule depuis sa provenance ; (c) une raquette sans avis garde EXACTEMENT
+// le profil dérivé et son libellé ; (d) aucune surface n'affiche un profil
+// combiné sous le libellé « dérivé des specs » (règle 3).
+{
+  const before = failures.length;
+  const axes = Object.keys(RACQUET_AXIS_TO_CRITERION) as RacquetProfileAxis[];
+  const crit = Object.keys(RACQUET_TESTER_SOURCE.criteria) as RacquetTesterCriterion[];
+  const entries = Object.entries(RACQUET_TESTER_RATINGS);
+  const quarantined = Object.keys(RACQUET_TESTER_QUARANTINE).length;
+  if (crit.length !== 20) fail(`raquettes testeurs : ${crit.length} critères, 20 attendus`);
+  if (entries.length + quarantined + 8 !== 27) {
+    fail(`raquettes testeurs : ${entries.length} appliquées + ${quarantined} en quarantaine + 8 absentes ≠ 27 du document`);
+  }
+  for (const [id, e] of entries) {
+    const r = racquetsDatabase.find((x) => x.id === id);
+    if (!r) { fail(`raquettes testeurs : ${id} absent du catalogue`); continue; }
+    if (crit.some((c) => !Number.isInteger(e.raw20[c]) || e.raw20[c] < 0 || e.raw20[c] > RACQUET_TESTER_SOURCE.scale)) {
+      fail(`raquettes testeurs : ${id} porte une note source hors de l'échelle /20`);
+    }
+    const avg = crit.reduce((a, c) => a + e.raw20[c], 0) / crit.length;
+    if (Math.abs(avg - e.docxAverage20) > 0.005) fail(`raquettes testeurs : ${id} moyenne source ${avg} ≠ ${e.docxAverage20}`);
+    // (a) rapprochement de génération : specs égales, RA à ±1.
+    const sc = e.specCheck;
+    if (!sc.url.startsWith('https://www.tenniswarehouse-europe.com/')) fail(`raquettes testeurs : ${id} source de specs hors TWE`);
+    if (r.headSize !== sc.headSize || r.weight !== sc.unstrungWeight || r.stringPattern !== sc.pattern) {
+      fail(`raquettes testeurs : ${id} specs catalogue (${r.headSize}/${r.weight} g/${r.stringPattern}) ≠ génération testée (${sc.headSize}/${sc.unstrungWeight} g/${sc.pattern})`);
+    }
+    if (r.stiffness === null || Math.abs(r.stiffness - sc.ra) > 1) {
+      fail(`raquettes testeurs : ${id} RA catalogue ${r.stiffness} hors de ±1 du RA publié ${sc.ra} — génération non établie`);
+    }
+    // (b) recalcul à l'identique et échelle.
+    const d = deriveRacquetProfile(r);
+    const p = racquetProfile(r);
+    if (!p.withTesters || p.label !== PROFILE_LABEL_BLENDED) fail(`raquettes testeurs : ${id} n'est pas affiché comme profil combiné`);
+    for (const a of axes) {
+      const expected = Math.round(Math.min(10, Math.max(0, (d[a] + recalibratedTesterNote(e, a)) / 2)) * 10 + 1e-9) / 10;
+      if (p[a] !== expected) fail(`raquettes testeurs : ${id}.${a} = ${p[a]}, ${expected} attendu par la provenance`);
+      if (!(p[a] >= 0 && p[a] <= 10)) fail(`raquettes testeurs : ${id}.${a} = ${p[a]} hors de [0, 10]`);
+    }
+  }
+  for (const name of Object.keys(RACQUET_TESTER_QUARANTINE)) {
+    if (entries.some(([, e]) => e.docxName === name)) fail(`raquettes testeurs : « ${name} » à la fois appliquée et en quarantaine`);
+  }
+  // Décalages d'ancrage = mesure sur les raquettes rapprochées.
+  for (const a of axes) {
+    const shift = entries.reduce((acc, [id, e]) => {
+      const r = racquetsDatabase.find((x) => x.id === id)!;
+      return acc + deriveRacquetProfile(r)[a] - e.raw20[RACQUET_AXIS_TO_CRITERION[a]] / 2;
+    }, 0) / entries.length;
+    if (Math.abs(Math.round(shift * 10 + 1e-9) / 10 - RACQUET_ANCHOR_SHIFT[a]) > 1e-9) {
+      fail(`raquettes testeurs : décalage d'ancrage ${a} = ${RACQUET_ANCHOR_SHIFT[a]}, ${shift.toFixed(3)} mesuré`);
+    }
+  }
+  // (c) sans avis : profil dérivé intact.
+  let untouched = 0;
+  for (const r of racquetsDatabase.filter((x) => !RACQUET_TESTER_RATINGS[x.id])) {
+    const d = deriveRacquetProfile(r);
+    const p = racquetProfile(r);
+    if (p.withTesters || p.label !== PROFILE_LABEL_SPECS || p.basis !== d.basis || axes.some((a) => p[a] !== d[a])) {
+      fail(`raquettes testeurs : ${r.id} sans avis mais profil affiché ≠ profil dérivé`);
+    } else untouched++;
+  }
+  if (racquetsDatabase.some((r) => !deriveRacquetProfile(r).basis.startsWith('Dérivé des specs'))) {
+    fail('deriveRacquetProfile ne doit contenir que des specs : son libellé « Dérivé des specs » doit rester vrai');
+  }
+  // (d) surfaces d'affichage : profil via racquetProfile, libellé non codé en dur.
+  for (const file of ['src/app/configurator/page.tsx', 'src/app/compare/page.tsx', 'src/lib/pdf-configuration-data.ts']) {
+    const src = readFileSync(file, 'utf8');
+    if (/deriveRacquetProfile\s*\(/.test(src)) fail(`${file} : affiche deriveRacquetProfile() au lieu de racquetProfile() — libellé faux pour les raquettes à avis`);
+  }
+  if (/Profil derive des specs/i.test(readFileSync('src/app/configurator/page.tsx', 'utf8'))) {
+    fail('configurator/page.tsx : libellé « Profil derive des specs » codé en dur');
+  }
+  if (/derive des specifications/i.test(readFileSync('src/lib/pdf-export.ts', 'utf8'))) {
+    fail('pdf-export.ts : titre « derive des specifications » codé en dur');
+  }
+  // Classement Top raquettes : uniquement les fiches à avis, ordre décroissant.
+  const ranked = rankRacquetsByTesterAverage(racquetsDatabase);
+  if (ranked.length !== entries.length) fail(`classement raquettes : ${ranked.length} classées, ${entries.length} attendues`);
+  if (ranked.some((x, i) => i > 0 && ranked[i - 1].testerAverage20 < x.testerAverage20)) fail('classement raquettes : ordre non décroissant');
+  // Les 7 fiches alignées sur la dernière génération (09/10/2026) doivent
+  // porter leur source et leur RA publié : un retour à l'ancienne valeur, ou
+  // une source retirée, fait échouer l'audit.
+  const ALIGNED: Readonly<Record<string, number>> = {
+    'babolat-pure-aero-standard': 66, 'babolat-pure-drive-standard': 69, 'yonex-ezone-100': 68,
+    'yonex-percept-100': 66, 'yonex-percept-100d': 66, 'tecnifibre-tfight-305s-id': 63, 'head-boom-pro-2024': 64,
+  };
+  const dbSrc = readFileSync('src/data/racquets-database.ts', 'utf8');
+  for (const [id, ra] of Object.entries(ALIGNED)) {
+    const r = racquetsDatabase.find((x) => x.id === id);
+    if (!r) { fail(`génération alignée : ${id} absent (id public à conserver)`); continue; }
+    if (r.stiffness !== ra) fail(`génération alignée : ${id} RA ${r.stiffness}, ${ra} publié pour la génération en vente`);
+    const i = dbSrc.indexOf(`id: '${id}'`);
+    const comment = dbSrc.slice(Math.max(0, i - 400), i);
+    if (!/Source[s]? : https:\/\/www\.tenniswarehouse-europe\.com\//.test(comment)) fail(`génération alignée : ${id} sans source de specs en commentaire`);
+    if (!RACQUET_TESTER_RATINGS[id]) fail(`génération alignée : ${id} non rapproché`);
+  }
+  if (failures.length === before) {
+    ok(`raquettes testeurs : ${entries.length} fiches harmonisées (génération vérifiée, dont ${Object.keys(ALIGNED).length} alignées sur la dernière génération), ${quarantined} en quarantaine, ` +
+      `${entries.length * axes.length} notes recalculées à l'identique, ${untouched} profils dérivés intacts, libellés justes`);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 15. SOURCE UNIQUE DU CATALOGUE (C3, 09/10/2026)
+// ---------------------------------------------------------------------------
+// Le TypeScript fait foi ; les pages EN lisent public/data/catalog.json, généré
+// au build. Échoue si : (a) un fichier servi sous public/ lit encore le
+// catalogue dans Supabase ; (b) le JSON servi diffère du TS ; (c) le JSON est
+// versionné (il serait éditable à la main) ou n'est plus généré au build ;
+// (d) il cite une chaîne de testeurs ; (e) une valeur absente y est comblée.
+{
+  const before = failures.length;
+  const READ_PATTERNS: RegExp[] = [
+    /\.from\(\s*['"`](racquets|strings)['"`]\s*\)/,
+    /\/rest\/v1\/(racquets|strings)\b/,
+    /\.select\(\s*['"`][^'"`]*\b(racquets|strings)\s*\(/,
+  ];
+  const walk = (dir: string): string[] =>
+    readdirSync(dir).flatMap((f) => {
+      const p = path.join(dir, f);
+      return statSync(p).isDirectory() ? walk(p) : /\.(html?|m?js)$/.test(f) ? [p] : [];
+    });
+  let scanned = 0;
+  for (const file of walk('public')) {
+    scanned++;
+    const src = readFileSync(file, 'utf8');
+    for (const re of READ_PATTERNS) {
+      const m = src.match(re);
+      if (m) fail(`source unique : ${file.split(path.sep).join('/')} lit le catalogue dans Supabase (« ${m[0]} ») — lire /data/catalog.json`);
+    }
+  }
+  const expected = serializeCatalog(buildCatalog(racquetsDatabase, stringsDatabase));
+  let state = 'absent (généré au build)';
+  if (existsSync(CATALOG_JSON_PATH)) {
+    const served = readFileSync(CATALOG_JSON_PATH, 'utf8');
+    if (served !== expected) fail(`source unique : ${CATALOG_JSON_PATH} diffère du TS — relancer npm run build:catalog, ne jamais l'éditer`);
+    state = 'identique au TS';
+  }
+  const tracked = execFileSync('git', ['ls-files', '--', CATALOG_JSON_PATH], { encoding: 'utf8' }).trim();
+  if (tracked) fail(`source unique : ${CATALOG_JSON_PATH} est versionné — il doit rester généré (.gitignore)`);
+  const pkg = JSON.parse(readFileSync('package.json', 'utf8'));
+  if (!/build:catalog/.test(pkg.scripts?.prebuild ?? '')) fail('source unique : prebuild ne génère plus le catalogue EN (Netlify servirait un JSON absent)');
+  const channels = [...TESTER_RATINGS_SOURCE.channels, ...RACQUET_TESTER_SOURCE.channels];
+  for (const c of channels) if (expected.includes(c)) fail(`source unique : le catalogue public cite la chaîne « ${c} »`);
+  const cat = JSON.parse(expected);
+  const absentR = racquetsDatabase.filter((r) => r.stiffness === null).length;
+  const nullR = cat.racquets.filter((r: { stiffness: number | null }) => r.stiffness === null).length;
+  if (absentR !== nullR) fail(`source unique : ${absentR} RA absents dans le TS, ${nullR} null dans le JSON (valeur comblée ?)`);
+  const absentS = stringsDatabase.filter((s) => s.comfort === undefined).length;
+  const nullS = cat.strings.filter((s: { comfort: number | null }) => s.comfort === null).length;
+  if (absentS !== nullS) fail(`source unique : ${absentS} notes confort absentes dans le TS, ${nullS} null dans le JSON`);
+  if (cat.racquets.length !== racquetsDatabase.length || cat.strings.length !== stringsDatabase.length) fail('source unique : comptes JSON ≠ TS');
+  if (failures.length === before) {
+    ok(`source unique : ${scanned} fichiers public/ sans lecture Supabase du catalogue, catalog.json ${state} ` +
+      `(${cat.racquets.length} raquettes / ${cat.strings.length} cordages, ${nullR} RA null, ${nullS} notes null), non versionné, généré en prebuild, aucune chaîne citée`);
   }
 }
 
