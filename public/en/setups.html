@@ -11,6 +11,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/js/rcs-calculator-en.js"></script>
+  <script src="/js/catalog.js"></script>
   <script>
     tailwind.config = {
       theme: {
@@ -386,10 +387,8 @@
 
     async function loadData() {
       try {
-        const { data: racquetData } = await supabaseClient.from('racquets').select('*').order('brand, model');
-        racquets = racquetData || [];
-        const { data: stringData } = await supabaseClient.from('strings').select('*').order('brand, model');
-        strings = stringData || [];
+        // Catalogue généré depuis src/data (C3) — plus de lecture Supabase
+        ({ racquets, strings } = await TSACatalog.load());
         populateRacquetSelect();
         populateStringSelect();
 
@@ -433,11 +432,12 @@
       try {
         const { data: setups, error } = await supabaseClient
           .from('user_setups')
-          .select('*, racquets(*), strings(*)')
+          .select('*')
           .eq('user_id', currentUser.id)
           .order('created_at', { ascending: false });
         if (error) throw error;
-        userSetups = setups || [];
+        // Produits résolus dans le catalogue (C3), plus par jointure Supabase.
+        userSetups = TSACatalog.attachSetupProducts(setups, await TSACatalog.load());
         renderSetups();
       } catch (error) {
         userSetups = [];
