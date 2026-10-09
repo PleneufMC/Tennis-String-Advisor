@@ -35,7 +35,8 @@
     "export": "next export",
     "audit:rls": "node scripts/qa-rls-anon.mjs",
     "audit:ratings": "npx --yes tsx scripts/qa-ratings.mts",
-    "rcs:recompute": "npx --yes tsx scripts/recompute-rcs.mts"
+    "rcs:recompute": "npx --yes tsx scripts/recompute-rcs.mts",
+    "export:catalogue": "python scripts/export-catalogue/export_catalogue.py --repo ."
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
