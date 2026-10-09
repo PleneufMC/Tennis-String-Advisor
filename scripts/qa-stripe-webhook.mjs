@@ -116,11 +116,18 @@ const liens = (src) => [...new Set(src.match(/https:\/\/buy\.stripe\.com\/[A-Za-
 const lFR = liens(fr);
 const lEN = liens(en);
 verifier(lFR.length === 3, `le circuit FR déclare 3 Payment Links (trouvé ${lFR.length})`);
-verifier(lEN.length === 3, `le circuit EN déclare 3 Payment Links (trouvé ${lEN.length})`);
-verifier(
-  lFR.length > 0 && JSON.stringify(lFR) === JSON.stringify(lEN),
-  'les circuits FR et EN portent exactement les mêmes Payment Links'
-);
+// Circuit EN ferme (09/10/2026, CHECKOUT_DISPONIBLE = false) : il ne doit porter
+// AUCUN lien. Ouvert : exactement les memes 3 liens que le FR.
+const enFerme = /const CHECKOUT_DISPONIBLE\s*=\s*false/.test(en);
+if (enFerme) {
+  verifier(lEN.length === 0, `circuit EN fermé : aucun Payment Link dans la page (trouvé ${lEN.length})`);
+} else {
+  verifier(lEN.length === 3, `le circuit EN déclare 3 Payment Links (trouvé ${lEN.length})`);
+  verifier(
+    lFR.length > 0 && JSON.stringify(lFR) === JSON.stringify(lEN),
+    'les circuits FR et EN portent exactement les mêmes Payment Links'
+  );
+}
 
 let ailleurs = '';
 try {
