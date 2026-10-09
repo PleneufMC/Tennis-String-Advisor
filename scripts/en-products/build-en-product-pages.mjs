@@ -21,7 +21,8 @@
  *    le RA estimé (médiane) des fiches FR n'est pas affiché ici, seulement signalé ;
  *  - descriptions du catalogue (rédigées en français) non reprises ; l'usage pro
  *    n'est repris que s'il se traduit sans ajout (sinon omis) ;
- *  - JSON-LD Product sans offers, aggregateRating, review ni image ;
+ *  - JSON-LD Product sans offers, aggregateRating, review ni image ; la photo produit
+ *    (ou l'illustration) n'est qu'un <figure> visible (scripts/catalog/product-images.mjs) ;
  *  - aucun lien d'achat (règles 1-2, périmètre tsa-revenue) : la fiche renvoie au
  *    configurateur EN, qui calcule le RCS et affiche l'alerte bras.
  *
@@ -31,6 +32,8 @@ import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildCatalog, loadTsCatalog } from '../catalog/catalog-json.mjs';
+// Photo produit ou illustration (module tsa-core, même drapeau et même manifeste que le FR).
+import { loadProductImages, productFigureHtml } from '../catalog/product-images.mjs';
 
 const SITE = 'https://tennisstringadvisor.org';
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -170,7 +173,7 @@ ${body}
 const fullName = (r) => [r.brand, r.model, r.variant].filter(Boolean).join(' ').trim();
 const levelEn = (lv) => (has(lv) ? lv.join(', ') : null);
 
-export function racquetPage(r) {
+export function racquetPage(r, images = {}) {
   const name = fullName(r);
   const raPublished = has(r.stiffness);
   const facts = [
@@ -213,7 +216,7 @@ export function racquetPage(r) {
   ];
 
   const body = `    <h1 class="text-3xl sm:text-4xl font-bold tracking-tight">${esc(name)}</h1>
-    <p class="mt-3 text-lg leading-relaxed text-gray-600 dark:text-gray-300">${esc(name)}: ${esc(facts.join(', '))}.</p>
+${productFigureHtml(images, 'racquet', r.id, name)}    <p class="mt-3 text-lg leading-relaxed text-gray-600 dark:text-gray-300">${esc(name)}: ${esc(facts.join(', '))}.</p>
 ${pro ? `    <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Used on tour by: ${esc(pro)}</p>\n` : ''}
     <section class="mt-10">
       <h2 class="mb-3 text-xl font-semibold">Specifications</h2>
@@ -233,7 +236,7 @@ ${raPublished ? '' : `      <p class="mt-3 text-xs text-gray-600 dark:text-gray-
   return page({ title, description, enPath, frPath: frRacquetPath(r.id), section: 'Racquets', sectionHref: '/en/racquets.html', name, jsonLd, body });
 }
 
-export function stringPage(s) {
+export function stringPage(s, images = {}) {
   const name = `${s.brand} ${s.model}`;
   const tension = has(s.tension_min) && has(s.tension_max) ? `${s.tension_min} – ${s.tension_max}` : null;
   const gauges = has(s.gauges) ? s.gauges.join(', ') : null;
@@ -273,7 +276,7 @@ export function stringPage(s) {
   ];
 
   const body = `    <h1 class="text-3xl sm:text-4xl font-bold tracking-tight">${esc(name)}</h1>
-    <p class="mt-3 text-lg leading-relaxed text-gray-600 dark:text-gray-300">${esc(s.type)} string, stiffness ${esc(s.stiffness)} lb/in${tension ? `, recommended tension ${esc(tension)} kg` : ''}.</p>
+${productFigureHtml(images, 'string', s.id, name)}    <p class="mt-3 text-lg leading-relaxed text-gray-600 dark:text-gray-300">${esc(s.type)} string, stiffness ${esc(s.stiffness)} lb/in${tension ? `, recommended tension ${esc(tension)} kg` : ''}.</p>
 ${pro ? `    <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Used on tour by: ${esc(pro)}</p>\n` : ''}
     <section class="mt-10">
       <h2 class="mb-3 text-xl font-semibold">Specifications</h2>
@@ -301,6 +304,7 @@ ${pro ? `    <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Used on to
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const { racquetsDatabase, stringsDatabase } = await loadTsCatalog(repoRoot);
   const { racquets, strings } = buildCatalog(racquetsDatabase, stringsDatabase);
+  const { images } = await loadProductImages(repoRoot);
   const SAFE_ID = /^[a-z0-9-]+$/;
   for (const [dir, list, render] of [
     [EN_RACQUET_DIR, racquets, racquetPage],
@@ -311,7 +315,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     mkdirSync(abs, { recursive: true });
     for (const item of list) {
       if (!SAFE_ID.test(item.id)) throw new Error(`id hors format URL : ${item.id}`);
-      writeFileSync(path.join(abs, `${item.id}.html`), render(item));
+      writeFileSync(path.join(abs, `${item.id}.html`), render(item, images));
     }
   }
   console.log(`fiches EN : ${racquets.length} raquettes -> ${EN_RACQUET_DIR}/, ${strings.length} cordages -> ${EN_STRING_DIR}/`);

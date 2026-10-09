@@ -757,7 +757,8 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
 }
 
 // ---------------------------------------------------------------------------
-// 12. PHOTOS PRODUIT (Tennis Warehouse, décision de Pierre du 29/09/2026)
+// 12. PHOTOS PRODUIT (Tennis Warehouse, décision de Pierre du 29/09/2026 ;
+//     Tennis Warehouse Europe et fiches EN depuis le 09/10/2026)
 // ---------------------------------------------------------------------------
 // Dispositif désactivable et purgeable (src/lib/product-images.ts). Une photo
 // fausse est une information fausse : chaque entrée du manifeste doit viser un
@@ -767,6 +768,10 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
 {
   const before = failures.length;
   const { PRODUCT_IMAGES } = await import('../src/data/product-images');
+  const SOURCE_HOSTS = {
+    'tennis-warehouse': { page: 'https://www.tennis-warehouse.com/', image: 'https://img.tennis-warehouse.com/' },
+    'tennis-warehouse-europe': { page: 'https://www.tenniswarehouse-europe.com/', image: 'https://img.tenniswarehouse-europe.com/' },
+  } as const;
   const { existsSync, readdirSync, statSync } = await import('node:fs');
   const racquetIds = new Set(racquetsDatabase.map((r) => r.id));
   const stringIds = new Set(stringsDatabase.map((s) => s.id));
@@ -782,9 +787,11 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
     const size = statSync(disk).size;
     bytes += size;
     if (size > 120_000) fail(`photo ${id} : ${Math.round(size / 1024)} Ko (> 120 Ko)`);
-    if (e.source !== 'tennis-warehouse') fail(`photo ${id} : source inattendue ${e.source}`);
-    if (!e.sourcePageUrl.startsWith('https://www.tennis-warehouse.com/')) fail(`photo ${id} : page source invalide`);
-    if (!e.sourceImageUrl.startsWith('https://img.tennis-warehouse.com/')) fail(`photo ${id} : image source invalide`);
+    const hosts = SOURCE_HOSTS[e.source as keyof typeof SOURCE_HOSTS];
+    if (!hosts) { fail(`photo ${id} : source inattendue ${e.source}`); continue; }
+    if (!e.sourcePageUrl.startsWith(hosts.page)) fail(`photo ${id} : page source invalide pour ${e.source}`);
+    if (!e.sourceImageUrl.startsWith(hosts.image)) fail(`photo ${id} : image source invalide pour ${e.source}`);
+    if (!e.twProduct) fail(`photo ${id} : intitulé du produit source absent (association non auditable)`);
     if (!/^\d{4}-\d{2}-\d{2}$/.test(e.retrievedAt)) fail(`photo ${id} : date de collecte invalide`);
   }
   for (const folder of ['racquets', 'strings']) {
@@ -805,9 +812,37 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
     readdirSync(d).flatMap((n) => (statSync(`${d}/${n}`).isDirectory() ? walk(`${d}/${n}`) : [`${d}/${n}`]));
   for (const file of walk('src').filter((f) => /\.(tsx?|mts)$/.test(f) && !allowed.has(f))) {
     const src = readFileSync(file, 'utf8');
-    if (/img\.tennis-warehouse\.com|\/images\/products\/|PRODUCT_IMAGES|getProductImage/.test(src)) {
+    if (/img\.tennis-?warehouse(-europe)?\.com|\/images\/products\/|PRODUCT_IMAGES|getProductImage/.test(src)) {
       fail(`${file} : référence directe aux photos TW (hotlink ou propagation hors du composant)`);
     }
+  }
+  // Fiches EN statiques (générées au build) : rendues ici en mémoire avec le même
+  // manifeste. Chaque photo validée y est affichée, chaque fiche sans photo porte
+  // l'illustration ; aucune photo dans le JSON-LD ni og:image, aucun hotlink.
+  {
+    const { loadProductImages } = await import('./catalog/product-images.mjs');
+    const { racquetPage, stringPage } = await import('./en-products/build-en-product-pages.mjs');
+    const { images } = await loadProductImages(process.cwd());
+    const { racquets: enR, strings: enS } = buildCatalog(racquetsDatabase, stringsDatabase);
+    let shown = 0;
+    let illustrated = 0;
+    for (const [kind, list, render] of [['racquets', enR, racquetPage], ['strings', enS, stringPage]] as const) {
+      for (const item of list as Array<{ id: string }>) {
+        const html: string = (render as (x: unknown, i: unknown) => string)(item, images);
+        const expected = (images as Record<string, { file: string }>)[item.id];
+        const ld = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].map((m) => m[1]).join('\n');
+        if (/"image"|\/images\/products\//.test(ld)) fail(`fiche EN ${kind}/${item.id} : photo propagée dans le JSON-LD`);
+        if (/og:image/.test(html)) fail(`fiche EN ${kind}/${item.id} : og:image présent`);
+        if (/img\.tennis-?warehouse(-europe)?\.com/.test(html)) fail(`fiche EN ${kind}/${item.id} : hotlink vers TW`);
+        if (expected) {
+          if (!html.includes(`<img src="${expected.file}"`)) fail(`fiche EN ${kind}/${item.id} : photo validée non affichée`);
+          else shown++;
+        } else if (!html.includes('data-product-image="illustration"')) {
+          fail(`fiche EN ${kind}/${item.id} : ni photo ni illustration`);
+        } else illustrated++;
+      }
+    }
+    ok(`fiches EN : ${shown} photo(s) affichée(s), ${illustrated} illustration(s), aucune photo en JSON-LD/og:image`);
   }
   if (failures.length === before) {
     const n = Object.keys(PRODUCT_IMAGES).length;
