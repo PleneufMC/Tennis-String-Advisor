@@ -9,6 +9,7 @@ avoir sa ligne avant d'être publié.
 |---|---|---|---|---|
 | Unsplash | https://unsplash.com/license | 29/09/2026 | Usage gratuit, y compris commercial, modification, sans permission ni attribution obligatoire | Vendre l'image sans modification notable ; compiler des images pour créer un service similaire ou concurrent |
 | Pexels | https://www.pexels.com/license/ | 29/09/2026 | Usage gratuit, modification, sans attribution obligatoire | Montrer une personne identifiable sous un jour négatif ou offensant ; laisser croire qu'une personne ou une marque de l'image cautionne le produit ; revendre sans modification ; redistribuer sur d'autres banques ; utiliser l'image comme marque |
+| Wikimedia Commons | Page de chaque fichier (licence affichée et lue le 09/10/2026) ; CC0 : https://creativecommons.org/publicdomain/zero/1.0/ ; CC BY-SA 4.0 : https://creativecommons.org/licenses/by-sa/4.0/ | 09/10/2026 | CC0 : tout usage, sans condition. CC BY-SA 4.0 : usage commercial et modification, à condition de créditer l'auteur, de lier la licence, de signaler les modifications et de diffuser l'image modifiée sous la même licence | CC BY-SA : retirer le crédit ou relicencier l'image recadrée sous d'autres conditions |
 
 Les photos Unsplash retenues portent toutes la mention « Free to use under the
 Unsplash License » sur leur page. Aucune photo Unsplash+ n'est utilisée. Le
@@ -17,7 +18,7 @@ licence.
 
 ## Photos
 
-Téléchargées le 29/09/2026 depuis l'URL officielle de la banque
+Téléchargées le 29/09/2026 (Unsplash, Pexels) puis le 09/10/2026 (Wikimedia Commons, via `upload.wikimedia.org`) depuis l'URL officielle de la banque
 (`unsplash.com/photos/<id>/download` ou `images.pexels.com/photos/<id>/`),
 recadrées en 1200 × 630 et converties en WebP. Aucun hotlink.
 
@@ -38,6 +39,8 @@ recadrées en 1200 × 630 et converties en WebP. Aucun hotlink.
 | en-tete-raquette-balles-court.webp | Unsplash | Kingsley Mkpandiok | Unsplash License | https://unsplash.com/photos/tennis-racket-and-balls-on-court-ItkYtYu9m30 | 29/09/2026 | guide-materiel-tennis (FR) | Recadrage (image de synthèse, sans marque) |
 | en-tete-filet-gros-plan.webp | Unsplash | Ben Hershey | Unsplash License | https://unsplash.com/photos/closeup-photo-of-tennis-net-QE_arygnPUM | 29/09/2026 | head-gravity-mp-vs-gravity-tour-2025 (FR) | Recadrage |
 | en-tete-filet-court-bleu.webp | Unsplash | Isaac E. Quezada | Unsplash License | https://unsplash.com/photos/white-and-red-tennis-net-D3Vu3v3BYXQ | 29/09/2026 | nouveautes-equipement-tennis-2025-2026 (FR) | Recadrage |
+| en-tete-cordage-use-effiloche.webp | Wikimedia Commons | Jeuwre | CC0 (domaine public) | https://commons.wikimedia.org/wiki/File:Tennis_strings_ruined_001.jpg | 09/10/2026 | combien-de-temps-dure-un-cordage (FR), how-long-do-tennis-strings-last (EN) | Recadrage 1200 × 630 sur le centre du tamis ; l'inscription du cadre est hors champ |
+| en-tete-court-neige-hiver.webp | Wikimedia Commons | Famartin | CC BY-SA 4.0 — l'image recadrée est diffusée sous la même licence | https://commons.wikimedia.org/wiki/File:2026-03-05_15_29_28_Lingering_patches_of_snow_on_a_private_tennis_court_along_Montague_Avenue_over_a_week_after_a_winter_storm_in_the_Mountainview_section_of_Ewing_Township,_Mercer_County,_New_Jersey.jpg | 09/10/2026 | tension-cordage-hiver (FR), tennis-string-tension-cold-weather (EN) | Recadrage 1200 × 630 sur le court ; crédit, lien de licence et mention « recadrée » sous la photo (obligation de licence, pas une politesse) |
 
 Photos écartées à l'examen, pour mémoire : ballon portant un logo lisible
 (article sur la « guerre du spin », qui parle de cette marque), raquettes et
@@ -67,3 +70,20 @@ page.
 | schema-tennis-elbow-hierarchie-confort-fr.svg | Schéma maison | Tennis String Advisor | Propriété TSA | Classement et étoiles du tableau 2.1 de l'article tennis elbow | 29/09/2026 |
 | schema-tennis-elbow-zones-tension-fr.svg | Schéma maison | Tennis String Advisor | Propriété TSA | 20–24 kg, 2–4 kg, > 26 kg de la section 2.2 de l'article tennis elbow | 29/09/2026 |
 | schema-profils-cordage-fr.svg | Schéma maison | Tennis String Advisor | Propriété TSA | Aucune donnée chiffrée (profils cités dans les articles terre battue et nouveautés) | 29/09/2026 |
+
+## Couvertures illustrées
+
+Générées le 09/10/2026 par `scripts/blog-covers/build-covers.py` (Pillow, dessin
+vectoriel et texte ; aucun modèle de génération d'images, aucune photo). Ce sont
+des illustrations, présentées comme telles (`alt` et légende commencent par
+« Illustration »). Aucune ne représente un produit, une marque, un logo ou une
+personne ; la raquette est une silhouette générique. Aucune ne contient de chiffre
+ni ne nomme de source ou de testeur. Police du titre : Segoe UI (texte rendu en
+image).
+
+| Fichier | Source | Auteur | Licence | Motif | Utilisée par | Date |
+|---|---|---|---|---|---|---|
+| couverture-meilleures-raquettes-2026-fr.webp / -en.webp | Générée | Tennis String Advisor | Propriété TSA | Silhouette de raquette cordée, balle | meilleures-raquettes-tennis-2026 (FR), best-tennis-racquets-2026 (EN) | 09/10/2026 |
+| couverture-meilleur-cordage-polyester-2026-fr.webp / -en.webp | Générée | Tennis String Advisor | Propriété TSA | Coupe de principe d'un faisceau de monofilaments | meilleur-cordage-polyester-2026 (FR), best-polyester-tennis-strings-2026 (EN) | 09/10/2026 |
+| couverture-polyester-tennis-elbow-fr.webp / -en.webp | Générée | Tennis String Advisor | Propriété TSA | Jauge de fermeté en cinq zones, sans graduation chiffrée | cordage-polyester-tennis-elbow (FR), polyester-strings-tennis-elbow (EN) | 09/10/2026 |
+| couverture-blog-fr.webp / -en.webp | Générée | Tennis String Advisor | Propriété TSA | Tamis de cordage et balle | og:image de /blog/ et /en/blog/ | 09/10/2026 |
