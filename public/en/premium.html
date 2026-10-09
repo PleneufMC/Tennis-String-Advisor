@@ -394,11 +394,14 @@
       console.error('Supabase init error:', e);
     }
 
-    // Ouvert : les trois Payment Links sont verifies — produit, montant et
-    // recurrence lus sur la page de paiement Stripe — et le webhook
-    // src/app/api/stripe/webhook consomme le paiement, donc un achat active
-    // reellement le compte. Repasser a false si la chaine se rompt.
-    const CHECKOUT_DISPONIBLE = true;
+    // FERME le 09/10/2026 (tsa-revenue) : la chaine est rompue pour ce circuit.
+    // client_reference_id transporte l'id Supabase Auth (uuid), mais le webhook
+    // (src/app/api/stripe/webhook) ne cherche que dans la table Prisma « User »
+    // (id cuid, comptes NextAuth du site FR) : recouvrement 0 / 5 comptes. Il
+    // acquitte « compte introuvable » et n'ecrit jamais profiles.is_premium,
+    // seul drapeau lu par les pages EN. Un acheteur EN payait sans rien obtenir.
+    // Rouvrir seulement quand le webhook sait activer un compte Supabase.
+    const CHECKOUT_DISPONIBLE = false;
     const CONTACT_EMAIL = 'pleneuftrading@gmail.com';
 
     const PAYMENT_LINKS = {
@@ -477,10 +480,10 @@
         b.disabled = true;
         b.setAttribute('aria-disabled', 'true');
         b.classList.add('opacity-60', 'cursor-not-allowed');
-        b.textContent = 'Subscription temporarily unavailable';
+        b.textContent = 'Not available on the English site yet';
         const note = document.createElement('p');
         note.className = 'text-xs text-gray-600 mt-2 text-center';
-        note.textContent = 'The configurator and the RCS calculation stay free and complete. Questions: ' + CONTACT_EMAIL;
+        note.textContent = 'Premium cannot be activated on English accounts yet, so we do not take payment here. The configurator, the RCS calculator and 3 saved setups stay free. Questions: ' + CONTACT_EMAIL;
         b.insertAdjacentElement('afterend', note);
       });
     }
