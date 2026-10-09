@@ -5,6 +5,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "build:catalog": "node scripts/catalog/build-catalog-json.mjs",
+    "prebuild": "npm run build:catalog",
+    "predev": "npm run build:catalog",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
