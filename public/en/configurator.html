@@ -65,6 +65,7 @@
   <!-- DEFER external scripts to prevent interference with event listeners -->
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script defer src="/js/rcs-calculator-en.js"></script>
+  <script defer src="/js/catalog.js"></script>
   <link rel="stylesheet" href="/css/dark-mode.css">
   <script src="/js/theme.js"></script>
   <style>
@@ -865,17 +866,19 @@
         console.log('✅ Supabase client initialized');
         // Now we can check auth state and load data
         checkUserStatus();
-        loadCatalogData();
       } else {
         // Retry after 100ms if SDK not loaded yet
         setTimeout(initSupabase, 100);
       }
     }
     // Start initialization after DOM is ready
+    // Le catalogue ne dépend plus de Supabase (C3) : chargé indépendamment.
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', initSupabase);
+      document.addEventListener('DOMContentLoaded', loadCatalogData);
     } else {
       initSupabase();
+      loadCatalogData();
     }
 
     // Configuration usage tracking
@@ -1114,33 +1117,13 @@
     }
 
     // Load racquets and strings from database
+    // Catalogue généré depuis src/data (C3) — plus de lecture Supabase
     async function loadCatalogData() {
-      if (!supabaseClient) {
-        console.log('⏳ Supabase not ready, skipping catalog load');
-        return;
-      }
       try {
-        // Load racquets
-        const { data: racquets, error: rError } = await supabaseClient
-          .from('racquets')
-          .select('*')
-          .order('brand', { ascending: true });
-        
-        if (racquets) {
-          racquetsDB = racquets;
-          console.log(`Loaded ${racquetsDB.length} racquets from database`);
-        }
-        
-        // Load strings
-        const { data: strings, error: sError } = await supabaseClient
-          .from('strings')
-          .select('*')
-          .order('brand', { ascending: true });
-        
-        if (strings) {
-          stringsDB = strings;
-          console.log(`Loaded ${stringsDB.length} strings from database`);
-        }
+        const { racquets, strings } = await TSACatalog.load();
+        racquetsDB = racquets;
+        stringsDB = strings;
+        console.log(`Loaded ${racquetsDB.length} racquets / ${stringsDB.length} strings from catalog`);
       } catch (error) {
         console.error('Error loading catalog:', error);
       }
@@ -1160,7 +1143,8 @@
       }
       
       console.log(`📊 Starting with ${racquetsDB.length} racquets`);
-      let candidates = [...racquetsDB];
+      // RA inconnu = RCS incalculable : jamais proposé (aucun RA par défaut, règle 3).
+      let candidates = racquetsDB.filter(r => r.stiffness !== null);
       
       // Filter by player level
       if (criteria.level) {
@@ -1351,10 +1335,10 @@
             brand: dbString.brand,
             name: dbString.model,
             type: dbString.type,
-            spin: `${dbString.spin || 6}/10`,
-            control: `${dbString.control || 7}/10`,
-            comfort: `${dbString.comfort || 9}/10`,
-            price: `${dbString.price_eur}€`,
+            spin: `${TSACatalog.display(dbString.spin, '/10')}`,
+            control: `${TSACatalog.display(dbString.control, '/10')}`,
+            comfort: `${TSACatalog.display(dbString.comfort, '/10')}`,
+            price: TSACatalog.display(dbString.price_eur, '€'),
             reason: 'Cordage doux qui protège le bras et offre de la puissance.',
             stiffness: dbString.stiffness || 150
           };
@@ -1399,10 +1383,10 @@
             brand: dbString.brand,
             name: dbString.model,
             type: dbString.type,
-            spin: `${dbString.spin || 7}/10`,
-            control: `${dbString.control || 7}/10`,
-            comfort: `${dbString.comfort || 8}/10`,
-            price: `${dbString.price_eur}€`,
+            spin: `${TSACatalog.display(dbString.spin, '/10')}`,
+            control: `${TSACatalog.display(dbString.control, '/10')}`,
+            comfort: `${TSACatalog.display(dbString.comfort, '/10')}`,
+            price: TSACatalog.display(dbString.price_eur, '€'),
             reason: 'Cordage confortable avec bon retour d\'énergie.',
             stiffness: dbString.stiffness || 160
           };
@@ -1450,10 +1434,10 @@
             brand: dbString.brand,
             name: dbString.model,
             type: dbString.type,
-            spin: `${dbString.spin || 6}/10`,
-            control: `${dbString.control || 7}/10`,
-            comfort: `${dbString.comfort || 10}/10`,
-            price: `${dbString.price_eur}€`,
+            spin: `${TSACatalog.display(dbString.spin, '/10')}`,
+            control: `${TSACatalog.display(dbString.control, '/10')}`,
+            comfort: `${TSACatalog.display(dbString.comfort, '/10')}`,
+            price: TSACatalog.display(dbString.price_eur, '€'),
             reason: 'Cordage ultra-confortable, excellent pour protéger le bras.',
             stiffness: dbString.stiffness || 155
           };
@@ -1500,10 +1484,10 @@
               brand: dbString.brand,
               name: dbString.model,
               type: dbString.type,
-              spin: `${dbString.spin || 8}/10`,
-              control: `${dbString.control || 9}/10`,
-              comfort: `${dbString.comfort || 6}/10`,
-              price: `${dbString.price_eur}€`,
+              spin: `${TSACatalog.display(dbString.spin, '/10')}`,
+              control: `${TSACatalog.display(dbString.control, '/10')}`,
+              comfort: `${TSACatalog.display(dbString.comfort, '/10')}`,
+              price: TSACatalog.display(dbString.price_eur, '€'),
               reason: 'Control optimal pour canaliser votre puissance.',
               stiffness: dbString.stiffness || 230
             };
@@ -1546,10 +1530,10 @@
               brand: dbString.brand,
               name: dbString.model,
               type: dbString.type,
-              spin: `${dbString.spin || 7}/10`,
-              control: `${dbString.control || 9}/10`,
-              comfort: `${dbString.comfort || 5}/10`,
-              price: `${dbString.price_eur}€`,
+              spin: `${TSACatalog.display(dbString.spin, '/10')}`,
+              control: `${TSACatalog.display(dbString.control, '/10')}`,
+              comfort: `${TSACatalog.display(dbString.comfort, '/10')}`,
+              price: TSACatalog.display(dbString.price_eur, '€'),
               reason: 'Précision et durabilité excellentes.',
               stiffness: dbString.stiffness || 220
             };
@@ -1592,10 +1576,10 @@
               brand: dbString.brand,
               name: dbString.model,
               type: dbString.type,
-              spin: `${dbString.spin || 10}/10`,
-              control: `${dbString.control || 8}/10`,
-              comfort: `${dbString.comfort || 5}/10`,
-              price: `${dbString.price_eur}€`,
+              spin: `${TSACatalog.display(dbString.spin, '/10')}`,
+              control: `${TSACatalog.display(dbString.control, '/10')}`,
+              comfort: `${TSACatalog.display(dbString.comfort, '/10')}`,
+              price: TSACatalog.display(dbString.price_eur, '€'),
               reason: 'Cordage pour un spin maximum.',
               stiffness: dbString.stiffness || 240
             };

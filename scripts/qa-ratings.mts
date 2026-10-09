@@ -22,8 +22,9 @@
  *
  * Usage : npm run audit:ratings
  */
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
+import path from 'node:path';
 // @ts-ignore -- module JS sans déclaration de types (générateur du catalogue EN, C3)
 import { buildCatalog, serializeCatalog, CATALOG_JSON_PATH } from './catalog/catalog-json.mjs';
 import { racquetsDatabase, calculateCompatibility } from '../src/data/racquets-database';
@@ -970,11 +971,31 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
 // 15. SOURCE UNIQUE DU CATALOGUE (C3, 09/10/2026)
 // ---------------------------------------------------------------------------
 // Le TypeScript fait foi ; les pages EN lisent public/data/catalog.json, généré
-// au build. Échoue si : (b) le JSON servi diffère du TS ; (c) le JSON est
+// au build. Échoue si : (a) un fichier servi sous public/ lit encore le
+// catalogue dans Supabase ; (b) le JSON servi diffère du TS ; (c) le JSON est
 // versionné (il serait éditable à la main) ou n'est plus généré au build ;
 // (d) il cite une chaîne de testeurs ; (e) une valeur absente y est comblée.
 {
   const before = failures.length;
+  const READ_PATTERNS: RegExp[] = [
+    /\.from\(\s*['"`](racquets|strings)['"`]\s*\)/,
+    /\/rest\/v1\/(racquets|strings)\b/,
+    /\.select\(\s*['"`][^'"`]*\b(racquets|strings)\s*\(/,
+  ];
+  const walk = (dir: string): string[] =>
+    readdirSync(dir).flatMap((f) => {
+      const p = path.join(dir, f);
+      return statSync(p).isDirectory() ? walk(p) : /\.(html?|m?js)$/.test(f) ? [p] : [];
+    });
+  let scanned = 0;
+  for (const file of walk('public')) {
+    scanned++;
+    const src = readFileSync(file, 'utf8');
+    for (const re of READ_PATTERNS) {
+      const m = src.match(re);
+      if (m) fail(`source unique : ${file.split(path.sep).join('/')} lit le catalogue dans Supabase (« ${m[0]} ») — lire /data/catalog.json`);
+    }
+  }
   const expected = serializeCatalog(buildCatalog(racquetsDatabase, stringsDatabase));
   let state = 'absent (généré au build)';
   if (existsSync(CATALOG_JSON_PATH)) {
@@ -997,7 +1018,7 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
   if (absentS !== nullS) fail(`source unique : ${absentS} notes confort absentes dans le TS, ${nullS} null dans le JSON`);
   if (cat.racquets.length !== racquetsDatabase.length || cat.strings.length !== stringsDatabase.length) fail('source unique : comptes JSON ≠ TS');
   if (failures.length === before) {
-    ok(`source unique : catalog.json ${state} ` +
+    ok(`source unique : ${scanned} fichiers public/ sans lecture Supabase du catalogue, catalog.json ${state} ` +
       `(${cat.racquets.length} raquettes / ${cat.strings.length} cordages, ${nullR} RA null, ${nullS} notes null), non versionné, généré en prebuild, aucune chaîne citée`);
   }
 }

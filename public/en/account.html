@@ -10,6 +10,7 @@
   <link rel="alternate" hreflang="en" href="https://tennisstringadvisor.org/en/account.html">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/js/catalog.js"></script>
   <script>
     tailwind.config = {
       theme: {
@@ -379,15 +380,17 @@
       try {
         const { data: setups, error } = await supabaseClient
           .from('user_setups')
-          .select('*, racquets(*), strings(*)')
+          .select('*')
           .eq('user_id', currentUser.id)
           .order('created_at', { ascending: false })
           .limit(3);
         
         if (setups && !error) {
+          // Produits résolus dans le catalogue (C3), plus par jointure Supabase.
+          const withProducts = TSACatalog.attachSetupProducts(setups, await TSACatalog.load());
           document.getElementById('setupCount').textContent = setups.length;
           if (setups.length > 0) {
-            renderRecentSetups(setups);
+            renderRecentSetups(withProducts);
           }
         }
       } catch (e) {

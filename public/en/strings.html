@@ -71,6 +71,7 @@
   </script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/js/catalog.js"></script>
   <link rel="stylesheet" href="/css/dark-mode.css">
   <script src="/js/theme.js"></script>
   <script>
@@ -388,15 +389,10 @@
       return 'bg-red-500';
     }
     
-    // Fetch strings from Supabase
+    // Catalogue généré depuis src/data (C3) — plus de lecture Supabase
     async function fetchStrings() {
       try {
-        const { data, error } = await supabaseClient
-          .from('strings')
-          .select('*')
-          .order('brand', { ascending: true });
-        
-        if (error) throw error;
+        const { strings: data } = await TSACatalog.load();
         
         allStrings = data;
         filteredStrings = data;
@@ -457,30 +453,30 @@
               <div>
                 <div class="flex justify-between text-sm mb-1">
                   <span class="text-gray-500 dark:text-gray-400">Spin</span>
-                  <span class="font-medium dark:text-white">${string.spin}/10</span>
+                  <span class="font-medium dark:text-white">${TSACatalog.display(string.spin, '/10')}</span>
                 </div>
-                <div class="rating-bar"><div class="rating-fill ${getRatingColor(string.spin)}" style="width: ${string.spin * 10}%"></div></div>
+                <div class="rating-bar"><div class="rating-fill ${getRatingColor(string.spin)}" style="width: ${(string.spin ?? 0) * 10}%"></div></div>
               </div>
               <div>
                 <div class="flex justify-between text-sm mb-1">
                   <span class="text-gray-500 dark:text-gray-400">Control</span>
-                  <span class="font-medium dark:text-white">${string.control}/10</span>
+                  <span class="font-medium dark:text-white">${TSACatalog.display(string.control, '/10')}</span>
                 </div>
-                <div class="rating-bar"><div class="rating-fill ${getRatingColor(string.control)}" style="width: ${string.control * 10}%"></div></div>
+                <div class="rating-bar"><div class="rating-fill ${getRatingColor(string.control)}" style="width: ${(string.control ?? 0) * 10}%"></div></div>
               </div>
               <div>
                 <div class="flex justify-between text-sm mb-1">
                   <span class="text-gray-500 dark:text-gray-400">Comfort</span>
-                  <span class="font-medium dark:text-white">${string.comfort}/10</span>
+                  <span class="font-medium dark:text-white">${TSACatalog.display(string.comfort, '/10')}</span>
                 </div>
-                <div class="rating-bar"><div class="rating-fill ${getRatingColor(string.comfort)}" style="width: ${string.comfort * 10}%"></div></div>
+                <div class="rating-bar"><div class="rating-fill ${getRatingColor(string.comfort)}" style="width: ${(string.comfort ?? 0) * 10}%"></div></div>
               </div>
               <div>
                 <div class="flex justify-between text-sm mb-1">
                   <span class="text-gray-500 dark:text-gray-400">Durability</span>
-                  <span class="font-medium dark:text-white">${string.durability}/10</span>
+                  <span class="font-medium dark:text-white">${TSACatalog.display(string.durability, '/10')}</span>
                 </div>
-                <div class="rating-bar"><div class="rating-fill ${getRatingColor(string.durability)}" style="width: ${string.durability * 10}%"></div></div>
+                <div class="rating-bar"><div class="rating-fill ${getRatingColor(string.durability)}" style="width: ${(string.durability ?? 0) * 10}%"></div></div>
               </div>
             </div>
 
@@ -495,7 +491,7 @@
             </div>
             
             <div class="flex items-center justify-between pt-4 border-t">
-              <span class="text-2xl font-bold text-green-600">${string.price_eur}€</span>
+              <span class="text-2xl font-bold text-green-600">${TSACatalog.display(string.price_eur, '€')}</span>
               <div class="flex items-center gap-2">
                 <button onclick="showAffiliate('${string.brand}', '${string.model}')" class="bg-amber-500 text-white px-3 py-2 rounded-lg hover:bg-amber-600 transition text-sm" title="Acheter">
                   🛒
