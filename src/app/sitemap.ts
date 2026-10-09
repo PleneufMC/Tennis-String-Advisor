@@ -105,6 +105,8 @@ const EN_BLOG_SLUGS: string[] = [
   'best-polyester-tennis-strings-2026.html',
   // Adapté du FR tension-cordage-hiver (09/10/2026), appairé en hreflang.
   'tennis-string-tension-cold-weather.html',
+  // Adapté du FR cordage-tennis-elbow (09/10/2026), réécrit sur le catalogue, appairé en hreflang.
+  'best-tennis-strings-for-tennis-elbow.html',
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
