@@ -53,6 +53,20 @@ function normalizeEn(path: string): string {
   return path.replace(/\/+$/, '');
 }
 
+/**
+ * Fiches produit (09/10/2026, tsa-acquisition) : chaque fiche FR
+ * `/racquets/<id>` et `/tennis-strings/<id>` a sa jumelle EN statique
+ * `/en/racquets/<id>.html` et `/en/strings/<id>.html`, générée au build pour
+ * CHAQUE id du catalogue (scripts/en-products/). Les routes FR étant en
+ * `dynamicParams = false`, une fiche FR qui existe a donc toujours sa cible
+ * EN : le mapping par motif ne vise que des URL qui résolvent, sans charger le
+ * catalogue dans le bundle client du sélecteur de langue.
+ */
+const PRODUCT_PAIRS: Array<{ fr: RegExp; en: RegExp; toEn: string; toFr: string }> = [
+  { fr: /^\/racquets\/([a-z0-9-]+)$/, en: /^\/en\/racquets\/([a-z0-9-]+)\.html$/, toEn: '/en/racquets/$1.html', toFr: '/racquets/$1' },
+  { fr: /^\/tennis-strings\/([a-z0-9-]+)$/, en: /^\/en\/strings\/([a-z0-9-]+)\.html$/, toEn: '/en/strings/$1.html', toFr: '/tennis-strings/$1' },
+];
+
 /** Indique si un chemin appartient au site statique anglais. */
 export function isEnglishPath(path: string): boolean {
   const p = normalizePath(path);
@@ -73,10 +87,12 @@ export function getAlternateUrl(
   if (target === 'en') {
     // Article de blog FR -> index blog EN (pas de mapping 1:1 des articles).
     if (p.startsWith('/blog/') && p !== '/blog') return '/en/blog/';
+    for (const pair of PRODUCT_PAIRS) if (pair.fr.test(p)) return p.replace(pair.fr, pair.toEn);
     return FR_TO_EN[p] ?? '/en/';
   }
 
   // target === 'fr'
   if (p.startsWith('/en/blog/') && normalizeEn(p) !== '/en/blog/') return '/blog/';
+  for (const pair of PRODUCT_PAIRS) if (pair.en.test(p)) return p.replace(pair.en, pair.toFr);
   return EN_TO_FR[normalizeEn(p)] ?? '/';
 }

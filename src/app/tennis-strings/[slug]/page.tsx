@@ -6,6 +6,7 @@ import { BuyButton } from '@/components/product/buy-button';
 import { ProductImage } from '@/components/product/product-image';
 import { SpecList, RatingBar, type Spec } from '@/components/product/spec-list';
 import { resolveSiteUrl } from '@/lib/seo/route-metadata';
+import { getAlternateUrl } from '@/lib/i18n/route-map';
 
 /**
  * Fiche cordage individuelle (Phase 3 SEO, audit du 13/08/2026).
@@ -50,11 +51,19 @@ export function generateMetadata({ params }: { params: { slug: string } }): Meta
     ` Calculez le RCS de ce cordage avec votre raquette.`;
   const canonical = `${resolveSiteUrl()}/tennis-strings/${string.id}`;
 
+  // hreflang réciproque avec la fiche EN statique générée pour chaque id
+  // (scripts/en-products/), qui déclare la même paire en retour.
+  const path = new URL(canonical).pathname;
+  const english = `${resolveSiteUrl()}${getAlternateUrl(path, 'en')}`;
+
   return {
     title,
     description,
-    alternates: { canonical },
-    openGraph: { type: 'website', locale: 'fr_FR', url: canonical, title, description },
+    alternates: {
+      canonical,
+      languages: { 'fr-FR': canonical, 'en-US': english, 'x-default': canonical },
+    },
+    openGraph: { type: 'website', locale: 'fr_FR', alternateLocale: 'en_US', url: canonical, title, description },
     twitter: { card: 'summary_large_image', title, description },
   };
 }
