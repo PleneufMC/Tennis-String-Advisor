@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { ProductImage } from '@/components/product/product-image';
 import { cn } from '@/lib/utils';
 import {
-  deriveRacquetProfile,
+  racquetProfile,
   effectiveRacquetRA,
   isRacquetStiffnessEstimated,
   RA_RANGE,
@@ -204,7 +204,7 @@ export default function ComparePage() {
       // calcule 5 notes équivalentes à partir des specs réelles (poids, tamis, RA,
       // plan de cordage) — les champs `power`/`control`/... de l'interface
       // `Racquet` de types/index.ts sont, eux, renseignés sur 0 des 129 raquettes.
-      const profiles = racquets.map(r => deriveRacquetProfile(r));
+      const profiles = racquets.map(r => racquetProfile(r));
       return {
         weight: racquets.map(r => r.weight),
         headSize: racquets.map(r => r.headSize),
@@ -472,7 +472,8 @@ export default function ComparePage() {
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
                       Notes déduites des specs ci-dessus (poids, tamis, RA, plan de
-                      cordage) et non fournies par les fabricants.
+                      cordage), moyennées avec des avis de testeurs consolidés quand
+                      il en existe pour ce modèle. Ni mesures, ni données fabricant.
                     </p>
                   </div>
                   <ComparisonBar
