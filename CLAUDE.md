@@ -1,11 +1,19 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.2.4
-> **Date** : 29 septembre 2026
+> **Version** : 2.2.5
+> **Date** : 9 octobre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
 > **Branche de référence** : `main` (seule branche longue ; la production Netlify en déploie)
 > **Repo** : https://github.com/PleneufMC/Tennis-String-Advisor.git
+
+**Changelog v2.2.4 → v2.2.5** — **Notes /10 des cordages harmonisées** avec des avis
+de testeurs (décision de Pierre du 09/10/2026) : 18 cordages couverts par sa notation
+consolidée de trois chaînes (TennisNerd, TennCom, Rackets and Runners). Note publiée =
+moyenne (ancienne note, note testeurs /20 recalée sur l'ancrage du site). Appréciation
+éditoriale, non affichée comme source sur le site ; provenance dans
+`src/data/tester-ratings.ts`, contrôle 13 dans `audit:ratings`. RCS inchangé. Supabase
+(pages EN) n'est **pas** mis à jour. Raquettes : non appliqué (voir PR).
 
 **Changelog v2.2.3 → v2.2.4** — Branche unique : les chantiers partent de `main`
 et y reviennent par PR. `genspark_ai_developer` n'est plus la branche de
@@ -544,4 +552,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.2.4 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.2.5 — Tennis String Advisor — « Mesurer avant d'affirmer. »*

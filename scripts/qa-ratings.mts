@@ -33,6 +33,15 @@ import {
   meetsMinRating,
   compareOptionalDesc,
 } from '../src/data/strings-database';
+import {
+  STRING_TESTER_RATINGS,
+  TESTER_RATINGS_SOURCE,
+  FIELD_TO_CRITERION,
+  ANCHOR_SHIFT,
+  harmonizedRating,
+  type HarmonizedField,
+  type TesterCriterion,
+} from '../src/data/tester-ratings';
 import { calculateAdvancedRcs, stringTypeToFamily } from '../src/lib/advanced-rcs';
 import {
   DEFAULT_RACQUET_RA,
@@ -785,6 +794,50 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
   if (failures.length === before) {
     const n = Object.keys(PRODUCT_IMAGES).length;
     ok(`photos produit : ${n} entrée(s) valides, ${(bytes / 1e6).toFixed(2)} Mo hébergés, aucun hotlink ni propagation`);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 13. NOTES HARMONISÉES AVEC LES AVIS DE TESTEURS (décision de Pierre, 09/10/2026)
+// ---------------------------------------------------------------------------
+// Toute note harmonisée doit porter sa provenance et se recalculer depuis elle :
+// une retouche à la main d'une note couverte, ou un décalage d'ancrage modifié
+// sans ses données, fait échouer l'audit.
+{
+  const before = failures.length;
+  const fields = Object.keys(FIELD_TO_CRITERION) as HarmonizedField[];
+  const entries = Object.entries(STRING_TESTER_RATINGS);
+  if (entries.length !== 18) fail(`notes testeurs : ${entries.length} cordages en provenance, 18 attendus (17 exacts + Signum validé)`);
+  for (const [id, e] of entries) {
+    const s = stringsDatabase.find((x) => x.id === id);
+    if (!s) { fail(`notes testeurs : ${id} absent du catalogue`); continue; }
+    const crit = Object.keys(TESTER_RATINGS_SOURCE.criteria) as TesterCriterion[];
+    if (crit.some((c) => !Number.isInteger(e.raw20[c]) || e.raw20[c] < 0 || e.raw20[c] > TESTER_RATINGS_SOURCE.scale)) {
+      fail(`notes testeurs : ${id} porte une note source hors de l'échelle /20`);
+    }
+    const avg = crit.reduce((a, c) => a + e.raw20[c], 0) / crit.length;
+    if (Math.abs(avg - e.docxAverage20) > 0.005) fail(`notes testeurs : ${id} moyenne source ${avg} ≠ ${e.docxAverage20}`);
+    for (const f of fields) {
+      const expected = harmonizedRating(e, f);
+      if (s[f] !== expected) fail(`notes testeurs : ${id}.${f} = ${s[f]} au catalogue, ${expected} attendu par la provenance`);
+    }
+  }
+  for (const f of fields) {
+    const pts = entries.filter(([, e]) => e.before10[f] !== undefined);
+    const shift = pts.reduce((a, [, e]) => a + (e.before10[f] as number) - e.raw20[FIELD_TO_CRITERION[f]] / 2, 0) / pts.length;
+    if (Math.abs(Math.round(shift * 10 + 1e-9) / 10 - ANCHOR_SHIFT[f]) > 1e-9) {
+      fail(`notes testeurs : décalage d'ancrage ${f} = ${ANCHOR_SHIFT[f]}, ${shift.toFixed(3)} mesuré sur les produits communs`);
+    }
+  }
+  const ratingKeys = ['performance', 'control', 'comfort', 'durability', 'versatility', 'innovation', 'spin', 'power'] as const;
+  for (const s of stringsDatabase) {
+    for (const k of ratingKeys) {
+      const v = s[k];
+      if (v !== undefined && !(v >= 0 && v <= 10)) fail(`${s.id}.${k} = ${v} hors de l'échelle /10`);
+    }
+  }
+  if (failures.length === before) {
+    ok(`notes testeurs : ${entries.length} cordages harmonisés, provenance complète, ${entries.length * fields.length} notes recalculées à l'identique, toutes les notes dans [0, 10]`);
   }
 }
 
