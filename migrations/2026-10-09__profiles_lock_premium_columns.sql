@@ -17,6 +17,10 @@
 --      compte (p_user_id libre). Idem decrement_lifetime_counter() qui
 --      decremente le compteur des 200 offres a vie dans public.settings.
 --
+--   4. handle_new_user() et handle_updated_at() (fonctions de trigger,
+--      SECURITY DEFINER) sont aussi EXECUTE pour PUBLIC/anon/authenticated.
+--   5. user_setups.name / notes : aucune borne de longueur en base.
+--
 -- Choix : privileges par colonne (REVOKE table + GRANT colonnes) plutot qu'un
 -- trigger BEFORE UPDATE.
 --   - declaratif, lisible dans information_schema.column_privileges ;
@@ -70,6 +74,22 @@ REVOKE EXECUTE ON FUNCTION public.decrement_lifetime_counter()
 GRANT  EXECUTE ON FUNCTION public.decrement_lifetime_counter()
   TO service_role;
 
+-- 3. Fonctions de trigger exposees en RPC (revue securite 09/10, P1 CWE-285) ----
+-- Un trigger s'execute sans controle EXECUTE sur le role qui declenche
+-- l'ecriture : on_auth_user_created, profiles_updated_at, user_setups_updated_at
+-- et stringing_journal_updated_at continuent de fonctionner (prouve par le test).
+REVOKE EXECUTE ON FUNCTION public.handle_new_user()   FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.handle_updated_at() FROM PUBLIC, anon, authenticated;
+
+-- 4. Bornes de longueur sur user_setups (0 ligne au 09/10/2026) -----------------
+-- Le formulaire public/en/setups.html limite deja a 50 / 500 caracteres ;
+-- la base borne a 100 / 2000 contre un appel REST direct.
+ALTER TABLE public.user_setups
+  ADD CONSTRAINT user_setups_name_length_check
+    CHECK (name IS NULL OR char_length(name) <= 100),
+  ADD CONSTRAINT user_setups_notes_length_check
+    CHECK (notes IS NULL OR char_length(notes) <= 2000);
+
 COMMIT;
 
 -- =============================================================================
@@ -87,6 +107,11 @@ COMMIT;
 --   TO PUBLIC, anon, authenticated;
 -- GRANT EXECUTE ON FUNCTION public.decrement_lifetime_counter()
 --   TO PUBLIC, anon, authenticated;
+-- GRANT EXECUTE ON FUNCTION public.handle_new_user()   TO PUBLIC, anon, authenticated;
+-- GRANT EXECUTE ON FUNCTION public.handle_updated_at() TO PUBLIC, anon, authenticated;
+-- ALTER TABLE public.user_setups
+--   DROP CONSTRAINT IF EXISTS user_setups_name_length_check,
+--   DROP CONSTRAINT IF EXISTS user_setups_notes_length_check;
 -- COMMIT;
 --
 -- Verification post-application :
