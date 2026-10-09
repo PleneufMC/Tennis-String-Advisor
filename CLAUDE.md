@@ -1,11 +1,22 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.2.8
+> **Version** : 2.2.9
 > **Date** : 9 octobre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
 > **Branche de référence** : `main` (seule branche longue ; la production Netlify en déploie)
 > **Repo** : https://github.com/PleneufMC/Tennis-String-Advisor.git
+
+**Changelog v2.2.8 → v2.2.9** — **Fiches produit anglaises** (`tsa-acquisition`,
+09/10/2026) : 129 raquettes et 181 cordages ont leur fiche EN, `/en/racquets/<id>.html`
+et `/en/strings/<id>.html`, **HTML statique généré à chaque build** (`prebuild`/`predev`)
+par `scripts/en-products/build-en-product-pages.mjs` depuis le catalogue TS (même
+chargeur que `catalog.json`), non versionné. Pas de route Next : le layout racine
+(verrou) impose `lang="fr"` et l'en-tête FR. hreflang réciproques fiche à fiche
+(`fr-FR`/`en-US`/`x-default` FR), 310 URL au sitemap, `route-map.ts` envoie le
+sélecteur de langue d'une fiche FR vers sa jumelle. Champ absent = « Not published » ;
+descriptions du catalogue (en français) non reprises ; JSON-LD `Product` sans
+`offers`, note, avis ni image ; aucun lien d'achat sur ces fiches.
 
 **Changelog v2.2.7 → v2.2.8** — **Source de vérité unique du catalogue (C3)**, demande
 de Pierre du 09/10/2026 (« harmoniser les sites anglais et français ») : `src/data/*.ts`
@@ -430,7 +441,7 @@ fichier dans la même semaine.
 | `src/components/product/buy-button.tsx` | `tsa-revenue` |
 | `src/app/pricing/`, `src/app/payment-*/`, `src/app/api/checkout*`, `src/app/api/stripe/` | `tsa-revenue` |
 | `src/app/auth/`, `src/app/api/auth/`, `src/lib/auth*` | `tsa-revenue` |
-| `public/blog/`, `public/en/` | `tsa-acquisition` |
+| `public/blog/`, `public/en/` (dont `public/en/racquets/` et `public/en/strings/`, générés, non versionnés), `scripts/en-products/` | `tsa-acquisition` |
 | `src/app/sitemap.ts`, `src/app/robots.ts`, `public/robots.txt` | `tsa-acquisition` |
 | blocs `export const metadata` et JSON-LD dans les `page.tsx` | `tsa-acquisition` |
 | `src/data/`, `src/lib/advanced-rcs.ts`, `src/lib/racquet-scoring.ts` | `tsa-core` |
@@ -587,4 +598,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.2.8 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.2.9 — Tennis String Advisor — « Mesurer avant d'affirmer. »*

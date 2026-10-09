@@ -546,7 +546,7 @@
             <div class="flex items-start justify-between mb-4">
               <div>
                 <span class="text-sm ${brandTextColors[racquet.brand] || 'text-gray-600'} font-medium">${racquet.brand}</span>
-                <h3 class="text-lg font-bold text-gray-900 dark:text-white">${racquet.model} ${racquet.variant || ''}</h3>
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white"><a href="/en/racquets/${racquet.id}.html" class="hover:text-green-700 hover:underline dark:hover:text-green-400">${racquet.model} ${racquet.variant || ''}</a></h3>
               </div>
               <span class="${categoryColors[racquet.category] || 'bg-gray-100 text-gray-800'} text-xs font-medium px-2.5 py-1 rounded">${racquet.category || 'N/A'}</span>
             </div>

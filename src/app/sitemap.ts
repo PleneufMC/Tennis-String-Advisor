@@ -148,6 +148,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.6,
   }));
 
+  // Fiches produit EN statiques (09/10/2026), une par id du catalogue, générées
+  // au build par scripts/en-products/ à partir de la même base : même garantie
+  // qu'au-dessus, aucune URL sans page.
+  const enProductEntries: MetadataRoute.Sitemap = [
+    ...racquetsDatabase.map((r) => `/en/racquets/${r.id}.html`),
+    ...stringsDatabase.map((s) => `/en/strings/${s.id}.html`),
+  ].map((path) => ({
+    url: `${BASE_URL}${path}`,
+    lastModified: now,
+    changeFrequency: 'monthly' as const,
+    priority: 0.5,
+  }));
+
   const enPageEntries: MetadataRoute.Sitemap = EN_PAGES.map((p) => ({
     url: `${BASE_URL}${p.path}`,
     lastModified: now,
@@ -179,5 +192,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...enPageEntries,
     ...enBlogIndex,
     ...enBlogEntries,
+    ...enProductEntries,
   ];
 }

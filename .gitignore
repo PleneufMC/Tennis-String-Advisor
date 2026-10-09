@@ -64,3 +64,7 @@ tmp-analysis/
 
 # Catalogue EN généré au build depuis src/data (C3) — jamais édité ni versionné
 public/data/catalog.json
+
+# Fiches produit EN générées au build depuis src/data (tsa-acquisition, 09/10/2026)
+public/en/racquets/
+public/en/strings/
