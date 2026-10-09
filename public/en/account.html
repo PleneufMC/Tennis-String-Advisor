@@ -40,7 +40,7 @@
           <a href="/en/racquets.html" class="text-gray-600 hover:text-green-600 transition">Racquets</a>
           <a href="/en/strings.html" class="text-gray-600 hover:text-green-600 transition">Strings</a>
           <a href="/en/rcs-calculator.html" class="text-gray-600 hover:text-green-600 transition">🩺 RCS</a>
-          <a href="/account.html" class="text-blue-600 hover:text-blue-700 transition">🇫🇷 FR</a>
+          <a href="/account/configurations" class="text-blue-600 hover:text-blue-700 transition">🇫🇷 FR</a>
         </nav>
         <div class="flex items-center gap-4">
           <span id="userEmail" class="text-sm text-gray-600 hidden md:block"></span>
@@ -476,7 +476,7 @@
       if (confirm(`Send a password reset email to ${email}?`)) {
         try {
           const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
-            redirectTo: window.location.origin + '/reset-password.html'
+            redirectTo: window.location.origin + '/en/auth.html?mode=reset'
           });
           
           if (error) throw error;
