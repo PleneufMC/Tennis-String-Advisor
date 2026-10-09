@@ -68,6 +68,8 @@ const BLOG_SLUGS: string[] = [
   'materiel-next-gen-fonseca-mensik-cobolli-jodar.html',
   // Classement polyester 2026 (09/10/2026), appairé en hreflang.
   'meilleur-cordage-polyester-2026.html',
+  // Polyester et tennis elbow, tri par rigidité (09/10/2026), appairé en hreflang.
+  'cordage-polyester-tennis-elbow.html',
 ];
 
 // Pages anglaises statiques publiques (`public/en/*.html`).
@@ -107,6 +109,8 @@ const EN_BLOG_SLUGS: string[] = [
   'tennis-string-tension-cold-weather.html',
   // Adapté du FR cordage-tennis-elbow (09/10/2026), réécrit sur le catalogue, appairé en hreflang.
   'best-tennis-strings-for-tennis-elbow.html',
+  // Adapté du FR cordage-polyester-tennis-elbow (09/10/2026), appairé en hreflang.
+  'polyester-strings-tennis-elbow.html',
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
