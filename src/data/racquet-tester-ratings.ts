@@ -30,6 +30,11 @@
  *   (d) aucun marqueur de la fiche (id, variante, année) ne contredit la
  *       génération testée.
  * Sinon : quarantaine (`RACQUET_TESTER_QUARANTINE`), aucun avis appliqué.
+ * Information de Pierre (09/10/2026) : le document porte sur les DERNIÈRES
+ * générations. Sept fiches qui décrivaient une génération antérieure (RA
+ * divergent) ont donc été alignées en place sur la génération en vente, specs
+ * sourcées, puis rapprochées (`racquets-database.ts`, commentaire par fiche).
+ * Les décalages d'ancrage sont mesurés sur les 18 rapprochements.
  * Contrôle : `npm run audit:ratings` (contrôle 14) recalcule tout depuis ce fichier.
  */
 
@@ -58,7 +63,7 @@ export const RACQUET_AXIS_TO_CRITERION: Readonly<Record<RacquetProfileAxis, Racq
 
 /** Décalage d'ancrage par axe (/10), mesuré sur les raquettes rapprochées. */
 export const RACQUET_ANCHOR_SHIFT: Readonly<Record<RacquetProfileAxis, number>> = {
-  power: -2.6, control: -2.6, comfort: -2, maneuverability: -2.9, stability: -1.2,
+  power: -2.5, control: -2.8, comfort: -2.2, maneuverability: -2.9, stability: -1.7,
 };
 
 export interface RacquetTesterEntry {
@@ -82,8 +87,51 @@ const row = (v: readonly number[]) =>
 
 const TWE = 'https://www.tenniswarehouse-europe.com';
 
-/** Fiche du catalogue (id) -> avis de testeurs. 11 rapprochements établis. */
+/** Fiche du catalogue (id) -> avis de testeurs. 18 rapprochements établis (dont 7 fiches alignées
+ * sur la dernière génération le 09/10/2026, cf. commentaires de racquets-database.ts). */
 export const RACQUET_TESTER_RATINGS: Readonly<Record<string, RacquetTesterEntry>> = {
+  'babolat-pure-aero-standard': {
+    docxName: 'Babolat Pure Aero 100', docxAverage20: 16.55, tier: 'S', confidence: 'Moyenne',
+    testedGeneration: '2026 (fiche alignée le 09/10/2026)',
+    specCheck: { url: `${TWE}/Babolat_Pure_Aero_2026_Racket/descpageRCQBA-BPAR26-EN.html`, headSize: 100, unstrungWeight: 300, pattern: '16x19', ra: 66 },
+    raw20: row([18, 19, 15, 17, 18, 17, 17, 19, 14, 17, 16, 16, 14, 16, 16, 16, 16, 18, 13, 19]),
+  },
+  'babolat-pure-drive-standard': {
+    docxName: 'Babolat Pure Drive', docxAverage20: 16.3, tier: 'S', confidence: 'Élevée',
+    testedGeneration: '2025 (fiche alignée le 09/10/2026)',
+    specCheck: { url: `${TWE}/Babolat_Pure_Drive_2025_Racket_/descpageRCQBA-BPD25R-EN.html`, headSize: 100, unstrungWeight: 300, pattern: '16x19', ra: 69 },
+    raw20: row([18, 17, 15, 17, 18, 16, 16, 15, 16, 15, 14, 18, 14, 16, 16, 17, 19, 18, 13, 18]),
+  },
+  'tecnifibre-tfight-305s-id': {
+    docxName: 'Tecnifibre T-Fight 305S', docxAverage20: 15.95, tier: 'A', confidence: 'Élevée',
+    testedGeneration: '2025 (fiche alignée le 09/10/2026)',
+    specCheck: { url: `${TWE}/Tecnifibre_TFight_305S_Racket/descpageRCTECNIH-TF305S-EN.html`, headSize: 98, unstrungWeight: 305, pattern: '18x19', ra: 63 },
+    raw20: row([15, 16, 19, 19, 15, 18, 17, 15, 18, 18, 10, 18, 13, 17, 14, 15, 12, 17, 14, 19]),
+  },
+  'yonex-ezone-100': {
+    docxName: 'Yonex EZONE 100', docxAverage20: 15.55, tier: 'A', confidence: 'Élevée',
+    testedGeneration: '2025 (fiche alignée le 09/10/2026)',
+    specCheck: { url: `${TWE}/Yonex_EZONE_100_300g_Blast_Blue_Racket/descpageRCYONEX-EZ10BB-EN.html`, headSize: 100, unstrungWeight: 300, pattern: '16x19', ra: 68 },
+    raw20: row([18, 18, 16, 16, 18, 17, 12, 17, 15, 13, 16, 15, 15, 16, 15, 13, 15, 16, 13, 17]),
+  },
+  'yonex-percept-100d': {
+    docxName: 'Yonex Percept 100D', docxAverage20: 14.85, tier: 'B', confidence: 'Élevée',
+    testedGeneration: 'en vente (fiche alignée le 09/10/2026)',
+    specCheck: { url: `${TWE}/Yonex_Percept_100D_Racket/descpageRCYONEX-PERCY-EN.html`, headSize: 100, unstrungWeight: 305, pattern: '18x19', ra: 66 },
+    raw20: row([13, 15, 18, 18, 11, 18, 13, 14, 18, 16, 14, 15, 16, 16, 12, 12, 11, 16, 14, 17]),
+  },
+  'yonex-percept-100': {
+    docxName: 'Yonex Percept 100', docxAverage20: 14.55, tier: 'B', confidence: 'Faible',
+    testedGeneration: 'en vente (fiche alignée le 09/10/2026)',
+    specCheck: { url: `${TWE}/Yonex_Percept_100_Racket/descpageRCYONEX-PERC1-EN.html`, headSize: 100, unstrungWeight: 300, pattern: '16x19', ra: 66 },
+    raw20: row([15, 15, 15, 14, 15, 15, 13, 15, 15, 15, 14, 15, 15, 14, 14, 16, 14, 15, 14, 13]),
+  },
+  'head-boom-pro-2024': {
+    docxName: 'Head Boom Pro', docxAverage20: 13.1, tier: 'C', confidence: 'Faible',
+    testedGeneration: '2026 (specs identiques à la 2024 ; fiche datée 2026 le 09/10/2026)',
+    specCheck: { url: `${TWE}/Head_Boom_Pro_2026_Racket/descpageRCHEAD-HBOOP6-EN.html`, headSize: 98, unstrungWeight: 310, pattern: '16x19', ra: 64 },
+    raw20: row([14, 13, 13, 11, 15, 14, 13, 13, 13, 13, 14, 13, 13, 13, 13, 13, 15, 14, 12, 10]),
+  },
   'yonex-vcore-98': {
     docxName: 'Yonex VCORE 98', docxAverage20: 15.0, tier: 'A', confidence: 'Élevée',
     testedGeneration: '2026 (8e génération)',
@@ -159,13 +207,6 @@ export const RACQUET_TESTER_RATINGS: Readonly<Record<string, RacquetTesterEntry>
  * Blade 98 V10, Axis 98, Speed Tour 97) n'ont pas de fiche et n'en reçoivent pas.
  */
 export const RACQUET_TESTER_QUARANTINE: Readonly<Record<string, string>> = {
-  'Babolat Pure Aero 100': 'babolat-pure-aero-standard : RA 69 au catalogue, 66 publié pour la 2026 (TWE BPAR26) — la fiche décrit une génération antérieure.',
-  'Babolat Pure Drive': 'babolat-pure-drive-standard : RA 72 au catalogue, 69 publié pour la 2025 (TWE BPD25R, valeur révisée le 02/04/2025) — 72 est la génération précédente.',
-  'Tecnifibre T-Fight 305S': "tecnifibre-tfight-305s-id : RA 65 au catalogue, 63 publié pour la 2025 (TWE TF305S) ; l'édition « ID » n'a pas de fiche de specs.",
-  'Yonex EZONE 100': 'yonex-ezone-100 : RA 64 au catalogue, 68 publié pour la 2025 (TWE EZ10BB, labo 68).',
-  'Yonex Percept 100D': 'yonex-percept-100d : RA 61 au catalogue, 66 publié (TWE PERCY, labo 66).',
-  'Yonex Percept 100': 'yonex-percept-100 : RA 61 au catalogue, 66 publié (TWE PERC1).',
-  'Head Boom Pro': 'head-boom-pro-2024 : specs 2024 et 2026 identiques (310 g, RA 64) ; la génération testée ne peut être établie.',
   'Tecnifibre Fire (300 / 305 S)': 'Ligne qui agrège deux tamis (100 et 98) : non rapprochable.',
 };
 

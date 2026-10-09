@@ -26,11 +26,12 @@ export interface TennisRacquet {
 export const racquetsDatabase: TennisRacquet[] = [
   // BABOLAT
   {
+    // Génération 2026 (09/10/2026) : RA 69 -> 66 ; 100/300 g/16x19 inchangés. Source : https://www.tenniswarehouse-europe.com/Babolat_Pure_Aero_2026_Racket/descpageRCQBA-BPAR26-EN.html
     id: 'babolat-pure-aero-standard',
     brand: 'Babolat',
     model: 'Pure Aero',
-    variant: 'Standard',
-    stiffness: 69,
+    variant: 'Standard (2026)',
+    stiffness: 66,
     weight: 300,
     headSize: 100,
     stringPattern: '16x19',
@@ -69,11 +70,12 @@ export const racquetsDatabase: TennisRacquet[] = [
     price: { europe: 260, usa: 260 }
   },
   {
+    // Génération 2025 (09/10/2026) : RA 72 -> 69 (révisé par TWE le 02/04/2025) ; 100/300 g/16x19 inchangés. Source : https://www.tenniswarehouse-europe.com/Babolat_Pure_Drive_2025_Racket_/descpageRCQBA-BPD25R-EN.html
     id: 'babolat-pure-drive-standard',
     brand: 'Babolat',
     model: 'Pure Drive',
-    variant: 'Standard',
-    stiffness: 72,
+    variant: 'Standard (2025)',
+    stiffness: 69,
     weight: 300,
     headSize: 100,
     stringPattern: '16x19',
@@ -598,17 +600,18 @@ export const racquetsDatabase: TennisRacquet[] = [
     price: { europe: 250, usa: 250 }
   },
   {
+    // Génération 2025 (09/10/2026) : variante « 305S ID » (édition limitée) -> 305S 2025, RA 65 -> 63 ; 98/305 g/18x19 inchangés. Sources : https://www.tenniswarehouse-europe.com/Tecnifibre_TFight_305S_Racket/descpageRCTECNIH-TF305S-EN.html ; année : https://www.tenniswarehouse-europe.com/catpage-NTR25-EN.html
     id: 'tecnifibre-tfight-305s-id',
     brand: 'Tecnifibre',
     model: 'TFight',
-    variant: '305S ID',
-    stiffness: 65,
+    variant: '305S (2025)',
+    stiffness: 63,
     weight: 305,
     headSize: 98,
     stringPattern: '18x19',
     category: 'Control',
     playerLevel: ['Advanced', 'Pro'],
-    description: 'Isoflex et Dynacore HD pour stabilité et confort.',
+    description: 'Version 2025 : équilibre plus léger en tête, poutre RS Section renforcée, système ISOFLEX.',
     proUsage: 'Daniil Medvedev',
     price: { europe: 270, usa: 270 }
   },
@@ -938,11 +941,12 @@ export const racquetsDatabase: TennisRacquet[] = [
     price: { europe: 280, usa: 280 }
   },
   {
+    // Génération 2025 (8e, 09/10/2026) : RA 64 -> 68 ; 100/300 g/16x19 inchangés. Source : https://www.tenniswarehouse-europe.com/Yonex_EZONE_100_300g_Blast_Blue_Racket/descpageRCYONEX-EZ10BB-EN.html
     id: 'yonex-ezone-100',
     brand: 'Yonex',
     model: 'EZONE',
-    variant: '100',
-    stiffness: 64,
+    variant: '100 (2025)',
+    stiffness: 68,
     weight: 300,
     headSize: 100,
     stringPattern: '16x19',
@@ -1009,11 +1013,12 @@ export const racquetsDatabase: TennisRacquet[] = [
     price: { europe: 290, usa: 290 }
   },
   {
+    // Génération en vente (09/10/2026, année non publiée par la source) : RA 61 -> 66 ; 100/300 g/16x19 inchangés. Source : https://www.tenniswarehouse-europe.com/Yonex_Percept_100_Racket/descpageRCYONEX-PERC1-EN.html
     id: 'yonex-percept-100',
     brand: 'Yonex',
     model: 'Percept',
     variant: '100',
-    stiffness: 61,
+    stiffness: 66,
     weight: 300,
     headSize: 100,
     stringPattern: '16x19',
@@ -1023,11 +1028,12 @@ export const racquetsDatabase: TennisRacquet[] = [
     price: { europe: 290, usa: 290 }
   },
   {
+    // Génération en vente (09/10/2026, année non publiée par la source) : RA 61 -> 66 ; 100/305 g/18x19 inchangés. Source : https://www.tenniswarehouse-europe.com/Yonex_Percept_100D_Racket/descpageRCYONEX-PERCY-EN.html
     id: 'yonex-percept-100d',
     brand: 'Yonex',
     model: 'Percept',
     variant: '100D',
-    stiffness: 61,
+    stiffness: 66,
     weight: 305,
     headSize: 100,
     stringPattern: '18x19',
@@ -1323,17 +1329,18 @@ export const racquetsDatabase: TennisRacquet[] = [
 
   // HEAD - Boom (2024, Auxetic 2.0)
   {
+    // Génération 2026 (09/10/2026) : specs identiques à la 2024 (98/310 g/16x19/RA 64), fiche datée 2026 ; id conservé (URL publique, configurations sauvegardées). Source : https://www.tenniswarehouse-europe.com/Head_Boom_Pro_2026_Racket/descpageRCHEAD-HBOOP6-EN.html
     id: 'head-boom-pro-2024',
     brand: 'Head',
     model: 'Boom',
-    variant: 'Pro',
+    variant: 'Pro (2026)',
     stiffness: 64,
     weight: 310,
     headSize: 98,
     stringPattern: '16x19',
     category: 'Modern Player',
     playerLevel: ['Advanced', 'Pro'],
-    description: 'Boom Pro 2024 avec Auxetic 2.0, mélange puissance, spin et confort pour le joueur agressif.',
+    description: 'Boom Pro 2026 : fibres de bore Hy-Bor dans le manche, Auxetic 2 conservé ; puissance, spin et confort pour le joueur agressif.',
     price: { europe: 250, usa: 239 }
   },
   {
