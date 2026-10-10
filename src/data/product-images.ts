@@ -1,11 +1,11 @@
 // FICHIER GÉNÉRÉ par scripts/scraper/tw_product_images.py — ne pas éditer à la main.
 //
-// Photos produit Tennis Warehouse (US) et Tennis Warehouse Europe, hébergées chez nous
+// Photos produit Tennis Warehouse (US), Tennis Warehouse Europe et Tennis-Point, hébergées chez nous
 // (public/images/products/). Retrait : PRODUCT_IMAGES_ENABLED = false
 // (src/lib/product-images.ts), puis : python scripts/scraper/tw_product_images.py purge
 // (ou « purge <source> » pour une seule source).
 
-export type ProductImageSource = 'tennis-warehouse' | 'tennis-warehouse-europe';
+export type ProductImageSource = 'tennis-warehouse' | 'tennis-warehouse-europe' | 'tennis-point';
 
 export interface ProductImageEntry {
   file: string;

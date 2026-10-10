@@ -26,6 +26,7 @@ const FOLDER = { racquet: '/images/products/racquets/', string: '/images/product
 export const SOURCE_CREDIT = {
   'tennis-warehouse': 'Tennis Warehouse',
   'tennis-warehouse-europe': 'Tennis Warehouse Europe',
+  'tennis-point': 'Tennis-Point',
 };
 
 const esc = (v) =>

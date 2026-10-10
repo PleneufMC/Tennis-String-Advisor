@@ -3,9 +3,11 @@ import { PRODUCT_IMAGES, type ProductImageEntry, type ProductImageSource } from 
 /**
  * Photos produit (raquettes, cordages) — décision de Pierre du 29/09/2026.
  *
- * Les photos viennent de Tennis Warehouse (et, depuis le 09/10/2026, de Tennis
- * Warehouse Europe, même groupe), dont les conditions interdisent la
- * reproduction sans permission écrite ; une demande est en cours. Tout le
+ * Les photos viennent de Tennis Warehouse et Tennis Warehouse Europe (dont les
+ * conditions interdisent la reproduction sans permission écrite ; demande en
+ * cours, photos conservées par décision de Pierre du 10/10/2026, en connaissance
+ * du risque) et, depuis le 10/10/2026, de Tennis-Point (aucune autorisation de
+ * réutilisation publiée). Tout le
  * dispositif passe donc par CE drapeau : à `false`, chaque carte et chaque
  * fiche — FR, et EN statique via scripts/catalog/product-images.mjs — retombe
  * sur l'illustration, sans autre modification.
@@ -23,6 +25,7 @@ export type ProductKind = 'racquet' | 'string';
 export const PRODUCT_IMAGE_CREDIT: Readonly<Record<ProductImageSource, string>> = {
   'tennis-warehouse': 'Tennis Warehouse',
   'tennis-warehouse-europe': 'Tennis Warehouse Europe',
+  'tennis-point': 'Tennis-Point',
 };
 
 const FOLDER: Record<ProductKind, string> = {

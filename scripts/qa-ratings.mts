@@ -771,6 +771,7 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
   const SOURCE_HOSTS = {
     'tennis-warehouse': { page: 'https://www.tennis-warehouse.com/', image: 'https://img.tennis-warehouse.com/' },
     'tennis-warehouse-europe': { page: 'https://www.tenniswarehouse-europe.com/', image: 'https://img.tenniswarehouse-europe.com/' },
+    'tennis-point': { page: 'https://www.tennis-point.fr/products/', image: 'https://cdn.shopify.com/s/files/1/0638/1885/8538/' },
   } as const;
   const { existsSync, readdirSync, statSync } = await import('node:fs');
   const racquetIds = new Set(racquetsDatabase.map((r) => r.id));
@@ -812,7 +813,7 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
     readdirSync(d).flatMap((n) => (statSync(`${d}/${n}`).isDirectory() ? walk(`${d}/${n}`) : [`${d}/${n}`]));
   for (const file of walk('src').filter((f) => /\.(tsx?|mts)$/.test(f) && !allowed.has(f))) {
     const src = readFileSync(file, 'utf8');
-    if (/img\.tennis-?warehouse(-europe)?\.com|\/images\/products\/|PRODUCT_IMAGES|getProductImage/.test(src)) {
+    if (/img\.tennis-?warehouse(-europe)?\.com|cdn\.shopify\.com\/s\/files\/1\/0638|\/images\/products\/|PRODUCT_IMAGES|getProductImage/.test(src)) {
       fail(`${file} : référence directe aux photos TW (hotlink ou propagation hors du composant)`);
     }
   }
@@ -833,7 +834,7 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
         const ld = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].map((m) => m[1]).join('\n');
         if (/"image"|\/images\/products\//.test(ld)) fail(`fiche EN ${kind}/${item.id} : photo propagée dans le JSON-LD`);
         if (/og:image/.test(html)) fail(`fiche EN ${kind}/${item.id} : og:image présent`);
-        if (/img\.tennis-?warehouse(-europe)?\.com/.test(html)) fail(`fiche EN ${kind}/${item.id} : hotlink vers TW`);
+        if (/img\.tennis-?warehouse(-europe)?\.com|cdn\.shopify\.com/.test(html)) fail(`fiche EN ${kind}/${item.id} : hotlink vers la source`);
         if (expected) {
           if (!html.includes(`<img src="${expected.file}"`)) fail(`fiche EN ${kind}/${item.id} : photo validée non affichée`);
           else shown++;

@@ -30,12 +30,23 @@ stock) et publie une fiche PAR coloris et PAR jauge : l'association d'un cordage
 (sitemapindex.xml -> sitemaps par marque), jamais par URL composée. Une décision
 du mapping porte alors `"source": "tennis-warehouse-europe"`.
 
+Troisième source (10/10/2026) : Tennis-Point (www.tennis-point.fr)
+--------------------------------------------------------------------
+Demande de Pierre. Boutique Shopify : robots.txt autorise /products/, plan du site
+publié avec l'image principale de chaque produit. Tennis-Point ne publie ni la
+rigidité RA ni, souvent, le millésime : la génération ne s'y vérifie que par le
+millésime du nom ; tout doute = quarantaine. Débit 3 s par requête. Tout refus
+(403/406/429, page anti-robot) lève AccessRefused et ARRÊTE la commande — le
+10/10/2026, HTTP 429 après ~60 requêtes : collecte arrêtée, non reprise.
+
 Étapes
 ------
   python scripts/scraper/tw_product_images.py discover       # pages catégorie -> catalogue TW
   python scripts/scraper/tw_product_images.py discover-eu    # plan du site TWE -> catalogue TWE
   python scripts/scraper/tw_product_images.py candidates     # aide à la décision (lecture humaine)
   python scripts/scraper/tw_product_images.py candidates-eu  # idem TWE, pages lues et contrôles appliqués
+  python scripts/scraper/tw_product_images.py discover-tp    # plan du site Tennis-Point -> catalogue TP
+  python scripts/scraper/tw_product_images.py candidates-tp  # idem Tennis-Point (débit lent, arrêt au refus)
   python scripts/scraper/tw_product_images.py build          # pages produit, contrôles, images, manifeste
   python scripts/scraper/tw_product_images.py purge          # RETRAIT : supprime images et manifeste
   python scripts/scraper/tw_product_images.py purge tennis-warehouse-europe   # retrait d'une seule source
@@ -55,6 +66,7 @@ import subprocess
 import sys
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 from datetime import date
 from pathlib import Path
@@ -72,7 +84,7 @@ BASE_EU = 'https://www.tenniswarehouse-europe.com'
 CACHE_EU = CACHE / 'eu'
 SOURCE_TW = 'tennis-warehouse'
 SOURCE_EU = 'tennis-warehouse-europe'
-SOURCES = (SOURCE_TW, SOURCE_EU)
+SOURCES = (SOURCE_TW, SOURCE_EU, 'tennis-point')
 # Sitemaps de marque TWE retenus (codes lus dans sitemapindex.xml) : marques du catalogue TSA.
 EU_BRANDS = {'BABOLAT', 'WILSON', 'HEAD', 'YONEX', 'DUNLOP', 'PRINCE', 'TECNIFIBRE', 'VOLKL',
              'LUXILON', 'SOLINCO', 'GAMMA', 'GOSEN', 'ISOSPEED', 'KIRSCH', 'SIGNUMPRO', 'TOROLINE',
@@ -105,13 +117,26 @@ SEEDS = [
 _last_request = 0.0
 
 
+class AccessRefused(SystemExit):
+    """Refus du site (403/406/429, captcha) : arrêt immédiat, jamais de contournement."""
+
+
+# Statuts qui signifient « le site refuse le robot » : on s'arrête, on ne réessaie pas.
+REFUSAL_CODES = (403, 406, 429)
+CAPTCHA_RE = re.compile(rb'captcha|cf-challenge|challenge-platform|Access denied', re.I)
+SLOW_HOSTS = {'www.tennis-point.fr': 3.0}  # débit lent demandé pour Tennis-Point
+
+
 def fetch(url: str, dest: Path, binary: bool = False) -> bytes | None:
-    """GET poli, avec cache disque. Renvoie None si la ressource est indisponible."""
+    """GET poli, avec cache disque. Renvoie None si la ressource est indisponible.
+    Un refus (403/406/429, captcha) lève AccessRefused : la collecte s'arrête."""
     global _last_request
     if dest.exists() and dest.stat().st_size > 0:
         return dest.read_bytes()
+    host = urllib.parse.urlsplit(url).hostname or ''
+    interval = SLOW_HOSTS.get(host, MIN_INTERVAL_S)
     for attempt in (1, 2):
-        wait = MIN_INTERVAL_S - (time.monotonic() - _last_request)
+        wait = interval - (time.monotonic() - _last_request)
         if wait > 0:
             time.sleep(wait)
         _last_request = time.monotonic()
@@ -122,11 +147,15 @@ def fetch(url: str, dest: Path, binary: bool = False) -> bytes | None:
         try:
             with urllib.request.urlopen(req, timeout=30) as res:
                 body = res.read()
+            if not binary and CAPTCHA_RE.search(body[:20000]) and b'<title' in body[:20000]                     and re.search(rb'<title>[^<]*(captcha|challenge|denied)', body[:20000], re.I):
+                raise AccessRefused(f'ARRÊT : page de contrôle anti-robot sur {url}')
             dest.parent.mkdir(parents=True, exist_ok=True)
             dest.write_bytes(body)
             return body
         except urllib.error.HTTPError as err:
             print(f'   HTTP {err.code} {url}')
+            if err.code in REFUSAL_CODES:
+                raise AccessRefused(f'ARRÊT : HTTP {err.code} sur {url} — le site refuse la collecte')
             if err.code in (404, 410) or attempt == 2:
                 return None
         except Exception as err:  # réseau
@@ -247,6 +276,132 @@ def eu_image(page: str, code: str) -> str | None:
         return None
     eligible = sorted((u for u in urls if width(u) >= MAX_WIDTH), key=width)
     return eligible[0] if eligible else max(urls, key=width)
+
+
+# --------------------------------------------------------------------------
+# 1 ter. discover-tp : plan du site Tennis-Point (FR) -> catalogue TP
+# --------------------------------------------------------------------------
+# Décision de Pierre du 10/10/2026 (« utilisez Tennis-Point pour compléter les
+# photos »). Boutique Shopify : robots.txt autorise /products/ ; sitemaps produit
+# publiés avec l'URL de l'image principale. Domaine .fr : catalogue et libellés
+# français, comme le site ; c'est aussi le marchand des liens d'affiliation.
+BASE_TP = 'https://www.tennis-point.fr'
+CACHE_TP = CACHE / 'tp'
+SOURCE_TP = 'tennis-point'
+TP_KEEP_RE = re.compile(r'(raquette|cordage|garniture)', re.I)
+TP_SKIP_RE = re.compile(r'(housse|sac|bag|padel|badminton|squash|bobine|reel|grip|antivibr|balle|'
+                        r'chaussure|t-shirt|short|veste|machine|oeillet|protection|pickleball|beach)', re.I)
+
+
+def discover_tp() -> None:
+    index = fetch(BASE_TP + '/sitemap.xml', CACHE_TP / 'sitemaps' / 'sitemap.xml')
+    if index is None:
+        raise SystemExit('sitemap Tennis-Point indisponible')
+    products: dict[str, dict] = {}
+    locs = [html.unescape(x) for x in re.findall(r'<loc>([^<]+)</loc>', index.decode('utf-8', 'replace'))]
+    for i, loc in enumerate(l for l in locs if '/sitemap_products_' in l):
+        body = fetch(loc, CACHE_TP / 'sitemaps' / f'products_{i + 1}.xml')
+        if body is None:
+            print(f'!  sitemap indisponible : {loc}')
+            continue
+        n = 0
+        for block in re.findall(r'<url>(.*?)</url>', body.decode('utf-8', 'replace'), re.S):
+            m = re.search(r'<loc>(https://www\.tennis-point\.fr/products/([a-z0-9-]+))</loc>', block)
+            img = re.search(r'<image:loc>([^<]+)</image:loc>', block)
+            if not m or not img:
+                continue
+            url, handle = m.groups()
+            if not TP_KEEP_RE.search(handle) or TP_SKIP_RE.search(handle):
+                continue
+            kind = 'racquet' if 'raquette' in handle else 'string'
+            products[handle] = {'code': handle, 'kind': kind, 'url': url, 'name': handle.replace('-', ' '),
+                                'thumb': html.unescape(img.group(1)), 'source': SOURCE_TP}
+            n += 1
+        print(f'   sitemap produits {i + 1} : {n} raquettes/cordages')
+    items = sorted(products.values(), key=lambda p: p['code'])
+    (CACHE_TP / 'catalog.json').write_text(json.dumps(items, indent=1, ensure_ascii=False), encoding='utf-8')
+    print(f'Catalogue TP : {len(items)} produits '
+          f'({sum(p["kind"] == "racquet" for p in items)} raquettes, '
+          f'{sum(p["kind"] == "string" for p in items)} cordages)')
+
+
+TP_COLOURS = {
+    'noir': 'black', 'blanc': 'white', 'gris': 'gray', 'argent': 'silver', 'jaune': 'yellow',
+    'rouge': 'red', 'bleu': 'blue', 'vert': 'green', 'orange': 'orange', 'rose': 'pink',
+    'violet': 'purple', 'ecru': 'natural', 'écru': 'natural', 'naturel': 'natural', 'or': 'gold',
+    'bronze': 'bronze', 'menthe': 'mint', 'anthracite': 'anthracite', 'lime': 'lime', 'lavande': 'lavender',
+}
+
+
+def tp_facts(page: str) -> dict:
+    """Caractéristiques d'une page produit Tennis-Point (bloc « Caractéristiques »,
+    sélecteur « Épaisseur »). Tennis-Point ne publie pas la rigidité RA."""
+    body = re.sub(r'<script.*?</script>|<style.*?</style>', '', page, flags=re.S)
+    text = html.unescape(re.sub(r'\s+', ' ', re.sub(r'<[^>]+>', ' ', body)))
+    facts: dict = {'_text': text}
+    m = re.search(r'Taille de la tête (\d{3,4}) cm²', text)
+    if m:
+        facts['headSize'] = round(int(m.group(1)) / 6.4516, 1)
+    m = re.search(r'Schéma de cordage (\d+)\s*/\s*(\d+)', text)
+    if m:
+        facts['stringPattern'] = f'{m.group(1)}x{m.group(2)}'
+    m = re.search(r'Caractéristiques .{0,200}?Poids (\d{3}) g', text)
+    if m:
+        facts['weight'] = int(m.group(1))
+    m = re.search(r'Type de raquette (non cordée|cordée)', text)
+    if m:
+        facts['strung'] = m.group(1) == 'cordée'
+    m = re.search(r'Caractéristiques .{0,400}?Couleur ([a-zàâçéèêëîïôûù ,/-]{2,40}?) (?:Type|Avis|Description|Niveau)', text)
+    if m:
+        facts['colourFr'] = m.group(1).strip()
+        facts['color'] = ' '.join(TP_COLOURS.get(w, w) for w in re.split(r'[ ,/-]+', facts['colourFr']) if w)
+    facts['gaugesMm'] = sorted({g.replace(',', '.') for g in re.findall(r'Choisir (\d,\d{2})\b', text)})
+    m = re.search(r'<h1[^>]*>(.*?)</h1>', page, re.S)
+    if m:
+        facts['title'] = html.unescape(re.sub(r'<[^>]+>|\s+', ' ', m.group(1))).strip()
+    return facts
+
+
+def tp_check(kind: str, item: dict, prod: dict, facts: dict) -> str | None:
+    """Contrôles d'association Tennis-Point. Sans RA publiée, la génération ne se
+    vérifie que par le millésime : un millésime de la fiche absent du produit TP,
+    ou un millésime TP différent, part en quarantaine."""
+    years_ours = set(re.findall(r'20[12]\d', f"{item.get('variant') or ''} {item['id']}"))
+    years_tp = set(re.findall(r'20[12]\d', prod['code']))
+    if years_tp and years_ours and not (years_tp & years_ours):
+        return f"millésime TP {'/'.join(sorted(years_tp))} != fiche {'/'.join(sorted(years_ours))}"
+    if years_ours and not years_tp:
+        return f"millésime {'/'.join(sorted(years_ours))} de la fiche non mentionné chez TP"
+    if kind == 'racquet':
+        hs, sp, w = facts.get('headSize'), facts.get('stringPattern'), facts.get('weight')
+        if hs is None or sp is None or w is None:
+            return 'tamis, plan ou poids illisible sur la page TP : association non vérifiable'
+        if abs(hs - float(item['headSize'])) > 0.6:
+            return f"tamis TP {hs:g} in² != fiche {item['headSize']} in²"
+        if item.get('stringPattern') and sp != item['stringPattern']:
+            return f"plan de cordage TP {sp} != fiche {item['stringPattern']}"
+        if facts.get('strung') is not False:
+            return 'raquette cordée chez TP : poids non cordé non vérifiable'
+        if item.get('weight') and abs(w - item['weight']) > 5:
+            return f"poids non cordé TP {w} g != fiche {item['weight']} g"
+        return None
+    shown = facts.get('gaugesMm') or []
+    if not shown:
+        return 'jauge illisible sur la page TP : association non vérifiable'
+    ours = {round(float(g), 2) for gs in item.get('gauges', []) for g in gs.split('/') if re.match(r'^\d\.\d+$', g)}
+    if not all(round(float(g), 2) in ours for g in shown):
+        return f"jauge TP {'/'.join(shown)} mm absente de la fiche ({', '.join(item.get('gauges', []))})"
+    tp_colour, our_colour = facts.get('color') or '', item.get('color') or ''
+    if not tp_colour:
+        return 'couleur illisible sur la page TP : association non vérifiable'
+    if not our_colour or not (color_tokens(tp_colour) & color_tokens(our_colour)):
+        return f"couleur TP « {facts.get('colourFr')} » != fiche « {our_colour} »"
+    return None
+
+
+def tp_catalog() -> dict[str, dict]:
+    path = CACHE_TP / 'catalog.json'
+    return {p['code']: p for p in json.loads(path.read_text(encoding='utf-8'))} if path.exists() else {}
 
 
 def eu_catalog() -> dict[str, dict]:
@@ -449,6 +604,7 @@ def build() -> None:
     base = load_base()
     catalog = {p['code']: p for p in json.loads((CACHE / 'catalog.json').read_text(encoding='utf-8'))}
     catalog_eu = eu_catalog()
+    catalog_tp = tp_catalog()
     mapping = json.loads(MAPPING.read_text(encoding='utf-8'))
     manifest: dict[str, dict] = {}
     quarantine: list[dict] = []
@@ -466,29 +622,36 @@ def build() -> None:
                 quarantine.append({'id': pid, 'kind': kind, 'reason': decision['quarantine']})
                 continue
             source = decision.get('source', SOURCE_TW)
-            cat = catalog if source == SOURCE_TW else catalog_eu
+            cat = {SOURCE_TW: catalog, SOURCE_EU: catalog_eu, SOURCE_TP: catalog_tp}[source]
             prod = cat.get(decision['code'])
             if prod is None:
-                where = 'pages catégorie TW' if source == SOURCE_TW else 'plan du site TWE'
+                where = {SOURCE_TW: 'pages catégorie TW', SOURCE_EU: 'plan du site TWE',
+                         SOURCE_TP: 'plan du site Tennis-Point'}[source]
                 quarantine.append({'id': pid, 'kind': kind,
                                    'reason': f"code {decision['code']} absent des {where} lus"})
                 continue
-            cache = CACHE if source == SOURCE_TW else CACHE_EU
+            cache = {SOURCE_TW: CACHE, SOURCE_EU: CACHE_EU, SOURCE_TP: CACHE_TP}[source]
             body = fetch(prod['url'], cache / 'descpages' / f"{prod['code']}.html")
             if body is None:
                 quarantine.append({'id': pid, 'kind': kind, 'reason': f"page produit indisponible {prod['url']}"})
                 continue
             page_html = body.decode('utf-8', 'replace')
-            facts = product_facts(page_html)
-            if kind == 'string' and source == SOURCE_TW:
-                facts['colourImage'] = colour_image(it, facts, page_html, prod['thumb'])
-            reason = check(kind, it, decision, facts)
+            if source == SOURCE_TP:
+                facts = tp_facts(page_html)
+                reason = tp_check(kind, it, prod, facts)
+            else:
+                facts = product_facts(page_html)
+                if kind == 'string' and source == SOURCE_TW:
+                    facts['colourImage'] = colour_image(it, facts, page_html, prod['thumb'])
+                reason = check(kind, it, decision, facts)
             if reason:
                 quarantine.append({'id': pid, 'kind': kind, 'reason': reason,
                                    'twProduct': prod['name'], 'sourcePageUrl': prod['url']})
                 continue
             if source == SOURCE_TW:
                 image_url = facts.get('colourImage') or prod['thumb']
+            elif source == SOURCE_TP:
+                image_url = prod['thumb']  # image principale publiée dans le sitemap produit
             else:
                 image_url = eu_image(page_html, prod['code'])
                 if image_url is None:
@@ -505,7 +668,7 @@ def build() -> None:
             w, h, size = to_webp(raw, PUBLIC / folder / f'{pid}.webp')
             prev = (CACHE / 'retrieved.json')
             retrieved = json.loads(prev.read_text(encoding='utf-8')) if prev.exists() else {}
-            rkey = prod['code'] if source == SOURCE_TW else f"eu:{prod['code']}"
+            rkey = {SOURCE_TW: prod['code'], SOURCE_EU: f"eu:{prod['code']}", SOURCE_TP: f"tp:{prod['code']}"}[source]
             retrieved.setdefault(rkey, today)
             prev.write_text(json.dumps(retrieved, indent=1), encoding='utf-8')
             manifest[pid] = {
@@ -541,12 +704,12 @@ def write_manifest(manifest: dict) -> None:
     lines = [
         '// FICHIER GÉNÉRÉ par scripts/scraper/tw_product_images.py — ne pas éditer à la main.',
         '//',
-        '// Photos produit Tennis Warehouse (US) et Tennis Warehouse Europe, hébergées chez nous',
+        '// Photos produit Tennis Warehouse (US), Tennis Warehouse Europe et Tennis-Point, hébergées chez nous',
         '// (public/images/products/). Retrait : PRODUCT_IMAGES_ENABLED = false',
         '// (src/lib/product-images.ts), puis : python scripts/scraper/tw_product_images.py purge',
         '// (ou « purge <source> » pour une seule source).',
         '',
-        "export type ProductImageSource = 'tennis-warehouse' | 'tennis-warehouse-europe';",
+        "export type ProductImageSource = 'tennis-warehouse' | 'tennis-warehouse-europe' | 'tennis-point';",
         '',
         'export interface ProductImageEntry {',
         '  file: string;',
@@ -592,7 +755,7 @@ def purge(source: str | None = None) -> None:
     les photos de cette source ; les autres restent servies."""
     import shutil
     if source is None:
-        for path in (PUBLIC, CACHE / 'raw', CACHE_EU / 'raw'):
+        for path in (PUBLIC, CACHE / 'raw', CACHE_EU / 'raw', CACHE_TP / 'raw'):
             if path.exists():
                 shutil.rmtree(path)
                 print(f'   supprimé {path.relative_to(ROOT)}')
@@ -606,7 +769,7 @@ def purge(source: str | None = None) -> None:
     for pid, e in manifest.items():
         if pid not in kept:
             (ROOT / 'public' / e['file'].lstrip('/')).unlink(missing_ok=True)
-    raw = (CACHE if source == SOURCE_TW else CACHE_EU) / 'raw'
+    raw = {SOURCE_TW: CACHE, SOURCE_EU: CACHE_EU, SOURCE_TP: CACHE_TP}[source] / 'raw'
     if raw.exists():
         shutil.rmtree(raw)
     write_manifest(kept)
@@ -616,6 +779,46 @@ def purge(source: str | None = None) -> None:
 # --------------------------------------------------------------------------
 # candidates-eu : aide à la décision, pages TWE lues et contrôles appliqués
 # --------------------------------------------------------------------------
+def candidates_tp() -> None:
+    """Comme candidates-eu, pour Tennis-Point : candidats dont le handle publié
+    contient marque et modèle, page lue (débit lent), contrôles TP appliqués.
+    Ne décide RIEN. Un refus du site arrête tout (AccessRefused)."""
+    base = load_base()
+    catalog_tp = tp_catalog()
+    manifest = read_manifest()
+    only = set(sys.argv[2:])
+    report = []
+    try:
+        for kind, items in (('racquet', base['racquets']), ('string', base['strings'])):
+            pool = [p for p in catalog_tp.values() if p['kind'] == kind]
+            for it in items:
+                if (only and it['id'] not in only) or (not only and it['id'] in manifest):
+                    continue
+                want = set(norm(f"{it['brand']} {it['model']}"))
+                scored = sorted((len(set(norm(p['name'])) - want), p['code']) for p in pool
+                                if want <= set(norm(p['name'])))
+                rows = []
+                for _, code in scored[:12]:
+                    prod = catalog_tp[code]
+                    body = fetch(prod['url'], CACHE_TP / 'descpages' / f'{code}.html')
+                    if body is None:
+                        rows.append({'code': code, 'reason': 'page indisponible'})
+                        continue
+                    facts = tp_facts(body.decode('utf-8', 'replace'))
+                    rows.append({'code': code, 'title': facts.get('title'),
+                                 'facts': {k: facts.get(k) for k in ('headSize', 'stringPattern', 'weight', 'strung',
+                                                                     'gaugesMm', 'colourFr')},
+                                 'reason': tp_check(kind, it, prod, facts)})
+                report.append({'id': it['id'], 'label': f"{it['brand']} {it['model']} {it.get('variant') or ''}".strip(),
+                               'ours': {k: it.get(k) for k in ('headSize', 'stringPattern', 'stiffness', 'weight',
+                                                               'gauges', 'color')},
+                               'candidates': rows})
+    finally:
+        out = CACHE_TP / 'candidates.json'
+        out.write_text(json.dumps(report, indent=1, ensure_ascii=False), encoding='utf-8')
+        print(f'{len(report)} fiches -> {out}')
+
+
 def candidates_eu() -> None:
     """Pour chaque fiche sans photo (ou les id passés en argument), liste les
     produits TWE dont l'intitulé contient marque et modèle, lit leur page et
@@ -661,8 +864,10 @@ if __name__ == '__main__':
     step = sys.argv[1] if len(sys.argv) > 1 else ''
     CACHE.mkdir(parents=True, exist_ok=True)
     CACHE_EU.mkdir(parents=True, exist_ok=True)
+    CACHE_TP.mkdir(parents=True, exist_ok=True)
     if step == 'purge':
         purge(sys.argv[2] if len(sys.argv) > 2 else None)
     else:
-        {'discover': discover, 'discover-eu': discover_eu, 'candidates': candidates,
-         'candidates-eu': candidates_eu, 'build': build}.get(step, lambda: sys.exit(__doc__))()
+        {'discover': discover, 'discover-eu': discover_eu, 'discover-tp': discover_tp,
+         'candidates': candidates, 'candidates-eu': candidates_eu, 'candidates-tp': candidates_tp,
+         'build': build}.get(step, lambda: sys.exit(__doc__))()
