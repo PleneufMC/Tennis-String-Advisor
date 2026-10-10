@@ -1,13 +1,13 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.3.4
+> **Version** : 2.3.5
 > **Date** : 10 octobre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
 > **Branche de référence** : `main` (seule branche longue ; la production Netlify en déploie)
 > **Repo** : https://github.com/PleneufMC/Tennis-String-Advisor.git
 
-**Changelog (numéro de version à fixer à la fusion)** — **Rigidités de laboratoire, premier lot : les
+**Changelog v2.3.4 → v2.3.5** — **Rigidités de laboratoire, premier lot : les
 8 polyesters (C2)** (décision de Pierre du 10/10/2026 : « on aligne leur rigidité sur la mesure faite sur
 le bon modèle et la bonne jauge » ; `tsa-core`). TWU mesure chaque jauge séparément : l'écart entre jauges
 d'un même polyester atteint 47 lb/in (Black Code : 202,9 en 1.18, 249,7 en 1.28), soit 5 points d'indice
@@ -850,4 +850,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.3.4 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.3.5 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
