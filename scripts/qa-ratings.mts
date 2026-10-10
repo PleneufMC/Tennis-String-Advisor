@@ -1115,7 +1115,7 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
     if (!found.some((i) => i.includes(needle))) fail(`rigidités de laboratoire : garde-fou muet sur « ${name} » (${needle})`);
   }
   // Cas permis : fiche fusionnée depuis (alias) ; son entrée reste comme historique, sans alerte.
-  const afterMerge = checkStiffness(stringsDatabase.filter((s) => s.id !== 'tecnifibre-4s'), P0, twuRef, { 'tecnifibre-4s': 'tecnifibre-black-code-4s' });
+  const afterMerge = checkStiffness(stringsDatabase.filter((s) => s.id !== 'tecnifibre-4s'), P0, twuRef, { ...LEGACY_STRING_ALIASES, 'tecnifibre-4s': 'tecnifibre-black-code-4s' });
   if (afterMerge.length > 0) fail(`rigidités de laboratoire : une fiche fusionnée (alias) fait échouer le contrôle : ${afterMerge[0]}`);
   if (failures.length === before) {
     const count = (st: string) => Object.values(P0).filter((e) => e.status === st).length;
