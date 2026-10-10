@@ -11,6 +11,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/js/catalog.js"></script>
+  <script src="/js/rating-labels.js"></script>
   <script>
     tailwind.config = {
       theme: {
@@ -227,6 +228,13 @@
               <td class="py-4 px-4 text-center" id="s4-type">-</td>
             </tr>
             <tr class="border-b hover:bg-gray-50">
+              <td class="py-4 px-4 font-medium text-gray-700">Rating basis</td>
+              <td class="py-4 px-4 text-center text-sm font-medium text-gray-700" id="s1-basis">-</td>
+              <td class="py-4 px-4 text-center text-sm font-medium text-gray-700" id="s2-basis">-</td>
+              <td class="py-4 px-4 text-center text-sm font-medium text-gray-700" id="s3-basis">-</td>
+              <td class="py-4 px-4 text-center text-sm font-medium text-gray-700" id="s4-basis">-</td>
+            </tr>
+            <tr class="border-b hover:bg-gray-50">
               <td class="py-4 px-4 font-medium text-gray-700">Spin</td>
               <td class="py-4 px-4 text-center" id="s1-spin">-</td>
               <td class="py-4 px-4 text-center" id="s2-spin">-</td>
@@ -271,6 +279,8 @@
           </tbody>
         </table>
       </div>
+      <!-- Nature of the ratings (labelling principle decided on 10/10/2026), reference wording in /js/rating-labels.js -->
+      <p id="stringRatingNote" class="px-6 pb-6 text-sm text-gray-600"></p>
     </div>
 
     <!-- Quick Tips -->
@@ -352,8 +362,10 @@
     // Catalogue généré depuis src/data (C3) — plus de lecture Supabase
     async function fetchData() {
       try {
-        const { racquets, strings } = await TSACatalog.load();
-        
+        // Les libellés (cordages harmonisés) se chargent avec le catalogue : jamais de note sans libellé.
+        const [{ racquets, strings }] = await Promise.all([TSACatalog.load(), TSARatingLabels.load()]);
+        document.getElementById('stringRatingNote').textContent = TSARatingLabels.NOTE;
+
         // Build data maps and populate selects
         racquets.forEach(r => {
           racquetsData[r.id] = r;
@@ -443,6 +455,8 @@
           document.getElementById(prefix + '-name').textContent = s.model;
           document.getElementById(prefix + '-brand').textContent = s.brand;
           document.getElementById(prefix + '-type').textContent = s.type;
+          // Nature des notes (principe décidé le 10/10/2026) : la ligne précède les notes.
+          document.getElementById(prefix + '-basis').textContent = TSARatingLabels.label(s);
           document.getElementById(prefix + '-spin').textContent = TSACatalog.display(s.spin, '/10');
           document.getElementById(prefix + '-control').textContent = TSACatalog.display(s.control, '/10');
           document.getElementById(prefix + '-comfort').textContent = TSACatalog.display(s.comfort, '/10');
@@ -450,7 +464,7 @@
           document.getElementById(prefix + '-pro').textContent = s.pro_usage || '-';
           document.getElementById(prefix + '-price').textContent = '$' + s.price_usd;
         } else {
-          ['name', 'brand', 'type', 'spin', 'control', 'comfort', 'durability', 'pro', 'price'].forEach(field => {
+          ['name', 'brand', 'type', 'basis', 'spin', 'control', 'comfort', 'durability', 'pro', 'price'].forEach(field => {
             document.getElementById(prefix + '-' + field).textContent = '-';
           });
         }

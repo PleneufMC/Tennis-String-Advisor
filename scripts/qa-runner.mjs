@@ -24,6 +24,7 @@ const CHECKS = [
   { name: 'ratings', cmd: 'npm', args: ['run', '--silent', 'audit:ratings'] },
   { name: 'blog-funnel', cmd: 'npm', args: ['run', '--silent', 'audit:blog-funnel'] },
   { name: 'blog-images', cmd: 'npm', args: ['run', '--silent', 'audit:blog-images'] },
+  { name: 'string-labels', cmd: 'npm', args: ['run', '--silent', 'audit:string-labels'] },
   { name: 'stripe-webhook', cmd: 'npm', args: ['run', '--silent', 'audit:stripe-webhook'] },
   { name: 'security', cmd: 'npm', args: ['run', '--silent', 'audit:security'] },
 ];

@@ -39,17 +39,17 @@ export function generateMetadata({ params }: { params: { slug: string } }): Meta
   const name = `${string.brand} ${string.model}`;
   const title = `${name} — cordage ${string.type.toLowerCase()}`;
   // Chaque fragment n'est émis que si la valeur existe (option A, 29/09/2026) :
-  // jamais « undefined/10 » ni une tension inventée dans un extrait de recherche.
+  // jamais une tension inventée dans un extrait de recherche.
+  // Des caractéristiques seulement — type, rigidité, tension, jauges — et aucune note /10 :
+  // suite du principe décidé par Pierre le 10/10/2026 (« garder les notes et les étiqueter
+  // partout »). Une note est une appréciation de l'équipe, non mesurée en laboratoire ; elle
+  // se lit dans la fiche, avec son libellé, pas dans un extrait de recherche qui ne peut pas
+  // le porter.
   const tension = string.recommendedTension;
-  const notes = [
-    string.control !== undefined ? `Contrôle ${string.control}/10` : null,
-    string.comfort !== undefined ? `confort ${string.comfort}/10` : null,
-  ].filter(Boolean);
   const description =
-    `${name} : rigidité ${string.stiffness} lb/in, ` +
+    `${name} : cordage ${string.type.toLowerCase()}, rigidité ${string.stiffness} lb/in, ` +
     (tension ? `tension recommandée ${tension.min}-${tension.max} kg, ` : '') +
     `jauges ${string.gauges.join(', ')} mm.` +
-    (notes.length > 0 ? ` ${notes.join(', ')}.` : '') +
     ` Calculez le RCS de ce cordage avec votre raquette.`;
   const canonical = `${resolveSiteUrl()}/tennis-strings/${string.id}`;
 

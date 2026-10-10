@@ -1,11 +1,50 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.3.7
+> **Version** : 2.3.8
 > **Date** : 10 octobre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
 > **Branche de référence** : `main` (seule branche longue ; la production Netlify en déploie)
 > **Repo** : https://github.com/PleneufMC/Tennis-String-Advisor.git
+
+**Changelog v2.3.7 → v2.3.8** — **Nature des notes /10 des cordages
+étiquetée sur les surfaces EN, notes retirées des métadonnées** (principe décidé par Pierre le
+10/10/2026 : « Cordages : garder les notes et les étiqueter partout », suite à la PR #103 ;
+`tsa-acquisition`). **Aucune note modifiée**, aucune donnée, aucun RCS ni alerte bras touchés
+(`audit:ratings` inchangé : 5,12 % / 19,56 %). Trois **libellés de référence arrêtés le
+10/10/2026** (principe décidé par Pierre ; formulation exacte à valider par lui), dans
+`public/js/rating-labels.js` (source unique, requise aussi par le générateur des fiches) :
+« TSA editorial rating » (156 cordages), « TSA editorial rating, harmonised with tester reviews »
+(les 18 de `tester-ratings.ts`), « Not published » (7 sans note), et la mention « Team
+assessment, not laboratory-measured. Stiffness (lb/in) is the string data the
+RCS uses. » ; référence FR pour l'étiquetage des surfaces FR :
+« Appréciation de l'équipe, non mesurée en laboratoire. La rigidité (lb/in)
+est la donnée du cordage utilisée par le RCS. » La mention n'affirme **pas** que la rigidité est
+« mesurée » : ce n'est pas assuré pour les 181 fiches (règle 3 ; PR #105 : des rigidités n'ont
+aucune source, TWU mesure chaque jauge séparément). Le libellé précède toujours la première
+note : fiches `/en/strings/<id>.html` (181 ; les 7 sans note n'ont plus qu'une ligne « Not
+published »), catalogue `strings.html` (cartes, filtres), comparateur (ligne « Rating basis »),
+configurateur (carte du cordage recommandé). La liste des 18 est relue dans
+`src/data/tester-ratings.ts` à chaque génération (`scripts/en-products/rating-basis.mjs`, échec
+bruyant si un id manque au catalogue) et écrite dans `public/data/string-rating-basis.json` (non
+versionné) pour les pages dynamiques : repère transitoire, le catalogue EN de `tsa-core` ne porte
+pas ce drapeau (suivi prévu après la fusion de la PR FR de `tsa-core`). Repli si ce fichier est
+injoignable : libellé éditorial simple et erreur en console, jamais une note sans libellé.
+**Métadonnées** : plus aucune note
+dans les `description`/`og:description` des 181 fiches EN (type, rigidité, tension et jauges à
+la place), de `strings.html` ni du bloc `generateMetadata` de la fiche cordage FR
+(`src/app/tennis-strings/[slug]/page.tsx`, ce bloc seul) ; aucune note dans le JSON-LD. Contrôle
+`npm run audit:string-labels` (`scripts/qa-string-rating-labels.mjs`, périmètre `tsa-measure`,
+ajouté à `audit:all`) : libellés comparés mot pour mot à sa constante de référence, fiches,
+métadonnées EN et FR (y compris la sortie de `npm run build`), pages dynamiques, dérive de la
+mention FR dans `src/` (inactive tant que l'étiquetage FR n'est pas fusionné), formule
+« grandeur mesurée » écartée, 30 tests négatifs et 4 témoins positifs. ⚠️ Restent, non traités
+ici : l'étiquetage des surfaces FR (`tsa-core`), la description FR de `/tennis-strings`
+(`src/app/tennis-strings/layout.tsx` annonce encore « contrôle, confort, effet et durabilité »),
+le tri des candidats du configurateur EN par note éditoriale avec un repli à 5 quand la note
+manque, et deux articles EN qui citent ces notes dans leur corps
+(`best-polyester-tennis-strings-2026`, `polyester-strings-tennis-elbow`, propositions au
+rédacteur).
 
 **Changelog v2.3.6 → v2.3.7** — **Notes /10 des cordages étiquetées sur
 toutes les surfaces françaises** (principe décidé par Pierre le 10/10/2026, « Cordages : garder les
@@ -904,4 +943,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.3.7 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.3.8 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
