@@ -1,13 +1,13 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.3.12
+> **Version** : 2.3.17
 > **Date** : 10 octobre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
 > **Branche de référence** : `main` (seule branche longue ; la production Netlify en déploie)
 > **Repo** : https://github.com/PleneufMC/Tennis-String-Advisor.git
 
-**Changelog (numéro de version à fixer à la fusion)** — **Lot 3 des rigidités de laboratoire : 23 hausses établies par la
+**Changelog v2.3.16 → v2.3.17** — **Lot 3 des rigidités de laboratoire : 23 hausses établies par la
 règle C, garde de série suspecte, un appariement manuel (C2)** (décision de l'orchestrateur du 10/10/2026, Pierre ayant
 délégué les arbitrages ; `tsa-core`). **Raison** : le fact-check des articles santé (PR #116) montre que la base SOUS-ESTIME la
 rigidité mesurée par TWU de cordages cités comme « les plus souples » (Mach-10 195 → 222,3, Signum Pro X-Perience 205 → 224,6,
@@ -42,7 +42,7 @@ médiane et maximum des polyesters, effectifs ≤ 200 et ≥ 240, classement des
 X-Perience, Lynx Tour, RPM Team), « 265 = le plus rigide » (6 articles), articles « meilleures raquettes » (colonne RCS + 2
 points) ; descriptions « souple » / « confort » de 21 fiches à revoir dans une PR de textes.
 
-**Changelog (numéro de version à fixer à la fusion)** — **Rigidité par jauge : modèle et table (chantier D1)**
+**Changelog v2.3.15 → v2.3.16** — **Rigidité par jauge : modèle et table (chantier D1)**
 (décision de Pierre du 10/10/2026 : « GO » sur le chantier D ; `tsa-core`). `TennisString` gagne deux champs
 optionnels, `stiffnessByGauge` (rigidité TWU mesurée par jauge nominale, lb/in, 51 lbs / Fast) et
 `stiffnessByGaugeSuspect`, et `strings-database.ts` la fonction `stringStiffnessAt(fiche, jauge)` : la mesure pour une
@@ -61,7 +61,7 @@ identiques à l'octet hors les deux nouvelles clés, 319 pages FR prérendues id
 1 kB de JS initial en plus sur quatre routes qui embarquent la base. Contrôle 13 quater (17 tests négatifs), contrôle 15
 étendu. `c2-par-jauge.mts --apercu-d4` estime l'effet d'une adoption future sur l'alerte bras (rien n'est adopté).
 
-**Changelog (numéro de version à fixer à la fusion)** — **Relevé TWU complet versionné (chantier D0, rigidité par
+**Changelog v2.3.14 → v2.3.15** — **Relevé TWU complet versionné (chantier D0, rigidité par
 jauge)** (décision de Pierre du 10/10/2026 : « GO » sur le chantier D ; `tsa-core`). Le relevé TWU du 29/09/2026
 (788 enregistrements, sha256 `01c07cc…8872`, identique à celui du 10/10) est versionné en entier dans
 `data/reference/twu-releve-complet.json` : les 8 champs bruts de chaque enregistrement, inchangés (ils reconstruisent le
@@ -74,7 +74,7 @@ requête réseau vers TWU. **Aucune valeur, note, formule ni seuil modifié** : 
 fichier versionné (sans le brut local), schéma strict, champs dérivés, régénération identique si le brut local est présent ;
 7 tests négatifs ajoutés. Premier jalon du chantier D : la table de rigidité par jauge (D1) s'appuie sur ce fichier.
 
-**Changelog (numéro de version à fixer à la fusion)** — **Chiffres des articles santé alignés sur la base après
+**Changelog v2.3.13 → v2.3.14** — **Chiffres des articles santé alignés sur la base après
 la règle C, et graphiques de rigidité tirés de la base** (demande de l'orchestrateur du 10/10/2026 ; `tsa-redacteur` ;
 **à fusionner APRÈS la PR #110**, dont `src/data/` est le socle ; dossier `docs/redaction/coherence-chiffres-regle-c.md`).
 Quatre articles (« polyester et tennis elbow » et « cordage et tennis elbow », FR et EN), le guide du matériel et les
@@ -97,7 +97,7 @@ règle D, le lot 3 ou toute rigidité modifiée) ; les 4 exceptions correspondan
 `profil.*` ; cinq cas négatifs rejetés). ⚠️ Restent : le fact-check du pigiste ; les hybrides prémontés, dont la rigidité n'a
 pas suivi celle de leurs composants (Razor Code + X-One à 180 pour un Razor Code à 242,9 ; Q-1 du dossier, `tsa-core`).
 
-**Changelog (numéro de version à fixer à la fusion)** — **Règle C de jauge de référence, lot 2 des rigidités de
+**Changelog v2.3.12 → v2.3.13** — **Règle C de jauge de référence, lot 2 des rigidités de
 laboratoire (C2)** (décisions de Pierre du 10/10/2026 : règle C, « aucune correction qui baisse une alerte pour
 l'instant », lot 2 approuvé ; `tsa-core`). **Règle C** : la rigidité d'une fiche = la mesure TWU de la jauge la plus
 rigide mesurée parmi ses jauges (seule règle sans baisse d'alerte, sur-alerte assumée sur les jauges fines), en
@@ -1170,4 +1170,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.3.12 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.3.17 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
