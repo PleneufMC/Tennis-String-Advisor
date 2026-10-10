@@ -30,12 +30,10 @@
  */
 
 export const STIFFNESS_SOURCE = {
-  laboratory: 'Tennis Warehouse University (TWU), laboratoire de Tennis Warehouse',
   url: 'https://twu.tennis-warehouse.com/learning_center/reporter2.php',
   request: 'POST zbrand=all, zmaterial=all, zref_tension=23 (51 lbs), zhammer=1 (Fast), colonne « Gauge Nominal (mm) » demandée',
   referenceTensionLbs: 51,
   swingSpeed: 'Fast',
-  unit: 'lb/in',
   /** Copie versionnée (polyesters, 480 lignes) : les mesures ci-dessous y sont retrouvées par le contrôle. */
   versionedCopy: 'data/reference/twu-string-stiffness.json',
   /** Trois relevés concordants pour les lignes de ce fichier. */
@@ -99,7 +97,7 @@ export const STRING_STIFFNESS_PROVENANCE: Readonly<Record<string, StringStiffnes
     note:
       'Les trois jauges de la fiche sont mesurées et dépassent toutes 200 : 209,2 (1.25) est la plus basse, donc vraie quelle que ' +
       'soit la jauge de référence que Pierre retiendra. Une référence plus rigide (1.30 : 242,9) relève de son arbitrage. ' +
-      'Doublon probable de tecnifibre-4s (PR doublons).',
+      'Même produit que tecnifibre-4s (fusion des doublons du 10/10/2026).',
   },
 
   // ---- Retenues : la valeur dépend de la jauge de référence (décision de produit) ---------------
@@ -147,7 +145,7 @@ export const STRING_STIFFNESS_PROVENANCE: Readonly<Record<string, StringStiffnes
       'Deux jauges de part et d\'autre de la valeur actuelle : 1.24 la baisserait de 3,3, 1.29 la hausserait de 21,9. Tennis Warehouse vend ce produit ' +
       'sous le nom « AMP Moto » (17/1.24), TWU le liste « Gamma Moto » ; « Moto Soft » est un autre produit (pas de fiche).',
   },
-  // Hors des 8 : jumeau probable de tecnifibre-atp-razor-code, consigné pour la PR doublons.
+  // Hors des 8 : même produit que tecnifibre-atp-razor-code (fusion des doublons du 10/10/2026), consigné pour mémoire.
   'tecnifibre-razor-code': {
     status: 'retenue-jauge',
     before: 220,
@@ -156,7 +154,7 @@ export const STRING_STIFFNESS_PROVENANCE: Readonly<Record<string, StringStiffnes
       { twu: 'Tecnifibre Razor Code 17 (1.25)', gauge: '1.25', lbIn: 229.2 },
       { twu: 'Tecnifibre Razor Code 16 (1.30)', gauge: '1.30', lbIn: 242.9 },
     ],
-    note: 'Hors des 8 polyesters. 1.20 baisserait la rigidité de 3,4 ; 1.25 et 1.30 la hausseraient de 9,2 et 22,9. Jumeau probable de tecnifibre-atp-razor-code (PR doublons).',
+    note: 'Hors des 8 polyesters. 1.20 baisserait la rigidité de 3,4 ; 1.25 et 1.30 la hausseraient de 9,2 et 22,9. Même produit que tecnifibre-atp-razor-code (fusion des doublons du 10/10/2026).',
   },
 
   // ---- Quarantaine : appariement non établi ------------------------------------------------------
@@ -165,15 +163,15 @@ export const STRING_STIFFNESS_PROVENANCE: Readonly<Record<string, StringStiffnes
     before: 222,
     measures: [],
     note:
-      'Aucune ligne TWU « 4S » : TWU ne liste que « Black Code 4S ». L\'identité avec tecnifibre-black-code-4s (même produit chez TW : fiche « Tecnifibre 4S », ' +
-      'revue « Black Code 4S ») est vérifiée par la PR doublons ; en attendant, la valeur actuelle reste.',
+      'Aucune ligne TWU « 4S » : TWU ne liste que « Black Code 4S ». Même produit chez TW (« Same string, different name ») : l\'identité est établie par la fusion ' +
+      'des doublons (10/10/2026) ; tant que la fiche existe, la valeur actuelle reste.',
   },
   'tecnifibre-atp-razor-code': {
     status: 'quarantaine',
     before: 202,
     measures: [],
     note:
-      'Aucune ligne TWU « ATP Razor Code » : TWU ne liste que « Razor Code ». L\'identité avec tecnifibre-razor-code (TW décrit sa fiche « Razor Code » comme ' +
-      '« ATP Razor Code ») est vérifiée par la PR doublons ; en attendant, la valeur actuelle reste.',
+      'Aucune ligne TWU « ATP Razor Code » : TWU ne liste que « Razor Code » (TW décrit sa fiche comme « ATP Razor Code »). L\'identité est établie par la fusion ' +
+      'des doublons (10/10/2026) ; tant que la fiche existe, la valeur actuelle reste.',
   },
 };

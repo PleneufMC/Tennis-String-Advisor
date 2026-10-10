@@ -2,11 +2,9 @@
  * Effet des rigidités de laboratoire (C2) sur l'alerte bras avancée. Rejouable :
  *   npx tsx scripts/scraper/c2-effet-alertes.mts
  *
- * Grille du contrôle 5 de `audit:ratings` : toutes les raquettes (RA effectif) × tous les cordages × 6 tensions,
- * profils standard et sensible. AVANT = rigidités `before` de la provenance (main au 10/10/2026), APRÈS = catalogue.
- * Puis, POUR INFORMATION et sans rien appliquer, ce que donnerait chaque règle de jauge de référence
- * (décision de produit, non tranchée) sur les fiches qui ont des mesures TWU.
- * Le script ne lit que le code et la provenance : aucun accès réseau, aucune écriture.
+ * Grille du contrôle 5 de `audit:ratings` (raquettes × cordages × 6 tensions, profils standard et sensible).
+ * AVANT = rigidités `before` de la provenance, APRÈS = catalogue ; puis, POUR INFORMATION et sans rien appliquer,
+ * ce que donnerait chaque règle de jauge de référence (décision de produit non tranchée). Aucun accès réseau.
  */
 import { racquetsDatabase } from '../../src/data/racquets-database';
 import { stringsDatabase } from '../../src/data/strings-database';

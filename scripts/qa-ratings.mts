@@ -1036,11 +1036,13 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
   type TwuRow = { name: string; refTensionLbs: number; swingSpeed: string; material: string | null; stiffnessLbIn: number };
   const twuRef = new Map((JSON.parse(readFileSync(SP.STIFFNESS_SOURCE.versionedCopy, 'utf8')).records as TwuRow[]).map((r) => [r.name, r]));
   const escapeRe = (x: string) => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const checkStiffness = (strings: readonly (typeof stringsDatabase)[number][], prov: SProv, ref: Map<string, TwuRow>): string[] => {
+  const checkStiffness = (strings: readonly (typeof stringsDatabase)[number][], prov: SProv, ref: Map<string, TwuRow>,
+    aliases: Readonly<Record<string, string>> = LEGACY_STRING_ALIASES): string[] => {
     const issues: string[] = [];
     for (const [id, e] of Object.entries(prov)) {
       const s = strings.find((x) => x.id === id);
-      if (!s) { issues.push(`${id} : provenance d'un cordage absent du catalogue`); continue; }
+      // Une fiche fusionnée depuis (alias hérité) garde son entrée comme historique : rien à contrôler.
+      if (!s) { if (aliases[id] === undefined) issues.push(`${id} : provenance d'un cordage absent du catalogue`); continue; }
       if (!e.note.trim()) issues.push(`${id} : motif absent`);
       const seen = new Set<string>();
       for (const m of e.measures) {
@@ -1107,15 +1109,20 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
     ['jauge absente de la fiche', checkStiffness(stringsDatabase, patch('gamma-moto', (e) => ({ ...e, measures: [{ ...e.measures[0], gauge: '1.30' }, e.measures[1]] })), twuRef), 'absente de la fiche'],
     ['hausse sûre laissée de côté', checkStiffness(withStiffness('tecnifibre-black-code-4s', 200), patch('tecnifibre-black-code-4s', (e) => ({ ...e, status: 'retenue-jauge' as const })), twuRef), 'hausse applicable sans choix de jauge'],
     ['surface qui importe la provenance', scanSurfaces([{ path: 'src/app/x.tsx', src: "import { STRING_STIFFNESS_PROVENANCE } from '@/data/string-stiffness-provenance';" }]), 'src/app/x.tsx'],
+    ['provenance d\'une fiche absente sans alias', checkStiffness(stringsDatabase, { ...P0, 'cordage-inconnu': P0['luxilon-savage'] }, twuRef), 'cordage-inconnu : provenance d\'un cordage absent'],
   ];
   for (const [name, found, needle] of negatives) {
     if (!found.some((i) => i.includes(needle))) fail(`rigidités de laboratoire : garde-fou muet sur « ${name} » (${needle})`);
   }
+  // Cas permis : fiche fusionnée depuis (alias) ; son entrée reste comme historique, sans alerte.
+  const afterMerge = checkStiffness(stringsDatabase.filter((s) => s.id !== 'tecnifibre-4s'), P0, twuRef, { 'tecnifibre-4s': 'tecnifibre-black-code-4s' });
+  if (afterMerge.length > 0) fail(`rigidités de laboratoire : une fiche fusionnée (alias) fait échouer le contrôle : ${afterMerge[0]}`);
   if (failures.length === before) {
     const count = (st: string) => Object.values(P0).filter((e) => e.status === st).length;
     const measures = Object.values(P0).reduce((a, e) => a + e.measures.length, 0);
+    const merged = Object.keys(P0).filter((id) => !stringsDatabase.some((s) => s.id === id)).length;
     ok(`rigidités de laboratoire : ${Object.keys(P0).length} fiches en provenance (${count('appliquee')} appliquées, ${count('retenue-jauge')} retenues faute de jauge de référence, ` +
-      `${count('quarantaine')} en quarantaine), ${measures} mesures TWU retrouvées dans ${SP.STIFFNESS_SOURCE.versionedCopy} (modèle exact, jauge de la fiche, ` +
+      `${count('quarantaine')} en quarantaine${merged > 0 ? `, dont ${merged} fusionnée(s) depuis` : ''}), ${measures} mesures TWU retrouvées dans ${SP.STIFFNESS_SOURCE.versionedCopy} (modèle exact, jauge de la fiche, ` +
       `${SP.STIFFNESS_SOURCE.referenceTensionLbs} lbs / ${SP.STIFFNESS_SOURCE.swingSpeed}), aucune baisse sans GO, aucune surface ne lit la provenance, ${negatives.length} tests négatifs détectés`);
   }
 }
