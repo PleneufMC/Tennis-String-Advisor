@@ -1,11 +1,19 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.3.3
+> **Version** : 2.3.4
 > **Date** : 10 octobre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
 > **Branche de référence** : `main` (seule branche longue ; la production Netlify en déploie)
 > **Repo** : https://github.com/PleneufMC/Tennis-String-Advisor.git
+
+**Changelog v2.3.3 → v2.3.4** — **Trois composants aux faux avis supprimés** (décision de Pierre du
+10/10/2026, repérés par `tsa-acquisition` pendant la PR #102). `src/components/sections/testimonials.tsx`
+(témoignages nominatifs inventés, « 4.9/5 », « 50,000+ Utilisateurs »), `featured-products.tsx` (4,8 sur
+234 avis) et `hero.tsx` (« Happy Players 50K+ ») n'étaient importés nulle part — aucun effet sur le site —
+mais portaient des chiffres et des avis sans source (règle 3). Vérifié avant suppression : aucun import de
+`components/sections` dans `src/`. Les trois autres fichiers du dossier (`configurator.tsx`,
+`how-it-works.tsx`, `newsletter.tsx`), également inutilisés, sont conservés.
 
 **Changelog v2.3.2 → v2.3.3** — **Provenance des notes /10 des cordages**
 (demande de Pierre du 10/10/2026 : « souvent les notes d'origines viennent de tennis warehouse »,
@@ -823,4 +831,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.3.3 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.3.4 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
