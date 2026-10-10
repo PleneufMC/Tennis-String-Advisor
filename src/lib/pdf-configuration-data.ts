@@ -36,7 +36,8 @@ import {
 import {
   effectiveRacquetRA,
   isRacquetStiffnessEstimated,
-  racquetProfile,
+  racquetTesterSynthesis,
+  formatScore20,
 } from '@/lib/racquet-scoring';
 import type {
   ConfigurationPdfData,
@@ -100,7 +101,10 @@ export function buildConfigurationPdfData(
   // ------------------------------------------------------- Bloc raquette
   let racquetSpecs: PdfRacquetSpecs | undefined;
   if (racquet) {
-    const profile = racquetProfile(racquet);
+    // Décision de Pierre du 10/10/2026 : aucune note déduite des
+    // caractéristiques ; l'avis des testeurs seul (sur 20, tel que dans la
+    // synthèse) pour une raquette évaluée, rien de plus sinon.
+    const testers = racquetTesterSynthesis(racquet);
     racquetSpecs = {
       label: racquetLabel,
       brand: racquet.brand,
@@ -113,15 +117,16 @@ export function buildConfigurationPdfData(
       balance: racquet.balance,
       swingWeight: racquet.swingWeight,
       playerLevel: racquet.playerLevel,
-      profile: {
-        power: profile.power,
-        control: profile.control,
-        comfort: profile.comfort,
-        maneuverability: profile.maneuverability,
-        stability: profile.stability,
-        basis: profile.basis,
-        label: profile.label,
-      },
+      ...(testers
+        ? {
+            testers: {
+              label: testers.label,
+              average20: testers.average20,
+              average20Text: formatScore20(testers.average20),
+              criteria: testers.criteria.map((c) => ({ label: c.label, value20: c.value20 })),
+            },
+          }
+        : {}),
     };
   }
 

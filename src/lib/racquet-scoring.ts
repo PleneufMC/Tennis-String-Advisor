@@ -121,10 +121,20 @@
  * *dérivées des specs* (poids, tamis, RA, plan de cordage) et non comme des
  * mesures de test terrain. Inventer des notes « puissance 8/10 » sans source
  * serait exactement l'erreur que l'audit reproche.
+ *
+ * ⚠️ Décision de Pierre du 10/10/2026 : AUCUNE note déduite des
+ * caractéristiques n'est plus affichée, nulle part. Le site montre l'avis des
+ * testeurs seul pour les raquettes évaluées (`racquetTesterSynthesis`), les
+ * caractéristiques seules pour les autres. Contrôle 16 de `audit:ratings`.
  */
 
 import type { TennisRacquet } from '@/data/racquets-database';
-import { RACQUET_TESTER_RATINGS, blendRacquetNote } from '@/data/racquet-tester-ratings';
+import {
+  RACQUET_TESTER_RATINGS,
+  RACQUET_TESTER_SOURCE,
+  RACQUET_DISPLAYED_CRITERIA,
+  type RacquetTesterCriterion,
+} from '@/data/racquet-tester-ratings';
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  Constantes mesurées sur la base réelle (129 raquettes, 8 août 2026)
@@ -291,6 +301,12 @@ export const PROFILE_BASIS_PREFIX = 'Déduit des caractéristiques';
  * toutes les raquettes. Aucune de ces notes n'est une mesure de test ni un avis
  * de testeur. `basis` l'explicite.
  *
+ * ⚠️ N'EST PLUS AFFICHÉ (décision de Pierre du 10/10/2026) et n'a plus aucun
+ * appelant applicatif : il ne nourrit ni le RCS, ni l'alerte bras, ni le
+ * classement. Conservé, formule corrigée, en attendant l'arbitrage « conserver
+ * ou retirer » ; seuls `audit:ratings` (contrôles 3 et 17) l'exécutent. Le
+ * contrôle 16 échoue si une surface l'importe.
+ *
  * Physique retenue (révision du 10/10/2026, une justification par règle) :
  *  - **Puissance** (inchangée) : croît avec le tamis (cordes plus longues, tamis
  *    plus souple et zone de frappe plus large) et avec la rigidité du cadre
@@ -387,105 +403,67 @@ export function deriveRacquetProfile(racquet: TennisRacquet): RacquetProfile {
 
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  Profil affiché : dérivé des specs, harmonisé avec les avis de testeurs
+//  Ce que le site affiche sur une raquette (décision de Pierre du 10/10/2026)
 // ─────────────────────────────────────────────────────────────────────────────
 //
-// Décision tsa-core du 09/10/2026 (mandat de Pierre : « harmoniser les notes »),
-// même méthode que les cordages (PR #73) : pour les raquettes rapprochées avec
-// certitude de génération (18 au 10/10/2026), chaque note = moyenne (profil
-// dérivé des specs, avis de testeurs recalé sur l'échelle du profil). Les autres
-// gardent le profil dérivé seul. `deriveRacquetProfile` reste PUREMENT dérivé
-// des specs : son libellé n'est donc jamais rendu faux (règle 3). Provenance et
-// règles de rapprochement : `src/data/racquet-tester-ratings.ts`.
-//
-// ⚠️ Ce profil a DEUX natures possibles. Il ne sert qu'aux vues d'UNE raquette
-// (configurateur, PDF), où son libellé dit ce qu'il contient. Une vue qui met
-// plusieurs raquettes côte à côte passe par `racquetsForComparison` (ci-dessous) :
-// le 10/10/2026, `/compare` affichait dans un même bloc le profil combiné de la
-// Gravity Tour et le profil dérivé de la Gravity MP, sans étiquette par raquette
-// (contrôle 16 de `audit:ratings`).
+// Une seule règle, sur toutes les surfaces (comparateur, configurateur, PDF
+// Premium, FR et EN) : AUCUNE note déduite des caractéristiques.
+//   - raquette évaluée (18 au 10/10/2026) : l'avis des testeurs SEUL, tel que
+//     dans la synthèse — moyenne des 20 critères et cinq critères, sur 20, sans
+//     recalage ni moyenne avec `deriveRacquetProfile`. L'ancien « profil
+//     combiné » faisait la moyenne des deux : on ne pouvait plus le confronter
+//     aux testeurs, puisque leur avis était dedans (tsa-measure) ;
+//   - raquette non évaluée : ses caractéristiques seules.
+// Même valeur pour une même raquette partout : la moyenne /20 affichée est
+// `docxAverage20`, celle de /statistics. Aucune chaîne de testeurs n'est citée.
+// Historique : jusqu'au 10/10/2026, `/compare` mettait côte à côte le profil
+// combiné des raquettes évaluées et le profil dérivé des autres, sans étiquette
+// (Gravity Tour combinée contre Gravity MP dérivée). Contrôle 16.
 
-/** Nature d'un profil affiché : ce que les notes contiennent. */
-export type RacquetProfileNature = 'specs' | 'specs+testeurs';
+/** Titre de l'avis de testeurs, identique sur toutes les surfaces. */
+export const TESTER_SYNTHESIS_LABEL = 'Avis de testeurs (synthèse)';
 
-export interface DisplayedRacquetProfile extends Omit<RacquetProfile, 'derived'> {
-  /** `true` si l'avis de testeurs entre dans les notes. */
-  withTesters: boolean;
-  /** Nature des notes, vérifiable par programme (une seule par vue comparative). */
-  nature: RacquetProfileNature;
-  /** Libellé à afficher au-dessus des notes : il dit ce que les notes contiennent. */
+export interface RacquetTesterSynthesis {
   label: string;
+  /** Moyenne des 20 critères de la synthèse, /20, telle quelle. */
+  average20: number;
+  /** Cinq critères affichés, /20, tels quels (entiers de la synthèse). */
+  criteria: ReadonlyArray<{ key: RacquetTesterCriterion; label: string; value20: number }>;
 }
 
-export const PROFILE_LABEL_SPECS = 'Profil déduit des caractéristiques';
-export const PROFILE_LABEL_BLENDED = 'Profil combiné : caractéristiques et avis de testeurs';
-
-/** Profil à afficher pour UNE raquette (configurateur, PDF). */
-export function racquetProfile(racquet: TennisRacquet): DisplayedRacquetProfile {
-  const d = deriveRacquetProfile(racquet);
+/** Avis de testeurs d'une raquette évaluée ; `null` si elle ne l'est pas (aucune note). */
+export function racquetTesterSynthesis(racquet: Pick<TennisRacquet, 'id'>): RacquetTesterSynthesis | null {
   const entry = RACQUET_TESTER_RATINGS[racquet.id];
-  if (!entry) {
-    return {
-      power: d.power, control: d.control, comfort: d.comfort,
-      maneuverability: d.maneuverability, stability: d.stability,
-      basis: d.basis, withTesters: false, nature: 'specs', label: PROFILE_LABEL_SPECS,
-    };
-  }
+  if (!entry) return null;
   return {
-    power: blendRacquetNote(d.power, entry, 'power'),
-    control: blendRacquetNote(d.control, entry, 'control'),
-    comfort: blendRacquetNote(d.comfort, entry, 'comfort'),
-    maneuverability: blendRacquetNote(d.maneuverability, entry, 'maneuverability'),
-    stability: blendRacquetNote(d.stability, entry, 'stability'),
-    basis:
-      `Moyenne de deux lectures : ${d.basis.charAt(0).toLowerCase()}${d.basis.slice(1)} ; ` +
-      `avis de testeurs consolidés (génération ${entry.testedGeneration.split(' ')[0]}). ` +
-      `Appréciation, pas une mesure.`,
-    withTesters: true,
-    nature: 'specs+testeurs',
-    label: PROFILE_LABEL_BLENDED,
+    label: TESTER_SYNTHESIS_LABEL,
+    average20: entry.docxAverage20,
+    criteria: RACQUET_DISPLAYED_CRITERIA.map((key) => ({
+      key,
+      label: RACQUET_TESTER_SOURCE.criteria[key],
+      value20: entry.raw20[key],
+    })),
   };
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  Vues comparatives : une seule nature de profil par vue
-// ─────────────────────────────────────────────────────────────────────────────
-//
-// Règle (10/10/2026) : on ne met jamais côte à côte des profils de natures
-// différentes. Dans une vue qui compare plusieurs raquettes, TOUTES sont notées
-// sur le même profil déduit des caractéristiques ; l'avis de testeurs, quand il
-// existe, est donné À PART (moyenne /20), et son absence n'est ni un bonus ni
-// une pénalité (« non évaluée »).
+/** Note /20 au format du site, identique à /statistics : 16,55 · 15,0 · 13,6. */
+export function formatScore20(value: number): string {
+  return value.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 2 });
+}
 
+/** Ligne d'une vue comparative : la raquette (ses caractéristiques) et l'avis à part. */
 export interface ComparableRacquet {
   racquet: TennisRacquet;
-  /** Profil déduit des caractéristiques — même règle pour toutes les raquettes. */
-  profile: DisplayedRacquetProfile;
   /** Moyenne des 20 critères testeurs, /20 ; `null` = non évaluée (jamais 0). */
   testerAverage20: number | null;
 }
 
-/** Échoue si une vue s'apprête à mêler des profils de natures différentes. */
-export function assertSingleProfileNature(natures: readonly RacquetProfileNature[]): void {
-  const distinct = new Set(natures);
-  if (distinct.size > 1) {
-    throw new Error(`Vue comparative : profils de natures mélangées (${[...distinct].join(', ')})`);
-  }
-}
-
-/** Données d'une vue comparative (comparateur) : profils homogènes + avis à part. */
+/** Données du comparateur : aucune note déduite, l'avis de testeurs à part. */
 export function racquetsForComparison(racquets: readonly TennisRacquet[]): ComparableRacquet[] {
-  const rows = racquets.map((racquet) => {
-    const d = deriveRacquetProfile(racquet);
-    const profile: DisplayedRacquetProfile = {
-      power: d.power, control: d.control, comfort: d.comfort,
-      maneuverability: d.maneuverability, stability: d.stability,
-      basis: d.basis, withTesters: false, nature: 'specs', label: PROFILE_LABEL_SPECS,
-    };
-    return { racquet, profile, testerAverage20: RACQUET_TESTER_RATINGS[racquet.id]?.docxAverage20 ?? null };
-  });
-  assertSingleProfileNature(rows.map((r) => r.profile.nature));
-  return rows;
+  return racquets.map((racquet) => ({
+    racquet,
+    testerAverage20: RACQUET_TESTER_RATINGS[racquet.id]?.docxAverage20 ?? null,
+  }));
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

@@ -7,16 +7,15 @@
  * code et n'est pas affichée : le site dit « avis de testeurs », sans citer
  * de chaîne.
  *
- * MÉTHODE (identique à celle des cordages, `tester-ratings.ts`) :
- *   1. critère /20 -> /10 par x/2, puis + décalage d'ancrage par axe
- *      (`RACQUET_ANCHOR_SHIFT`) = moyenne(profil dérivé des specs) −
- *      moyenne(x/2) sur les raquettes rapprochées, arrondi au dixième ;
- *   2. note affichée = moyenne (profil dérivé des specs, note testeurs
- *      recalée), bornée à [0, 10], arrondie au dixième ;
- *   3. raquette sans entrée ici -> profil dérivé des specs seul, inchangé.
- * Axes : puissance = PUI, contrôle = PRE (précision), confort = CNF,
- * maniabilité = MAN, stabilité = STA. Les 15 autres critères sont conservés
- * ici (classement Top 10, futurs usages) et ne sont pas affichés.
+ * AFFICHAGE (décision de Pierre du 10/10/2026) : l'avis est affiché SEUL, tel
+ * que dans la synthèse — moyenne des 20 critères (`docxAverage20`) et cinq
+ * critères (`RACQUET_DISPLAYED_CRITERIA`), sur 20, sans conversion, sans
+ * recalage et sans moyenne avec un profil déduit des caractéristiques, sous le
+ * titre « Avis de testeurs (synthèse) » (`racquetTesterSynthesis`). Une
+ * raquette sans entrée ici n'affiche que ses caractéristiques.
+ * (Jusqu'au 10/10/2026 : moyenne 50/50 avec `deriveRacquetProfile` après
+ * recalage par décalage d'ancrage — retirée : invérifiable, la référence était
+ * dedans.) Les 15 autres critères servent au classement (moyenne).
  *
  * RAPPROCHEMENT DE GÉNÉRATION (décision tsa-core du 09/10/2026) :
  * une fiche du catalogue reçoit les avis d'une raquette testée seulement si
@@ -34,8 +33,8 @@
  * générations. Sept fiches qui décrivaient une génération antérieure (RA
  * divergent) ont donc été alignées en place sur la génération en vente, specs
  * sourcées, puis rapprochées (`racquets-database.ts`, commentaire par fiche).
- * Les décalages d'ancrage sont mesurés sur les 18 rapprochements.
- * Contrôle : `npm run audit:ratings` (contrôle 14) recalcule tout depuis ce fichier.
+ * Contrôles : `npm run audit:ratings` — 14 (rapprochements, notes affichées =
+ * notes de la synthèse) et 16 (aucune note déduite sur une surface).
  */
 
 export const RACQUET_TESTER_SOURCE = {
@@ -56,20 +55,17 @@ export const RACQUET_TESTER_SOURCE = {
 export type RacquetTesterCriterion = keyof typeof RACQUET_TESTER_SOURCE.criteria;
 export type RacquetProfileAxis = 'power' | 'control' | 'comfort' | 'maneuverability' | 'stability';
 
-/** Axe du profil affiché -> critère du document. */
+/**
+ * Axe du profil déduit des caractéristiques -> critère du document. Sert
+ * UNIQUEMENT à mesurer l'accord de `deriveRacquetProfile` avec les testeurs
+ * (contrôle 17 de `audit:ratings`) ; rien n'est affiché à partir de lui.
+ */
 export const RACQUET_AXIS_TO_CRITERION: Readonly<Record<RacquetProfileAxis, RacquetTesterCriterion>> = {
   power: 'PUI', control: 'PRE', comfort: 'CNF', maneuverability: 'MAN', stability: 'STA',
 };
 
-/**
- * Décalage d'ancrage par axe (/10), mesuré sur les raquettes rapprochées.
- * Recalculé le 10/10/2026 après la révision de `deriveRacquetProfile` (contrôle
- * sans RA, masse en échelle linéaire) : contrôle −2,8 → −2,2, confort −2,2 →
- * −2,4, maniabilité −2,9 → −2,4, stabilité −1,7 → −2,3 ; puissance inchangée.
- */
-export const RACQUET_ANCHOR_SHIFT: Readonly<Record<RacquetProfileAxis, number>> = {
-  power: -2.5, control: -2.2, comfort: -2.4, maneuverability: -2.4, stability: -2.3,
-};
+/** Les cinq critères affichés avec la moyenne, dans cet ordre, sur 20, tels quels. */
+export const RACQUET_DISPLAYED_CRITERIA: readonly RacquetTesterCriterion[] = ['PUI', 'PRE', 'CNF', 'MAN', 'STA'];
 
 export interface RacquetTesterEntry {
   docxName: string;
@@ -214,15 +210,3 @@ export const RACQUET_TESTER_RATINGS: Readonly<Record<string, RacquetTesterEntry>
 export const RACQUET_TESTER_QUARANTINE: Readonly<Record<string, string>> = {
   'Tecnifibre Fire (300 / 305 S)': 'Ligne qui agrège deux tamis (100 et 98) : non rapprochable.',
 };
-
-const round1 = (v: number) => Math.round(v * 10 + 1e-9) / 10;
-
-/** Note testeurs recalée sur l'échelle du profil (/10), avant moyenne. */
-export function recalibratedTesterNote(entry: RacquetTesterEntry, axis: RacquetProfileAxis): number {
-  return Math.min(10, Math.max(0, entry.raw20[RACQUET_AXIS_TO_CRITERION[axis]] / 2 + RACQUET_ANCHOR_SHIFT[axis]));
-}
-
-/** Note affichée : moyenne (profil dérivé, note testeurs recalée), au dixième. */
-export function blendRacquetNote(derived: number, entry: RacquetTesterEntry, axis: RacquetProfileAxis): number {
-  return round1(Math.min(10, Math.max(0, (derived + recalibratedTesterNote(entry, axis)) / 2)));
-}

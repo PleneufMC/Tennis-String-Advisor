@@ -13,8 +13,9 @@ import {
   racquetsForComparison,
   effectiveRacquetRA,
   isRacquetStiffnessEstimated,
+  formatScore20,
   RA_RANGE,
-  PROFILE_LABEL_SPECS,
+  TESTER_SYNTHESIS_LABEL,
   type ComparableRacquet,
 } from '@/lib/racquet-scoring';
 import { 
@@ -78,6 +79,10 @@ const stringTypeConfig: Record<string, { variant: 'polyester' | 'multifilament' 
  * `minValue` reste optionnel : sans lui, le comportement d'origine (base 0)
  * est conservé.
  */
+// Thème sombre : les cartes de cette page restent blanches (`Card` = `bg-white`,
+// sans variante sombre). Un texte éclairci par `dark:text-gray-200` y devenait
+// illisible — libellés des barres, moyenne testeurs (constat Playwright du
+// 10/10/2026). Le texte reste donc foncé dans les deux thèmes.
 function ComparisonBar({ label, values, maxValue, minValue = 0, unit, colors, missingLabel = 'N/A' }: {
   label: string;
   values: (number | null)[];
@@ -100,7 +105,7 @@ function ComparisonBar({ label, values, maxValue, minValue = 0, unit, colors, mi
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between gap-2">
-        <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{label}</span>
+        <span className="text-sm font-medium text-gray-700">{label}</span>
         <div className="flex gap-2">
           {values.map((value, index) => (
             <span key={index} className={cn('text-xs font-semibold', colors[index])}>
@@ -134,26 +139,50 @@ function ComparisonBar({ label, values, maxValue, minValue = 0, unit, colors, mi
   );
 }
 
-/** Moyenne testeurs /20 au format du site (comme /statistics) : 16,55 · 15,0. */
-const fmt20 = (v: number) => v.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 2 });
-
 /**
- * Ligne « avis de testeurs », DISTINCTE du profil : la moyenne /20 quand elle
- * existe, « non évaluée » sinon. Pas de barre : une absence n'est ni un zéro ni
- * une pénalité, et une barre tronquée exagérerait des écarts de quelques
- * dixièmes que la synthèse elle-même lit comme des égalités (< 0,5 /20).
+ * Caractéristique en texte (plan, équilibre, swingweight) : une valeur par
+ * raquette, « Non publié » si le fabricant ne la donne pas (jamais comblée).
  */
-function TesterAverageRow({ values, colors }: { values: (number | null)[]; colors: string[] }) {
+function SpecTextRow({ label, values, colors }: { label: string; values: (string | null)[]; colors: string[] }) {
   return (
-    <div className="flex items-center justify-between gap-2" data-testid="tester-average-row">
-      <span className="text-sm font-medium text-gray-700 dark:text-gray-200">Moyenne des avis (/20)</span>
+    <div className="flex items-start justify-between gap-2" data-testid="spec-row">
+      <span className="text-sm font-medium text-gray-700">{label}</span>
       <div className="flex flex-wrap justify-end gap-x-3 gap-y-1">
         {values.map((value, index) => (
           <span
             key={index}
-            className={cn('text-xs font-semibold', value === null ? 'text-gray-500 dark:text-gray-400' : colors[index])}
+            className={cn('text-xs font-semibold', value === null ? 'text-gray-500' : colors[index])}
           >
-            {value === null ? 'non évaluée' : `${fmt20(value)} /20`}
+            {value ?? 'Non publié'}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Ligne « avis de testeurs », DISTINCTE des caractéristiques : la moyenne /20
+ * quand elle existe, « non évaluée » sinon. Ni barre ni couleur de classement
+ * (décision de Pierre du 10/10/2026) : une absence n'est ni un zéro ni une
+ * pénalité, et une barre exagérerait des écarts de quelques dixièmes que la
+ * synthèse elle-même lit comme des égalités (< 0,5 /20). La pastille ne sert
+ * qu'à relier la valeur à sa carte (même couleur que la carte), pas à juger.
+ */
+function TesterAverageRow({ values, names, colors }: { values: (number | null)[]; names: string[]; colors: string[] }) {
+  return (
+    <div className="flex items-start justify-between gap-2" data-testid="tester-average-row">
+      <span className="text-sm font-medium text-gray-700">Moyenne des 20 critères (/20)</span>
+      <div className="flex flex-wrap justify-end gap-x-3 gap-y-1">
+        {values.map((value, index) => (
+          <span key={index} className="inline-flex items-center gap-1 text-xs font-semibold text-gray-800">
+            <span aria-hidden="true" className={cn('inline-block h-2 w-2 rounded-full', colors[index].replace('text-', 'bg-'))} />
+            <span className="sr-only">{names[index]} : </span>
+            {value === null ? (
+              <span className="font-normal text-gray-500">non évaluée</span>
+            ) : (
+              `${formatScore20(value)} /20`
+            )}
           </span>
         ))}
       </div>
@@ -222,7 +251,7 @@ export default function ComparePage() {
     }
   };
 
-  // Nature du profil et avis de testeurs, par raquette (étiquette de chaque carte).
+  // Avis de testeurs par raquette (étiquette de chaque carte).
   const comparableById = useMemo(() => {
     if (mode !== 'racquets') return new Map<string, ComparableRacquet>();
     const racquets = selectedItems.map(si => si.item as TennisRacquet);
@@ -235,16 +264,14 @@ export default function ComparePage() {
 
     if (mode === 'racquets') {
       const racquets = selectedItems.map(si => si.item as TennisRacquet);
-      // Une seule nature de profil par vue (10/10/2026). Jusque-là, ce bloc
-      // affichait côte à côte un profil COMBINÉ (specs + testeurs) pour les
-      // raquettes évaluées et un profil DÉRIVÉ des specs pour les autres, sans
-      // étiquette par raquette : la Gravity MP (dérivée) battait la Gravity Tour
-      // (combinée) sur 4 axes sur 5. Toutes les raquettes sont désormais notées
-      // sur le même profil déduit des caractéristiques ; l'avis de testeurs est
-      // donné à part (`testerAverage`). `racquetsForComparison` échoue si une vue
-      // mêle deux natures ; contrôle 16 de `audit:ratings`.
+      // Décision de Pierre du 10/10/2026 : plus aucune note /10 de profil dans
+      // le comparateur. Jusque-là, ce bloc affichait côte à côte un profil
+      // COMBINÉ (specs + testeurs) pour les raquettes évaluées et un profil
+      // DÉRIVÉ des specs pour les autres, sans étiquette par raquette : la
+      // Gravity MP (dérivée) battait la Gravity Tour (combinée) sur 4 axes sur 5.
+      // Désormais : les caractéristiques, et la moyenne testeurs /20 sur une
+      // ligne distincte (« non évaluée » sinon). Contrôle 16 de `audit:ratings`.
       const rows: ComparableRacquet[] = racquetsForComparison(racquets);
-      const profiles = rows.map(r => r.profile);
       return {
         weight: racquets.map(r => r.weight),
         headSize: racquets.map(r => r.headSize),
@@ -253,11 +280,11 @@ export default function ComparePage() {
         stiffness: racquets.map(r => effectiveRacquetRA(r)),
         raEstimated: racquets.map(r => isRacquetStiffnessEstimated(r)),
         price: racquets.map(r => r.price?.europe ?? null),
-        power: profiles.map(p => p.power),
-        control: profiles.map(p => p.control),
-        comfort: profiles.map(p => p.comfort),
-        maneuverability: profiles.map(p => p.maneuverability),
-        stability: profiles.map(p => p.stability),
+        // Texte : absent = « Non publié » (règle 3, jamais comblé).
+        pattern: racquets.map(r => r.stringPattern ?? null),
+        balance: racquets.map(r => (typeof r.balance === 'number' ? `${r.balance} mm` : null)),
+        swingWeight: racquets.map(r => (typeof r.swingWeight === 'number' ? String(r.swingWeight) : null)),
+        names: racquets.map(r => `${r.brand} ${r.model} ${r.variant}`.trim()),
         testerAverage: rows.map(r => r.testerAverage20),
       };
     } else {
@@ -418,18 +445,19 @@ export default function ComparePage() {
                           </div>
                         )}
                       </div>
-                      {/* Étiquette par raquette : ce que contiennent ses notes. */}
+                      {/* Avis de testeurs de cette raquette, ou « non évaluée ». */}
                       {(() => {
                         const row = comparableById.get(racquet.id);
                         if (!row) return null;
                         return (
-                          <div className="mt-2 space-y-0.5 text-[11px] leading-snug text-gray-500 dark:text-gray-400">
-                            <p data-profile-nature={row.profile.nature}>{row.profile.label}</p>
-                            <p data-tester-average={row.testerAverage20 ?? 'none'}>
-                              Avis de testeurs :{' '}
-                              {row.testerAverage20 === null ? 'non évaluée' : `${fmt20(row.testerAverage20)} /20`}
-                            </p>
-                          </div>
+                          <p
+                            className="mt-2 text-[11px] leading-snug text-gray-500"
+                            data-tester-average={row.testerAverage20 ?? 'none'}
+                          >
+                            {row.testerAverage20 === null
+                              ? 'Avis de testeurs : non évaluée'
+                              : `${TESTER_SYNTHESIS_LABEL} : ${formatScore20(row.testerAverage20)} /20`}
+                          </p>
                         );
                       })()}
                     </>
@@ -506,7 +534,7 @@ export default function ComparePage() {
                     colors={colors.slice(0, selectedItems.length)}
                   />
                   {(comparisonSpecs.raEstimated as boolean[]).some(Boolean) && (
-                    <p className="text-xs text-amber-700 dark:text-amber-300 -mt-4">
+                    <p className="text-xs text-amber-700 -mt-4">
                       RA estimé à {RA_RANGE.median} (médiane mesurée) pour les raquettes
                       dont le fabricant ne publie pas cette valeur.
                     </p>
@@ -520,68 +548,44 @@ export default function ComparePage() {
                     colors={colors.slice(0, selectedItems.length)}
                   />
 
-                  {/* Profil : une seule nature pour toutes les raquettes comparées. */}
-                  <div className="pt-2 border-t border-gray-200 dark:border-gray-700" data-testid="profile-block">
-                    <p className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-1">
-                      {PROFILE_LABEL_SPECS}
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
-                      Mêmes règles pour toutes les raquettes : tamis, plan de cordage,
-                      poids et RA. Ni mesure, ni donnée fabricant, ni avis de testeurs.
-                      L&apos;équilibre et le swingweight, qui décident souvent de la
-                      maniabilité et de la stabilité ressenties, n&apos;y entrent pas :
-                      ces notes ne départagent pas deux raquettes aux caractéristiques
-                      proches.
-                    </p>
-                  </div>
-                  <ComparisonBar
-                    label="Puissance"
-                    values={comparisonSpecs.power as (number | null)[]}
-                    maxValue={10}
-                    missingLabel="Non publié"
+                  {/* Caractéristiques en texte : plan toujours, équilibre et
+                      swingweight seulement si l'une des raquettes les publie. */}
+                  <SpecTextRow
+                    label="Plan de cordage"
+                    values={comparisonSpecs.pattern as (string | null)[]}
                     colors={colors.slice(0, selectedItems.length)}
                   />
-                  <ComparisonBar
-                    label="Contrôle"
-                    values={comparisonSpecs.control as (number | null)[]}
-                    maxValue={10}
-                    missingLabel="Non publié"
-                    colors={colors.slice(0, selectedItems.length)}
-                  />
-                  <ComparisonBar
-                    label="Confort"
-                    values={comparisonSpecs.comfort as (number | null)[]}
-                    maxValue={10}
-                    missingLabel="Non publié"
-                    colors={colors.slice(0, selectedItems.length)}
-                  />
-                  <ComparisonBar
-                    label="Maniabilité"
-                    values={comparisonSpecs.maneuverability as number[]}
-                    maxValue={10}
-                    colors={colors.slice(0, selectedItems.length)}
-                  />
-                  <ComparisonBar
-                    label="Stabilité"
-                    values={comparisonSpecs.stability as number[]}
-                    maxValue={10}
-                    colors={colors.slice(0, selectedItems.length)}
-                  />
+                  {(comparisonSpecs.balance as (string | null)[]).some(v => v !== null) && (
+                    <SpecTextRow
+                      label="Équilibre"
+                      values={comparisonSpecs.balance as (string | null)[]}
+                      colors={colors.slice(0, selectedItems.length)}
+                    />
+                  )}
+                  {(comparisonSpecs.swingWeight as (string | null)[]).some(v => v !== null) && (
+                    <SpecTextRow
+                      label="Swingweight"
+                      values={comparisonSpecs.swingWeight as (string | null)[]}
+                      colors={colors.slice(0, selectedItems.length)}
+                    />
+                  )}
 
-                  {/* Avis de testeurs : à part, jamais mêlé au profil ci-dessus. */}
+                  {/* Avis de testeurs : ligne distincte. Aucune note n'est déduite
+                      des caractéristiques (décision de Pierre du 10/10/2026). */}
                   <div className="pt-2 border-t border-gray-200 dark:border-gray-700 space-y-2" data-testid="tester-block">
-                    <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                      Avis de testeurs
+                    <p className="text-sm font-semibold text-gray-700">
+                      {TESTER_SYNTHESIS_LABEL}
                     </p>
                     <TesterAverageRow
                       values={comparisonSpecs.testerAverage as (number | null)[]}
+                      names={comparisonSpecs.names as string[]}
                       colors={colors.slice(0, selectedItems.length)}
                     />
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      Moyenne de vingt critères d&apos;avis de testeurs consolidés,
-                      donnée à part : elle n&apos;entre pas dans le profil ci-dessus.
-                      « Non évaluée » : aucun avis rapproché de cette raquette, ni bonus
-                      ni pénalité. Un écart inférieur à 0,5 /20 se lit comme une égalité.
+                    <p className="text-xs text-gray-500">
+                      Moyenne des vingt critères d&apos;une synthèse d&apos;avis de testeurs.
+                      « Non évaluée » : aucun avis rapproché de cette raquette, ni bonus ni
+                      pénalité. Un écart inférieur à 0,5 /20 se lit comme une égalité. Le site
+                      ne déduit aucune note des caractéristiques ci-dessus.
                     </p>
                   </div>
                 </>
