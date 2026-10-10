@@ -166,7 +166,7 @@ export const DEFAULT_RACQUET_RA = 64;
  * « Rigidité (RA) » sur `maxValue={80}` alors que les données vont de 55 à 72.
  * Toutes les barres occupaient 69-90 % de la largeur et paraissaient égales.
  */
-export const RA_RANGE = { min: 55, median: 64, max: 72 } as const;
+export const RA_RANGE = { min: 57, median: 64, max: 72 } as const; // min 55 -> 57 le 10/10/2026 : la Clash 100 Pro (seule à 55) passe à la V3, RA 57 (mesure TWU)
 
 /**
  * Bornes réelles du poids (g) des JUNIORS (longueur < 27 pouces) — mesurées

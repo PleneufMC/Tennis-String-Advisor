@@ -56,10 +56,11 @@ export const racquetsDatabase: TennisRacquet[] = [
     price: { europe: 280, usa: 280 }
   },
   {
+    // Édition nommée le 10/10/2026 (veille V15-V22), AUCUNE valeur changée : RA 67 = Team 2023 (V18, V19) ; tamis, poids et plan identiques en Gen9. RA de la Gen9/2026 : 66 chez TW US seul (V20), non établi (Q-1) ; le 70 ± 3 de Babolat est un RA NON cordé (V16), jamais saisi. Provenance : src/data/racquet-alignment-provenance.ts
     id: 'babolat-pure-aero-team',
     brand: 'Babolat',
     model: 'Pure Aero',
-    variant: 'Team',
+    variant: 'Team (2023)',
     stiffness: 67,
     weight: 285,
     headSize: 100,
@@ -631,14 +632,15 @@ export const racquetsDatabase: TennisRacquet[] = [
     price: { europe: 270, usa: 270 }
   },
   {
+    // Alignée le 10/10/2026 (veille V24-V26) : plan 18x19 -> 16x19 (Tecnifibre, TW US, TWU), RA 64 -> 65 (mesure TWU « Flex Rating Test », L1, Q-1 a). Génération non écrite (V27) : nom inchangé. Provenance : src/data/racquet-alignment-provenance.ts
     id: 'tecnifibre-tfight-315s',
     brand: 'Tecnifibre',
     model: 'TFight',
     variant: '315S',
-    stiffness: 64,
+    stiffness: 65,
     weight: 315,
     headSize: 98,
-    stringPattern: '18x19',
+    stringPattern: '16x19',
     category: 'Control',
     playerLevel: ['Pro'],
     description: 'Version pro lourde pour contrôle maximum.',
@@ -659,10 +661,11 @@ export const racquetsDatabase: TennisRacquet[] = [
     price: { europe: 240, usa: 240 }
   },
   {
+    // Nommée V2 le 10/10/2026 (Q-3 ; veille V55-V59), specs inchangées : Tempo 285 V2 = 100 in², 285 g, 16x19, fin de série (Outlet). En vente : Tempo Tour 285 g 2026 (102 in², 68,5 cm, V57), non créée (lot ultérieur). RA 65 sans source (V59) : conservé, non retiré (règle 3). Provenance : src/data/racquet-alignment-provenance.ts
     id: 'tecnifibre-tempo-285',
     brand: 'Tecnifibre',
     model: 'Tempo',
-    variant: '285',
+    variant: '285 V2',
     stiffness: 65,
     weight: 285,
     headSize: 100,
@@ -690,13 +693,14 @@ export const racquetsDatabase: TennisRacquet[] = [
     price: { europe: 290, usa: 290 }
   },
   {
+    // Alignée le 10/10/2026 sur la page officielle « Blade Feel Comp Jr 25 » (veille V84-V87) : tamis 98 -> 100, 240 -> 243 g non cordé, nom. Équilibre 320 CONSERVÉ : 30,5 sans unité écrite sur la page (V85). Provenance : src/data/racquet-alignment-provenance.ts
     id: 'wilson-blade-junior-25',
     brand: 'Wilson',
     model: 'Blade Feel',
-    variant: 'Junior 25"',
+    variant: 'Comp Junior 25"',
     stiffness: null,
-    weight: 240,
-    headSize: 98,
+    weight: 243,
+    headSize: 100,
     length: 25,
     balance: 320,
     stringPattern: '16x19',
@@ -722,10 +726,11 @@ export const racquetsDatabase: TennisRacquet[] = [
     price: { europe: 80, usa: 75 }
   },
   {
+    // Nommée v6 le 10/10/2026 (veille V60-V64), id conservé, AUCUNE valeur changée : la v6 (cosmétique 2026) a les mêmes valeurs que la v5 (100 in², 280 g, 18x16, RA 72). Provenance : src/data/racquet-alignment-provenance.ts
     id: 'wilson-burn-100ls-v5',
     brand: 'Wilson',
     model: 'Burn',
-    variant: '100LS v5',
+    variant: '100LS v6',
     stiffness: 72,
     weight: 280,
     headSize: 100,
@@ -764,14 +769,15 @@ export const racquetsDatabase: TennisRacquet[] = [
     price: { europe: 280, usa: 280 }
   },
   {
+    // Alignée EN PLACE le 10/10/2026 sur la V3 en vente (veille V06-V13), id conservé : 16x19 -> 16x20, 310 -> 305 g non cordé (Wilson), RA 55 -> 57 (mesure TWU « Flex Rating Test », L1, Q-1 a). Provenance : src/data/racquet-alignment-provenance.ts
     id: 'wilson-clash-100-pro-v2',
     brand: 'Wilson',
     model: 'Clash',
-    variant: '100 Pro v2',
-    stiffness: 55,
-    weight: 310,
+    variant: '100 Pro V3',
+    stiffness: 57,
+    weight: 305,
     headSize: 100,
-    stringPattern: '16x19',
+    stringPattern: '16x20',
     category: 'Modern Player',
     playerLevel: ['Advanced', 'Pro'],
     description: 'Version pro du Clash 100.',
@@ -957,6 +963,7 @@ export const racquetsDatabase: TennisRacquet[] = [
     price: { europe: 280, usa: 280 }
   },
   {
+    // Plan aligné le 10/10/2026 (veille V01-V03) : 16x18 -> 16x19 (page Yonex, centralsports.co.uk, TW US). RA 64 CONSERVÉ : 66 chez TW US seul (V04), non indépendant de TWE : signal (Q-1). Provenance : src/data/racquet-alignment-provenance.ts
     id: 'yonex-ezone-105',
     brand: 'Yonex',
     model: 'EZONE',
@@ -964,7 +971,7 @@ export const racquetsDatabase: TennisRacquet[] = [
     stiffness: 64,
     weight: 275,
     headSize: 105,
-    stringPattern: '16x18',
+    stringPattern: '16x19',
     category: 'Light',
     playerLevel: ['Beginner', 'Intermediate'],
     description: 'Légère avec grand tamis.',
@@ -1073,6 +1080,7 @@ export const racquetsDatabase: TennisRacquet[] = [
     price: { europe: 280, usa: 280 }
   },
   {
+    // Plan aligné le 10/10/2026 (veille V29-V31, 8e génération V33) : 18x20 -> 16x19 (page Yonex, TennisNerd, TW US). RA 63 CONSERVÉ : 64 chez TW US seul (V32), signal (Q-1). Description : le « plan dense » n'était que le 18x20. Provenance : src/data/racquet-alignment-provenance.ts
     id: 'yonex-vcore-98-tour',
     brand: 'Yonex',
     model: 'VCore',
@@ -1080,10 +1088,10 @@ export const racquetsDatabase: TennisRacquet[] = [
     stiffness: 63,
     weight: 315,
     headSize: 98,
-    stringPattern: '18x20',
+    stringPattern: '16x19',
     category: 'Control',
     playerLevel: ['Pro'],
-    description: 'Version tour avec plan dense.',
+    description: 'Version tour plus lourde (315 g).',
     price: { europe: 290, usa: 290 }
   },
   {
@@ -1647,48 +1655,51 @@ export const racquetsDatabase: TennisRacquet[] = [
     price: { europe: 25, usa: 25 }
   },
   {
+    // Alignée le 10/10/2026 sur la page officielle (veille V73-V77) : tamis 85 -> 95, plan 16x17 -> 16x18, 185 -> 171 g, équilibre 285 -> 258 mm. Convention (Q-4, 10/10/2026) : poids et équilibre NON CORDÉS officiels, comme les adultes. Provenance : src/data/racquet-alignment-provenance.ts
     id: 'wilson-us-open-junior-21',
     brand: 'Wilson',
     model: 'US Open',
     variant: 'Junior 21"',
     stiffness: null,
-    weight: 185,
-    headSize: 85,
+    weight: 171,
+    headSize: 95,
     length: 21,
-    balance: 285,
-    stringPattern: '16x17',
+    balance: 258,
+    stringPattern: '16x18',
     category: 'Junior',
     playerLevel: ['Beginner'],
     description: 'US Open Junior 21" — balle rouge, 5-6 ans. Léger et coloré, parfait pour l\'école de tennis.',
     price: { europe: 28, usa: 27 }
   },
   {
+    // Alignée le 10/10/2026 sur la page officielle (veille V78-V80) : tamis 90 -> 95, plan 16x18 -> 16x19, 205 -> 185 g, équilibre 295 -> 280 mm. Convention (Q-4, 10/10/2026) : poids et équilibre NON CORDÉS officiels, comme les adultes. Provenance : src/data/racquet-alignment-provenance.ts
     id: 'wilson-us-open-junior-23',
     brand: 'Wilson',
     model: 'US Open',
     variant: 'Junior 23"',
     stiffness: null,
-    weight: 205,
-    headSize: 90,
+    weight: 185,
+    headSize: 95,
     length: 23,
-    balance: 295,
-    stringPattern: '16x18',
+    balance: 280,
+    stringPattern: '16x19',
     category: 'Junior',
     playerLevel: ['Beginner'],
     description: 'US Open Junior 23" — balle orange, 6-8 ans. Maniabilité maximale pour progresser.',
     price: { europe: 32, usa: 30 }
   },
   {
+    // Alignée le 10/10/2026 sur la page officielle (veille V81-V83) : tamis 98 -> 106, plan 16x18 -> 16x19, 225 -> 205 g, équilibre 310 -> 300 mm. Convention (Q-4, 10/10/2026) : poids et équilibre NON CORDÉS officiels, comme les adultes. Provenance : src/data/racquet-alignment-provenance.ts
     id: 'wilson-us-open-junior-25',
     brand: 'Wilson',
     model: 'US Open',
     variant: 'Junior 25"',
     stiffness: null,
-    weight: 225,
-    headSize: 98,
+    weight: 205,
+    headSize: 106,
     length: 25,
-    balance: 310,
-    stringPattern: '16x18',
+    balance: 300,
+    stringPattern: '16x19',
     category: 'Junior',
     playerLevel: ['Beginner'],
     description: 'US Open Junior 25" — balle verte, 8-10 ans. Tamis surdimensionné tolérant en alliage titane.',

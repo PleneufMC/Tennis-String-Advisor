@@ -2,7 +2,8 @@
 /**
  * Fiches produit anglaises — générées au build depuis src/data (tsa-acquisition, 09/10/2026).
  *
- * Sortie : public/en/racquets/<id>.html (129) et public/en/strings/<id>.html (181),
+ * Sortie : public/en/racquets/<id>.html (une fiche par raquette) et public/en/strings/<id>.html
+ * (une par cordage),
  * non versionnées (cf. .gitignore), régénérées à chaque `npm run build` (prebuild)
  * et `npm run dev` (predev), exactement comme public/data/catalog.json (C3).
  *

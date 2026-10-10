@@ -1,6 +1,6 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.3.9
+> **Version** : 2.3.12
 > **Date** : 10 octobre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
@@ -48,6 +48,90 @@ hors lot. Contrôle 13 ter étendu (règle C, plancher des anciens identifiants,
 multifilament), outil `c2-effet-alertes.mts --base=<commit>`. ⚠️ Chiffres d'articles à reprendre par
 `tsa-redacteur` (liste dans la PR) : « polyester et tennis elbow » et « cordage et tennis elbow » (FR, EN), cartes
 d'index du blog.
+
+**Changelog v2.3.11 → v2.3.12** — **Deux garde-fous de `tsa-measure` corrigés** (contrôle
+indépendant du lot du 10/10/2026 ; aucune donnée, aucun RCS, aucune alerte touchés). **(1) `audit:style-contrast`** : sur
+Windows, `path.relative` rend des « \ » alors que les clés de `scripts/qa-style-contrast.baseline.json` sont en « / » :
+aucune entrée de la baseline ne correspondait, les défauts antérieurs ressortaient tous comme nouveaux (34 « paires
+illisibles », exit 1). Clé normalisée (`split(path.sep).join('/')`) : **31 des 34 constats sont reconnus par la baseline**.
+Seuils, baseline et `--strict` (34 toujours listés) inchangés. **Le diagnostic « séparateurs » n'explique pas les 34** : 3
+constats restent, **hors baseline sur tout système**, tous dans `src/app/pricing/page.tsx` (code introduit le 13/09 par
+`6452105`, après la baseline du 08/08) et dans l'état « souscription fermée », aujourd'hui inactif (`CHECKOUT_DISPONIBLE =
+true`) : le lien `mailto:` en `#047857` sur fond sombre (2,67:1, thème sombre : défaut réel dès que l'encart s'affiche) et le
+bouton `#9ca3af` sur `#4b5563` (2,98:1, deux thèmes : couple qui ne peut pas coexister, le plan gratuit n'ayant pas de
+`stripeLinks`, donc faux positif de l'analyse statique, qui n'évalue pas ces conditions). Non ajoutés à la baseline (« pas de
+nouvelle entrée sans arbitrage ») : le contrôle reste rouge, pour trois raisons connues et nommées ; à traiter par
+`tsa-revenue` (fichier) avec Pierre. **(2) `audit:database`** : borne basse de l'équilibre junior 260 → 220 mm. L'US Open Jr 21
+a un équilibre officiel de 258 mm (« Unstrung Balance Cm 25.8 », wilson.com, L0, fait V75 de la veille du 10/10), soit 0,484 de
+sa longueur ; 220 = 19 po × 0,459, le plus bas rapport équilibre/longueur du catalogue. Neutre sur `main` (56 problèmes
+avant et après), 57 → 56 avec la PR des fiches désynchronisées ; une valeur de 200 mm reste signalée.
+
+**Changelog v2.3.10 → v2.3.11** — **Comptages du catalogue : plus aucun
+total écrit à la main sur les pages EN, et un garde-fou** (`tsa-acquisition`, demande du 10/10/2026
+après la fusion des deux doublons, 181 → 179 cordages). **Constat** : quatre pages EN statiques
+annonçaient encore « 181 strings » — `index.html` (méta, `og:description`, phrase d'accroche, tuile de
+statistique, carte « String Catalog »), `strings.html` (méta, `og:description`, JSON-LD
+`numberOfItems: 181`), `faq.html` (première réponse), `auth.html` (avantages du compte) — et rien ne
+le signalait ; les 129 raquettes étaient justes mais écrites à la main de la même façon.
+**Principe** : pas de comptage exact écrit à la main quand on peut l'éviter. Les textes statiques
+(méta, accroches, tuiles) portent une **borne basse vraie** — « more than 120 racquets », « more than
+170 strings », « 120+ », « 170+ » — lisible par les moteurs sans JavaScript et sans requête de plus
+(`catalog.json` pèse 134 Ko : trop pour deux chiffres de l'accueil). Les pages catalogue lisaient
+déjà le total dans `catalog.json` (« 179 strings from 22 different brands ») ; les pages FR le lisent
+au build (`stringsDatabase.length`, relu dans la sortie de `npm run build` : « 129 raquettes »,
+« 179 cordages »). `numberOfItems` est **retiré** de `strings.html` et `racquets.html` : une `ItemList`
+de deux exemples ne peut pas déclarer un total qu'un JSON-LD statique ne tient pas à jour
+(génération au build écartée : elle réécrirait des fichiers versionnés). Au passage, la description
+JSON-LD de `racquets.html` (« detailed specs: weight, head size, balance, RA stiffness ») est alignée
+sur la phrase de l'accueil corrigée le 10/10 : « where published » (RA absent de 29 fiches,
+équilibre de 91, sur 129). **Garde-fou** `npm run audit:comptages` (`scripts/qa-comptages-catalogue.mjs`,
+**périmètre `tsa-measure`, signalé dans la PR**, ajouté à `audit:all`) : les deux totaux sont lus dans
+`src/data/` par le chargeur de `catalog.json` ; échec si une page de `public/` (hors blog), un texte de
+`src/` (blocs `metadata`, JSON-LD, JSX ; analyse syntaxique, commentaires ignorés), un gabarit de
+`scripts/en-products` ou la sortie du build (`.next`, si à jour) annonce un total « N
+cordages|strings|raquettes|racquets » (N de 100 à 250 ; aussi « 181 fiches cordages », « 181 string
+pages », une tuile en deux `<div>`, `numberOfItems`) différent du catalogue. Une borne (« more than »,
+« 170+ », « plus de ») n'échoue que si elle est fausse ; « 102 polyesters » et « 102 polyester strings »
+(sous-familles) ne déclenchent rien. Blog : AVERT seulement (5 aujourd'hui : 4 phrases datées du
+9 octobre, et `guide-materiel-tennis.html:908`, « 181 cordages » sans date, au rédacteur).
+Exceptions : liste explicite, datée, motivée, vide à ce jour ; une exception inutilisée échoue.
+117 tests négatifs et 46 témoins positifs permanents ; **le contrôle échoue sur `origin/main`**
+(760d835 : 10 échecs, lignes citées dans la PR). Aucune donnée, aucun RCS, aucune alerte bras,
+aucune note touchés. **Rigidité « mesurée »** : balayage de 645 fichiers (pages EN, fiches générées,
+`public/js`, sortie du build FR) — aucune formulation ne présente la rigidité d'un cordage comme
+mesurée ; la mention d'étiquetage (« est la donnée du cordage utilisée par le RCS ») est inchangée.
+⚠️ Restent, non traités ici : des textes français dans les pages EN (compteur de résultats
+« cordage(s) trouvé(s) » / « raquette(s) trouvée(s) » de `strings.html` et `racquets.html`, noms
+« Cordages » / « Raquettes » du fil d'Ariane JSON-LD) ; « 29 raquettes sur 129 » écrit en dur dans
+`configurator/page.tsx` (verrou, et pas un total accolé à un nom : hors garde-fou) ; les cinq mentions
+du blog ci-dessus (`tsa-redacteur`).
+
+**Changelog v2.3.9 → v2.3.10** — **Fiches désynchronisées mises à jour : 11 raquettes, 4 cordages**
+(`tsa-core`, décision de Pierre du 10/10/2026 : mise à jour approuvée, « Je laisse l'équipe faire les arbitrages » ; veille
+de `tsa-pigiste`, 116 faits V01-V116 sur 73 pages, copiée telle quelle dans
+`docs/redaction/veille-2026-10-10-fiches-desynchronisees.md`). Mise à jour **en place**, ids conservés (URL du sitemap,
+configurations enregistrées). Arbitrages de l'orchestrateur : **Q-1** TW US et TWE sont du même groupe, donc non
+indépendants : un RA ne change que s'il est établi par une **mesure L1** (TWU « Flex Rating Test ») ou par deux sources
+indépendantes dont une hors groupe ; un RA que TW US seul établit reste un signal, listé et non appliqué ; **Q-2** Pure
+Aero Team : aucun champ établi pour la Gen9, aucune valeur changée, fiche nommée « Team (2023) » (RA 67 = 2023 ; 66 en 2026
+chez TW US seul ; le 70 ± 3 de Babolat est un RA non cordé, jamais saisi) ; **Q-3** Tempo 285 nommée « 285 V2 », specs
+inchangées, RA 65 sans source conservé (ni comblé ni retiré), Tempo Tour 285 g 2026 (102 in²) non créée ; **Q-4** juniors
+au poids et à l'équilibre **non cordés** officiels, comme les adultes ; **Q-5** rigidités des cordages hors de ce lot
+(chantier D). **Appliqué** (source V-n au commentaire de chaque fiche et dans `src/data/racquet-alignment-provenance.ts`,
+non affiché) : Clash 100 Pro « v2 » -> **V3** (16x20, 305 g, **RA 55 -> 57**, mesure TWU) ; T-Fight 315S (plan 16x19,
+**RA 64 -> 65**, mesure TWU) ; EZONE 105 et VCORE 98 Tour (plan 16x19, RA conservés : 66 et 64 chez TW US seul) ; Burn
+100LS nommée v6 ; US Open Jr 21/23/25 (tamis 95/95/106 in², plans, 171/185/205 g, équilibres 258/280/300 mm) ; Blade Feel
+Comp Jr 25 (100 in², 243 g, nom) ; cordages : RPM Team sans 1.35 et en noir, TGV en noir, Multifeel + 1.25 (la Poly Tour
+Strike garde sa 1.30, qui existe). **Non touchées, listées** : Extreme MP, Speed MP, Instinct MP, TF40 305, Pro Staff 97
+v14 (le modèle standard est « épuisé » chez Wilson, pas retiré), Clash 100 v2 et 100L v3 (RA 54 chez TW US) ; rigidités
+des cordages. **Effet mesuré** sur les 138 546 combinaisons du contrôle 5 : alerte bras avancée standard 5,24 -> 5,25 %
+(+10), sensible 19,76 -> 19,80 % (+55), verdict de compatibilité 13,33 -> 13,36 % (+38) ; T-Fight 315S +5/+32/+17, Clash
+100 Pro +5/+23/+21 ; **aucune baisse** (les juniors ne déplacent aucune alerte) ; formule RCS inchangée. `RA_RANGE.min`
+55 -> 57 (la Clash 100 Pro était seule à 55 : contrôle 1). Photos : aucune des fiches modifiées n'avait de photo (toutes
+en quarantaine de génération ou de specs), motifs périmés du mapping mis à jour ; l'association des images officielles est
+renvoyée à un lot photos (images jamais téléchargées, aucune collecte réseau ici). Contrôle **14 bis** de `audit:ratings`
+(18 raquettes et 4 cordages en provenance, 66 faits retrouvés dans le dossier, 17 tests négatifs) et outil rejouable
+`scripts/scraper/fiches-effet-alertes.mts`.
 
 **Changelog v2.3.8 → v2.3.9** — **Images officielles des fabricants**
 (`tsa-core`, décision de Pierre du 10/10/2026, verbatim : « Il n'y a aucune restriction à utiliser
@@ -939,6 +1023,7 @@ pas. Les modifications d'articles existants y restent soumises.
   npm run audit:contrast      # si un composant visuel est touché
   npm run audit:blog-funnel   # si public/blog ou public/en/blog est touché
   npm run audit:blog-images   # idem (règle images, §5 ter)
+  npm run audit:comptages     # si une page publique, un bloc metadata ou src/data change
   ```
 - **Pas de suite de tests dans le dépôt.** Tout agent qui modifie une fonction de
   calcul ou une règle métier **ajoute un contrôle** dans le script `qa-*`
@@ -1018,4 +1103,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.3.9 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.3.12 — Tennis String Advisor — « Mesurer avant d'affirmer. »*

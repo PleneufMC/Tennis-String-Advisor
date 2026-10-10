@@ -425,7 +425,10 @@ for (const file of files) {
           const ratio = contrast(fg, bg);
           if (ratio < threshold) {
             problems.push({
-              file: path.relative(ROOT, e.file),
+              // Séparateur « / » sur tous les systèmes : la clé de la baseline (`keyOf`) en dépend. Sur Windows,
+              // `path.relative` rend des « \ », aucune entrée de la baseline ne correspondait et les 34 défauts
+              // antérieurs ressortaient comme nouveaux (constaté le 10/10/2026 : 34 « paires illisibles », exit 1).
+              file: path.relative(ROOT, e.file).split(path.sep).join('/'),
               line: e.line,
               theme: themeName,
               color: colorCand.value,
