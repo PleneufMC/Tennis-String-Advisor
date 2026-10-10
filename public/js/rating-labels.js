@@ -1,0 +1,123 @@
+/**
+ * Nature des notes /10 des cordages — surfaces EN (tsa-acquisition, 10/10/2026).
+ *
+ * Décision de Pierre du 10/10/2026 : « Cordages : garder les notes et les étiqueter
+ * partout. » Les notes /10 des cordages sont une appréciation de l'équipe, pas une
+ * mesure de laboratoire ; seule la rigidité (lb/in) est mesurée et fonde le RCS. Ni
+ * les chaînes de testeurs ni Tennis Warehouse ne sont jamais cités comme auteurs de
+ * ces notes (charte, F5) : les libellés ci-dessous sont les seuls à employer.
+ *
+ * SOURCE UNIQUE des libellés. Ce fichier est chargé tel quel par les pages
+ * dynamiques (strings, compare, configurator) ET lu par le générateur des fiches
+ * (scripts/en-products/, via require) : fiches statiques et pages dynamiques ne
+ * peuvent donc pas diverger. `npm run audit:string-labels` le vérifie.
+ *
+ * Trois états, déduits de la fiche :
+ *   - aucune note publiée                 -> « Not published »
+ *   - notes, cordage non harmonisé        -> « TSA editorial rating »
+ *   - notes, cordage harmonisé (18)       -> « TSA editorial rating, harmonised with tester reviews »
+ *
+ * Quels cordages sont harmonisés : `public/data/string-rating-basis.json`, produit
+ * à chaque build par scripts/en-products/ depuis src/data/tester-ratings.ts (non
+ * versionné, jamais édité). Le catalogue EN (catalog.json, tsa-core) ne porte pas
+ * encore ce drapeau : le jour où il le porte, ce chargement disparaît.
+ * Si le fichier est injoignable, les 18 cordages portent le libellé éditorial
+ * simple (exact, moins précis) et l'erreur est journalisée dans la console : une
+ * note n'est jamais affichée sans libellé.
+ *
+ * Fonctionne dans le navigateur (window.TSARatingLabels) et sous Node (require).
+ */
+(function (root, factory) {
+  if (typeof module === 'object' && module.exports) module.exports = factory();
+  else root.TSARatingLabels = factory();
+})(typeof self !== 'undefined' ? self : this, function () {
+  var LABEL = {
+    editorial: 'TSA editorial rating',
+    harmonised: 'TSA editorial rating, harmonised with tester reviews',
+    none: 'Not published'
+  };
+
+  // Mention courte, à placer près des notes. Les deux phrases sont séparées pour
+  // les rares endroits où la première n'a pas d'objet (aucune note publiée).
+  var NOTE_ASSESSMENT = 'Team assessment, not laboratory-measured.';
+  var NOTE_STIFFNESS = 'Stiffness (lb/in) is the measured quantity behind the RCS.';
+  var NOTE = NOTE_ASSESSMENT + ' ' + NOTE_STIFFNESS;
+
+  // Champs /10 d'un cordage affichés sur les surfaces EN.
+  var NOTE_FIELDS = ['control', 'comfort', 'spin', 'power', 'durability'];
+
+  var BASIS_URL = '/data/string-rating-basis.json';
+
+  function hasRating(s) {
+    if (!s) return false;
+    for (var i = 0; i < NOTE_FIELDS.length; i++) {
+      var v = s[NOTE_FIELDS[i]];
+      if (v !== null && v !== undefined) return true;
+    }
+    return false;
+  }
+
+  function isMember(ids, id) {
+    if (!ids) return false;
+    if (typeof ids.has === 'function') return ids.has(id);
+    return Array.prototype.indexOf.call(ids, id) !== -1;
+  }
+
+  /** 'none' | 'editorial' | 'harmonised' — `harmonisedIds` : Set ou tableau d'identifiants. */
+  function basisOf(s, harmonisedIds) {
+    if (!hasRating(s)) return 'none';
+    return isMember(harmonisedIds, s.id) ? 'harmonised' : 'editorial';
+  }
+
+  // ---- navigateur : chargement de la liste des cordages harmonisés -------------
+  var state = { ready: false, ok: false, ids: null };
+  var pending = null;
+
+  function load() {
+    if (!pending) {
+      pending = fetch(BASIS_URL)
+        .then(function (res) {
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          return res.json();
+        })
+        .then(function (data) {
+          if (!data || !Array.isArray(data.harmonised)) throw new Error('unexpected format');
+          state.ids = new Set(data.harmonised);
+          state.ok = true;
+          state.ready = true;
+          return state;
+        })
+        .catch(function (err) {
+          console.error('TSARatingLabels: ' + BASIS_URL + ' could not be read (' + err.message + '); harmonised strings get the plain editorial label.');
+          state.ids = new Set();
+          state.ok = false;
+          state.ready = true;
+          return state;
+        });
+    }
+    return pending;
+  }
+
+  function basis(s) {
+    if (!state.ready) throw new Error('TSARatingLabels.load() must resolve before a string is labelled');
+    return basisOf(s, state.ids);
+  }
+
+  function label(s) {
+    return LABEL[basis(s)];
+  }
+
+  return {
+    LABEL: LABEL,
+    NOTE: NOTE,
+    NOTE_ASSESSMENT: NOTE_ASSESSMENT,
+    NOTE_STIFFNESS: NOTE_STIFFNESS,
+    NOTE_FIELDS: NOTE_FIELDS,
+    BASIS_URL: BASIS_URL,
+    hasRating: hasRating,
+    basisOf: basisOf,
+    load: load,
+    basis: basis,
+    label: label
+  };
+});

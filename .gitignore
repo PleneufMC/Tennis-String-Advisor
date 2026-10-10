@@ -68,3 +68,7 @@ public/data/catalog.json
 # Fiches produit EN générées au build depuis src/data (tsa-acquisition, 09/10/2026)
 public/en/racquets/
 public/en/strings/
+
+# Liste des cordages dont les notes sont harmonisées avec des avis de testeurs, générée au
+# build par scripts/en-products/ (tsa-acquisition, 10/10/2026) — jamais éditée ni versionnée
+public/data/string-rating-basis.json

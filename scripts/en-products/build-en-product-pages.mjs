@@ -24,7 +24,15 @@
  *  - JSON-LD Product sans offers, aggregateRating, review ni image ; la photo produit
  *    (ou l'illustration) n'est qu'un <figure> visible (scripts/catalog/product-images.mjs) ;
  *  - aucun lien d'achat (règles 1-2, périmètre tsa-revenue) : la fiche renvoie au
- *    configurateur EN, qui calcule le RCS et affiche l'alerte bras.
+ *    configurateur EN, qui calcule le RCS et affiche l'alerte bras ;
+ *  - notes /10 des cordages (décision de Pierre du 10/10/2026, « garder les notes et
+ *    les étiqueter partout ») : jamais sans leur libellé (« TSA editorial rating »,
+ *    « …, harmonised with tester reviews », « Not published »), libellés lus dans
+ *    public/js/rating-labels.js (source unique, partagée avec les pages dynamiques) ;
+ *    aucune note dans les métadonnées ni le JSON-LD ; la liste des cordages
+ *    harmonisés est relue dans src/data/tester-ratings.ts à chaque génération et
+ *    écrite dans public/data/string-rating-basis.json (non versionné) pour les
+ *    pages dynamiques.
  *
  * Usage : npm run build:en-products
  */
@@ -34,6 +42,7 @@ import { fileURLToPath } from 'node:url';
 import { buildCatalog, loadTsCatalog } from '../catalog/catalog-json.mjs';
 // Photo produit ou illustration (module tsa-core, même drapeau et même manifeste que le FR).
 import { loadProductImages, productFigureHtml } from '../catalog/product-images.mjs';
+import { BASIS_JSON_PATH, RATING_LABELS, buildBasisFile, ratingBasisOf } from './rating-basis.mjs';
 
 const SITE = 'https://tennisstringadvisor.org';
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -90,6 +99,32 @@ function ratingRow(label, value) {
   }
   const pct = Math.max(0, Math.min(100, value * 10));
   return `<div class="flex items-center gap-3 py-1"><span class="w-28 shrink-0 text-sm text-gray-600 dark:text-gray-400">${label}</span><div class="h-2 flex-1 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700" role="img" aria-label="${label}: ${esc(value)} out of 10"><div class="h-full rounded-full bg-green-600" style="width: ${pct}%"></div></div><span class="w-10 shrink-0 text-right text-sm font-semibold tabular-nums text-gray-900 dark:text-gray-100">${esc(value)}</span></div>`;
+}
+
+/**
+ * Bloc « Playing ratings (out of 10) » d'une fiche cordage. La nature des notes se lit
+ * AVANT la première note (décision de Pierre du 10/10/2026) : « TSA editorial rating »
+ * ou « …, harmonised with tester reviews », puis la mention courte. Sans aucune note
+ * publiée, une seule ligne « Not published » remplace les cinq lignes. Les lignes
+ * suivent RATING_LABELS.NOTE_FIELDS : la liste qui décide de « note publiée » est donc
+ * celle qui est affichée.
+ */
+function ratingsSection(s) {
+  const basis = ratingBasisOf(s);
+  const heading = 'Playing ratings (out of 10)';
+  if (basis === 'none') {
+    return `    <section class="mt-10">
+      <h2 class="mb-3 text-xl font-semibold">${heading}</h2>
+      <p class="text-sm" data-rating-basis="none"><span class="italic text-gray-500 dark:text-gray-400">${esc(RATING_LABELS.LABEL.none)}</span></p>
+    </section>`;
+  }
+  const rows = RATING_LABELS.NOTE_FIELDS.map((f) => ratingRow(f.charAt(0).toUpperCase() + f.slice(1), s[f]));
+  return `    <section class="mt-10">
+      <h2 class="text-xl font-semibold">${heading}</h2>
+      <p class="mt-1 text-sm font-medium text-gray-800 dark:text-gray-200" data-rating-basis="${basis}">${esc(RATING_LABELS.LABEL[basis])}</p>
+      <p class="mb-3 mt-1 text-sm text-gray-600 dark:text-gray-400" data-rating-note>${esc(RATING_LABELS.NOTE)}</p>
+      ${rows.join('\n      ')}
+    </section>`;
 }
 
 function page({ title, description, enPath, frPath, section, sectionHref, name, jsonLd, body }) {
@@ -240,15 +275,15 @@ export function stringPage(s, images = {}) {
   const name = `${s.brand} ${s.model}`;
   const tension = has(s.tension_min) && has(s.tension_max) ? `${s.tension_min} – ${s.tension_max}` : null;
   const gauges = has(s.gauges) ? s.gauges.join(', ') : null;
-  const notes = [has(s.control) ? `control ${s.control}/10` : null, has(s.comfort) ? `comfort ${s.comfort}/10` : null].filter(Boolean);
   const title = `${name}: ${s.type.toLowerCase()} string stiffness, tension and gauges`;
+  // Caractéristiques seulement : aucune note /10 dans les métadonnées (décision de
+  // Pierre du 10/10/2026). Une meta ne dit pas en quelques mots que la note est une
+  // appréciation de l'équipe ; le libellé vit dans la fiche, avant la première note.
   const description =
-    `${name}: stiffness ${s.stiffness} lb/in` +
+    `${name}: ${s.type.toLowerCase()} string, stiffness ${s.stiffness} lb/in` +
     (tension ? `, recommended tension ${s.tension_min}-${s.tension_max} kg` : '') +
     (gauges ? `, gauges ${gauges} mm` : '') +
-    '.' +
-    (notes.length ? ` Ratings: ${notes.join(', ')}.` : '') +
-    ' Check the RCS comfort score with your racquet.';
+    '. Check the RCS comfort score with your racquet.';
   const pro = proUsageEn(s.pro_usage);
   const enPath = enStringPath(s.id);
 
@@ -285,10 +320,7 @@ ${pro ? `    <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Used on to
       </dl>
     </section>
 
-    <section class="mt-10">
-      <h2 class="mb-3 text-xl font-semibold">Playing ratings (out of 10)</h2>
-      ${['Control', 'Comfort', 'Spin', 'Power', 'Durability'].map((l) => ratingRow(l, s[l.toLowerCase()])).join('\n      ')}
-    </section>
+${ratingsSection(s)}
 
     <section class="mt-10 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5">
       <h2 class="text-lg font-semibold">Is this string right for your arm?</h2>
@@ -305,6 +337,9 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   const { racquetsDatabase, stringsDatabase } = await loadTsCatalog(repoRoot);
   const { racquets, strings } = buildCatalog(racquetsDatabase, stringsDatabase);
   const { images } = await loadProductImages(repoRoot);
+  // Calculé AVANT d'écrire quoi que ce soit : une dérive entre le catalogue et la liste
+  // des cordages harmonisés fait échouer le build sans laisser de sortie à moitié écrite.
+  const basisJson = buildBasisFile(strings, repoRoot);
   const SAFE_ID = /^[a-z0-9-]+$/;
   for (const [dir, list, render] of [
     [EN_RACQUET_DIR, racquets, racquetPage],
@@ -318,5 +353,9 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
       writeFileSync(path.join(abs, `${item.id}.html`), render(item, images));
     }
   }
+  // Lu par les pages dynamiques (public/js/rating-labels.js) ; non versionné, jamais édité.
+  mkdirSync(path.join(repoRoot, path.dirname(BASIS_JSON_PATH)), { recursive: true });
+  writeFileSync(path.join(repoRoot, BASIS_JSON_PATH), basisJson);
   console.log(`fiches EN : ${racquets.length} raquettes -> ${EN_RACQUET_DIR}/, ${strings.length} cordages -> ${EN_STRING_DIR}/`);
+  console.log(`nature des notes : ${JSON.parse(basisJson).harmonised.length} cordages harmonisés -> ${BASIS_JSON_PATH}`);
 }
