@@ -24,7 +24,7 @@ surface ne lit la table avant D2/D3 : empreinte identique de la grille de 138 54
 bras des deux profils), alerte bras avancée inchangée, diff de `src/` strictement additif, `catalog.json` et 308 fiches EN
 identiques à l'octet hors les deux nouvelles clés, 319 pages FR prérendues identiques hors scripts et styles. Coût : environ
 1 kB de JS initial en plus sur quatre routes qui embarquent la base. Contrôle 13 quater (17 tests négatifs), contrôle 15
-étendu.
+étendu. `c2-par-jauge.mts --apercu-d4` estime l'effet d'une adoption future sur l'alerte bras (rien n'est adopté).
 
 **Changelog (numéro de version à fixer à la fusion)** — **Relevé TWU complet versionné (chantier D0, rigidité par
 jauge)** (décision de Pierre du 10/10/2026 : « GO » sur le chantier D ; `tsa-core`). Le relevé TWU du 29/09/2026

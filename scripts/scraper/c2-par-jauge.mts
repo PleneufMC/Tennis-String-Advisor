@@ -6,6 +6,7 @@
  *   npx tsx scripts/scraper/c2-par-jauge.mts           vérifie que strings-database.ts porte EXACTEMENT les lignes générées (code 1 sinon)
  *   npx tsx scripts/scraper/c2-par-jauge.mts --write   réécrit ces lignes (juste après `stiffness:` de chaque fiche)
  *   npx tsx scripts/scraper/c2-par-jauge.mts --liste   couverture, séries suspectes, quarantaines, règle C (pour les PR et les arbitrages)
+ *   npx tsx scripts/scraper/c2-par-jauge.mts --apercu-d4   ESTIMATION de l'effet de D4 sur l'alerte bras (rien n'est écrit ni adopté)
  *
  * APPARIEMENT STRICT, comme #110 (résultat identique à l'appariement de #110 sur les 179 fiches, mesuré le 10/10/2026) : une ligne apparie une jauge si
  * son modèle est EXACTEMENT celui de la fiche (marque comprise ; casse, accents et tirets sans effet), si son intitulé porte un suffixe
@@ -18,7 +19,10 @@
  * n'en tire aucune valeur de calcul avant l'arbitrage de Pierre (D4).
  */
 import { readFileSync, writeFileSync } from 'node:fs';
-import { stringsDatabase, type TennisString } from '../../src/data/strings-database';
+import { stringsDatabase, stringStiffnessAt, type TennisString } from '../../src/data/strings-database';
+import { racquetsDatabase } from '../../src/data/racquets-database';
+import { calculateAdvancedRcs, stringTypeToFamily } from '../../src/lib/advanced-rcs';
+import { effectiveRacquetRA } from '../../src/lib/racquet-scoring';
 import { STIFFNESS_SOURCE } from '../../src/data/string-stiffness-provenance';
 
 const TS_FILE = 'src/data/strings-database.ts';
@@ -85,8 +89,37 @@ function liste(): void {
   console.log(`\nRègle C (maximum de la table) contre la rigidité de la fiche : égale ${c.egale} ; fiche supérieure (une baisse, GO de Pierre) ${c.ficheSupérieure} ; fiche inférieure (une hausse) ${c.ficheInférieure}`);
 }
 
+/**
+ * Aperçu de D4 : taux d'alerte bras (grille du contrôle 5) sur les couples (fiche, jauge), une pondération égale par jauge, selon la
+ * rigidité utilisée. ESTIMATION : aucune surface ne lit la table et rien n'est adopté ; chaque baisse réelle exigera le GO de Pierre.
+ */
+function apercu(): void {
+  const policies: Array<[string, (s: TennisString, g: string) => number]> = [
+    ['actuel : rigidité de la fiche pour toutes les jauges', (s) => s.stiffness],
+    ['séries saines adoptées (stringStiffnessAt : hausses et baisses)', (s, g) => stringStiffnessAt(s, g).lbIn],
+    ['séries saines, hausses seules', (s, g) => Math.max(s.stiffness, stringStiffnessAt(s, g).lbIn)],
+    ['séries saines, baisses seules', (s, g) => Math.min(s.stiffness, stringStiffnessAt(s, g).lbIn)],
+    ['toutes les mesures, séries suspectes comprises', (s, g) => s.stiffnessByGauge?.[g] ?? s.stiffness],
+  ];
+  const isArm = (w: string) => /bras|elbow/i.test(w);
+  for (const [label, rigidity] of policies) {
+    let n = 0, standard = 0, sensitive = 0;
+    for (const s of stringsDatabase) for (const g of s.gauges) for (const r of racquetsDatabase) for (const t of [18, 20, 22, 24, 26, 28]) {
+      const input = {
+        racquetStiffness: effectiveRacquetRA(r), racquetWeight: r.weight, racquetHeadSize: r.headSize, mainStringStiffness: rigidity(s, g), mainStringFamily: stringTypeToFamily(s.type),
+        mainRatings: { control: s.control, comfort: s.comfort, spin: s.spin, power: s.power, durability: s.durability }, mainTension: t,
+      };
+      n++;
+      if (calculateAdvancedRcs({ ...input, profile: { armSensitive: false } }).warnings.some(isArm)) standard++;
+      if (calculateAdvancedRcs({ ...input, profile: { armSensitive: true } }).warnings.some(isArm)) sensitive++;
+    }
+    console.log(`${label.padEnd(66)} standard ${((standard / n) * 100).toFixed(2)} %   sensible ${((sensitive / n) * 100).toFixed(2)} %   (${n} combinaisons)`);
+  }
+}
+
 const src = readFileSync(TS_FILE, 'utf8');
 if (process.argv.includes('--liste')) liste();
+else if (process.argv.includes('--apercu-d4')) apercu();
 else if (process.argv.includes('--write')) {
   writeFileSync(TS_FILE, patch(src));
   console.log(`${TS_FILE} réécrit : ${[...plan.values()].filter((a) => Object.keys(a.table).length > 0).length} tables, ${[...plan.values()].filter((a) => a.suspect).length} séries suspectes`);
