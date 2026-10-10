@@ -7,7 +7,7 @@
 | Branche | `agent/redaction/coherence-chiffres-regle-c`, créée depuis `origin/agent/tsa-core/c2-regle-jauge-c-lot2` (PR #110, non fusionnée) pour que `src/data/` porte déjà les nouvelles rigidités |
 | Ouvert le | 2026-10-10, par l'orchestrateur |
 | Demande d'origine | « mettre en cohérence avec la base, après les rigidités de laboratoire, les 4 articles santé (FR + EN) qui reposent sur la rigidité des cordages » (corps de la PR #110, § 9 « Chiffres d'articles qui changent à cause de cette PR ») |
-| Statut | vérification : fact-check du pigiste à faire · PR à fusionner APRÈS #110 · GO de Pierre : en attente (aucune publication sans lui) |
+| Statut | vérification : fact-check du pigiste à faire · PR #116 (à fusionner APRÈS #110) · GO de Pierre : en attente (aucune publication sans lui) |
 | Mise à jour planifiée | sans objet (aucune année dans les titres ni les slugs) ; à refaire quand la règle D (rigidité par jauge) ou le lot 3 changeront la base : `npx --yes tsx scripts/blog-covers/build-rigidite-figures.mts --check` signale les écarts |
 
 > Règles : `docs/redaction/CHARTE.md`. Déroulé : `docs/redaction/README.md`.
