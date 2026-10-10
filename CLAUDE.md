@@ -1,11 +1,133 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.3.12
+> **Version** : 2.3.17
 > **Date** : 10 octobre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
 > **Branche de référence** : `main` (seule branche longue ; la production Netlify en déploie)
 > **Repo** : https://github.com/PleneufMC/Tennis-String-Advisor.git
+
+**Changelog v2.3.16 → v2.3.17** — **Lot 3 des rigidités de laboratoire : 23 hausses établies par la
+règle C, garde de série suspecte, un appariement manuel (C2)** (décision de l'orchestrateur du 10/10/2026, Pierre ayant
+délégué les arbitrages ; `tsa-core`). **Raison** : le fact-check des articles santé (PR #116) montre que la base SOUS-ESTIME la
+rigidité mesurée par TWU de cordages cités comme « les plus souples » (Mach-10 195 → 222,3, Signum Pro X-Perience 205 → 224,6,
+Razor Soft 185 → 212, Poly Tour Spin 200 → 213,7, Element 190 → 208, Head Lynx Tour 210 → 228,6) : le sens défavorable au bras
+(règle 2). Le chantier D étant suspendu, la règle C reste le régime des fiches ; elle est appliquée pleinement dans le sens qui
+protège (les hausses), **sans aucune baisse** (les 53 baisses restent en attente de GO). **Appliqué** : 23 fiches, dont Luxilon
+4G 265 → 286,9, **Babolat RPM Team 225 → 280,6** et Babolat Revenge 230 → 276 (les trois nouveaux maximums du catalogue), Yonex
+Poly Tour Spin G 215 → 237,2, Pro Red Code Wax 220 → 235,5, TGV 145 → 165,2 ; valeurs, jauges et lignes TWU dans
+`string-stiffness-provenance.ts`. **Appariement manuel** : RPM Team est la SEULE fiche appariée à la main, « Babolat RPM Team 16
+Black » (polyester, 1.30, ligne unique ; intitulé écarté du motif strict par le seul suffixe de coloris, la fiche étant noire
+depuis #114) ; la ligne 1.25 « RPM Team 17 » (matière TWU « Nylon/Polyester », 245,2) ne contredit pas, la règle C retient la plus
+rigide mesurée aux jauges de la fiche. Liste blanche `MANUAL_PAIRINGS` (une entrée, datée, motivée), contrôlée par le 13 ter ;
+l'exception va dans le sens qui protège le bras (une erreur d'identité ne peut produire qu'une sur-alerte). **Non appliqué** : 2
+hausses **retenues par la garde de série suspecte** (Solinco X-Natural 147 → 158,9, Wilson Sensation 165 → 168,6 ; aucune alerte
+en jeu) et 4 fiches en **quarantaine** dont la jauge TWU est à 0,01 ou 0,02 mm de la leur (Gosen OG Sheep Micro, Wilson NXT
+Power, Head FXP, Wilson NXT Control) : tolérance de jauge refusée, appariement strict maintenu. **Dénombrement** : les 25 hausses
+listées en #110 = 23 appliquées + 2 retenues (24 en appariement strict depuis D1, plus RPM Team par appariement manuel) ; pour
+les 27 de `tsa-measure` (liste nominative non consultée), la seule combinaison d'appariement testée qui en donne 27 est les 24
+plus 3 obtenues avec une tolérance de ±0,01 mm (Gosen, NXT Power, FXP), refusée ici. **Garde de série suspecte** (une jauge plus
+épaisse mesurée plus souple, D1) : une mesure est « contredite » si une jauge plus épaisse du modèle, hors fiche comprise, est
+plus souple ; la hausse est appliquée si la mesure la plus rigide n'est contredite par aucune jauge plus épaisse, ou si la plus
+rigide des mesures non contredites reste ≥ la valeur actuelle ; sinon elle est retenue ; la valeur écrite reste celle de la règle
+C. Wilson NXT (lot 2, approuvé avant la garde) en est exempté par un motif daté, confirmé. **Effet** (grille du contrôle 5,
+138 546 combinaisons, contre la tête de #115) : alerte bras avancée standard 5,77 → 7,11 %, sensible 21,23 → 23,20 %,
+`calculateCompatibility` 14,10 → 15,44 %, « Très Ferme » 7,02 → 8,42 % ; 1 856 / 2 726 / 1 851 alertes apparues, **0 disparue**,
+0 rigidité en baisse. Aucune note /10, formule ni seuil modifié. **Contrôles** : 13 ter (statut `retenue-serie-suspecte`, garde
+rejouée depuis le relevé, quarantaine vérifiée, intitulés à jauge seule, appariement manuel vérifié ligne à ligne, 25 essais
+négatifs ajoutés), 13 quater (une hausse établie est appliquée ou retenue, ligne manuelle incluse dans la table ; décomptes
+recalculés : 102 fiches avec table, 165 jauges mesurées, 47 fiches égales au maximum de leur table, 53 supérieures, 2
+inférieures), outil `c2-effet-alertes.mts` étendu. ⚠️ Chiffres d'articles à reprendre par `tsa-redacteur` (liste dans la PR) :
+médiane et maximum des polyesters, effectifs ≤ 200 et ≥ 240, classement des 18 polyesters à avis de testeurs (Mach-10,
+X-Perience, Lynx Tour, RPM Team), « 265 = le plus rigide » (6 articles), articles « meilleures raquettes » (colonne RCS + 2
+points) ; descriptions « souple » / « confort » de 21 fiches à revoir dans une PR de textes.
+
+**Changelog v2.3.15 → v2.3.16** — **Rigidité par jauge : modèle et table (chantier D1)**
+(décision de Pierre du 10/10/2026 : « GO » sur le chantier D ; `tsa-core`). `TennisString` gagne deux champs
+optionnels, `stiffnessByGauge` (rigidité TWU mesurée par jauge nominale, lb/in, 51 lbs / Fast) et
+`stiffnessByGaugeSuspect`, et `strings-database.ts` la fonction `stringStiffnessAt(fiche, jauge)` : la mesure pour une
+jauge mesurée d'une série saine, sinon la rigidité de la fiche (règle C) étiquetée « jauge non mesurée », jamais
+interpolée. **101 fiches** portent une table (164 jauges sur 361, hybrides exclus), générée hors ligne depuis le relevé de
+D0 par `scripts/scraper/c2-par-jauge.mts` selon l'appariement strict de #110 (modèle exact, jauge nominale exacte, même
+matière, ligne unique) : les 103 fiches de #110 deviennent 101, car `babolat-rpm-soft` et `babolat-rpm-team` (matière TWU
+« Nylon » et « Nylon/Polyester » contre un type Polyester) sont écartées par la contrainte de matière, et la jauge 1.30
+de `wilson-natural-gut` (deux lignes TWU) n'est pas écrite. **24 séries suspectes** (une jauge plus épaisse mesurée plus
+souple, jauges hors fiche comprises : NXT 1.35, Origin, Black Code 1.32…) : valeurs conservées et marquées, aucune n'est
+utilisée pour le calcul avant l'arbitrage de Pierre (D4). `catalog.json` : `stiffness_by_gauge` et
+`stiffness_by_gauge_suspect` (`null` si absents). **Aucune valeur affichée, note, formule ni RCS modifié**, et aucune
+surface ne lit la table avant D2/D3 : empreinte identique de la grille de 138 546 combinaisons (RCS, recommandation, alerte
+bras des deux profils ; `scripts/scraper/c2-empreinte-grille.mts`, rejouable sur tout état), alerte bras avancée inchangée, diff de `src/` strictement additif, `catalog.json` et 308 fiches EN
+identiques à l'octet hors les deux nouvelles clés, 319 pages FR prérendues identiques hors scripts et styles. Coût : environ
+1 kB de JS initial en plus sur quatre routes qui embarquent la base. Contrôle 13 quater (17 tests négatifs), contrôle 15
+étendu. `c2-par-jauge.mts --apercu-d4` estime l'effet d'une adoption future sur l'alerte bras (rien n'est adopté).
+
+**Changelog v2.3.14 → v2.3.15** — **Relevé TWU complet versionné (chantier D0, rigidité par
+jauge)** (décision de Pierre du 10/10/2026 : « GO » sur le chantier D ; `tsa-core`). Le relevé TWU du 29/09/2026
+(788 enregistrements, sha256 `01c07cc…8872`, identique à celui du 10/10) est versionné en entier dans
+`data/reference/twu-releve-complet.json` : les 8 champs bruts de chaque enregistrement, inchangés (ils reconstruisent le
+relevé brut à l'octet près), plus `model`, `suffix`, `calibre` et `gaugeNameMm` lus dans l'intitulé (formats de suffixe
+stricts de #110 ; 35 intitulés restent entiers) ; URL, date et conditions (51 lbs, Fast) valent pour le fichier. Il remplace
+l'extrait de 35 lignes `twu-lignes-citees.json` (supprimé) comme référence du contrôle 13 ter. Régénération hors ligne,
+reproductible depuis le relevé brut local non versionné : `npx tsx scripts/scraper/twu-releve.mts [--check]` ; aucune
+requête réseau vers TWU. **Aucune valeur, note, formule ni seuil modifié** : RCS et alertes bras inchangés. Ancrage (date,
+788, sha256) dans `STIFFNESS_SOURCE.fullSurvey` ; contrôle 13 ter étendu : nombre, sha256 du brut reconstruit depuis le
+fichier versionné (sans le brut local), schéma strict, champs dérivés, régénération identique si le brut local est présent ;
+7 tests négatifs ajoutés. Premier jalon du chantier D : la table de rigidité par jauge (D1) s'appuie sur ce fichier.
+
+**Changelog v2.3.13 → v2.3.14** — **Chiffres des articles alignés sur la base après la règle C et le lot 3, et
+graphiques de rigidité tirés de la base** (demande de l'orchestrateur du 10/10/2026, reprise du même jour après le fact-check du
+pigiste ; `tsa-redacteur` ; **à fusionner AVEC la pile rigidités #110, #113, #115 et #118, que la branche de la PR #116
+contient** : aucune fenêtre d'incohérence ; dossier `docs/redaction/coherence-chiffres-regle-c.md`). **Périmètre** : quatre
+articles santé (« polyester et tennis elbow » et « cordage et tennis elbow », FR et EN), trois articles et leurs jumeaux ajoutés à
+la reprise (« meilleur cordage polyester 2026 » FR et EN, « meilleures raquettes 2026 » FR et EN, « matériel next gen » FR), le
+guide du matériel et les cartes des deux index. **Chiffres de la base finale** : 104 → **102 polyesters**, 181 → **179 fiches**,
+polyesters de **164,6 à 286,9 lb/in** (Luxilon 4G, ex-265 ; RPM Team 280,6 et Revenge 276 derrière), médiane 215 → **220**, à
+200 lb/in ou moins 23 → **15**, à 240 lb/in ou plus 16 → **21** (indices 32 à 38 à RA 65), multifilaments « 140 à 180, médiane
+158 » → **143 à 180, médiane 162,3**, synthétiques jusqu'à **185,2**, écart plus souple – plus rigide « 11 points » → **13 à 14**
+(13,3 avant arrondi), leviers autour du 4G (38 ; O-Toro 24, soit −14 ; cadre RA 60 : 36, RA 70 : 39 ; 18 kg : 36), tableau des 17
+(X-One Biphase 166,9, Element 208, 4G 286,9), rangs de souplesse des 18 polyesters testés (O-Toro 1er, Poly Tour Pro 7e, Mach-10
+8e, X-Perience 9e, Lynx Tour 10e, RPM Team 17e ; moyenne 230,4), tableau des 18 de « meilleur cordage » (rigidités, †, indices),
+colonne RCS des raquettes **+ 2 points** (Head Lynx Tour 210 → 228,6 ; neuf raquettes sur 18, de RA 66 ou plus, atteignent avec cet
+exemple le seuil « bras sensible » de 32, phrase ajoutée), tableau 3 de l'article next gen (Speed MP + Lynx Tour : 30, 31, 32 ;
+seuil de 35 à 32 kg au lieu de 36). **Corrections du fact-check** (C-1 à C-4, O-1 à O-4, S-1 à S-4 du dossier) : « prenez le plus
+souple : l'O-Toro » devient « l'un des plus souples » (O-Toro Snap et O-Toro) ; « peut surestimer une jauge plus fine » devient
+« une autre jauge de la fiche, mesurée plus souple (pas toujours la plus fine) » ; « reste le choix le plus prudent » devient
+« reste en général plus prudent qu'un polyester » (FAQ, visible et JSON-LD, FR et EN) ; les légendes des graphiques ne disent plus
+« les mesures TWU » en bloc mais le nombre exact de fiches alignées (36 polyesters sur 102 ; 48 fiches sur 179), les points du
+graphique des polyesters sont cerclés quand la fiche est alignée ; le Black Code est attribué à TWU dans la phrase ; les absolus de
+santé (« direction sûre », « voie la plus prudente », « safest route ») sont retirés ; « 2025 » est retiré des titres de partage du
+guide ; la source TWU est cliquable (nœud `citation` du JSON-LD de six articles) ; la FAQ n° 1 des articles polyester donne la
+réponse puis la réserve. **Méthode dite au lecteur** : une rigidité alignée sur une mesure TWU (†) est celle de la jauge la plus
+rigide mesurée ; seuls 11 des 45 multifilaments sont alignés ; les valeurs non marquées † peuvent s'écarter de la mesure dans les
+deux sens. **Graphiques** : axes étendus (160-290 et 80-300 lb/in, le script échoue si une rigidité en sort) ; `--check` vérifie en
+plus les indices des trois plus souples, l'écart, les leviers et le nombre de multifilaments alignés cités par le texte (15
+altérations volontaires, 15 détectées). **Images** : les cinq articles ajoutés étaient en exception d'`audit:blog-images` ; les
+exceptions sont renouvelées (empreinte, date, motif « corrigé le 10/10/2026 », comme en PR #102), sans visuel de corps ajouté :
+création éditoriale à confier à l'équipe éditoriale. **Instrument réparé** (inchangé) : sur `main`, `npm run redaction:valeurs`
+était inutilisable (import de `racquetProfile`) ; correctif accepté par `tsa-pigiste` (échec fermé sur `profil.*`) ; le dossier
+passe à 288 valeurs, rigidités à toutes leurs décimales (trou de précision du vérificateur : proposition du pigiste, branche
+dédiée). ⚠️ Restent : le fact-check du pigiste sur les seules valeurs et phrases touchées ; les **53 baisses** du lot 3, en attente
+du GO de Pierre (les articles les suivront : `--check` signalera les écarts) ; les hybrides prémontés, dont la rigidité n'a pas
+suivi celle de leurs composants (Razor Code + X-One à 180 pour un Razor Code à 242,9 ; Q-1 du dossier, `tsa-core`).
+
+**Changelog v2.3.12 → v2.3.13** — **Règle C de jauge de référence, lot 2 des rigidités de
+laboratoire (C2)** (décisions de Pierre du 10/10/2026 : règle C, « aucune correction qui baisse une alerte pour
+l'instant », lot 2 approuvé ; `tsa-core`). **Règle C** : la rigidité d'une fiche = la mesure TWU de la jauge la plus
+rigide mesurée parmi ses jauges (seule règle sans baisse d'alerte, sur-alerte assumée sur les jauges fines), en
+attendant la règle D (rigidité par jauge). **16 fiches** : Black Code 210 → 249,7, Pro Red Code 225 → 232, Hawk
+215 → 230,3, Gamma Moto 205 → 226,9, Black Code 4S 209,2 → 242,9, Razor Code 220 → 242,9 (ni les configurations
+enregistrées sous « 4S », 222, ni sous « ATP Razor Code », 202, ne perdent une alerte) ; lot 2 : Völkl Power Fiber II
+152 → 158,9, ALU Power Vibe 200 → 208, Element Rough 188 → 198,3, Eco Spin 213 → 213,2, Solstice Power 200 → 209,2,
+NRG2 148 → 164, NXT 152 → 173,7, Xcel Power 140 → 162,3, Origin 155 → 171,5, XR3 158 → 162,9. **Effet** (grille du
+contrôle 5, 138 546 combinaisons, contre `main`) : alerte bras avancée standard 5,24 → 5,77 %, sensible 19,76 →
+21,23 % ; 2 774 alertes apparues, **0 disparue**. Aucune note /10, formule ni seuil modifié. Génération non
+vérifiable (aucune fiche TW) pour Xcel Power, probablement ancien, Origin et XR3. **Non appliqué, GO de Pierre
+requis** : 54 fiches mesurées dont la valeur C serait inférieure à l'actuelle (liste dans la PR), 25 autres hausses
+hors lot. Contrôle 13 ter étendu (règle C, plancher des anciens identifiants, jauge nominale, matière,
+15 tests négatifs), extrait versionné `data/reference/twu-lignes-citees.json` (la copie du 08/08 n'a aucun
+multifilament), outil `c2-effet-alertes.mts --base=<commit>`. ⚠️ Chiffres d'articles à reprendre par
+`tsa-redacteur` (liste dans la PR) : « polyester et tennis elbow » et « cordage et tennis elbow » (FR, EN), cartes
+d'index du blog.
 
 **Changelog v2.3.11 → v2.3.12** — **Deux garde-fous de `tsa-measure` corrigés** (contrôle
 indépendant du lot du 10/10/2026 ; aucune donnée, aucun RCS, aucune alerte touchés). **(1) `audit:style-contrast`** : sur
@@ -1061,4 +1183,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.3.12 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.3.17 — Tennis String Advisor — « Mesurer avant d'affirmer. »*

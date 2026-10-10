@@ -7,6 +7,14 @@ export interface TennisString {
   type: 'Polyester' | 'Multifilament' | 'Natural Gut' | 'Synthetic' | 'Hybrid' | 'Biodegradable';
   gauges: string[];
   stiffness: number; // lb/in — seul champ numérique requis : le RCS n'utilise que lui
+  // D1 (10/10/2026) — rigidité MESURÉE par jauge : lb/in pour chaque jauge nominale (mm, « 1.25 ») dont le couple (modèle
+  // exact, jauge exacte, même matière) est établi dans le relevé TWU versionné (data/reference/twu-releve-complet.json ;
+  // 51 lbs, Fast). GÉNÉRÉ par scripts/scraper/c2-par-jauge.mts, jamais saisi. Une jauge absente n'est PAS mesurée : elle
+  // n'est jamais interpolée (cf. stringStiffnessAt). Aucune surface du site ne la lit avant D2/D3 (contrôle 13 quater).
+  stiffnessByGauge?: Readonly<Record<string, number>>;
+  // `true` : série non monotone en jauge (une jauge plus épaisse mesurée plus souple, jauges hors fiche comprises). Valeurs
+  // conservées ; aucune n'est utilisée pour le calcul avant l'arbitrage de Pierre (D4) : stringStiffnessAt revient à `stiffness`.
+  stiffnessByGaugeSuspect?: true;
   // Option A (décision de Pierre, 29/09/2026) : les notes /10, la tension
   // recommandée et le prix sont optionnels. Aucune source ne publie les notes
   // /10 ; absentes = « non publié », jamais comblées (règle 3).
@@ -64,7 +72,9 @@ export const stringsDatabase: TennisString[] = [
     model: 'Hyper-G',
     type: 'Polyester',
     gauges: ['1.15', '1.20', '1.25', '1.30'],
-    stiffness: 218,
+    // Rigidité (C2, lot 3, 10/10/2026) : TWU « Solinco Hyper-G 16L (1.25) » = 218,3 lb/in (jauge 1.25), règle C (jauge la plus rigide mesurée, 3 jauges sur 4 mesurées : valeur plancher) ; remplace 218. Provenance : src/data/string-stiffness-provenance.ts.
+    stiffness: 218.3,
+    stiffnessByGauge: { '1.15': 180, '1.20': 194.9, '1.25': 218.3 },
     performance: 9.5,
     control: 9.3,
     comfort: 7.6,
@@ -86,6 +96,8 @@ export const stringsDatabase: TennisString[] = [
     type: 'Polyester',
     gauges: ['1.20', '1.25', '1.30', '1.35'],
     stiffness: 240,
+    stiffnessByGauge: { '1.20': 189.2, '1.25': 233.7, '1.30': 232.6, '1.35': 236.6 },
+    stiffnessByGaugeSuspect: true,
     performance: 9.2,
     control: 9.0,
     comfort: 6.6,
@@ -106,7 +118,9 @@ export const stringsDatabase: TennisString[] = [
     model: '4G',
     type: 'Polyester',
     gauges: ['1.25', '1.30'],
-    stiffness: 265,
+    // Rigidité (C2, lot 3, 10/10/2026) : TWU « Luxilon 4G 16 (1.30) » = 286,9 lb/in (jauge 1.30), règle C (jauge la plus rigide mesurée) ; remplace 265. Provenance : src/data/string-stiffness-provenance.ts.
+    stiffness: 286.9,
+    stiffnessByGauge: { '1.25': 258.9, '1.30': 286.9 },
     performance: 9.0,
     control: 10.0,
     comfort: 6.3,
@@ -127,7 +141,9 @@ export const stringsDatabase: TennisString[] = [
     model: 'Lynx Tour',
     type: 'Polyester',
     gauges: ['1.20', '1.25', '1.30'],
-    stiffness: 210,
+    // Rigidité (C2, lot 3, 10/10/2026) : TWU « Head Lynx Tour 16 (1.30) » = 228,6 lb/in (jauge 1.30), règle C (jauge la plus rigide mesurée, 2 jauges sur 3 mesurées : valeur plancher) ; remplace 210. Provenance : src/data/string-stiffness-provenance.ts.
+    stiffness: 228.6,
+    stiffnessByGauge: { '1.25': 217.7, '1.30': 228.6 },
     performance: 8.5,
     control: 9.5,
     comfort: 7.8,
@@ -149,6 +165,8 @@ export const stringsDatabase: TennisString[] = [
     type: 'Polyester',
     gauges: ['1.15', '1.20', '1.25', '1.30'],
     stiffness: 255,
+    stiffnessByGauge: { '1.15': 161.7, '1.20': 181.2, '1.25': 237.7, '1.30': 202.9 },
+    stiffnessByGaugeSuspect: true,
     performance: 9.0,
     control: 10.0,
     comfort: 6.3,
@@ -189,7 +207,9 @@ export const stringsDatabase: TennisString[] = [
     model: 'Mach-10',
     type: 'Polyester',
     gauges: ['1.15', '1.20', '1.25', '1.30'],
-    stiffness: 195,
+    // Rigidité (C2, lot 3, 10/10/2026) : TWU « Solinco Mach 10 16 (1.30) » = 222,3 lb/in (jauge 1.30), règle C (jauge la plus rigide mesurée, 1 jauge sur 4 mesurée : valeur plancher) ; remplace 195. Provenance : src/data/string-stiffness-provenance.ts.
+    stiffness: 222.3,
+    stiffnessByGauge: { '1.30': 222.3 },
     performance: 9.5,
     control: 8.5,
     comfort: 8.8,
@@ -210,6 +230,8 @@ export const stringsDatabase: TennisString[] = [
     type: 'Polyester',
     gauges: ['1.18', '1.23', '1.27'],
     stiffness: 235,
+    stiffnessByGauge: { '1.18': 224, '1.23': 218.9, '1.27': 185.7 },
+    stiffnessByGaugeSuspect: true,
     performance: 8.0,
     control: 9.5,
     comfort: 7.0,
@@ -229,7 +251,10 @@ export const stringsDatabase: TennisString[] = [
     model: 'X-One Biphase',
     type: 'Multifilament',
     gauges: ['1.18', '1.24', '1.30'],
-    stiffness: 160,
+    // Rigidité (C2, lot 3, 10/10/2026) : TWU « Tecnifibre X-One Biphase 17 » = 166,9 lb/in (jauge 1.24), règle C (jauge la plus rigide mesurée) ; remplace 160. Provenance : src/data/string-stiffness-provenance.ts.
+    stiffness: 166.9,
+    stiffnessByGauge: { '1.18': 145.7, '1.24': 166.9, '1.30': 162.9 },
+    stiffnessByGaugeSuspect: true,
     performance: 9.0,
     control: 7.0,
     comfort: 8.5,
@@ -250,6 +275,7 @@ export const stringsDatabase: TennisString[] = [
     type: 'Multifilament',
     gauges: ['1.25', '1.30'],
     stiffness: 170,
+    stiffnessByGauge: { '1.25': 141.2, '1.30': 159.4 },
     performance: 7.5,
     control: 7.0,
     comfort: 8.5,
@@ -270,6 +296,7 @@ export const stringsDatabase: TennisString[] = [
     type: 'Polyester',
     gauges: ['1.15', '1.20', '1.25', '1.30'],
     stiffness: 220,
+    stiffnessByGauge: { '1.20': 188.6 },
     performance: 8.0,
     control: 7.8,
     comfort: 8.6,
@@ -290,6 +317,7 @@ export const stringsDatabase: TennisString[] = [
     type: 'Polyester',
     gauges: ['1.20', '1.25', '1.30'],
     stiffness: 225,
+    stiffnessByGauge: { '1.25': 208 },
     performance: 8.0,
     control: 8.5,
     comfort: 7.0,
@@ -309,7 +337,9 @@ export const stringsDatabase: TennisString[] = [
     model: 'X-Perience',
     type: 'Polyester',
     gauges: ['1.18', '1.24', '1.30'],
-    stiffness: 205,
+    // Rigidité (C2, lot 3, 10/10/2026) : TWU « Signum Pro X-Perience 17 (1.24) » = 224,6 lb/in (jauge 1.24), règle C (jauge la plus rigide mesurée, 1 jauge sur 3 mesurée : valeur plancher) ; remplace 205. Provenance : src/data/string-stiffness-provenance.ts.
+    stiffness: 224.6,
+    stiffnessByGauge: { '1.24': 224.6 },
     performance: 8.5,
     control: 9.0,
     comfort: 7.3,
@@ -349,7 +379,10 @@ export const stringsDatabase: TennisString[] = [
     model: 'Element',
     type: 'Polyester',
     gauges: ['1.25', '1.30'],
-    stiffness: 190,
+    // Rigidité (C2, lot 3, 10/10/2026) : TWU « Luxilon Element 16L (1.25) » = 208 lb/in (jauge 1.25), règle C (jauge la plus rigide mesurée) ; remplace 190. Provenance : src/data/string-stiffness-provenance.ts.
+    stiffness: 208,
+    stiffnessByGauge: { '1.25': 208, '1.30': 191.5 },
+    stiffnessByGaugeSuspect: true,
     performance: 8.0,
     control: 8.0,
     comfort: 8.5,
@@ -370,6 +403,7 @@ export const stringsDatabase: TennisString[] = [
     type: 'Polyester',
     gauges: ['1.15', '1.20', '1.25', '1.30'],
     stiffness: 245,
+    stiffnessByGauge: { '1.30': 222.3 },
     performance: 7.5,
     control: 9.8,
     comfort: 7.3,
@@ -390,6 +424,7 @@ export const stringsDatabase: TennisString[] = [
     type: 'Polyester',
     gauges: ['1.15', '1.20', '1.25', '1.30'],
     stiffness: 215,
+    stiffnessByGauge: { '1.15': 192, '1.20': 196 },
     performance: 8.0,
     control: 9.3,
     comfort: 7.8,
@@ -409,11 +444,11 @@ export const stringsDatabase: TennisString[] = [
     model: 'Black Code 4S',
     type: 'Polyester',
     gauges: ['1.20', '1.25', '1.30'],
-    // Rigidité (C2, 10/10/2026) : TWU « Tecnifibre Black Code 4S 17 (1.25) » = 209,2 lb/in, la plus basse des trois jauges
-    // de la fiche (1.20 : 210,3 ; 1.25 : 209,2 ; 1.30 : 242,9), toutes plus rigides que 200 : vraie quelle que soit la jauge
-    // de référence retenue (plancher). https://twu.tennis-warehouse.com/learning_center/reporter2.php (POST zmaterial=all,
-    // 51 lbs, Fast), relevé du 29/09/2026, revérifié le 10/10/2026 (identique). Remplace 200 (sans source). Provenance : src/data/string-stiffness-provenance.ts.
-    stiffness: 209.2,
+    // Rigidité (C2, 10/10/2026) : TWU « Tecnifibre Black Code 4S 16 (1.30) » = 242,9 lb/in (jauge 1.30), règle C (jauge la plus rigide mesurée) ; remplace 209,2
+    // (lot 1, plancher) et 200 (sans source) ; l'ancien id 4S valait 222. Provenance : src/data/string-stiffness-provenance.ts.
+    stiffness: 242.9,
+    stiffnessByGauge: { '1.20': 210.3, '1.25': 209.2, '1.30': 242.9 },
+    stiffnessByGaugeSuspect: true,
     performance: 8.5,
     control: 8.5,
     comfort: 7.5,
@@ -435,6 +470,7 @@ export const stringsDatabase: TennisString[] = [
     type: 'Polyester',
     gauges: ['1.18', '1.23'],
     stiffness: 250,
+    stiffnessByGauge: { '1.23': 174.9 },
     performance: 8.0,
     control: 7.5,
     comfort: 6.3,
@@ -455,6 +491,7 @@ export const stringsDatabase: TennisString[] = [
     type: 'Natural Gut',
     gauges: ['1.25', '1.30'],
     stiffness: 100,
+    stiffnessByGauge: { '1.25': 80.6 },
     performance: 9.0,
     control: 7.5,
     comfort: 9.0,
@@ -474,7 +511,9 @@ export const stringsDatabase: TennisString[] = [
     model: 'Cream',
     type: 'Polyester',
     gauges: ['1.20', '1.28'],
-    stiffness: 165,
+    // Rigidité (C2, lot 3, 10/10/2026) : TWU « IsoSpeed Cream 17 (1.28) » = 177,7 lb/in (jauge 1.28), règle C (jauge la plus rigide mesurée, 1 jauge sur 2 mesurée : valeur plancher) ; remplace 165. Provenance : src/data/string-stiffness-provenance.ts.
+    stiffness: 177.7,
+    stiffnessByGauge: { '1.28': 177.7 },
     performance: 7.0,
     control: 8.0,
     comfort: 9.5,
@@ -495,7 +534,10 @@ export const stringsDatabase: TennisString[] = [
     model: 'TGV',
     type: 'Multifilament',
     gauges: ['1.25', '1.30', '1.35'],
-    stiffness: 145,
+    // Rigidité (C2, lot 3, 10/10/2026) : TWU « Tecnifibre TGV 17/1.25 » = 165,2 lb/in (jauge 1.25), règle C (jauge la plus rigide mesurée, 2 jauges sur 3 mesurées : valeur plancher) ; remplace 145. Provenance : src/data/string-stiffness-provenance.ts.
+    stiffness: 165.2,
+    stiffnessByGauge: { '1.25': 165.2, '1.30': 157.2 },
+    stiffnessByGaugeSuspect: true,
     performance: 7.0,
     control: 6.5,
     comfort: 9.5,
@@ -540,6 +582,7 @@ export const stringsDatabase: TennisString[] = [
     type: 'Polyester',
     gauges: ['1.20', '1.25', '1.30'],
     stiffness: 200,
+    stiffnessByGauge: { '1.20': 186.3, '1.25': 192 },
     performance: 9.0,
     control: 8.5,
     comfort: 8.0,
@@ -560,6 +603,7 @@ export const stringsDatabase: TennisString[] = [
     type: 'Polyester',
     gauges: ['1.15', '1.20', '1.25', '1.30'],
     stiffness: 200,
+    stiffnessByGauge: { '1.25': 172 },
     performance: 9.3,
     control: 8.8,
     comfort: 8.8,
@@ -580,6 +624,8 @@ export const stringsDatabase: TennisString[] = [
     type: 'Polyester',
     gauges: ['1.20', '1.25', '1.30'],
     stiffness: 210,
+    stiffnessByGauge: { '1.20': 182.9, '1.25': 208, '1.30': 208 },
+    stiffnessByGaugeSuspect: true,
     performance: 8.8,
     control: 9.0,
     comfort: 7.5,
@@ -602,6 +648,7 @@ export const stringsDatabase: TennisString[] = [
     type: 'Polyester',
     gauges: ['1.25'],
     stiffness: 210,
+    stiffnessByGauge: { '1.25': 197.7 },
     performance: 9.5,
     control: 9.2,
     comfort: 8.0,
@@ -641,7 +688,10 @@ export const stringsDatabase: TennisString[] = [
     model: 'Adrenaline',
     type: 'Polyester',
     gauges: ['1.25', '1.30'],
-    stiffness: 205,
+    // Rigidité (C2, lot 3, 10/10/2026) : TWU « Luxilon Adrenaline 16 » = 212,6 lb/in (jauge 1.30), règle C (jauge la plus rigide mesurée) ; remplace 205. Provenance : src/data/string-stiffness-provenance.ts.
+    stiffness: 212.6,
+    stiffnessByGauge: { '1.25': 202.9, '1.30': 212.6 },
+    stiffnessByGaugeSuspect: true,
     performance: 8.7,
     control: 8.8,
     comfort: 8.3,
@@ -665,6 +715,7 @@ export const stringsDatabase: TennisString[] = [
     type: 'Polyester',
     gauges: ['1.20', '1.25', '1.30'],
     stiffness: 215,
+    stiffnessByGauge: { '1.25': 199.5 },
     performance: 9.0,
     control: 9.0,
     comfort: 7.5,
@@ -705,7 +756,9 @@ export const stringsDatabase: TennisString[] = [
     model: 'Poly Tour Spin',
     type: 'Polyester',
     gauges: ['1.20', '1.25', '1.30'],
-    stiffness: 200,
+    // Rigidité (C2, lot 3, 10/10/2026) : TWU « Yonex Poly Tour Spin 16L (1.25) » = 213,7 lb/in (jauge 1.25), règle C (jauge la plus rigide mesurée, 1 jauge sur 3 mesurée : valeur plancher) ; remplace 200. Provenance : src/data/string-stiffness-provenance.ts.
+    stiffness: 213.7,
+    stiffnessByGauge: { '1.25': 213.7 },
     performance: 8.5,
     control: 8.3,
     comfort: 8.0,
@@ -727,7 +780,9 @@ export const stringsDatabase: TennisString[] = [
     model: 'Razor Code',
     type: 'Polyester',
     gauges: ['1.20', '1.25', '1.30'],
-    stiffness: 220,
+    // Rigidité (C2, 10/10/2026) : TWU « Tecnifibre Razor Code 16 (1.30) » = 242,9 lb/in (jauge 1.30), règle C (jauge la plus rigide mesurée) ; remplace 220. Provenance : src/data/string-stiffness-provenance.ts.
+    stiffness: 242.9,
+    stiffnessByGauge: { '1.20': 216.6, '1.25': 229.2, '1.30': 242.9 },
     performance: 9.0,
     control: 9.0,
     comfort: 7.5,
@@ -747,7 +802,9 @@ export const stringsDatabase: TennisString[] = [
     model: 'Ice Code',
     type: 'Polyester',
     gauges: ['1.25', '1.30'],
-    stiffness: 221,
+    // Rigidité (C2, lot 3, 10/10/2026) : TWU « Tecnifibre Ice Code 16 (1.30) » = 221,2 lb/in (jauge 1.30), règle C (jauge la plus rigide mesurée, 1 jauge sur 2 mesurée : valeur plancher) ; remplace 221. Provenance : src/data/string-stiffness-provenance.ts.
+    stiffness: 221.2,
+    stiffnessByGauge: { '1.30': 221.2 },
     performance: 8.8,
     control: 8.8,
     comfort: 8.0,
@@ -811,6 +868,7 @@ export const stringsDatabase: TennisString[] = [
     type: 'Multifilament',
     gauges: ['1.25', '1.30'],
     stiffness: 165,
+    stiffnessByGauge: { '1.25': 153.2 },
     performance: 8.0,
     control: 7.5,
     comfort: 9.0,
@@ -853,6 +911,7 @@ export const stringsDatabase: TennisString[] = [
     type: 'Multifilament',
     gauges: ['1.25', '1.30'],
     stiffness: 155,
+    stiffnessByGauge: { '1.30': 150.9 },
     performance: 8.3,
     control: 7.5,
     comfort: 9.5,
@@ -875,6 +934,8 @@ export const stringsDatabase: TennisString[] = [
     type: 'Polyester',
     gauges: ['1.25', '1.30'],
     stiffness: 210,
+    stiffnessByGauge: { '1.25': 192, '1.30': 184 },
+    stiffnessByGaugeSuspect: true,
     performance: 8.3,
     control: 8.3,
     comfort: 7.8,
@@ -897,6 +958,8 @@ export const stringsDatabase: TennisString[] = [
     type: 'Polyester',
     gauges: ['1.20', '1.25', '1.30'],
     stiffness: 215,
+    stiffnessByGauge: { '1.20': 181.2, '1.25': 191.5, '1.30': 197.2 },
+    stiffnessByGaugeSuspect: true,
     performance: 8.3,
     control: 8.3,
     comfort: 7.8,
@@ -940,7 +1003,9 @@ export const stringsDatabase: TennisString[] = [
     model: 'Moto',
     type: 'Polyester',
     gauges: ['1.24', '1.29'],
-    stiffness: 205,
+    // Rigidité (C2, 10/10/2026) : TWU « Gamma Moto 16 » = 226,9 lb/in (jauge 1.29), règle C (jauge la plus rigide mesurée) ; remplace 205. Provenance : src/data/string-stiffness-provenance.ts.
+    stiffness: 226.9,
+    stiffnessByGauge: { '1.24': 201.7, '1.29': 226.9 },
     performance: 8.3,
     control: 8.3,
     comfort: 7.8,
@@ -962,7 +1027,10 @@ export const stringsDatabase: TennisString[] = [
     model: 'Solstice Power',
     type: 'Polyester',
     gauges: ['1.25', '1.30'],
-    stiffness: 200,
+    // Rigidité (C2, 10/10/2026) : TWU « Diadem Solstice Power 16L (1.25) » = 209,2 lb/in (jauge 1.25), règle C (jauge la plus rigide mesurée) ; remplace 200. Provenance : src/data/string-stiffness-provenance.ts.
+    stiffness: 209.2,
+    stiffnessByGauge: { '1.25': 209.2, '1.30': 202.9 },
+    stiffnessByGaugeSuspect: true,
     performance: 8.5,
     control: 8.3,
     comfort: 8.3,
@@ -990,6 +1058,7 @@ export const stringsDatabase: TennisString[] = [
     type: 'Multifilament',
     gauges: ['1.28', '1.33', '1.38'],
     stiffness: 162,
+    stiffnessByGauge: { '1.33': 161.7 },
     performance: 8.1,
     control: 8.1,
     comfort: 8.5,
@@ -1010,7 +1079,10 @@ export const stringsDatabase: TennisString[] = [
     model: 'NRG2',
     type: 'Multifilament',
     gauges: ['1.24', '1.32'],
-    stiffness: 148,
+    // Rigidité (C2, 10/10/2026) : TWU « Tecnifibre NRG2 17/1.24 » = 164 lb/in (jauge 1.24), règle C (jauge la plus rigide mesurée) ; remplace 148. Provenance : src/data/string-stiffness-provenance.ts.
+    stiffness: 164,
+    stiffnessByGauge: { '1.24': 164, '1.32': 158.3 },
+    stiffnessByGaugeSuspect: true,
     performance: 8.4,
     control: 7.2,
     comfort: 9.4,
@@ -1031,6 +1103,8 @@ export const stringsDatabase: TennisString[] = [
     type: 'Multifilament',
     gauges: ['1.25', '1.30', '1.35'],
     stiffness: 170,
+    stiffnessByGauge: { '1.25': 169.7, '1.30': 162.3 },
+    stiffnessByGaugeSuspect: true,
     performance: 7.8,
     control: 7.5,
     comfort: 8.3,
@@ -1050,7 +1124,10 @@ export const stringsDatabase: TennisString[] = [
     model: 'NXT',
     type: 'Multifilament',
     gauges: ['1.24', '1.30'],
-    stiffness: 152,
+    // Rigidité (C2, 10/10/2026) : TWU « Wilson NXT 16 » = 173,7 lb/in (jauge 1.30), règle C (jauge la plus rigide mesurée) ; remplace 152. Provenance : src/data/string-stiffness-provenance.ts.
+    stiffness: 173.7,
+    stiffnessByGauge: { '1.24': 156, '1.30': 173.7 },
+    stiffnessByGaugeSuspect: true,
     performance: 8.5,
     control: 7.6,
     comfort: 8.9,
@@ -1091,6 +1168,8 @@ export const stringsDatabase: TennisString[] = [
     type: 'Multifilament',
     gauges: ['1.25', '1.30'],
     stiffness: 165,
+    stiffnessByGauge: { '1.25': 163.4, '1.30': 168.6 },
+    stiffnessByGaugeSuspect: true,
     performance: 8.0,
     control: 7.4,
     comfort: 8.6,
@@ -1130,7 +1209,9 @@ export const stringsDatabase: TennisString[] = [
     model: 'Xalt',
     type: 'Multifilament',
     gauges: ['1.25', '1.30'],
-    stiffness: 158,
+    // Rigidité (C2, lot 3, 10/10/2026) : TWU « Babolat Xalt 16 (1.30) » = 165,2 lb/in (jauge 1.30), règle C (jauge la plus rigide mesurée, 1 jauge sur 2 mesurée : valeur plancher) ; remplace 158. Provenance : src/data/string-stiffness-provenance.ts.
+    stiffness: 165.2,
+    stiffnessByGauge: { '1.30': 165.2 },
     performance: 8.2,
     control: 7.5,
     comfort: 8.8,
@@ -1191,6 +1272,7 @@ export const stringsDatabase: TennisString[] = [
     type: 'Multifilament',
     gauges: ['1.25', '1.30'],
     stiffness: 180,
+    stiffnessByGauge: { '1.25': 137.7, '1.30': 156.6 },
     performance: 7.8,
     control: 8.3,
     comfort: 7.8,
@@ -1230,7 +1312,9 @@ export const stringsDatabase: TennisString[] = [
     model: 'Vanquish',
     type: 'Multifilament',
     gauges: ['1.25', '1.30'],
-    stiffness: 155,
+    // Rigidité (C2, lot 3, 10/10/2026) : TWU « Solinco Vanquish 16 » = 160 lb/in (jauge 1.30), règle C (jauge la plus rigide mesurée, 1 jauge sur 2 mesurée : valeur plancher) ; remplace 155. Provenance : src/data/string-stiffness-provenance.ts.
+    stiffness: 160,
+    stiffnessByGauge: { '1.30': 160 },
     performance: 8.3,
     control: 7.5,
     comfort: 9.0,
@@ -1251,6 +1335,8 @@ export const stringsDatabase: TennisString[] = [
     type: 'Multifilament',
     gauges: ['1.20', '1.30'],
     stiffness: 147,
+    stiffnessByGauge: { '1.20': 158.9, '1.30': 144.6 },
+    stiffnessByGaugeSuspect: true,
     performance: 8.4,
     control: 7.3,
     comfort: 9.2,
@@ -1270,7 +1356,9 @@ export const stringsDatabase: TennisString[] = [
     model: 'Power Fiber II',
     type: 'Multifilament',
     gauges: ['1.25'],
-    stiffness: 152,
+    // Rigidité (C2, 10/10/2026) : TWU « Volkl Power-Fiber II 17 » = 158,9 lb/in (jauge 1.25), règle C (jauge la plus rigide mesurée) ; remplace 152. Provenance : src/data/string-stiffness-provenance.ts.
+    stiffness: 158.9,
+    stiffnessByGauge: { '1.25': 158.9 },
     performance: 8.3,
     control: 7.4,
     comfort: 9.1,
@@ -1311,6 +1399,8 @@ export const stringsDatabase: TennisString[] = [
     type: 'Multifilament',
     gauges: ['1.30', '1.40'],
     stiffness: 176,
+    stiffnessByGauge: { '1.30': 157.7, '1.40': 154.3 },
+    stiffnessByGaugeSuspect: true,
     performance: 7.6,
     control: 8.2,
     comfort: 8.0,
@@ -1351,6 +1441,7 @@ export const stringsDatabase: TennisString[] = [
     type: 'Multifilament',
     gauges: ['1.20', '1.30'],
     stiffness: 158,
+    stiffnessByGauge: { '1.20': 133.7 },
     performance: 8.0,
     control: 7.8,
     comfort: 8.9,
@@ -1371,6 +1462,7 @@ export const stringsDatabase: TennisString[] = [
     type: 'Multifilament',
     gauges: ['1.30'],
     stiffness: 178,
+    stiffnessByGauge: { '1.30': 136 },
     performance: 7.8,
     control: 8.4,
     comfort: 8.0,
@@ -1455,6 +1547,7 @@ export const stringsDatabase: TennisString[] = [
     type: 'Polyester',
     gauges: ['1.20', '1.25', '1.30'],
     stiffness: 260,
+    stiffnessByGauge: { '1.20': 181.7, '1.25': 191.5, '1.30': 192.6 },
     performance: 9,
     control: 9.5,
     comfort: 6,
@@ -1472,7 +1565,10 @@ export const stringsDatabase: TennisString[] = [
     model: 'Revolution',
     type: 'Polyester',
     gauges: ['1.20', '1.25', '1.30'],
-    stiffness: 210,
+    // Rigidité (C2, lot 3, 10/10/2026) : TWU « Solinco Revolution 16 » = 215,5 lb/in (jauge 1.30), règle C (jauge la plus rigide mesurée) ; remplace 210. Provenance : src/data/string-stiffness-provenance.ts.
+    stiffness: 215.5,
+    stiffnessByGauge: { '1.20': 188.6, '1.25': 212.6, '1.30': 215.5 },
+    stiffnessByGaugeSuspect: true,
     performance: 8.5,
     control: 8.5,
     comfort: 8,
@@ -1509,6 +1605,8 @@ export const stringsDatabase: TennisString[] = [
     type: 'Polyester',
     gauges: ['1.20', '1.25', '1.30'],
     stiffness: 250,
+    stiffnessByGauge: { '1.20': 186.3, '1.25': 182.9, '1.30': 214.3 },
+    stiffnessByGaugeSuspect: true,
     performance: 8.5,
     control: 9,
     comfort: 6.5,
@@ -1564,7 +1662,9 @@ export const stringsDatabase: TennisString[] = [
     model: 'RPM Team',
     type: 'Polyester',
     gauges: ['1.25', '1.30'],
-    stiffness: 225,
+    // Rigidité (C2, lot 3, 10/10/2026) : TWU « Babolat RPM Team 16 Black » = 280,6 lb/in (jauge 1.30), règle C (jauge la plus rigide mesurée ; seule la 1.30 est mesurée en polyester : valeur plancher) ; APPARIEMENT MANUEL, seule exception au motif strict (liste blanche des appariements manuels de la provenance, décision de l'orchestrateur du 10/10/2026) ; remplace 225. Provenance : src/data/string-stiffness-provenance.ts.
+    stiffness: 280.6,
+    stiffnessByGauge: { '1.30': 280.6 },
     performance: 8.5,
     control: 8.3,
     comfort: 6.8,
@@ -1603,6 +1703,7 @@ export const stringsDatabase: TennisString[] = [
     type: 'Polyester',
     gauges: ['1.20', '1.25', '1.30', '1.35'],
     stiffness: 260,
+    stiffnessByGauge: { '1.20': 185.2, '1.25': 192.6, '1.30': 204 },
     performance: 8.5,
     control: 10,
     comfort: 5,
@@ -1621,7 +1722,9 @@ export const stringsDatabase: TennisString[] = [
     model: 'Xcel Power',
     type: 'Multifilament',
     gauges: ['1.25', '1.30'],
-    stiffness: 140,
+    // Rigidité (C2, 10/10/2026) : TWU « Babolat Xcel Power 16 » = 162,3 lb/in (jauge 1.30), règle C (jauge la plus rigide mesurée) ; remplace 140. Provenance : src/data/string-stiffness-provenance.ts.
+    stiffness: 162.3,
+    stiffnessByGauge: { '1.25': 145.7, '1.30': 162.3 },
     performance: 8.5,
     control: 7,
     comfort: 9.5,
@@ -1639,7 +1742,10 @@ export const stringsDatabase: TennisString[] = [
     model: 'Origin',
     type: 'Multifilament',
     gauges: ['1.25', '1.30'],
-    stiffness: 155,
+    // Rigidité (C2, 10/10/2026) : TWU « Babolat Origin 17 » = 171,5 lb/in (jauge 1.25), règle C (jauge la plus rigide mesurée) ; remplace 155. Provenance : src/data/string-stiffness-provenance.ts.
+    stiffness: 171.5,
+    stiffnessByGauge: { '1.25': 171.5, '1.30': 166.9 },
+    stiffnessByGaugeSuspect: true,
     performance: 8.5,
     control: 8,
     comfort: 9,
@@ -1657,7 +1763,9 @@ export const stringsDatabase: TennisString[] = [
     model: 'M7',
     type: 'Multifilament',
     gauges: ['1.25', '1.30', '1.35'],
-    stiffness: 150,
+    // Rigidité (C2, lot 3, 10/10/2026) : TWU « Babolat M7 16 (1.30) » = 160,6 lb/in (jauge 1.30), règle C (jauge la plus rigide mesurée, 1 jauge sur 3 mesurée : valeur plancher) ; remplace 150. Provenance : src/data/string-stiffness-provenance.ts.
+    stiffness: 160.6,
+    stiffnessByGauge: { '1.30': 160.6 },
     performance: 8,
     control: 7.5,
     comfort: 9,
@@ -1676,6 +1784,7 @@ export const stringsDatabase: TennisString[] = [
     type: 'Synthetic',
     gauges: ['1.25', '1.30', '1.35'],
     stiffness: 185,
+    stiffnessByGauge: { '1.25': 162.3, '1.30': 169.2 },
     performance: 7,
     control: 7.5,
     comfort: 7.5,
@@ -1694,6 +1803,7 @@ export const stringsDatabase: TennisString[] = [
     type: 'Synthetic',
     gauges: ['1.25', '1.30', '1.35'],
     stiffness: 180,
+    stiffnessByGauge: { '1.30': 161.7 },
     performance: 7.5,
     control: 7.5,
     comfort: 8,
@@ -1785,7 +1895,9 @@ export const stringsDatabase: TennisString[] = [
     model: 'Revenge',
     type: 'Polyester',
     gauges: ['1.25', '1.30'],
-    stiffness: 230,
+    // Rigidité (C2, lot 3, 10/10/2026) : TWU « Babolat Revenge 16 » = 276 lb/in (jauge 1.30), règle C (jauge la plus rigide mesurée) ; remplace 230. Provenance : src/data/string-stiffness-provenance.ts.
+    stiffness: 276,
+    stiffnessByGauge: { '1.25': 222.3, '1.30': 276 },
     performance: 8,
     control: 8.5,
     comfort: 7,
@@ -1804,6 +1916,7 @@ export const stringsDatabase: TennisString[] = [
     type: 'Polyester',
     gauges: ['1.25', '1.30'],
     stiffness: 230,
+    stiffnessByGauge: { '1.25': 209.2 },
     performance: 10,
     control: 9,
     comfort: 6.5,
@@ -1840,7 +1953,9 @@ export const stringsDatabase: TennisString[] = [
     model: 'ALU Power Vibe',
     type: 'Polyester',
     gauges: ['1.25'],
-    stiffness: 200,
+    // Rigidité (C2, 10/10/2026) : TWU « Luxilon Alu Power Vibe 16 (1.25) » = 208 lb/in (jauge 1.25), règle C (jauge la plus rigide mesurée) ; remplace 200. Provenance : src/data/string-stiffness-provenance.ts.
+    stiffness: 208,
+    stiffnessByGauge: { '1.25': 208 },
     performance: 9,
     control: 8.5,
     comfort: 8,
@@ -1895,6 +2010,7 @@ export const stringsDatabase: TennisString[] = [
     type: 'Polyester',
     gauges: ['1.25'],
     stiffness: 235,
+    stiffnessByGauge: { '1.25': 217.2 },
     performance: 9,
     control: 9.5,
     comfort: 7,
@@ -1913,6 +2029,7 @@ export const stringsDatabase: TennisString[] = [
     type: 'Polyester',
     gauges: ['1.25'],
     stiffness: 262,
+    stiffnessByGauge: { '1.25': 216 },
     performance: 9.5,
     control: 9.5,
     comfort: 5.5,
@@ -1930,7 +2047,9 @@ export const stringsDatabase: TennisString[] = [
     model: 'Element Rough',
     type: 'Polyester',
     gauges: ['1.30'],
-    stiffness: 188,
+    // Rigidité (C2, 10/10/2026) : TWU « Luxilon Element Rough 16 (1.30) » = 198,3 lb/in (jauge 1.30), règle C (jauge la plus rigide mesurée) ; remplace 188. Provenance : src/data/string-stiffness-provenance.ts.
+    stiffness: 198.3,
+    stiffnessByGauge: { '1.30': 198.3 },
     performance: 8.5,
     control: 8,
     comfort: 8.5,
@@ -1988,6 +2107,7 @@ export const stringsDatabase: TennisString[] = [
     // https://twu.tennis-warehouse.com/learning_center/reporter2.php (POST zmaterial=all, 51 lbs, Fast),
     // relevé du 29/09/2026, revérifié le 10/10/2026 (identique). Remplace 220 (sans source). Provenance : src/data/string-stiffness-provenance.ts.
     stiffness: 234.3,
+    stiffnessByGauge: { '1.27': 234.3 },
     performance: 9,
     control: 8.5,
     comfort: 7,
@@ -2024,6 +2144,7 @@ export const stringsDatabase: TennisString[] = [
     type: 'Polyester',
     gauges: ['1.25'],
     stiffness: 212,
+    stiffnessByGauge: { '1.25': 202.9 },
     performance: 9,
     control: 8.5,
     comfort: 7.5,
@@ -2061,6 +2182,7 @@ export const stringsDatabase: TennisString[] = [
     type: 'Natural Gut',
     gauges: ['1.25', '1.30'],
     stiffness: 98,
+    stiffnessByGauge: { '1.25': 82.3 },
     performance: 10,
     control: 8,
     comfort: 10,
@@ -2151,6 +2273,7 @@ export const stringsDatabase: TennisString[] = [
     type: 'Polyester',
     gauges: ['1.25', '1.30'],
     stiffness: 225,
+    stiffnessByGauge: { '1.25': 194.9 },
     performance: 9,
     control: 8.5,
     comfort: 7,
@@ -2168,7 +2291,9 @@ export const stringsDatabase: TennisString[] = [
     model: 'Hawk',
     type: 'Polyester',
     gauges: ['1.20', '1.25', '1.30'],
-    stiffness: 215,
+    // Rigidité (C2, 10/10/2026) : TWU « Head Hawk 16 (1.30) » = 230,3 lb/in (jauge 1.30), règle C (jauge la plus rigide mesurée) ; remplace 215. Provenance : src/data/string-stiffness-provenance.ts.
+    stiffness: 230.3,
+    stiffnessByGauge: { '1.20': 194.3, '1.25': 204.6, '1.30': 230.3 },
     performance: 8.5,
     control: 9,
     comfort: 7,
@@ -2186,7 +2311,9 @@ export const stringsDatabase: TennisString[] = [
     model: 'Hawk Power',
     type: 'Polyester',
     gauges: ['1.25', '1.30'],
-    stiffness: 195,
+    // Rigidité (C2, lot 3, 10/10/2026) : TWU « Head Hawk Power 17 (1.25) » = 203,5 lb/in (jauge 1.25), règle C (jauge la plus rigide mesurée, 1 jauge sur 2 mesurée : valeur plancher) ; remplace 195. Provenance : src/data/string-stiffness-provenance.ts.
+    stiffness: 203.5,
+    stiffnessByGauge: { '1.25': 203.5 },
     performance: 8.5,
     control: 8,
     comfort: 8,
@@ -2205,6 +2332,7 @@ export const stringsDatabase: TennisString[] = [
     type: 'Polyester',
     gauges: ['1.25'],
     stiffness: 212,
+    stiffnessByGauge: { '1.25': 201.2 },
     performance: 8.5,
     control: 8.5,
     comfort: 7,
@@ -2223,6 +2351,7 @@ export const stringsDatabase: TennisString[] = [
     type: 'Polyester',
     gauges: ['1.20', '1.25', '1.30'],
     stiffness: 225,
+    stiffnessByGauge: { '1.20': 174.9, '1.25': 179.5, '1.30': 185.7 },
     performance: 9,
     control: 9,
     comfort: 6.5,
@@ -2242,6 +2371,8 @@ export const stringsDatabase: TennisString[] = [
     type: 'Polyester',
     gauges: ['1.25', '1.30'],
     stiffness: 235,
+    stiffnessByGauge: { '1.25': 164.6, '1.30': 160.6 },
+    stiffnessByGaugeSuspect: true,
     performance: 8.5,
     control: 9,
     comfort: 6.5,
@@ -2260,6 +2391,7 @@ export const stringsDatabase: TennisString[] = [
     type: 'Polyester',
     gauges: ['1.25', '1.30'],
     stiffness: 230,
+    stiffnessByGauge: { '1.30': 194.9 },
     performance: 8.5,
     control: 9,
     comfort: 6.5,
@@ -2333,6 +2465,7 @@ export const stringsDatabase: TennisString[] = [
     type: 'Multifilament',
     gauges: ['1.25', '1.30'],
     stiffness: 158,
+    stiffnessByGauge: { '1.30': 116.6 },
     performance: 8.5,
     control: 8,
     comfort: 9,
@@ -2512,7 +2645,10 @@ export const stringsDatabase: TennisString[] = [
     model: 'Black Code',
     type: 'Polyester',
     gauges: ['1.18', '1.24', '1.28', '1.32'],
-    stiffness: 210,
+    // Rigidité (C2, 10/10/2026) : TWU « Tecnifibre Black Code 16 » = 249,7 lb/in (jauge 1.28), règle C (jauge la plus rigide mesurée) ; remplace 210. Provenance : src/data/string-stiffness-provenance.ts.
+    stiffness: 249.7,
+    stiffnessByGauge: { '1.18': 202.9, '1.24': 236, '1.28': 249.7, '1.32': 210.3 },
+    stiffnessByGaugeSuspect: true,
     performance: 9,
     control: 9,
     comfort: 7,
@@ -2548,7 +2684,9 @@ export const stringsDatabase: TennisString[] = [
     model: 'Razor Soft',
     type: 'Polyester',
     gauges: ['1.20', '1.25', '1.30'],
-    stiffness: 185,
+    // Rigidité (C2, lot 3, 10/10/2026) : TWU « Tecnifibre Razor Soft 17 (1.25) » = 212 lb/in (jauge 1.25), règle C (jauge la plus rigide mesurée, 1 jauge sur 3 mesurée : valeur plancher) ; remplace 185. Provenance : src/data/string-stiffness-provenance.ts.
+    stiffness: 212,
+    stiffnessByGauge: { '1.25': 212 },
     performance: 8.5,
     control: 8,
     comfort: 8.5,
@@ -2584,7 +2722,9 @@ export const stringsDatabase: TennisString[] = [
     model: 'Pro Red Code',
     type: 'Polyester',
     gauges: ['1.20', '1.25', '1.30'],
-    stiffness: 225,
+    // Rigidité (C2, 10/10/2026) : TWU « Tecnifibre Pro Red Code 16 » = 232 lb/in (jauge 1.30), règle C (jauge la plus rigide mesurée) ; remplace 225. Provenance : src/data/string-stiffness-provenance.ts.
+    stiffness: 232,
+    stiffnessByGauge: { '1.20': 217.2, '1.25': 225.7, '1.30': 232 },
     performance: 9,
     control: 9,
     comfort: 7,
@@ -2602,7 +2742,9 @@ export const stringsDatabase: TennisString[] = [
     model: 'Pro Red Code Wax',
     type: 'Polyester',
     gauges: ['1.20', '1.25', '1.30'],
-    stiffness: 220,
+    // Rigidité (C2, lot 3, 10/10/2026) : TWU « Tecnifibre Pro Red Code Wax 17 » = 235,5 lb/in (jauge 1.25), règle C (jauge la plus rigide mesurée, 1 jauge sur 3 mesurée : valeur plancher) ; remplace 220. Provenance : src/data/string-stiffness-provenance.ts.
+    stiffness: 235.5,
+    stiffnessByGauge: { '1.25': 235.5 },
     performance: 9,
     control: 9,
     comfort: 7.5,
@@ -2621,6 +2763,7 @@ export const stringsDatabase: TennisString[] = [
     type: 'Multifilament',
     gauges: ['1.24', '1.30'],
     stiffness: 170,
+    stiffnessByGauge: { '1.24': 144 },
     performance: 8,
     control: 8.5,
     comfort: 8.5,
@@ -2657,6 +2800,7 @@ export const stringsDatabase: TennisString[] = [
     type: 'Polyester',
     gauges: ['1.25', '1.30'],
     stiffness: 215,
+    stiffnessByGauge: { '1.25': 207.5, '1.30': 207.5 },
     performance: 8.5,
     control: 8.5,
     comfort: 7,
@@ -2692,7 +2836,9 @@ export const stringsDatabase: TennisString[] = [
     model: 'XR3',
     type: 'Multifilament',
     gauges: ['1.25', '1.30'],
-    stiffness: 158,
+    // Rigidité (C2, 10/10/2026) : TWU « Tecnifibre XR3 16 » = 162,9 lb/in (jauge 1.30), règle C (jauge la plus rigide mesurée) ; remplace 158. Provenance : src/data/string-stiffness-provenance.ts.
+    stiffness: 162.9,
+    stiffnessByGauge: { '1.25': 160.6, '1.30': 162.9 },
     performance: 8.5,
     control: 8,
     comfort: 9,
@@ -2783,6 +2929,7 @@ export const stringsDatabase: TennisString[] = [
     type: 'Polyester',
     gauges: ['1.25', '1.30'],
     stiffness: 225,
+    stiffnessByGauge: { '1.30': 172.6 },
     performance: 8.5,
     control: 8.5,
     comfort: 7,
@@ -2801,6 +2948,7 @@ export const stringsDatabase: TennisString[] = [
     type: 'Multifilament',
     gauges: ['1.25', '1.30'],
     stiffness: 168,
+    stiffnessByGauge: { '1.30': 150.3 },
     performance: 8,
     control: 8,
     comfort: 8.5,
@@ -2855,6 +3003,8 @@ export const stringsDatabase: TennisString[] = [
     type: 'Synthetic',
     gauges: ['1.25', '1.30', '1.35'],
     stiffness: 180,
+    stiffnessByGauge: { '1.25': 158.3, '1.30': 156 },
+    stiffnessByGaugeSuspect: true,
     performance: 7.5,
     control: 7.5,
     comfort: 8,
@@ -2872,7 +3022,9 @@ export const stringsDatabase: TennisString[] = [
     model: 'Synthetic Gut Extreme',
     type: 'Synthetic',
     gauges: ['1.25', '1.30'],
-    stiffness: 175,
+    // Rigidité (C2, lot 3, 10/10/2026) : TWU « Wilson Synthetic Gut Extreme 17 » = 185,2 lb/in (jauge 1.25), règle C (jauge la plus rigide mesurée, 1 jauge sur 2 mesurée : valeur plancher) ; remplace 175. Provenance : src/data/string-stiffness-provenance.ts.
+    stiffness: 185.2,
+    stiffnessByGauge: { '1.25': 185.2 },
     performance: 7.5,
     control: 7,
     comfort: 8,
@@ -2963,6 +3115,7 @@ export const stringsDatabase: TennisString[] = [
     type: 'Polyester',
     gauges: ['1.20', '1.25', '1.30'],
     stiffness: 205,
+    stiffnessByGauge: { '1.25': 194.9 },
     performance: 9,
     control: 8,
     comfort: 8,
@@ -2981,6 +3134,7 @@ export const stringsDatabase: TennisString[] = [
     type: 'Polyester',
     gauges: ['1.25'],
     stiffness: 245,
+    stiffnessByGauge: { '1.25': 193.7 },
     performance: 8.5,
     control: 9.5,
     comfort: 6,
@@ -2998,7 +3152,9 @@ export const stringsDatabase: TennisString[] = [
     model: 'Poly Tour Spin G',
     type: 'Polyester',
     gauges: ['1.25'],
-    stiffness: 215,
+    // Rigidité (C2, lot 3, 10/10/2026) : TWU « Yonex Poly Tour Spin G 1.25 » = 237,2 lb/in (jauge 1.25), règle C (jauge la plus rigide mesurée) ; remplace 215. Provenance : src/data/string-stiffness-provenance.ts.
+    stiffness: 237.2,
+    stiffnessByGauge: { '1.25': 237.2 },
     performance: 9,
     control: 8.5,
     comfort: 7.5,
@@ -3017,6 +3173,7 @@ export const stringsDatabase: TennisString[] = [
     type: 'Polyester',
     gauges: ['1.25'],
     stiffness: 195,
+    stiffnessByGauge: { '1.25': 154.9 },
     performance: 8.5,
     control: 8,
     comfort: 8.5,
@@ -3035,6 +3192,7 @@ export const stringsDatabase: TennisString[] = [
     type: 'Multifilament',
     gauges: ['1.25', '1.30'],
     stiffness: 155,
+    stiffnessByGauge: { '1.30': 153.2 },
     performance: 8.5,
     control: 8,
     comfort: 9.5,
@@ -3053,6 +3211,7 @@ export const stringsDatabase: TennisString[] = [
     type: 'Multifilament',
     gauges: ['1.25', '1.30'],
     stiffness: 145,
+    stiffnessByGauge: { '1.25': 128.6 },
     performance: 8,
     control: 7.5,
     comfort: 10,
@@ -3071,6 +3230,7 @@ export const stringsDatabase: TennisString[] = [
     type: 'Multifilament',
     gauges: ['1.25', '1.30'],
     stiffness: 160,
+    stiffnessByGauge: { '1.25': 125.7 },
     performance: 8.5,
     control: 8,
     comfort: 9,
@@ -3089,6 +3249,7 @@ export const stringsDatabase: TennisString[] = [
     type: 'Synthetic', // âme nylon monofilament + film métallique (yonex.com/tennis/strings/tgdw125)
     gauges: ['1.25', '1.30'],
     stiffness: 165,
+    stiffnessByGauge: { '1.30': 154.9 },
     performance: 8,
     control: 8,
     comfort: 8.5,
@@ -3232,7 +3393,9 @@ export const stringsDatabase: TennisString[] = [
     model: 'Eco Spin',
     type: 'Polyester',
     gauges: ['1.25'],
-    stiffness: 213,
+    // Rigidité (C2, 10/10/2026) : TWU « Luxilon ECO Spin 17 (1.25) » = 213,2 lb/in (jauge 1.25), règle C (jauge la plus rigide mesurée) ; remplace 213. Provenance : src/data/string-stiffness-provenance.ts.
+    stiffness: 213.2,
+    stiffnessByGauge: { '1.25': 213.2 },
     performance: 9,
     control: 8.5,
     comfort: 6.5,
@@ -3255,6 +3418,7 @@ export const stringsDatabase: TennisString[] = [
     // relevé du 28/09/2026, revérifié le 29/09/2026. Remplace 210 (sans source).
     // Notes /10, tension et prix inchangés : non sourcés, arbitrage C4 global hors lot.
     stiffness: 165.7,
+    stiffnessByGauge: { '1.23': 165.7 },
     performance: 9.5,
     control: 8.5,
     comfort: 8.1,
@@ -3295,6 +3459,7 @@ export const stringsDatabase: TennisString[] = [
     type: 'Polyester',
     gauges: ['1.25'],
     stiffness: 164.6,
+    stiffnessByGauge: { '1.25': 164.6 },
     price: { usa: 15 },
     description: "Déclinaison de l'O-Toro à section ronde, jauge 1,25 mm. Le fabricant met en avant le snapback et une trajectoire plus basse.",
     color: 'White / Neon Yellow'
@@ -3310,6 +3475,7 @@ export const stringsDatabase: TennisString[] = [
     type: 'Polyester',
     gauges: ['1.23'],
     stiffness: 173.2,
+    stiffnessByGauge: { '1.23': 173.2 },
     price: { usa: 15 },
     description: "Déclinaison de l'O-Toro à section pentagonale, jauge 1,23 mm. Selon le fabricant : plus de morsure et un angle de sortie plus haut que l'O-Toro.",
     color: 'Neon Pink / Neon Green / White / Lavender'
@@ -3325,6 +3491,7 @@ export const stringsDatabase: TennisString[] = [
     type: 'Polyester',
     gauges: ['1.23'],
     stiffness: 189.7,
+    stiffnessByGauge: { '1.23': 189.7 },
     price: { usa: 12 },
     description: 'Co-poly à section hexagonale (six faces), jauge 1,23 mm. Présenté par le fabricant comme un cordage de précision et de contrôle.',
     color: 'Dark Blue'
@@ -3342,6 +3509,7 @@ export const stringsDatabase: TennisString[] = [
     type: 'Polyester',
     gauges: ['1.23', '1.20'],
     stiffness: 216.6,
+    stiffnessByGauge: { '1.23': 216.6 },
     price: { usa: 15 },
     description: "Version plus rigide de l'O-Toro, section hexagonale, jauges 1,23 et 1,20 mm. Le fabricant la destine aux joueurs avancés recherchant contrôle et durabilité.",
     color: 'Mint / Neon Green'
@@ -3357,6 +3525,7 @@ export const stringsDatabase: TennisString[] = [
     type: 'Polyester',
     gauges: ['1.25'],
     stiffness: 182.9,
+    stiffnessByGauge: { '1.25': 182.9 },
     price: { usa: 17 },
     description: "Cordage rond de 1,25 mm développé avec Julian Cash, dérivé de l'A5 avec une flexibilité plus souple selon le fabricant ; conçu pour le double.",
     color: 'Benjamin Green'
@@ -3372,6 +3541,7 @@ export const stringsDatabase: TennisString[] = [
     type: 'Polyester',
     gauges: ['1.23'],
     stiffness: 190.9,
+    stiffnessByGauge: { '1.23': 190.9 },
     price: { usa: 12 },
     description: 'Section octogonale, jauge 1,23 mm. Le fabricant met en avant un snapback accru par une surface plus glissante.',
     color: 'Lavender'
@@ -3492,6 +3662,34 @@ export function getStringById(id: string | null | undefined): TennisString | und
   if (!id) return undefined;
   const resolved = LEGACY_STRING_ALIASES[id] ?? id;
   return stringsDatabase.find((s) => s.id === resolved);
+}
+
+/** Étiquette du repli (D1) : la jauge demandée n'a pas de mesure exploitable, la rigidité de la fiche s'applique. */
+export const STIFFNESS_UNMEASURED_LABEL = 'jauge non mesurée';
+
+export type StiffnessAtBasis = 'mesure-twu-jauge' | 'jauge-non-mesuree' | 'serie-suspecte';
+export interface StiffnessAt {
+  lbIn: number;
+  basis: StiffnessAtBasis;
+  /** Formulations proposées, non affichées avant D2/D3 ; seule « jauge non mesurée » est arrêtée. */
+  label: string;
+}
+
+/**
+ * Rigidité (lb/in) à utiliser pour une JAUGE (mm, « 1.25 » ou 1.25) — D1, 10/10/2026.
+ * Jauge mesurée par TWU, série non suspecte : la mesure. Sinon REPLI sur la rigidité de la fiche (règle C là où elle est
+ * appliquée), toujours étiqueté, jamais interpolé ni moyenné. Série suspecte (non monotone) : repli aussi, aucune de ses
+ * valeurs n'est utilisée avant l'arbitrage de Pierre (D4). Aucune surface ne l'appelle encore (contrôle 13 quater).
+ */
+export function stringStiffnessAt(
+  s: Pick<TennisString, 'stiffness' | 'stiffnessByGauge' | 'stiffnessByGaugeSuspect'>,
+  gauge: string | number
+): StiffnessAt {
+  const key = Object.keys(s.stiffnessByGauge ?? {}).find((k) => Math.abs(Number(k) - Number(gauge)) < 1e-9);
+  const measured = key === undefined ? undefined : s.stiffnessByGauge?.[key];
+  if (measured === undefined) return { lbIn: s.stiffness, basis: 'jauge-non-mesuree', label: STIFFNESS_UNMEASURED_LABEL };
+  if (s.stiffnessByGaugeSuspect) return { lbIn: s.stiffness, basis: 'serie-suspecte', label: 'série de mesures non monotone : rigidité de la fiche' };
+  return { lbIn: measured, basis: 'mesure-twu-jauge', label: 'mesure TWU de cette jauge' };
 }
 
 /**
