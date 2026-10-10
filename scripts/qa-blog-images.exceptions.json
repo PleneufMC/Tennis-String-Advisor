@@ -5,15 +5,15 @@
   "articles": [
     {
       "fichier": "public/blog/actualite-materiel-tennis-2026-guerre-du-spin.html",
-      "empreinte": "sha256:4be83e41c2d22090045622530c17f7625012c7ae27cd88f023dd2697ea8402ac",
+      "empreinte": "sha256:b106f9e42ae93b2dcf636539df00cf7c0c6d4b7e4664d23feba5781e9511a547",
       "depuis": "2026-10-10",
-      "motif": "Antérieur à la règle images du 10/10/2026 : couverture conforme, visuel de corps à créer (première mission de l’équipe éditoriale)"
+      "motif": "Antérieur à la règle images du 10/10/2026 ; corrigé le 10/10/2026 (PR #102 : valeurs produit alignées sur la base, urgence d'exactitude) — visuel de corps à créer, première mission de l’équipe éditoriale"
     },
     {
       "fichier": "public/blog/challengers-sinner-alcaraz-2026.html",
-      "empreinte": "sha256:9541b1a5e2786d3271720ab37b9009fcc3c2227c5f71151b2a68d01af0f7704e",
+      "empreinte": "sha256:86d3e8e61070a87208469123676b4da5abdd052625d56b553fbb04c55b39d57c",
       "depuis": "2026-10-10",
-      "motif": "Antérieur à la règle images du 10/10/2026 : couverture conforme, visuel de corps à créer (première mission de l’équipe éditoriale)"
+      "motif": "Antérieur à la règle images du 10/10/2026 ; corrigé le 10/10/2026 (PR #102 : valeurs produit alignées sur la base, urgence d'exactitude) — visuel de corps à créer, première mission de l’équipe éditoriale"
     },
     {
       "fichier": "public/blog/combien-de-temps-dure-un-cordage.html",
@@ -77,9 +77,9 @@
     },
     {
       "fichier": "public/en/blog/challengers-sinner-alcaraz-2026.html",
-      "empreinte": "sha256:6a11cb92aaadba2b9269489f68118e278856cdf1f32d851cc58e809805639926",
+      "empreinte": "sha256:8ae070f70a8bfc2db2081e4db5944a48a0d5ebf92bf007924221afaab41b38ba",
       "depuis": "2026-10-10",
-      "motif": "Antérieur à la règle images du 10/10/2026 : couverture conforme, visuel de corps à créer (première mission de l’équipe éditoriale)"
+      "motif": "Antérieur à la règle images du 10/10/2026 ; corrigé le 10/10/2026 (PR #102 : valeurs produit alignées sur la base, urgence d'exactitude) — visuel de corps à créer, première mission de l’équipe éditoriale"
     },
     {
       "fichier": "public/en/blog/how-long-do-tennis-strings-last.html",
