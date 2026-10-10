@@ -34,7 +34,7 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { racquetsDatabase, type TennisRacquet } from '../../src/data/racquets-database';
 import { stringsDatabase, calculateRCS, type TennisString } from '../../src/data/strings-database';
-import { racquetProfile, rankRacquetsByTesterAverage, effectiveRacquetRA } from '../../src/lib/racquet-scoring';
+import { rankRacquetsByTesterAverage, effectiveRacquetRA } from '../../src/lib/racquet-scoring';
 import { RACQUET_TESTER_RATINGS } from '../../src/data/racquet-tester-ratings';
 import { STRING_TESTER_RATINGS } from '../../src/data/tester-ratings';
 
@@ -63,16 +63,13 @@ const rankedStrings = stringsDatabase
   .filter((s) => STRING_TESTER_RATINGS[s.id] !== undefined)
   .sort((a, b) => STRING_TESTER_RATINGS[b.id].docxAverage20 - STRING_TESTER_RATINGS[a.id].docxAverage20 || a.id.localeCompare(b.id));
 
-const PROFILE_AXES: Record<string, 'power' | 'control' | 'comfort' | 'maneuverability' | 'stability'> = {
-  puissance: 'power', controle: 'control', confort: 'comfort', maniabilite: 'maneuverability', stabilite: 'stability',
-};
-
 function racquetField(r: TennisRacquet, field: string): Base | string {
+  // Correctif du 10/10/2026 : `racquetProfile` (profil « combiné ») n'existe plus dans racquet-scoring.ts depuis
+  // « aucune note de raquette déduite des caractéristiques » (CLAUDE.md v2.3.1) ; l'import cassé rendait tout le
+  // contrôle inutilisable. Un profil de raquette n'est plus affiché nulle part : on refuse (échec fermé) au lieu de
+  // valider un chiffre qui n'existe plus ; citer `testeurs20` (avis de testeurs) ou une caractéristique.
   if (field.startsWith('profil.')) {
-    const axis = PROFILE_AXES[field.slice(7)];
-    if (!axis) return `axe de profil inconnu (${Object.keys(PROFILE_AXES).join(', ')})`;
-    const p = racquetProfile(r);
-    return { value: p[axis], decimals: 1, nature: p.withTesters ? 'combiné (specs + avis de testeurs)' : 'dérivé des specs' };
+    return "plus aucun profil de raquette n'est affiché sur le site (CLAUDE.md v2.3.1) : citer « testeurs20 » ou une caractéristique";
   }
   const entry = RACQUET_TESTER_RATINGS[r.id];
   switch (field) {
