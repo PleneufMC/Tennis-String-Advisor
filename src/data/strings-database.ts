@@ -409,7 +409,11 @@ export const stringsDatabase: TennisString[] = [
     model: 'Black Code 4S',
     type: 'Polyester',
     gauges: ['1.20', '1.25', '1.30'],
-    stiffness: 200,
+    // Rigidité (C2, 10/10/2026) : TWU « Tecnifibre Black Code 4S 17 (1.25) » = 209,2 lb/in, la plus basse des trois jauges
+    // de la fiche (1.20 : 210,3 ; 1.25 : 209,2 ; 1.30 : 242,9), toutes plus rigides que 200 : vraie quelle que soit la jauge
+    // de référence retenue (plancher). https://twu.tennis-warehouse.com/learning_center/reporter2.php (POST zmaterial=all,
+    // 51 lbs, Fast), relevé du 29/09/2026, revérifié le 10/10/2026 (identique). Remplace 200 (sans source). Provenance : src/data/string-stiffness-provenance.ts.
+    stiffness: 209.2,
     performance: 8.5,
     control: 8.5,
     comfort: 7.5,
@@ -1976,7 +1980,10 @@ export const stringsDatabase: TennisString[] = [
     model: 'Savage',
     type: 'Polyester',
     gauges: ['1.27'],
-    stiffness: 220,
+    // Rigidité (C2, 10/10/2026) : TWU « Luxilon Savage 16/1.27 », jauge unique de la fiche (1.27) = jauge mesurée,
+    // https://twu.tennis-warehouse.com/learning_center/reporter2.php (POST zmaterial=all, 51 lbs, Fast),
+    // relevé du 29/09/2026, revérifié le 10/10/2026 (identique). Remplace 220 (sans source). Provenance : src/data/string-stiffness-provenance.ts.
+    stiffness: 234.3,
     performance: 9,
     control: 8.5,
     comfort: 7,
