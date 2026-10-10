@@ -55,7 +55,7 @@ export const STRING_RATING_LABELS: Readonly<Record<StringRatingNature, string>> 
  * toutes les fiches : le RCS se calcule à partir de la rigidité, pas des notes.
  */
 export const STRING_RATINGS_NOTICE =
-  "Appréciation de l'équipe, non mesurée en laboratoire. La rigidité (lb/in), indiquée à part, est la donnée du cordage utilisée par le RCS.";
+  "Appréciation de l'équipe, non mesurée en laboratoire. La rigidité (lb/in) est la donnée du cordage utilisée par le RCS.";
 
 /** `none` : aucune des cinq notes n'est publiée. `harmonized` : l'une des 18 fiches harmonisées. */
 export function stringRatingNature(string: RatedString): StringRatingNature {
