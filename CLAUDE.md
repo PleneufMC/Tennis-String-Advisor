@@ -7,6 +7,25 @@
 > **Branche de référence** : `main` (seule branche longue ; la production Netlify en déploie)
 > **Repo** : https://github.com/PleneufMC/Tennis-String-Advisor.git
 
+**Changelog (numéro de version à fixer à la fusion)** — **Règle C de jauge de référence, lot 2 des rigidités de
+laboratoire (C2)** (décisions de Pierre du 10/10/2026 : règle C, « aucune correction qui baisse une alerte pour
+l'instant », lot 2 approuvé ; `tsa-core`). **Règle C** : la rigidité d'une fiche = la mesure TWU de la jauge la plus
+rigide mesurée parmi ses jauges (seule règle sans baisse d'alerte, sur-alerte assumée sur les jauges fines), en
+attendant la règle D (rigidité par jauge). **16 fiches** : Black Code 210 → 249,7, Pro Red Code 225 → 232, Hawk
+215 → 230,3, Gamma Moto 205 → 226,9, Black Code 4S 209,2 → 242,9, Razor Code 220 → 242,9 (ni les configurations
+enregistrées sous « 4S », 222, ni sous « ATP Razor Code », 202, ne perdent une alerte) ; lot 2 : Völkl Power Fiber II
+152 → 158,9, ALU Power Vibe 200 → 208, Element Rough 188 → 198,3, Eco Spin 213 → 213,2, Solstice Power 200 → 209,2,
+NRG2 148 → 164, NXT 152 → 173,7, Xcel Power 140 → 162,3, Origin 155 → 171,5, XR3 158 → 162,9. **Effet** (grille du
+contrôle 5, 138 546 combinaisons, contre `main`) : alerte bras avancée standard 5,24 → 5,77 %, sensible 19,76 →
+21,23 % ; 2 774 alertes apparues, **0 disparue**. Aucune note /10, formule ni seuil modifié. Génération non
+vérifiable (aucune fiche TW) pour Xcel Power, probablement ancien, Origin et XR3. **Non appliqué, GO de Pierre
+requis** : 54 fiches mesurées dont la valeur C serait inférieure à l'actuelle (liste dans la PR), 25 autres hausses
+hors lot. Contrôle 13 ter étendu (règle C, plancher des anciens identifiants, jauge nominale, matière,
+15 tests négatifs), extrait versionné `data/reference/twu-lignes-citees.json` (la copie du 08/08 n'a aucun
+multifilament), outil `c2-effet-alertes.mts --base=<commit>`. ⚠️ Chiffres d'articles à reprendre par
+`tsa-redacteur` (liste dans la PR) : « polyester et tennis elbow » et « cordage et tennis elbow » (FR, EN), cartes
+d'index du blog.
+
 **Changelog v2.3.8 → v2.3.9** — **Images officielles des fabricants**
 (`tsa-core`, décision de Pierre du 10/10/2026, verbatim : « Il n'y a aucune restriction à utiliser
 les images officielles des raquettes. Jamais un fabricant ne s'opposera à la promotion des produits
