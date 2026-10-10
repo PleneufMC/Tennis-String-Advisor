@@ -42,14 +42,24 @@ export const STIFFNESS_SOURCE = {
   /** Copie versionnée n°1 (polyesters, 480 lignes, sans jauge nominale) : les mesures de polyesters y sont retrouvées par le contrôle. */
   versionedCopy: 'data/reference/twu-string-stiffness.json',
   /**
-   * Copie versionnée n°2 : extrait VERBATIM du relevé du 10/10/2026 (toutes matières, jauge nominale) des seules lignes citées
-   * ici. Nécessaire : la copie n°1 ne contient aucun multifilament, et ses lignes sans jauge dans le nom n'ont pas de jauge.
+   * Copie versionnée n°2 (D0, 10/10/2026) : le relevé COMPLET du 29/09/2026, toutes matières, jauge nominale comprise,
+   * 788 enregistrements normalisés (modèle, calibre). Remplace l'extrait de 35 lignes : la copie n°1 ne contient aucun
+   * multifilament ni jauge nominale. Reconstruite HORS LIGNE depuis le relevé brut local (non versionné) par
+   * `scripts/scraper/twu-releve.mts` ; le contrôle 13 ter vérifie nombre, sha256 du brut reconstruit et schéma.
+   * Cet ancrage (date, nombre, sha256) est la référence : changer de relevé se fait ICI, délibérément.
    */
-  citedLines: 'data/reference/twu-lignes-citees.json',
+  fullSurvey: {
+    file: 'data/reference/twu-releve-complet.json',
+    raw: 'scripts/scraper/out/twu-strings.json',
+    retrieved: '2026-09-29',
+    verifiedIdentical: ['2026-10-10'],
+    records: 788,
+    sha256: '01c07ccea468d79ba3445753f788c1ff5ccdd852c5111d946c872f4488be8872',
+  },
   /** Trois relevés concordants pour les lignes de ce fichier. */
   retrievals: [
     { date: '2026-08-08', records: 480, scope: 'polyesters', where: 'data/reference/twu-string-stiffness.json' },
-    { date: '2026-09-29', records: 788, scope: 'tous matériaux', where: 'scripts/scraper/out/twu-strings.json (non versionné)' },
+    { date: '2026-09-29', records: 788, scope: 'tous matériaux', where: 'data/reference/twu-releve-complet.json (copie versionnée, D0) ; brut local scripts/scraper/out/twu-strings.json (non versionné)' },
     { date: '2026-10-10', records: 788, scope: 'tous matériaux', where: 'contrôle, identique octet pour octet au 29/09 (sha256 01c07ccea468d79ba3445753f788c1ff5ccdd852c5111d946c872f4488be8872)' },
   ],
 } as const;
