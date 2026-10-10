@@ -68,7 +68,12 @@ const RACQUET_RULES_JUNIOR = {
   headSize: { min: 78, max: 110, label: 'tamis junior (sq in)' },
   stiffness: { min: 50, max: 75, label: 'RA' },
   length: { min: 19, max: 27, label: 'longueur junior (pouces)' },
-  balance: { min: 260, max: 400, label: 'équilibre junior (mm)' },
+  // Borne basse 220 mm (260 avant le 10/10/2026). Un équilibre neutre est à L/2 : 241 mm pour une 19 po (482,6 mm),
+  // 267 mm pour une 21 po ; une raquette tête légère descend en dessous. 260 écartait l'US Open Jr 21, dont l'équilibre
+  // officiel est 258 mm (« Unstrung Balance Cm 25.8 », wilson.com, L0, fait V75 de la veille du 10/10/2026 : 0,484 de la
+  // longueur). 220 = 19 po x 0,459, le plus bas rapport équilibre/longueur du catalogue (adultes ; juniors : 0,472).
+  // Borne volontairement indépendante de la longueur : un contrôle par rapport serait plus serré, hors de ce correctif.
+  balance: { min: 220, max: 400, label: 'équilibre junior (mm)' },
   swingWeight: { min: 180, max: 360, label: 'swingweight junior' },
 };
 const isJunior = (r) =>
