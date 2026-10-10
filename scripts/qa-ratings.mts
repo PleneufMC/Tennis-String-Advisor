@@ -1289,6 +1289,114 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
 }
 
 // ---------------------------------------------------------------------------
+// 14 bis. FICHES ALIGNÉES SUR LE PRODUIT EN VENTE (veille du 10/10/2026)
+// ---------------------------------------------------------------------------
+// La provenance consigne, par fiche alignée, l'avant/après, les faits du dossier qui l'établissent et ce qui n'a PAS bougé
+// faute de preuve. Échoue si : (a) le catalogue ne porte pas la valeur consignée (« après », ou valeur tenue pour un champ
+// « held ») ou une fiche perd son id public ; (b) un fait cité est absent du dossier copié dans le dépôt, d'un autre niveau,
+// sans la valeur (énoncé, valeur ou extrait) ou, pour un champ changé, de statut « signal » / « introuvable » ; (c) un RA
+// change sans MESURE L1 (Q-1 : TW US et TWE sont du même groupe) ou baisse sans revue `tsa-measure` ; (d) l'édition annoncée
+// n'est pas dans le nom ; (e) une surface du site lit la provenance. Chaque garde est rejouée sur une copie altérée.
+{
+  const before = failures.length;
+  const AP = await import('../src/data/racquet-alignment-provenance');
+  type AProv = Readonly<Record<string, (typeof AP.RACQUET_ALIGNMENT)[string]>>;
+  type Row = { level: string; status: string; text: string };
+  type AItem = { id: string; variant?: string; gauges?: string[] } & Record<string, unknown>;
+  const norm = (x: string) => x.toLowerCase().replace(/[\s ]/g, '').replace(/×/g, 'x');
+  const readRows = (md: string): Map<string, Row> => {
+    const rows = new Map<string, Row>();
+    for (const m of md.matchAll(/^\| (V\d{2,3}) \|(.*)\|\s*$/gm)) {
+      const cells = m[2].replace(/\\\|/g, '\u0001').split('|').map((c) => c.trim());
+      rows.set(m[1], { level: cells[2].split(/[\s(]/)[0], status: cells[cells.length - 1].replace(/\*/g, ''), text: norm([cells[0], cells[1], cells[5]].join(' ')) }); // énoncé, valeur, extrait : ni « Recoupement » ni « Base TSA »
+    }
+    return rows;
+  };
+  const dossierRows = readRows(existsSync(AP.ALIGNMENT_DOSSIER) ? readFileSync(AP.ALIGNMENT_DOSSIER, 'utf8') : '');
+  const checkAlignment = (items: readonly AItem[], prov: AProv, rows: Map<string, Row> = dossierRows): string[] => {
+    const issues: string[] = [];
+    const val = (it: AItem, f: string) => (f === 'gauges' ? it.gauges?.join(',') : it[f]);
+    const facts = (id: string, f: string, list: readonly (readonly [string, string, string])[], applied: boolean) => {
+      if (list.length === 0) issues.push(`${id}.${f} : aucun fait cité`);
+      for (const [v, level, has] of list) {
+        const row = rows.get(v);
+        if (!row) { issues.push(`${id}.${f} : fait ${v} absent du dossier`); continue; }
+        if (row.level !== level) issues.push(`${id}.${f} : ${v} est de niveau ${row.level}, ${level} annoncé`);
+        if (has && !row.text.includes(norm(has))) issues.push(`${id}.${f} : « ${has} » absent de la ligne ${v} du dossier`);
+        if (applied && /signal|introuvable/.test(row.status)) issues.push(`${id}.${f} : appliqué d'après ${v}, statut « ${row.status} »`);
+      }
+    };
+    for (const [id, a] of Object.entries(prov)) {
+      const it = items.find((x) => x.id === id);
+      if (!it) { issues.push(`${id} : fiche absente du catalogue (id public à conserver)`); continue; }
+      for (const [f, c] of Object.entries(a.changes)) {
+        if (val(it, f) !== c.after) issues.push(`${id}.${f} : ${val(it, f)} ≠ ${c.after} consigné`);
+        facts(id, f, c.facts, true);
+        if (f === 'stiffness' && !c.facts.some(([, level]) => level === 'L1')) issues.push(`${id}.stiffness : RA changé sans mesure L1 (Q-1 : un RA que TW US seul établit reste un signal)`);
+        if (f === 'stiffness' && (c.after as number) < (c.before as number) && !a.loweringReview) {
+          issues.push(`${id}.stiffness : baisse de RA ${c.before} -> ${c.after} sans mesure exacte, série non suspecte ni revue tsa-measure`);
+        }
+      }
+      for (const [f, h] of Object.entries(a.held)) {
+        if (val(it, f) !== h.value) issues.push(`${id}.${f} : ${val(it, f)} ≠ ${h.value} tenu faute de preuve (${h.why})`);
+        if (f in a.changes) issues.push(`${id}.${f} : à la fois changé et tenu`);
+        facts(id, f, h.facts, false);
+      }
+      if (a.edition && !String(it.variant).includes(a.edition)) issues.push(`${id} : l'édition « ${a.edition} » n'est pas dans le nom « ${it.variant} »`);
+    }
+    return issues;
+  };
+  // (e) aucune surface du site n'importe la provenance (les commentaires peuvent citer le fichier).
+  const IMPORTS = /from\s*['"][^'"]*racquet-alignment-provenance['"]|RACQUET_ALIGNMENT|STRING_ALIGNMENT|ALIGNMENT_DOSSIER/;
+  const walkAlign = (d: string): string[] =>
+    readdirSync(d).flatMap((n) => (statSync(`${d}/${n}`).isDirectory() ? walkAlign(`${d}/${n}`) : [`${d}/${n}`]));
+  const scanAlign = (files: { path: string; src: string }[]) =>
+    files.filter((f) => f.path !== 'src/data/racquet-alignment-provenance.ts' && IMPORTS.test(f.src)).map((f) => `${f.path} lit la provenance des alignements`);
+  const surfaces = [...walkAlign('src'), ...walkAlign('scripts/catalog'), ...walkAlign('scripts/en-products'), ...walkAlign('public/js')]
+    .filter((f) => /\.(tsx?|m?js)$/.test(f)).map((p) => ({ path: p, src: readFileSync(p, 'utf8') }));
+  const R0 = AP.RACQUET_ALIGNMENT, S0 = AP.STRING_ALIGNMENT;
+  const races = racquetsDatabase as unknown as AItem[], strs = stringsDatabase as unknown as AItem[];
+  [...checkAlignment(races, R0), ...checkAlignment(strs, S0), ...scanAlign(surfaces)].forEach((i) => fail(`fiches alignées : ${i}`));
+  // Tests négatifs : chaque altération doit être détectée.
+  const setItem = (list: readonly AItem[], id: string, patch: Record<string, unknown>) => list.map((x) => (x.id === id ? { ...x, ...patch } : x)) as AItem[];
+  const withFacts = (id: string, part: 'changes' | 'held', key: string, facts: [string, string, string][]): AProv => ({
+    ...R0, [id]: { ...R0[id], [part]: { ...R0[id][part], [key]: { ...(R0[id][part] as Record<string, object>)[key], facts } } } as AProv[string],
+  });
+  const tfight = R0['tecnifibre-tfight-315s'];
+  const negatives: Array<[string, string[], string]> = [
+    ['RA en signal appliqué (EZONE 105 -> 66)', checkAlignment(setItem(races, 'yonex-ezone-105', { stiffness: 66 }), R0), 'yonex-ezone-105.stiffness : 66 ≠ 64'],
+    ['RA non cordé de Babolat saisi (Pure Aero Team -> 70)', checkAlignment(setItem(races, 'babolat-pure-aero-team', { stiffness: 70 }), R0), 'babolat-pure-aero-team.stiffness : 70 ≠ 67'],
+    ['plan ramené à l\'ancienne valeur (T-Fight 315S 18x19)', checkAlignment(setItem(races, 'tecnifibre-tfight-315s', { stringPattern: '18x19' }), R0), 'tecnifibre-tfight-315s.stringPattern : 18x19 ≠ 16x19'],
+    ['poids junior recollé au poids cordé (US Open Jr 21 : 186 g)', checkAlignment(setItem(races, 'wilson-us-open-junior-21', { weight: 186 }), R0), 'wilson-us-open-junior-21.weight : 186 ≠ 171'],
+    ['équilibre du Blade Jr 25 converti sans unité écrite (305)', checkAlignment(setItem(races, 'wilson-blade-junior-25', { balance: 305 }), R0), 'wilson-blade-junior-25.balance : 305 ≠ 320'],
+    ['RA changé sans mesure L1 (Clash 100 Pro : V10 seul)', checkAlignment(races, withFacts('wilson-clash-100-pro-v2', 'changes', 'stiffness', [['V10', 'L2', '57']])), 'RA changé sans mesure L1'],
+    ['baisse de RA sans revue tsa-measure', checkAlignment(races, { ...R0, 'tecnifibre-tfight-315s': { ...tfight, changes: { ...tfight.changes, stiffness: { ...tfight.changes.stiffness!, before: 66 } } } }), 'sans mesure exacte, série non suspecte ni revue tsa-measure'],
+    ['fait inexistant (V999)', checkAlignment(races, withFacts('yonex-ezone-105', 'changes', 'stringPattern', [['V999', 'L0', '16x19']])), 'fait V999 absent du dossier'],
+    ['changement appuyé sur un fait « signal » (plan EZONE 105 cite V04)', checkAlignment(races, withFacts('yonex-ezone-105', 'changes', 'stringPattern', [['V04', 'L2', '66']])), 'statut « signal »'],
+    ['niveau erroné (V07 annoncé L1)', checkAlignment(races, withFacts('wilson-clash-100-pro-v2', 'changes', 'weight', [['V07', 'L1', '305g']])), 'V07 est de niveau L0, L1 annoncé'],
+    ['valeur absente de la ligne citée (V07 : 310 g)', checkAlignment(races, withFacts('wilson-clash-100-pro-v2', 'changes', 'weight', [['V07', 'L0', '310g']])), 'absent de la ligne V07'],
+    ['édition absente du nom (Pure Aero Team « Team »)', checkAlignment(setItem(races, 'babolat-pure-aero-team', { variant: 'Team' }), R0), 'n\'est pas dans le nom'],
+    ['id public perdu (Clash 100 Pro)', checkAlignment(races.filter((x) => x.id !== 'wilson-clash-100-pro-v2'), R0), 'fiche absente du catalogue'],
+    ['dossier absent du dépôt', checkAlignment(races, R0, new Map()), 'absent du dossier'],
+    ['1.30 retirée de la Poly Tour Strike', checkAlignment(setItem(strs, 'yonex-poly-tour-strike', { gauges: ['1.20', '1.25'] }), S0), 'yonex-poly-tour-strike.gauges'],
+    ['1.35 réintroduite sur la RPM Team', checkAlignment(setItem(strs, 'babolat-rpm-team', { gauges: ['1.25', '1.30', '1.35'] }), S0), 'babolat-rpm-team.gauges'],
+    ['surface qui importe la provenance', scanAlign([{ path: 'src/app/x.tsx', src: "import { RACQUET_ALIGNMENT } from '@/data/racquet-alignment-provenance';" }]), 'src/app/x.tsx'],
+  ];
+  for (const [name, found, needle] of negatives) {
+    if (!found.some((i) => i.includes(needle))) fail(`fiches alignées : garde-fou muet sur « ${name} » (${needle})`);
+  }
+  if (failures.length === before) {
+    const nR = Object.keys(R0).length;
+    const changed = Object.values(R0).filter((a) => Object.keys(a.changes).length > 0).length;
+    const nFacts = [...Object.values(R0), ...Object.values(S0)].reduce(
+      (n, a) => n + Object.values(a.changes).reduce((m, c) => m + c.facts.length, 0) + Object.values(a.held).reduce((m, h) => m + h.facts.length, 0), 0);
+    const nRa = Object.values(R0).filter((a) => a.changes.stiffness).length;
+    ok(`fiches alignées : ${nR} raquettes en provenance (${changed} modifiées, ${nR - changed} tenues faute de preuve), ${Object.keys(S0).length} cordages (jauges, coloris), ` +
+      `${nFacts} faits retrouvés dans le dossier (niveau, valeur, statut), ${nRa} RA changés tous sur mesure L1, aucune baisse de RA, aucune surface ne lit la provenance, ${negatives.length} tests négatifs détectés`);
+  }
+}
+
+// ---------------------------------------------------------------------------
 // 15. SOURCE UNIQUE DU CATALOGUE (C3, 09/10/2026)
 // ---------------------------------------------------------------------------
 // Le TypeScript fait foi ; les pages EN lisent public/data/catalog.json, généré

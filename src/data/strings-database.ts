@@ -489,6 +489,7 @@ export const stringsDatabase: TennisString[] = [
     color: 'Cream'
   },
   {
+    // Coloris aligné le 10/10/2026 (veille V96-V99) : Tecnifibre vend le TGV en noir (1.25/1.30/1.35, jauges de la fiche) et en naturel (1.25 à 1.40) ; aucun rose trouvé. Rigidité NON touchée (chantier D).
     id: 'tecnifibre-tgv',
     brand: 'Tecnifibre',
     model: 'TGV',
@@ -506,7 +507,7 @@ export const stringsDatabase: TennisString[] = [
     recommendedTension: { min: 19, max: 24 },
     price: { europe: 24, usa: 24 },
     description: 'PU400 technology : 400% d\'élasticité. Le plus confortable des multifilaments.',
-    color: 'Pink'
+    color: 'Black'
   },
   {
     id: 'prince-synthetic-gut',
@@ -657,6 +658,7 @@ export const stringsDatabase: TennisString[] = [
 
   // YONEX
   {
+    // 10/10/2026 (veille V106-V113) : jauges 1.20/1.25/1.30 et coloris Iron Gray (= Grey) existent chez Yonex USA (PTGST120/125/130) ; la 1.30 est épuisée au 10/10 mais fabriquée. Rien changé ici ; rigidité = chantier D.
     id: 'yonex-poly-tour-strike',
     brand: 'Yonex',
     model: 'Poly Tour Strike',
@@ -760,11 +762,12 @@ export const stringsDatabase: TennisString[] = [
     color: 'White'
   },
   {
+    // Jauges alignées le 10/10/2026 (veille V102-V105) : le noir (coloris de la fiche) existe en 1.25 et 1.30 ; le naturel ajoute la 1.35. Rigidité NON touchée (chantier D).
     id: 'tecnifibre-multifeel',
     brand: 'Tecnifibre',
     model: 'Multifeel',
     type: 'Multifilament',
-    gauges: ['1.30'],
+    gauges: ['1.25', '1.30'],
     stiffness: 160,
     performance: 8.2,
     control: 7.5,
@@ -1555,11 +1558,12 @@ export const stringsDatabase: TennisString[] = [
     color: 'Yellow'
   },
   {
+    // Jauges et coloris alignés le 10/10/2026 (veille V90-V93) : Babolat FR/US et TW US ne proposent que 1.25 et 1.30, en noir ; 1.35 introuvable (peut exister sur un marché non lu). Rigidité NON touchée (chantier D).
     id: 'babolat-rpm-team',
     brand: 'Babolat',
     model: 'RPM Team',
     type: 'Polyester',
-    gauges: ['1.25', '1.30', '1.35'],
+    gauges: ['1.25', '1.30'],
     stiffness: 225,
     performance: 8.5,
     control: 8.3,
@@ -1571,7 +1575,7 @@ export const stringsDatabase: TennisString[] = [
     recommendedTension: { min: 22, max: 27 },
     price: { europe: 14, usa: 16 },
     description: 'Version plus accessible du RPM Blast avec un bon équilibre entre spin, contrôle et confort.',
-    color: 'Pink'
+    color: 'Black'
   },
   {
     id: 'babolat-rpm-rough',
