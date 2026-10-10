@@ -24,6 +24,7 @@
     "audit:blog-funnel": "node scripts/qa-blog-funnel.mjs",
     "audit:blog-images": "node scripts/qa-blog-images.mjs",
     "audit:string-labels": "node scripts/qa-string-rating-labels.mjs",
+    "audit:comptages": "node scripts/qa-comptages-catalogue.mjs",
     "audit:stripe-webhook": "node scripts/qa-stripe-webhook.mjs",
     "audit:sticky": "node scripts/qa-sticky-sidebars.mjs",
     "scrape:tennis-warehouse": "node scripts/scraper/tennis-warehouse-scraper.js",
