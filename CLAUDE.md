@@ -21,7 +21,7 @@ souple, jauges hors fiche comprises : NXT 1.35, Origin, Black Code 1.32…) : va
 utilisée pour le calcul avant l'arbitrage de Pierre (D4). `catalog.json` : `stiffness_by_gauge` et
 `stiffness_by_gauge_suspect` (`null` si absents). **Aucune valeur affichée, note, formule ni RCS modifié**, et aucune
 surface ne lit la table avant D2/D3 : empreinte identique de la grille de 138 546 combinaisons (RCS, recommandation, alerte
-bras des deux profils), alerte bras avancée inchangée, diff de `src/` strictement additif, `catalog.json` et 308 fiches EN
+bras des deux profils ; `scripts/scraper/c2-empreinte-grille.mts`, rejouable sur tout état), alerte bras avancée inchangée, diff de `src/` strictement additif, `catalog.json` et 308 fiches EN
 identiques à l'octet hors les deux nouvelles clés, 319 pages FR prérendues identiques hors scripts et styles. Coût : environ
 1 kB de JS initial en plus sur quatre routes qui embarquent la base. Contrôle 13 quater (17 tests négatifs), contrôle 15
 étendu. `c2-par-jauge.mts --apercu-d4` estime l'effet d'une adoption future sur l'alerte bras (rien n'est adopté).
