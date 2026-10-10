@@ -896,6 +896,123 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
 }
 
 // ---------------------------------------------------------------------------
+// 13 bis. PROVENANCE DES NOTES /10 DES CORDAGES, CHAMP PAR CHAMP (C4, 10/10/2026)
+// ---------------------------------------------------------------------------
+// src/data/string-ratings-provenance.ts décrit chaque note publiée face aux revues
+// Tennis Warehouse lues le 10/10/2026, sans modifier aucune note. Échoue si :
+// (a) une note publiée n'a pas de provenance, ou une provenance vise une note absente
+//     ou un cordage inconnu ; (b) un code ne se recalcule plus depuis les données (note
+//     retouchée, score TW modifié, « tw » sans reprise systématique) ; (c) une revue est
+//     mal formée ou citée par aucune fiche ; (d) une surface du site lit la provenance
+//     (code de src/ hors données, générateurs EN, catalogue EN, fiches EN). Chaque garde
+//     est rejouée sur une copie altérée : un garde-fou muet fait échouer l'audit.
+{
+  const before = failures.length;
+  const P = await import('../src/data/string-ratings-provenance');
+  type Field = keyof typeof P.FIELD_TO_TW;
+  type Prov = Readonly<Record<string, (typeof P.STRING_RATINGS_PROVENANCE)[string]>>;
+  type Reviews = Readonly<Record<string, (typeof P.TW_REVIEWS)[string]>>;
+  const FIELDS = Object.keys(P.FIELD_TO_TW) as Field[];
+  const HARM = Object.keys(FIELD_TO_CRITERION) as string[];
+  const checkProvenance = (strings: readonly (typeof stringsDatabase)[number][], prov: Prov, reviews: Reviews): string[] => {
+    const issues: string[] = [];
+    const ids = new Set(strings.map((s) => s.id));
+    for (const id of Object.keys(prov)) if (!ids.has(id)) issues.push(`${id} : provenance d'un cordage absent du catalogue`);
+    const cited = new Set<string>();
+    for (const s of strings) {
+      const published = FIELDS.filter((f) => s[f] !== undefined);
+      const e = prov[s.id];
+      if (!e) { if (published.length > 0) issues.push(`${s.id} : ${published.length} note(s) publiée(s) sans provenance`); continue; }
+      for (const f of FIELDS) {
+        if (s[f] === undefined && e.fields[f] !== undefined) issues.push(`${s.id}.${f} : provenance d'une note absente`);
+        if (s[f] !== undefined && e.fields[f] === undefined) issues.push(`${s.id}.${f} : note publiée sans provenance`);
+      }
+      e.reviews.forEach((k) => cited.add(k));
+      const revs = e.reviews.map((k) => reviews[k]);
+      if (revs.some((r) => !r)) { issues.push(`${s.id} : revue inconnue (${e.reviews.join(', ')})`); continue; }
+      if ((e.match === 'aucune-revue') !== (e.reviews.length === 0)) issues.push(`${s.id} : statut ${e.match} et ${e.reviews.length} revue(s)`);
+      const tester = STRING_TESTER_RATINGS[s.id];
+      const comps: Array<[Field, boolean, string | null]> = [];
+      for (const f of published) {
+        const harm = !!tester && HARM.includes(f);
+        const v = harm ? tester.before10[f as HarmonizedField] : s[f];
+        if (v === undefined) { comps.push([f, harm, null]); continue; }
+        const cats = P.FIELD_TO_TW[f];
+        let c: string;
+        if (!cats) c = 'sans-categorie';
+        else if (e.match === 'aucune-revue') c = 'sans-test';
+        else if (e.match === 'non-etabli') c = 'non-etabli';
+        else {
+          const per = revs.flatMap((r) => {
+            const cat = cats.find((k) => r.scores[k] !== undefined);
+            if (!cat || r.scale === null) return [];
+            const tw = r.scale === 100 ? r.scores[cat] / 10 : r.scores[cat];
+            const d = Math.abs(v - tw);
+            return [{ tw, cls: d < 0.05 ? 'identique' : d <= 0.5 + 1e-9 ? 'proche' : 'ecart' }];
+          });
+          const classes = new Set(per.map((p) => p.cls));
+          c = per.length === 0 ? 'sans-test' : classes.has('identique') ? 'identique'
+            : new Set(per.map((p) => p.tw)).size > 1 && classes.size > 1 ? 'non-etabli' : per[0].cls;
+        }
+        comps.push([f, harm, c]);
+      }
+      const systematic = comps.filter(([, , c]) => c === 'identique').length >= P.MIN_IDENTICAL_FOR_TW;
+      for (const [f, harm, c] of comps) {
+        const base = c === null ? null : c === 'identique' && systematic ? 'tw' : `inconnue:${c}`;
+        const expected = base === null ? 'testeurs' : harm ? `harmonisee+${base}` : base;
+        if (e.fields[f] !== expected) issues.push(`${s.id}.${f} : « ${e.fields[f]} » enregistré, « ${expected} » recalculé depuis les données`);
+      }
+    }
+    for (const [k, r] of Object.entries(reviews)) {
+      const vals = Object.values(r.scores);
+      if (!cited.has(k)) issues.push(`revue ${k} citée par aucune fiche`);
+      if (!r.url.startsWith('https://www.tennis-warehouse.com/')) issues.push(`revue ${k} hors de tennis-warehouse.com`);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(r.consultedAt) || (r.reviewDate !== null && !/^\d{4}-\d{2}$/.test(r.reviewDate))) issues.push(`revue ${k} : date mal formée`);
+      if ((r.scale === null) !== (vals.length === 0) || vals.some((v) => !(v >= 0 && v <= (r.scale ?? 0)))) issues.push(`revue ${k} : scores hors échelle ou échelle absente`);
+    }
+    return issues;
+  };
+  // (d) aucune surface du site ne lit la provenance ni ne publie une URL de revue.
+  const MARKER = /string-ratings-provenance|STRING_RATINGS_PROVENANCE|TW_REVIEWS/;
+  const scanDisplay = (files: { path: string; src: string }[]) =>
+    files.filter((f) => f.path !== 'src/data/string-ratings-provenance.ts' && MARKER.test(f.src)).map((f) => `${f.path} lit la provenance des notes`);
+  const walkSrc = (d: string): string[] =>
+    readdirSync(d).flatMap((n) => (statSync(`${d}/${n}`).isDirectory() ? walkSrc(`${d}/${n}`) : [`${d}/${n}`]));
+  const surfaces = [...walkSrc('src'), ...walkSrc('scripts/catalog'), ...walkSrc('scripts/en-products'), ...walkSrc('public/js')]
+    .filter((f) => /\.(tsx?|m?js)$/.test(f)).map((p) => ({ path: p, src: readFileSync(p, 'utf8') }));
+  const issues = [...checkProvenance(stringsDatabase, P.STRING_RATINGS_PROVENANCE, P.TW_REVIEWS), ...scanDisplay(surfaces)];
+  const reviewPaths = Object.values(P.TW_REVIEWS).map((r) => r.url.replace('https://www.tennis-warehouse.com', '').split('?')[0]);
+  const { stringPage } = await import('./en-products/build-en-product-pages.mjs');
+  const enStrings = buildCatalog(racquetsDatabase, stringsDatabase).strings as Array<{ id: string }>;
+  const published = [serializeCatalog(buildCatalog(racquetsDatabase, stringsDatabase)), ...enStrings.map((x) => (stringPage as (s: unknown) => string)(x))].join('\n');
+  for (const p of reviewPaths) if (published.includes(p)) issues.push(`URL de revue TW publiée sur le site (catalogue ou fiche EN) : ${p}`);
+  issues.forEach((i) => fail(`provenance des notes : ${i}`));
+  // Tests négatifs : chaque altération doit être détectée.
+  const triax = stringsDatabase.find((s) => s.id === 'tecnifibre-triax')!;
+  const nudged = stringsDatabase.map((s) => (s === triax ? { ...s, comfort: (s.comfort ?? 0) + 0.1 } : s));
+  const without = { ...P.STRING_RATINGS_PROVENANCE, 'wilson-nxt': { ...P.STRING_RATINGS_PROVENANCE['wilson-nxt'], fields: { ...P.STRING_RATINGS_PROVENANCE['wilson-nxt'].fields, power: undefined } } };
+  const ghost = { ...P.STRING_RATINGS_PROVENANCE, 'solinco-revolution': { ...P.STRING_RATINGS_PROVENANCE['solinco-revolution'], fields: { ...P.STRING_RATINGS_PROVENANCE['solinco-revolution'].fields, versatility: 'inconnue:sans-categorie' as const } } };
+  const promoted = { ...P.STRING_RATINGS_PROVENANCE, 'luxilon-original': { ...P.STRING_RATINGS_PROVENANCE['luxilon-original'], fields: { ...P.STRING_RATINGS_PROVENANCE['luxilon-original'].fields, control: 'tw' as const } } };
+  const negatives: Array<[string, string[], string]> = [
+    ['note reprise de TW retouchée (+0,1)', checkProvenance(nudged, P.STRING_RATINGS_PROVENANCE, P.TW_REVIEWS), 'tecnifibre-triax.comfort'],
+    ['note publiée sans provenance', checkProvenance(stringsDatabase, without, P.TW_REVIEWS), 'wilson-nxt.power'],
+    ["provenance d'une note absente", checkProvenance(stringsDatabase, ghost, P.TW_REVIEWS), 'solinco-revolution.versatility'],
+    ['égalité isolée promue en reprise TW', checkProvenance(stringsDatabase, promoted, P.TW_REVIEWS), 'luxilon-original.control'],
+    ['composant du site lisant la provenance', scanDisplay([{ path: 'src/app/x.tsx', src: "import { STRING_RATINGS_PROVENANCE } from '@/data/string-ratings-provenance';" }]), 'src/app/x.tsx'],
+  ];
+  for (const [name, found, needle] of negatives) {
+    if (!found.some((i) => i.includes(needle))) fail(`provenance des notes : garde-fou muet sur « ${name} » (${needle})`);
+  }
+  if (failures.length === before) {
+    const codes = Object.values(P.STRING_RATINGS_PROVENANCE).flatMap((e) => Object.values(e.fields)) as string[];
+    const n = (re: RegExp) => codes.filter((c) => re.test(c)).length;
+    ok(`provenance des notes : ${Object.keys(P.STRING_RATINGS_PROVENANCE).length} cordages, ${codes.length} notes publiées décrites ` +
+      `(${n(/^tw$/)} reprises TW établies, ${n(/^harmonisee\+/)} harmonisées, ${n(/^testeurs$/)} testeurs seuls, ${n(/^inconnue:/)} de source inconnue), ` +
+      `${Object.keys(P.TW_REVIEWS).length} revues TW, recalcul identique, aucune surface du site ne lit la provenance, ${negatives.length} tests négatifs détectés`);
+  }
+}
+
+// ---------------------------------------------------------------------------
 // 14. RAQUETTES — PROFIL HARMONISÉ AVEC LES AVIS DE TESTEURS (09/10/2026)
 // ---------------------------------------------------------------------------
 // Garde quatre choses : (a) aucun avis n'est appliqué à une fiche dont les specs
