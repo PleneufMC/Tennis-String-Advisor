@@ -1,0 +1,109 @@
+{
+  "règle": "Tout article FR et EN porte une couverture et au moins un visuel dans le corps (Pierre, 10/10/2026 ; docs/redaction/CHARTE.md, section « Images »). Cette liste recense les articles publiés avant la règle et encore sans visuel de corps.",
+  "fonctionnement": "Une exception ne vaut que pour le fichier dont l’empreinte est inscrite : dès que l’article change, audit:blog-images échoue. On ajoute alors un visuel de corps (et on retire la ligne), ou l’on renouvelle l’exception en mettant à jour empreinte, depuis et motif (node scripts/qa-blog-images.mjs --hash <fichier>). Renouveler est un acte visible dans le diff de la PR.",
+  "propriétaire": "tsa-redacteur (résorption) ; le fichier de contrôle appartient à tsa-measure",
+  "articles": [
+    {
+      "fichier": "public/blog/actualite-materiel-tennis-2026-guerre-du-spin.html",
+      "empreinte": "sha256:b106f9e42ae93b2dcf636539df00cf7c0c6d4b7e4664d23feba5781e9511a547",
+      "depuis": "2026-10-10",
+      "motif": "Antérieur à la règle images du 10/10/2026 ; corrigé le 10/10/2026 (PR #102 : valeurs produit alignées sur la base, urgence d'exactitude) — visuel de corps à créer, première mission de l’équipe éditoriale"
+    },
+    {
+      "fichier": "public/blog/challengers-sinner-alcaraz-2026.html",
+      "empreinte": "sha256:86d3e8e61070a87208469123676b4da5abdd052625d56b553fbb04c55b39d57c",
+      "depuis": "2026-10-10",
+      "motif": "Antérieur à la règle images du 10/10/2026 ; corrigé le 10/10/2026 (PR #102 : valeurs produit alignées sur la base, urgence d'exactitude) — visuel de corps à créer, première mission de l’équipe éditoriale"
+    },
+    {
+      "fichier": "public/blog/combien-de-temps-dure-un-cordage.html",
+      "empreinte": "sha256:50c60c8b66cc97ce31504417b4c804c973022fae27f70f02eaa6994121ef89a0",
+      "depuis": "2026-10-10",
+      "motif": "Antérieur à la règle images du 10/10/2026 : couverture conforme, visuel de corps à créer (première mission de l’équipe éditoriale)"
+    },
+    {
+      "fichier": "public/blog/cordage-polyester-tennis-elbow.html",
+      "empreinte": "sha256:705ff3214ac8551f2e3381d57b697267c8deb73ea771a72b37fbc4e93c6d3000",
+      "depuis": "2026-10-10",
+      "motif": "Antérieur à la règle images du 10/10/2026 : couverture conforme, visuel de corps à créer (première mission de l’équipe éditoriale)"
+    },
+    {
+      "fichier": "public/blog/cordage-tennis-elbow.html",
+      "empreinte": "sha256:41f37fc1cd17a78ef21e746402003c43be7e3cddc40ab5cda5c590eebeeae9ef",
+      "depuis": "2026-10-10",
+      "motif": "Antérieur à la règle images du 10/10/2026 : couverture conforme, visuel de corps à créer (première mission de l’équipe éditoriale)"
+    },
+    {
+      "fichier": "public/blog/materiel-next-gen-fonseca-mensik-cobolli-jodar.html",
+      "empreinte": "sha256:6a2af7e5fb30eda1f3679592d6fec2dc82556988cd9045f8c7474aa81d5dfee1",
+      "depuis": "2026-10-10",
+      "motif": "Antérieur à la règle images du 10/10/2026 : couverture conforme, visuel de corps à créer (première mission de l’équipe éditoriale)"
+    },
+    {
+      "fichier": "public/blog/meilleur-cordage-polyester-2026.html",
+      "empreinte": "sha256:775a8ca685be385f9f6a218e5c2f49d7e289f34f9c8fa756624fdbbdc643e9b0",
+      "depuis": "2026-10-10",
+      "motif": "Antérieur à la règle images du 10/10/2026 : couverture conforme, visuel de corps à créer (première mission de l’équipe éditoriale)"
+    },
+    {
+      "fichier": "public/blog/meilleures-raquettes-tennis-2026.html",
+      "empreinte": "sha256:3c9fe2a5da27a19df47daa874900b902ab79d44efb2ba9480b6b50bbaee7735d",
+      "depuis": "2026-10-10",
+      "motif": "Antérieur à la règle images du 10/10/2026 : couverture conforme, visuel de corps à créer (première mission de l’équipe éditoriale)"
+    },
+    {
+      "fichier": "public/blog/tension-cordage-hiver.html",
+      "empreinte": "sha256:bf9abde42109c38868f6fb9e42112bd3e509a19327187449b54ecbfe69f0e1e0",
+      "depuis": "2026-10-10",
+      "motif": "Antérieur à la règle images du 10/10/2026 : couverture conforme, visuel de corps à créer (première mission de l’équipe éditoriale)"
+    },
+    {
+      "fichier": "public/en/blog/best-polyester-tennis-strings-2026.html",
+      "empreinte": "sha256:ff49e2214d2e19256e0bf555b10e07a1dd188ad0f2d3adb2780fad780d1fdca8",
+      "depuis": "2026-10-10",
+      "motif": "Antérieur à la règle images du 10/10/2026 : couverture conforme, visuel de corps à créer (première mission de l’équipe éditoriale)"
+    },
+    {
+      "fichier": "public/en/blog/best-tennis-racquets-2026.html",
+      "empreinte": "sha256:d609d1c4e68443c7fc3015d03e6d4d3a47d7e0ea645f98299f9c6c147753f7e9",
+      "depuis": "2026-10-10",
+      "motif": "Antérieur à la règle images du 10/10/2026 : couverture conforme, visuel de corps à créer (première mission de l’équipe éditoriale)"
+    },
+    {
+      "fichier": "public/en/blog/best-tennis-strings-for-tennis-elbow.html",
+      "empreinte": "sha256:f7e0b09d3348642d5d590ccd92e34d6a5a9b67934af7b5f554764eca9b2382ce",
+      "depuis": "2026-10-10",
+      "motif": "Antérieur à la règle images du 10/10/2026 : couverture conforme, visuel de corps à créer (première mission de l’équipe éditoriale)"
+    },
+    {
+      "fichier": "public/en/blog/challengers-sinner-alcaraz-2026.html",
+      "empreinte": "sha256:8ae070f70a8bfc2db2081e4db5944a48a0d5ebf92bf007924221afaab41b38ba",
+      "depuis": "2026-10-10",
+      "motif": "Antérieur à la règle images du 10/10/2026 ; corrigé le 10/10/2026 (PR #102 : valeurs produit alignées sur la base, urgence d'exactitude) — visuel de corps à créer, première mission de l’équipe éditoriale"
+    },
+    {
+      "fichier": "public/en/blog/how-long-do-tennis-strings-last.html",
+      "empreinte": "sha256:6f3e36b2f2f4a1b7ca1f311bf88487f0bd35e93410e5da3ef8feacde7b0cb547",
+      "depuis": "2026-10-10",
+      "motif": "Antérieur à la règle images du 10/10/2026 : couverture conforme, visuel de corps à créer (première mission de l’équipe éditoriale)"
+    },
+    {
+      "fichier": "public/en/blog/next-gen-tennis-racquets-fonseca-mensik-cobolli-jodar.html",
+      "empreinte": "sha256:f7982b9524dd12292fb9c418b73dc91c84cb27a848b886ff2d7159d2998c7c30",
+      "depuis": "2026-10-10",
+      "motif": "Antérieur à la règle images du 10/10/2026 : couverture conforme, visuel de corps à créer (première mission de l’équipe éditoriale)"
+    },
+    {
+      "fichier": "public/en/blog/polyester-strings-tennis-elbow.html",
+      "empreinte": "sha256:1f8cc22bdf68de5e4391291f67e9bc053d86d1f51c7a2d15b5de8bd2ae17c974",
+      "depuis": "2026-10-10",
+      "motif": "Antérieur à la règle images du 10/10/2026 : couverture conforme, visuel de corps à créer (première mission de l’équipe éditoriale)"
+    },
+    {
+      "fichier": "public/en/blog/tennis-string-tension-cold-weather.html",
+      "empreinte": "sha256:d8337b2cafc44b8d5d790bef2afcb63aed59fbfea81606d14877dd82d7a0d54f",
+      "depuis": "2026-10-10",
+      "motif": "Antérieur à la règle images du 10/10/2026 : couverture conforme, visuel de corps à créer (première mission de l’équipe éditoriale)"
+    }
+  ]
+}

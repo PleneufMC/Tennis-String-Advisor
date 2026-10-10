@@ -50,21 +50,26 @@ import { calculateAdvancedRcs, stringTypeToFamily } from '../src/lib/advanced-rc
 import {
   DEFAULT_RACQUET_RA,
   RA_RANGE,
+  ADULT_WEIGHT_RANGE,
+  JUNIOR_WEIGHT_RANGE,
+  STRING_COUNT_RANGE,
   effectiveRacquetRA,
   deriveRacquetProfile,
-  racquetProfile,
+  racquetsForComparison,
+  racquetTesterSynthesis,
+  formatScore20,
   rankRacquetsByTesterAverage,
-  PROFILE_LABEL_SPECS,
-  PROFILE_LABEL_BLENDED,
+  stringCount,
+  linearScore,
+  TESTER_SYNTHESIS_LABEL,
+  PROFILE_BASIS_PREFIX,
 } from '../src/lib/racquet-scoring';
 import {
   RACQUET_TESTER_RATINGS,
   RACQUET_TESTER_QUARANTINE,
   RACQUET_TESTER_SOURCE,
   RACQUET_AXIS_TO_CRITERION,
-  RACQUET_ANCHOR_SHIFT,
-  recalibratedTesterNote,
-  type RacquetProfileAxis,
+  RACQUET_DISPLAYED_CRITERIA,
   type RacquetTesterCriterion,
 } from '../src/data/racquet-tester-ratings';
 
@@ -1013,16 +1018,15 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
 }
 
 // ---------------------------------------------------------------------------
-// 14. RAQUETTES — PROFIL HARMONISÉ AVEC LES AVIS DE TESTEURS (09/10/2026)
+// 14. RAQUETTES — AVIS DE TESTEURS (09/10/2026 ; affiché seul depuis le 10/10/2026)
 // ---------------------------------------------------------------------------
-// Garde quatre choses : (a) aucun avis n'est appliqué à une fiche dont les specs
-// ne correspondent pas à la génération testée ; (b) chaque note affichée se
-// recalcule depuis sa provenance ; (c) une raquette sans avis garde EXACTEMENT
-// le profil dérivé et son libellé ; (d) aucune surface n'affiche un profil
-// combiné sous le libellé « dérivé des specs » (règle 3).
+// Garde trois choses : (a) aucun avis n'est appliqué à une fiche dont les specs
+// ne correspondent pas à la génération testée ; (b) l'avis affiché est la
+// synthèse TELLE QUELLE (moyenne et cinq critères /20, ni recalage ni moyenne
+// avec un profil déduit — décision de Pierre du 10/10/2026) ; (c) une raquette
+// sans avis n'en reçoit aucun. Les surfaces relèvent du contrôle 16.
 {
   const before = failures.length;
-  const axes = Object.keys(RACQUET_AXIS_TO_CRITERION) as RacquetProfileAxis[];
   const crit = Object.keys(RACQUET_TESTER_SOURCE.criteria) as RacquetTesterCriterion[];
   const entries = Object.entries(RACQUET_TESTER_RATINGS);
   const quarantined = Object.keys(RACQUET_TESTER_QUARANTINE).length;
@@ -1047,51 +1051,22 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
     if (r.stiffness === null || Math.abs(r.stiffness - sc.ra) > 1) {
       fail(`raquettes testeurs : ${id} RA catalogue ${r.stiffness} hors de ±1 du RA publié ${sc.ra} — génération non établie`);
     }
-    // (b) recalcul à l'identique et échelle.
-    const d = deriveRacquetProfile(r);
-    const p = racquetProfile(r);
-    if (!p.withTesters || p.label !== PROFILE_LABEL_BLENDED) fail(`raquettes testeurs : ${id} n'est pas affiché comme profil combiné`);
-    for (const a of axes) {
-      const expected = Math.round(Math.min(10, Math.max(0, (d[a] + recalibratedTesterNote(e, a)) / 2)) * 10 + 1e-9) / 10;
-      if (p[a] !== expected) fail(`raquettes testeurs : ${id}.${a} = ${p[a]}, ${expected} attendu par la provenance`);
-      if (!(p[a] >= 0 && p[a] <= 10)) fail(`raquettes testeurs : ${id}.${a} = ${p[a]} hors de [0, 10]`);
+    // (b) avis affiché = synthèse telle quelle.
+    const t = racquetTesterSynthesis(r);
+    if (!t || t.label !== TESTER_SYNTHESIS_LABEL || t.average20 !== e.docxAverage20) {
+      fail(`raquettes testeurs : ${id} — avis affiché ≠ synthèse (moyenne ${t?.average20} pour ${e.docxAverage20})`);
+    } else if (t.criteria.map((c) => c.key).join() !== RACQUET_DISPLAYED_CRITERIA.join() || t.criteria.some((c) => c.value20 !== e.raw20[c.key])) {
+      fail(`raquettes testeurs : ${id} — critères affichés transformés ou dans le désordre (attendu ${RACQUET_DISPLAYED_CRITERIA.join('/')} tels quels)`);
     }
   }
   for (const name of Object.keys(RACQUET_TESTER_QUARANTINE)) {
     if (entries.some(([, e]) => e.docxName === name)) fail(`raquettes testeurs : « ${name} » à la fois appliquée et en quarantaine`);
   }
-  // Décalages d'ancrage = mesure sur les raquettes rapprochées.
-  for (const a of axes) {
-    const shift = entries.reduce((acc, [id, e]) => {
-      const r = racquetsDatabase.find((x) => x.id === id)!;
-      return acc + deriveRacquetProfile(r)[a] - e.raw20[RACQUET_AXIS_TO_CRITERION[a]] / 2;
-    }, 0) / entries.length;
-    if (Math.abs(Math.round(shift * 10 + 1e-9) / 10 - RACQUET_ANCHOR_SHIFT[a]) > 1e-9) {
-      fail(`raquettes testeurs : décalage d'ancrage ${a} = ${RACQUET_ANCHOR_SHIFT[a]}, ${shift.toFixed(3)} mesuré`);
-    }
-  }
-  // (c) sans avis : profil dérivé intact.
-  let untouched = 0;
+  // (c) sans avis : aucune note (ni avis, ni profil de substitution).
+  let withoutReview = 0;
   for (const r of racquetsDatabase.filter((x) => !RACQUET_TESTER_RATINGS[x.id])) {
-    const d = deriveRacquetProfile(r);
-    const p = racquetProfile(r);
-    if (p.withTesters || p.label !== PROFILE_LABEL_SPECS || p.basis !== d.basis || axes.some((a) => p[a] !== d[a])) {
-      fail(`raquettes testeurs : ${r.id} sans avis mais profil affiché ≠ profil dérivé`);
-    } else untouched++;
-  }
-  if (racquetsDatabase.some((r) => !deriveRacquetProfile(r).basis.startsWith('Dérivé des specs'))) {
-    fail('deriveRacquetProfile ne doit contenir que des specs : son libellé « Dérivé des specs » doit rester vrai');
-  }
-  // (d) surfaces d'affichage : profil via racquetProfile, libellé non codé en dur.
-  for (const file of ['src/app/configurator/page.tsx', 'src/app/compare/page.tsx', 'src/lib/pdf-configuration-data.ts']) {
-    const src = readFileSync(file, 'utf8');
-    if (/deriveRacquetProfile\s*\(/.test(src)) fail(`${file} : affiche deriveRacquetProfile() au lieu de racquetProfile() — libellé faux pour les raquettes à avis`);
-  }
-  if (/Profil derive des specs/i.test(readFileSync('src/app/configurator/page.tsx', 'utf8'))) {
-    fail('configurator/page.tsx : libellé « Profil derive des specs » codé en dur');
-  }
-  if (/derive des specifications/i.test(readFileSync('src/lib/pdf-export.ts', 'utf8'))) {
-    fail('pdf-export.ts : titre « derive des specifications » codé en dur');
+    if (racquetTesterSynthesis(r) !== null) fail(`raquettes testeurs : ${r.id} sans avis mais reçoit un avis`);
+    else withoutReview++;
   }
   // Classement Top raquettes : uniquement les fiches à avis, ordre décroissant.
   const ranked = rankRacquetsByTesterAverage(racquetsDatabase);
@@ -1115,8 +1090,8 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
     if (!RACQUET_TESTER_RATINGS[id]) fail(`génération alignée : ${id} non rapproché`);
   }
   if (failures.length === before) {
-    ok(`raquettes testeurs : ${entries.length} fiches harmonisées (génération vérifiée, dont ${Object.keys(ALIGNED).length} alignées sur la dernière génération), ${quarantined} en quarantaine, ` +
-      `${entries.length * axes.length} notes recalculées à l'identique, ${untouched} profils dérivés intacts, libellés justes`);
+    ok(`raquettes testeurs : ${entries.length} fiches rapprochées (génération vérifiée, dont ${Object.keys(ALIGNED).length} alignées sur la dernière génération), ${quarantined} en quarantaine, ` +
+      `avis affiché = synthèse telle quelle (${entries.length} moyennes + ${entries.length * RACQUET_DISPLAYED_CRITERIA.length} critères /20), ${withoutReview} raquettes sans avis -> aucune note`);
   }
 }
 
@@ -1173,6 +1148,227 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
   if (failures.length === before) {
     ok(`source unique : ${scanned} fichiers public/ sans lecture Supabase du catalogue, catalog.json ${state} ` +
       `(${cat.racquets.length} raquettes / ${cat.strings.length} cordages, ${nullR} RA null, ${nullS} notes null), non versionné, généré en prebuild, aucune chaîne citée`);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 16. AUCUNE NOTE DE RAQUETTE DÉDUITE DES CARACTÉRISTIQUES N'EST AFFICHÉE
+//     (décision de Pierre du 10/10/2026)
+// ---------------------------------------------------------------------------
+// Historique : `/compare` mettait côte à côte le profil combiné (specs +
+// testeurs) des raquettes évaluées et le profil dérivé des autres, sans
+// étiquette (Gravity MP « gagnait » 4 axes sur 5 contre la Gravity Tour) ; le
+// configurateur et le PDF Premium affichaient l'un ou l'autre selon la raquette.
+// Règle, FR, EN et PDF : l'avis des testeurs SEUL pour une raquette évaluée,
+// les caractéristiques seules sinon ; même moyenne /20 partout.
+// Garde : (a) aucun fichier de src/ n'importe de `racquet-scoring` autre chose
+// que la liste blanche (ni `deriveRacquetProfile`, ni un futur profil) ; (b)
+// aucun libellé de profil de raquette dans src/, public/ ni les fiches EN
+// générées ; (c) en exécution, comparateur et PDF ne portent que les
+// caractéristiques et l'avis tel quel ; (d) tests négatifs permanents.
+{
+  const before = failures.length;
+  const SCORING = 'src/lib/racquet-scoring.ts';
+  const ALLOWED = new Set([
+    'effectiveRacquetRA', 'isRacquetStiffnessEstimated', 'DEFAULT_RACQUET_RA', 'RA_RANGE',
+    'racquetsForComparison', 'racquetTesterSynthesis', 'formatScore20', 'TESTER_SYNTHESIS_LABEL',
+    'rankRacquetsByTesterAverage', 'ComparableRacquet', 'RacquetTesterSynthesis', 'RankedRacquet',
+  ]);
+  const SRC_LABELS = /Profil (de jeu|déduit|dérivé|derive|combiné|combine)\b|d[ée]riv[ée]e? des (sp[ée]cifications|specs)|DERIVE de ses specifications/i;
+  const PUBLIC_LABELS = /Profil (déduit|dérivé|combiné)\b|d[ée]riv[ée]e? des (sp[ée]cifications|specs)\b|derived (racquet )?profile|profile derived|derived from (the )?spec/i;
+  const stripComments = (raw: string) => raw.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
+  // (a)+(b) détecteur src/, réutilisé par les tests négatifs.
+  const srcFindings = (file: string, raw: string): string[] => {
+    if (file === SCORING) return [];
+    const code = stripComments(raw);
+    const found: string[] = [];
+    for (const m of code.matchAll(/import\s+(type\s+)?([^;]*?)\s+from\s*['"][^'"]*racquet-scoring['"]/g)) {
+      const clause = m[2].trim();
+      const named = /^\{([\s\S]*)\}$/.exec(clause);
+      if (!named) { found.push(`${file} : import global de racquet-scoring (${clause}) — importer nommément`); continue; }
+      for (const raw of named[1].split(',')) {
+        const name = raw.replace(/^\s*type\s+/, '').split(/\s+as\s+/)[0].trim();
+        if (name && !ALLOWED.has(name)) found.push(`${file} : importe « ${name} » de racquet-scoring (hors liste blanche : aucune note déduite ne s'affiche)`);
+      }
+    }
+    if (/import\(\s*['"][^'"]*racquet-scoring['"]\s*\)/.test(code)) found.push(`${file} : import dynamique de racquet-scoring`);
+    if (/\bderiveRacquetProfile\b/.test(code)) found.push(`${file} : référence deriveRacquetProfile`);
+    const label = SRC_LABELS.exec(code);
+    if (label) found.push(`${file} : libellé de profil de raquette « ${label[0]} »`);
+    return found;
+  };
+  const publicFindings = (file: string, html: string): string[] => {
+    const m = PUBLIC_LABELS.exec(html);
+    return m ? [`${file} : libellé de profil de raquette « ${m[0]} »`] : [];
+  };
+  const walk = (d: string): string[] =>
+    readdirSync(d).flatMap((n) => (statSync(`${d}/${n}`).isDirectory() ? walk(`${d}/${n}`) : [`${d}/${n}`]));
+  const srcFiles = walk('src').filter((f) => /\.(tsx?|mts)$/.test(f));
+  for (const f of srcFiles) for (const msg of srcFindings(f, readFileSync(f, 'utf8'))) fail(`notes déduites : ${msg}`);
+  const publicFiles = walk('public').filter((f) => /\.(html?|m?js)$/.test(f));
+  for (const f of publicFiles) for (const msg of publicFindings(f, readFileSync(f, 'utf8'))) fail(`notes déduites : ${msg}`);
+  // Fiches EN générées au build (rendues en mémoire, générateur non modifié).
+  const { racquetPage } = await import('./en-products/build-en-product-pages.mjs');
+  const { racquets: enRacquets } = buildCatalog(racquetsDatabase, stringsDatabase);
+  for (const item of enRacquets as Array<{ id: string }>) {
+    for (const msg of publicFindings(`fiche EN ${item.id}`, (racquetPage as (x: unknown, i: unknown) => string)(item, {}))) fail(`notes déduites : ${msg}`);
+  }
+  // Comparateur : passe par racquetsForComparison, avis à part, plus de profil.
+  const cmp = readFileSync('src/app/compare/page.tsx', 'utf8');
+  if (!/racquetsForComparison\s*\(/.test(cmp) || !/non évaluée/.test(cmp)) fail('notes déduites : /compare n’affiche pas l’avis de testeurs à part (« non évaluée » si absent)');
+
+  // (c) exécution : comparateur, configurateur (même fonction) et PDF.
+  const rows = racquetsForComparison(racquetsDatabase);
+  for (const row of rows) {
+    const keys = Object.keys(row).sort().join();
+    if (keys !== 'racquet,testerAverage20') fail(`notes déduites : ligne de comparaison ${row.racquet.id} porte « ${keys} »`);
+    const e = RACQUET_TESTER_RATINGS[row.racquet.id];
+    if (e ? row.testerAverage20 !== e.docxAverage20 : row.testerAverage20 !== null) fail(`notes déduites : moyenne comparée de ${row.racquet.id} = ${row.testerAverage20}`);
+  }
+  const { buildConfigurationPdfData } = await import('../src/lib/pdf-configuration-data');
+  const SPEC_KEYS = new Set(['label', 'brand', 'weight', 'headSize', 'ra', 'raEstimated', 'stringPattern', 'category', 'balance', 'swingWeight', 'playerLevel']);
+  const pdfFindings = (id: string, block: Record<string, unknown> | undefined): string[] => {
+    if (!block) return [`PDF ${id} : bloc raquette absent`];
+    const found: string[] = [];
+    for (const k of Object.keys(block)) if (!SPEC_KEYS.has(k) && k !== 'testers') found.push(`PDF ${id} : champ « ${k} » hors caractéristiques et avis`);
+    const e = RACQUET_TESTER_RATINGS[id];
+    const t = block.testers as { label: string; average20: number; average20Text: string; criteria: Array<{ label: string; value20: number }> } | undefined;
+    if (!e) { if (t) found.push(`PDF ${id} : avis de testeurs sur une raquette non évaluée`); return found; }
+    if (!t) return [...found, `PDF ${id} : avis de testeurs absent`];
+    if (t.label !== TESTER_SYNTHESIS_LABEL || t.average20 !== e.docxAverage20 || t.average20Text !== formatScore20(e.docxAverage20)) found.push(`PDF ${id} : moyenne ${t.average20Text} ≠ ${formatScore20(e.docxAverage20)}`);
+    if (t.criteria.map((c) => c.value20).join() !== RACQUET_DISPLAYED_CRITERIA.map((c) => e.raw20[c]).join()) found.push(`PDF ${id} : critères transformés`);
+    return found;
+  };
+  let pdfChecked = 0;
+  for (const r of racquetsDatabase) {
+    const data = buildConfigurationPdfData({
+      name: 'audit', racquetId: r.id, mainStringId: stringsDatabase[0].id, crossStringId: null,
+      mainGauge: '1.25', crossGauge: '1.25', mainTension: 23, crossTension: 23, rating: 0, notes: null,
+      rcsScore: 0, compatibility: 0, createdAt: '2026-10-10T00:00:00.000Z',
+    });
+    for (const msg of pdfFindings(r.id, data.racquet as Record<string, unknown> | undefined)) fail(`notes déduites : ${msg}`);
+    pdfChecked++;
+  }
+  // Même moyenne /20 partout : /statistics formate comme formatScore20.
+  if (!/toLocaleString\('fr-FR', \{ minimumFractionDigits: 1, maximumFractionDigits: 2 \}\)/.test(readFileSync('src/app/statistics/page.tsx', 'utf8'))) {
+    fail('notes déduites : /statistics ne formate plus la moyenne /20 comme formatScore20 (même valeur partout)');
+  }
+
+  // (d) tests négatifs permanents : chaque forme de retour doit être rejetée.
+  const planted: Array<[string, string[]]> = [
+    ['import deriveRacquetProfile', srcFindings('src/app/top/page.tsx', "import { deriveRacquetProfile } from '@/lib/racquet-scoring';")],
+    ['profil hors liste blanche', srcFindings('src/app/top/page.tsx', "import { racquetProfile } from '../lib/racquet-scoring';")],
+    ['import global', srcFindings('src/app/top/page.tsx', "import * as S from '@/lib/racquet-scoring';")],
+    ['libellé src', srcFindings('src/app/top/page.tsx', '<p>Profil déduit des caractéristiques</p>')],
+    ['libellé EN', publicFindings('public/en/top.html', '<td>Derived profile</td>')],
+    ['champ PDF', pdfFindings('head-gravity-mp', { label: 'x', weight: 295, profile: { power: 3.3 } })],
+    ['PDF recalé', pdfFindings('head-gravity-tour', { label: 'x', testers: { label: TESTER_SYNTHESIS_LABEL, average20: 13.6, average20Text: '13,6', criteria: [5, 7.5, 9, 7.5, 5.5].map((v) => ({ label: 'x', value20: v })) } })],
+  ];
+  for (const [name, hits] of planted) if (hits.length === 0) fail(`notes déduites : test négatif « ${name} » non détecté`);
+
+  if (failures.length === before) {
+    ok(`notes déduites : aucune sur les surfaces — ${srcFiles.length} fichiers src/ (liste blanche d'imports, aucun libellé), ${publicFiles.length} fichiers public/ et ${enRacquets.length} fiches EN sans libellé, ` +
+      `comparateur sur ${rows.length} raquettes (caractéristiques + moyenne /20 à part), PDF de ${pdfChecked} raquettes (avis tel quel pour ${Object.keys(RACQUET_TESTER_RATINGS).length}, caractéristiques seules sinon), ` +
+      `${planted.length} tests négatifs rejetés`);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 17. FORMULE DU PROFIL DÉDUIT DES CARACTÉRISTIQUES (révision du 10/10/2026)
+// ---------------------------------------------------------------------------
+// Ce qui a été corrigé, et que ce bloc empêche de revenir :
+//   - le RA entrait dans le CONTRÔLE (souple = contrôle) : la Gravity MP (RA 57)
+//     passait devant la Gravity Tour (RA 59, tamis 98, +10 g) ; il est neutre ;
+//   - la règle de plan pénalisait le 16x19 et laissait 16x17 / 18x16 neutres :
+//     un plan plus ouvert était mieux noté qu'un plus dense ;
+//   - l'échelle de poids saturait (320 g = 10/10) et valait 0,25 pt/g au-dessus
+//     de 300 g contre 0,067 au-dessous ;
+//   - le poids n'entrait pas dans le contrôle.
+// Les accords avec les avis de testeurs sont IMPRIMÉS (information), pas exigés :
+// le but est un sens physique correct, pas de coller aux 18 raquettes évaluées.
+// ⚠️ Depuis la décision de Pierre du 10/10/2026, ce profil n'est plus affiché
+// (contrôle 16) ; ce bloc garde la formule tant qu'elle est conservée.
+{
+  const before = failures.length;
+  const axes = ['power', 'control', 'comfort', 'maneuverability', 'stability'] as const;
+  const isJunior = (r: (typeof racquetsDatabase)[number]) => {
+    const len = (r as { length?: number }).length;
+    return typeof len === 'number' && len > 0 ? len < 27 : r.category === 'Junior';
+  };
+  // (a) bornes des échelles = bornes réelles du catalogue (sinon saturation ou trou).
+  const bounds = (v: number[]) => { const s = [...v].sort((a, b) => a - b); return { min: s[0], median: s[Math.floor(s.length / 2)], max: s[s.length - 1] }; };
+  const same = (a: { min: number; median: number; max: number }, b: typeof a) => a.min === b.min && a.median === b.median && a.max === b.max;
+  const adult = bounds(racquetsDatabase.filter((r) => !isJunior(r)).map((r) => r.weight));
+  const junior = bounds(racquetsDatabase.filter(isJunior).map((r) => r.weight));
+  const counts = racquetsDatabase.map((r) => stringCount(r.stringPattern));
+  if (!same(ADULT_WEIGHT_RANGE, adult)) fail(`formule : ADULT_WEIGHT_RANGE ${JSON.stringify(ADULT_WEIGHT_RANGE)} ≠ catalogue ${JSON.stringify(adult)}`);
+  if (!same(JUNIOR_WEIGHT_RANGE, junior)) fail(`formule : JUNIOR_WEIGHT_RANGE ${JSON.stringify(JUNIOR_WEIGHT_RANGE)} ≠ catalogue ${JSON.stringify(junior)}`);
+  const unreadable = racquetsDatabase.filter((_, i) => counts[i] === null);
+  for (const r of unreadable) fail(`formule : plan « ${r.stringPattern} » illisible pour ${r.id} (la note de plan serait neutre par défaut)`);
+  if (unreadable.length === 0 && !same(STRING_COUNT_RANGE, bounds(counts as number[]))) {
+    fail(`formule : STRING_COUNT_RANGE ${JSON.stringify(STRING_COUNT_RANGE)} ≠ catalogue ${JSON.stringify(bounds(counts as number[]))}`);
+  }
+  // (b) masse linéaire et sans saturation : deux poids adultes différents ne
+  //     partagent jamais la même stabilité, et 5 g valent autant sous et sur 300 g.
+  const base = racquetsDatabase.find((r) => r.id === 'babolat-pure-drive-standard')!;
+  const at = (patch: Partial<typeof base>) => deriveRacquetProfile({ ...base, ...patch });
+  const byWeight = new Map<number, number>();
+  for (const r of racquetsDatabase.filter((x) => !isJunior(x))) byWeight.set(r.weight, deriveRacquetProfile(r).stability);
+  const ws = [...byWeight.keys()].sort((a, b) => a - b);
+  if (ws.some((w, i) => i > 0 && !(byWeight.get(w)! > byWeight.get(ws[i - 1])!))) fail('formule : la stabilité sature ou n’est pas strictement croissante sur la plage adulte');
+  const below = at({ weight: 300 }).stability - at({ weight: 295 }).stability;
+  const above = at({ weight: 305 }).stability - at({ weight: 300 }).stability;
+  if (Math.abs(below - above) > 0.11) fail(`formule : 5 g valent ${below.toFixed(2)} sous 300 g et ${above.toFixed(2)} au-dessus — échelle de poids coudée`);
+  // (c) contrôle : sens physique de chaque facteur, RA neutre.
+  const c = (patch: Partial<typeof base>) => at(patch).control;
+  if (!(c({ headSize: 98 }) > c({ headSize: 100 }))) fail('formule : un tamis plus petit ne donne pas plus de contrôle');
+  if (!(c({ stringPattern: '18x20' }) > c({ stringPattern: '16x19' }))) fail('formule : un plan plus dense ne donne pas plus de contrôle');
+  if (!(c({ stringPattern: '16x19' }) > c({ stringPattern: '16x17' })) || !(c({ stringPattern: '16x19' }) > c({ stringPattern: '18x16' }))) {
+    fail('formule : un plan plus ouvert (16x17, 18x16) est noté au moins aussi bien qu’un 16x19 en contrôle');
+  }
+  if (!(c({ weight: 310 }) > c({ weight: 300 }))) fail('formule : la masse n’entre pas dans le contrôle');
+  if (c({ stiffness: 57 }) !== c({ stiffness: 72 })) fail('formule : le RA modifie le contrôle (« souple = contrôle » compté deux fois avec la puissance)');
+  if (!(at({ stiffness: 72 }).power > at({ stiffness: 57 }).power) || !(at({ stiffness: 57 }).comfort > at({ stiffness: 72 }).comfort)) {
+    fail('formule : le RA ne joue plus son rôle en puissance (rigide = puissant) ou en confort (rigide = moins confortable)');
+  }
+  // (d) paires de contrôle documentées (une seule spec ou un sens physique non ambigu).
+  const g = (id: string) => deriveRacquetProfile(racquetsDatabase.find((r) => r.id === id)!);
+  const PAIRS: [string, string, (typeof axes)[number]][] = [
+    ['wilson-blade-98-18x20-v9', 'wilson-blade-98-16x19-v9', 'control'],
+    ['babolat-pure-strike-98-18x20', 'babolat-pure-strike-98-16x19', 'control'],
+    ['yonex-percept-100d', 'yonex-percept-100', 'control'],
+    ['babolat-pure-aero-98', 'babolat-pure-aero-standard', 'control'],
+    ['wilson-pro-staff-97-v14', 'babolat-pure-drive-standard', 'control'],
+    ['babolat-pure-drive-standard', 'wilson-pro-staff-97-v14', 'power'],
+    ['wilson-pro-staff-97-v14', 'babolat-pure-drive-standard', 'stability'],
+    ['head-radical-pro', 'head-radical-mp', 'stability'],
+    ['head-radical-mp', 'head-radical-pro', 'maneuverability'],
+    ['head-gravity-tour', 'head-gravity-mp', 'stability'],
+    ['head-gravity-mp', 'head-gravity-tour', 'maneuverability'],
+  ];
+  for (const [a, b, ax] of PAIRS) if (!(g(a)[ax] > g(b)[ax])) fail(`formule : paire de contrôle inversée — ${a} ${g(a)[ax]} ≤ ${b} ${g(b)[ax]} en ${ax}`);
+  if (racquetsDatabase.some((r) => !deriveRacquetProfile(r).basis.startsWith(PROFILE_BASIS_PREFIX))) {
+    fail(`formule : deriveRacquetProfile ne doit contenir que des specs (libellé « ${PROFILE_BASIS_PREFIX} »)`);
+  }
+  // (e) accord avec les avis de testeurs sur les 18 (Spearman, inversions
+  //     flagrantes = écart testeurs ≥ 3 /20 classé à l'envers) : IMPRIMÉ.
+  const rank = (v: number[]) => { const o = v.map((x, i) => [x, i] as const).sort((p, q) => p[0] - q[0]); const r = new Array<number>(v.length); let i = 0;
+    while (i < o.length) { let j = i; while (j + 1 < o.length && o[j + 1][0] === o[i][0]) j++; for (let k = i; k <= j; k++) r[o[k][1]] = (i + j) / 2 + 1; i = j + 1; } return r; };
+  const pearson = (x: number[], y: number[]) => { const n = x.length, mx = x.reduce((p, q) => p + q) / n, my = y.reduce((p, q) => p + q) / n;
+    let sxy = 0, sx = 0, sy = 0; for (let i = 0; i < n; i++) { sxy += (x[i] - mx) * (y[i] - my); sx += (x[i] - mx) ** 2; sy += (y[i] - my) ** 2; } return sxy / Math.sqrt(sx * sy); };
+  const tested = Object.entries(RACQUET_TESTER_RATINGS).map(([id, e]) => ({ d: g(id), e }));
+  const agreement = axes.map((ax) => {
+    const d = tested.map((t) => t.d[ax]), t = tested.map((x) => x.e.raw20[RACQUET_AXIS_TO_CRITERION[ax]]);
+    let inv = 0, n = 0;
+    for (let i = 0; i < d.length; i++) for (let j = i + 1; j < d.length; j++) { if (Math.abs(t[i] - t[j]) < 3) continue; n++; if ((d[i] - d[j]) * (t[i] - t[j]) < 0) inv++; }
+    return `${ax} ρ=${pearson(rank(d), rank(t)).toFixed(2)} inv ${inv}/${n}`;
+  });
+  if (failures.length === before) {
+    const mp = g('head-gravity-mp'), tour = g('head-gravity-tour');
+    ok(`formule : échelles = bornes du catalogue (adulte ${adult.min}-${adult.max} g, junior ${junior.min}-${junior.max} g, ${STRING_COUNT_RANGE.min}-${STRING_COUNT_RANGE.max} cordes), ` +
+      `masse linéaire sans saturation (10 g = ${(linearScore(310, ADULT_WEIGHT_RANGE) - linearScore(300, ADULT_WEIGHT_RANGE)).toFixed(2)} pt partout), contrôle = tamis + plan + masse avec RA neutre, ${PAIRS.length} paires dans le sens physique ; ` +
+      `Gravity MP/Tour contrôle ${mp.control}/${tour.control}`);
+    ok(`formule (non affichée) : accord avec les avis de testeurs (18 raquettes, information) — ${agreement.join(' · ')}`);
   }
 }
 

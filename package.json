@@ -22,6 +22,7 @@
     "audit:database": "node scripts/qa-database.mjs",
     "audit:all": "node scripts/qa-runner.mjs",
     "audit:blog-funnel": "node scripts/qa-blog-funnel.mjs",
+    "audit:blog-images": "node scripts/qa-blog-images.mjs",
     "audit:stripe-webhook": "node scripts/qa-stripe-webhook.mjs",
     "audit:sticky": "node scripts/qa-sticky-sidebars.mjs",
     "scrape:tennis-warehouse": "node scripts/scraper/tennis-warehouse-scraper.js",
@@ -38,6 +39,7 @@
     "audit:rls": "node scripts/qa-rls-anon.mjs",
     "audit:ratings": "npx --yes tsx scripts/qa-ratings.mts",
     "rcs:recompute": "npx --yes tsx scripts/recompute-rcs.mts",
+    "redaction:valeurs": "npx --yes tsx scripts/redaction/verifier-valeurs.mts",
     "export:catalogue": "python scripts/export-catalogue/export_catalogue.py --repo ."
   },
   "dependencies": {

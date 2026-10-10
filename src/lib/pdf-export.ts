@@ -16,7 +16,8 @@
  *   1. identité de la configuration + verdict global ;
  *   2. specs complètes de la raquette (avec mention explicite des valeurs
  *      estimées, cf. `isRacquetStiffnessEstimated`) ;
- *   3. profil de jeu dérivé de la raquette, présenté comme dérivé ;
+ *   3. avis de testeurs (synthèse, /20) pour une raquette évaluée — aucune
+ *      note déduite des caractéristiques (décision de Pierre du 10/10/2026) ;
  *   4. détail du cordage (montants / travers, jauges, tensions, notes /10) ;
  *   5. les cinq sous-scores de l'analyse avancée, en barres ;
  *   6. recommandations et alertes, en texte intégral ;
@@ -124,15 +125,17 @@ export interface PdfRacquetSpecs {
   balance?: number;
   swingWeight?: number;
   playerLevel?: string[];
-  /** Profil de jeu (0-10) : dérivé des specs, ou combiné avec des avis de testeurs. `label` le dit. */
-  profile?: {
-    power: number;
-    control: number;
-    comfort: number;
-    maneuverability: number;
-    stability: number;
-    basis: string;
+  /**
+   * Avis de testeurs (synthèse), raquettes évaluées seulement : moyenne des 20
+   * critères et cinq critères, sur 20, tels quels. Absent = raquette non évaluée :
+   * le PDF n'affiche alors que les caractéristiques (aucune note déduite).
+   */
+  testers?: {
     label: string;
+    average20: number;
+    /** Moyenne formatée comme partout ailleurs sur le site (`formatScore20`). */
+    average20Text: string;
+    criteria: Array<{ label: string; value20: number }>;
   };
 }
 
@@ -458,23 +461,18 @@ export async function exportConfigurationPdf(data: ConfigurationPdfData): Promis
     if (r.playerLevel?.length) specs.push(['Niveaux visees', r.playerLevel.join(', ')]);
     keyValueTable(L, specs);
 
-    if (r.profile) {
+    if (r.testers) {
+      const t = r.testers;
       L.y += 3;
       L.ensure(14);
-      L.text(latin1(r.profile.label), MARGIN_X + 2.5, { size: 9, bold: true });
+      L.text(t.label, MARGIN_X + 2.5, { size: 9, bold: true });
       L.y += 4.4;
-      const basisLines = doc.splitTextToSize(latin1(r.profile.basis), CONTENT_W - 5);
-      basisLines.forEach((line: string) => {
-        L.ensure(5);
-        L.text(line, MARGIN_X + 2.5, { size: 7.6, color: GRAY });
-        L.y += 3.6;
+      L.text(`Moyenne des 20 criteres : ${t.average20Text}/20. Synthese d'avis publies, pas une mesure.`, MARGIN_X + 2.5, {
+        size: 7.6,
+        color: GRAY,
       });
-      L.y += 2.6;
-      scoreBar(L, 'Puissance', r.profile.power, 10);
-      scoreBar(L, 'Controle', r.profile.control, 10);
-      scoreBar(L, 'Confort', r.profile.comfort, 10);
-      scoreBar(L, 'Maniabilite', r.profile.maneuverability, 10);
-      scoreBar(L, 'Stabilite', r.profile.stability, 10);
+      L.y += 6.2;
+      t.criteria.forEach((c) => scoreBar(L, c.label, c.value20, 20));
     }
   }
 
@@ -590,7 +588,7 @@ export async function exportConfigurationPdf(data: ConfigurationPdfData): Promis
   bulletList(L, [
     "L'indice de fermete combine la rigidite du cadre (RA), celle du cordage (lb/in) et la tension. Plus il est eleve, plus le montage est ferme.",
     'Les sous-scores 0-100 partent des notes du cordage puis sont ajustes par la tension, la jauge, le tamis et le RA du cadre.',
-    'Le profil de la raquette est DERIVE de ses specifications mesurables (poids, tamis, RA, plan de cordage). Ce ne sont pas des notes de test terrain.',
+    "Aucune note de la raquette n'est deduite de ses caracteristiques. Pour une raquette evaluee, l'avis de testeurs est une synthese d'avis publies (moyenne de 20 criteres, sur 20), reproduite telle quelle.",
     'Un RA signale comme estime signifie que le fabricant ne publie pas cette valeur : la mediane de la base est utilisee a la place.',
     'Le confort est pondere plus fortement que les autres criteres dans le score global : la sante du bras est prioritaire.',
   ]);

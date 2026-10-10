@@ -57,7 +57,8 @@ export default function PricingPage() {
       features: [
         '✅ Configurateur complet',
         '✅ Calcul RCS',
-        '✅ Base de données complète (129 raquettes, 190 cordages)',
+        // Sans nombre écrit en dur : « 190 cordages » avait vieilli (181).
+        '✅ Catalogue complet des raquettes et des cordages',
         '✅ 3 configurations sauvegardées dans votre compte',
         '❌ Configurations illimitées',
         '❌ Analyse RCS avancée',
