@@ -424,7 +424,7 @@ export const stringsDatabase: TennisString[] = [
     power: 7.5,
     recommendedTension: { min: 22, max: 26 },
     price: { europe: 18, usa: 18 },
-    description: 'Section carrée pour spin maximum. Thermocore technology.',
+    description: 'Section carrée pour spin maximum. Thermocore technology. Vendu aujourd\'hui sous le nom « 4S » (même cordage, nom changé).',
     color: 'Black'
   },
   // Ajoutons les 30 autres cordages de manière plus concise
@@ -736,7 +736,7 @@ export const stringsDatabase: TennisString[] = [
     power: 7.5,
     recommendedTension: { min: 23, max: 28 },
     price: { europe: 17, usa: 17 },
-    description: 'Polyester de contrôle réputé pour sa précision et son spin sur les frappes appuyées.',
+    description: 'Polyester de contrôle réputé pour sa précision et son spin sur les frappes appuyées. Aussi vendu sous le nom « ATP Razor Code ».',
     color: 'Carbon/Lime'
   },
   {
@@ -2665,25 +2665,6 @@ export const stringsDatabase: TennisString[] = [
     color: 'Orange'
   },
   {
-    id: 'tecnifibre-atp-razor-code',
-    brand: 'Tecnifibre',
-    model: 'ATP Razor Code',
-    type: 'Polyester',
-    gauges: ['1.20', '1.25', '1.30'],
-    stiffness: 202,
-    performance: 9.5,
-    control: 9,
-    comfort: 8,
-    durability: 8,
-    spin: 9,
-    power: 8,
-    recommendedTension: { min: 21, max: 26 },
-    price: { europe: 18, usa: 20 },
-    description: 'Version officielle ATP du Razor Code. Performance tour.',
-    proUsage: 'Joueurs ATP',
-    color: 'Carbon'
-  },
-  {
     id: 'tecnifibre-tgut',
     brand: 'Tecnifibre',
     model: 'TGut',
@@ -2736,24 +2717,6 @@ export const stringsDatabase: TennisString[] = [
     price: { europe: 16, usa: 18 },
     description: 'Polyester conçu pour les joueurs de compétition. Bon équilibre performance/confort.',
     color: 'Black/Yellow'
-  },
-  {
-    id: 'tecnifibre-4s',
-    brand: 'Tecnifibre',
-    model: '4S',
-    type: 'Polyester',
-    gauges: ['1.20', '1.25', '1.30'],
-    stiffness: 222,
-    performance: 9,
-    control: 9,
-    comfort: 7,
-    durability: 8.5,
-    spin: 10,
-    power: 7,
-    recommendedTension: { min: 21, max: 27 },
-    price: { europe: 14, usa: 16 },
-    description: 'Polyester à profil carré pour spin extrême. Similaire au Black Code 4S.',
-    color: 'Black'
   },
   {
     id: 'tecnifibre-dynamix-vp',
@@ -3489,6 +3452,13 @@ export const stringsDatabase: TennisString[] = [
  * Doublons retirés : ancien identifiant -> identifiant conservé (nom commercial
  * actuel). Une configuration sauvegardée sous l'ancien identifiant retrouve
  * ainsi le produit conservé — avec les valeurs de CELUI-CI, pas une moyenne.
+ *
+ * Fusion du 10/10/2026 (décision de Pierre : « deux doublons probables : vérifier, puis
+ * fusionner »). `tecnifibre-4s` et `tecnifibre-atp-razor-code`, entrées de la même fusion
+ * b4e74ad, rejoignent les fiches les plus anciennes (id conservé : URL, photo, liens). Sources :
+ * Tennis Warehouse, fiche « Tecnifibre 4S » : « The name of this string has changed from Black
+ * Code 4S to 4S. Same string, different name. » ; fiche TW « Razor Code », dont le texte parle
+ * de l'« ATP Razor Code » ; fiches officielles Tecnifibre (4S et Razor Code : jauges 1.20, 1.25, 1.30).
  */
 export const LEGACY_STRING_ALIASES: Readonly<Record<string, string>> = {
   'babolat-pro-hurricane-tour': 'babolat-rpm-hurricane',
@@ -3499,6 +3469,8 @@ export const LEGACY_STRING_ALIASES: Readonly<Record<string, string>> = {
   'luxilon-big-banger': 'luxilon-original',
   'wilson-element': 'luxilon-element',
   'wilson-savage': 'luxilon-savage',
+  'tecnifibre-4s': 'tecnifibre-black-code-4s',
+  'tecnifibre-atp-razor-code': 'tecnifibre-razor-code',
 };
 
 /** Entrées fausses retirées sans remplaçant (badminton, produits inexistants). */

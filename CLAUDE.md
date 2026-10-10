@@ -1,11 +1,33 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.3.5
+> **Version** : 2.3.6
 > **Date** : 10 octobre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
 > **Branche de référence** : `main` (seule branche longue ; la production Netlify en déploie)
 > **Repo** : https://github.com/PleneufMC/Tennis-String-Advisor.git
+
+**Changelog v2.3.5 → v2.3.6** — **Deux doublons fusionnés : 181 → 179 cordages**
+(décision de Pierre du 10/10/2026 : « deux doublons probables : vérifier, puis fusionner » ; `tsa-core`).
+**4S = Black Code 4S** : la fiche Tennis Warehouse « Tecnifibre 4S » dit « The name of this string has
+changed from Black Code 4S to 4S. Same string, different name. » ; TW n'a qu'une revue (« Black Code 4S »),
+TWU ne liste que « Black Code 4S », la fiche officielle Tecnifibre « 4S » donne les mêmes jauges (1.20, 1.25,
+1.30), la même section carrée et le même procédé Thermocore. **ATP Razor Code = Razor Code**, preuve
+indirecte (aucune source n'annonce de renommage) : la fiche TW « Razor Code » s'ouvre sur « Tecnifibre ATP
+Razor Code 17 is… », TW n'a qu'une revue (« ATP Razor Code »), TWU ne liste que « Razor Code », la fiche
+officielle « Razor Code » donne les mêmes jauges, des détaillants vendent les deux noms. Ids conservés : les
+plus anciens (`tecnifibre-black-code-4s`, 29/08/2025 ; `tecnifibre-razor-code`, 03/06/2026 ; les deux autres
+datent de la fusion b4e74ad du 07/08/2026). `LEGACY_STRING_ALIASES` : 8 → 10 alias ; redirections permanentes (308) FR et
+EN (`/en/strings/<id>.html`, fiches générées depuis le 09/10) dans `next.config.js` ; photo de la 4S déplacée
+vers la fiche conservée ; descriptions des fiches conservées citant l'autre nom ; provenance des notes à jour.
+**Effet** (cette PR seule) : alerte bras avancée standard 5,12 → 5,16 %, sensible 19,56 → 19,54 % (deux
+fiches de moins). **Règle 2** : les configurations enregistrées sous « 4S » (222, sans source) prennent la
+rigidité de la fiche conservée, soit une baisse de 1,4 à 2,4 points d'indice ; celles de « ATP Razor Code »
+(202) passent à 220, une hausse. Contrôle 10 (18 identifiants refusés) et nouveau contrôle 10 bis
+(8 tests négatifs). **Notes TW conservées** : les 12 notes /10 de Tecnifibre Triax et Wilson NXT, recopiées de
+Tennis Warehouse, sont conservées (décision de Pierre du 10/10/2026), en connaissance du risque (les
+conditions de TW interdisent la reproduction sans permission écrite), et seront ajoutées à la demande
+d'autorisation écrite ; non modifiées.
 
 **Changelog v2.3.4 → v2.3.5** — **Rigidités de laboratoire, premier lot : les
 8 polyesters (C2)** (décision de Pierre du 10/10/2026 : « on aligne leur rigidité sur la mesure faite sur
@@ -367,8 +389,9 @@ Links, déploiement Netlify (adaptateur OpenNext). (Zustand est déclaré dans
 **HTML statiques** dans `public/blog/*.html` et `public/en/*.html`. Le
 `route-map.ts` fait le pont entre les deux univers.
 
-**Base** : 129 raquettes, 181 cordages (`src/data/*.ts` ; 190 avant le
-nettoyage du 28/09/2026, 174 après, 181 depuis le lot 3 Toroline du 29/09/2026).
+**Base** : 129 raquettes, 179 cordages (`src/data/*.ts` ; 190 avant le
+nettoyage du 28/09/2026, 174 après, 181 depuis le lot 3 Toroline du 29/09/2026,
+179 depuis la fusion de deux doublons le 10/10/2026).
 
 **Écosystème** : tennismatchfinder.net (même propriétaire) référence TSA.
 ⚠️ **Corrigé le 31/08/2026** — ce site était présenté ici comme « un canal de
@@ -395,7 +418,7 @@ corrigé dans la même PR.
 - Échelle d'alerte bras remise en monotonie (43,9 % → 13,9 % d'alertes).
 - Export PDF, thème sombre, i18n FR/EN livrés.
 - Photos produit Tennis Warehouse (29/09/2026) et Tennis Warehouse Europe
-  (10/10/2026) : 58/129 raquettes, 53/181 cordages, hébergées chez nous, FR et
+  (10/10/2026) : 58/129 raquettes, 53/179 cordages, hébergées chez nous, FR et
   EN ; drapeau `PRODUCT_IMAGES_ENABLED` et commande `purge` (globale ou par
   source) pour le retrait ; associations vérifiées par script (tamis, plan de
   cordage, RA, poids, jauge, coloris), quarantaine sinon, illustration non
@@ -657,7 +680,7 @@ Le compte utilisateur héberge des agents transverses (`~/.claude/agents/`)
 antérieurs à cette équipe et qui mentionnent TSA. **Dans ce dépôt, l'équipe
 `tsa-*` fait foi** — les connaissances TSA des agents globaux datent d'un état
 antérieur du code (ils citent 104 raquettes / 165 cordages ; le réel vérifié
-est 129 / 181 (190 avant le nettoyage du 28/09/2026), formule TypeScript dans `advanced-rcs.ts` et
+est 129 / 179 (190 avant le nettoyage du 28/09/2026, 181 avant la fusion du 10/10/2026), formule TypeScript dans `advanced-rcs.ts` et
 `strings-database.ts`). Correction 13/08 : les pondérations RCS
 W_RA=0.28 / W_Cordage=0.42 / W_Tension=0.22 / W_Interaction=0.08 citées par
 `algorithm-validator` ne sont PAS introuvables — elles vivent dans
@@ -850,4 +873,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.3.5 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.3.6 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
