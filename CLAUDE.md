@@ -7,6 +7,33 @@
 > **Branche de référence** : `main` (seule branche longue ; la production Netlify en déploie)
 > **Repo** : https://github.com/PleneufMC/Tennis-String-Advisor.git
 
+**Changelog (numéro de version à fixer à la fusion)** — **Fiches désynchronisées mises à jour : 11 raquettes, 4 cordages**
+(`tsa-core`, décision de Pierre du 10/10/2026 : mise à jour approuvée, « Je laisse l'équipe faire les arbitrages » ; veille
+de `tsa-pigiste`, 116 faits V01-V116 sur 73 pages, copiée telle quelle dans
+`docs/redaction/veille-2026-10-10-fiches-desynchronisees.md`). Mise à jour **en place**, ids conservés (URL du sitemap,
+configurations enregistrées). Arbitrages de l'orchestrateur : **Q-1** TW US et TWE sont du même groupe, donc non
+indépendants : un RA ne change que s'il est établi par une **mesure L1** (TWU « Flex Rating Test ») ou par deux sources
+indépendantes dont une hors groupe ; un RA que TW US seul établit reste un signal, listé et non appliqué ; **Q-2** Pure
+Aero Team : aucun champ établi pour la Gen9, aucune valeur changée, fiche nommée « Team (2023) » (RA 67 = 2023 ; 66 en 2026
+chez TW US seul ; le 70 ± 3 de Babolat est un RA non cordé, jamais saisi) ; **Q-3** Tempo 285 nommée « 285 V2 », specs
+inchangées, RA 65 sans source conservé (ni comblé ni retiré), Tempo Tour 285 g 2026 (102 in²) non créée ; **Q-4** juniors
+au poids et à l'équilibre **non cordés** officiels, comme les adultes ; **Q-5** rigidités des cordages hors de ce lot
+(chantier D). **Appliqué** (source V-n au commentaire de chaque fiche et dans `src/data/racquet-alignment-provenance.ts`,
+non affiché) : Clash 100 Pro « v2 » -> **V3** (16x20, 305 g, **RA 55 -> 57**, mesure TWU) ; T-Fight 315S (plan 16x19,
+**RA 64 -> 65**, mesure TWU) ; EZONE 105 et VCORE 98 Tour (plan 16x19, RA conservés : 66 et 64 chez TW US seul) ; Burn
+100LS nommée v6 ; US Open Jr 21/23/25 (tamis 95/95/106 in², plans, 171/185/205 g, équilibres 258/280/300 mm) ; Blade Feel
+Comp Jr 25 (100 in², 243 g, nom) ; cordages : RPM Team sans 1.35 et en noir, TGV en noir, Multifeel + 1.25 (la Poly Tour
+Strike garde sa 1.30, qui existe). **Non touchées, listées** : Extreme MP, Speed MP, Instinct MP, TF40 305, Pro Staff 97
+v14 (le modèle standard est « épuisé » chez Wilson, pas retiré), Clash 100 v2 et 100L v3 (RA 54 chez TW US) ; rigidités
+des cordages. **Effet mesuré** sur les 138 546 combinaisons du contrôle 5 : alerte bras avancée standard 5,24 -> 5,25 %
+(+10), sensible 19,76 -> 19,80 % (+55), verdict de compatibilité 13,33 -> 13,36 % (+38) ; T-Fight 315S +5/+32/+17, Clash
+100 Pro +5/+23/+21 ; **aucune baisse** (les juniors ne déplacent aucune alerte) ; formule RCS inchangée. `RA_RANGE.min`
+55 -> 57 (la Clash 100 Pro était seule à 55 : contrôle 1). Photos : aucune des fiches modifiées n'avait de photo (toutes
+en quarantaine de génération ou de specs), motifs périmés du mapping mis à jour ; l'association des images officielles est
+renvoyée à un lot photos (images jamais téléchargées, aucune collecte réseau ici). Contrôle **14 bis** de `audit:ratings`
+(18 raquettes et 4 cordages en provenance, 66 faits retrouvés dans le dossier, 17 tests négatifs) et outil rejouable
+`scripts/scraper/fiches-effet-alertes.mts`.
+
 **Changelog v2.3.8 → v2.3.9** — **Images officielles des fabricants**
 (`tsa-core`, décision de Pierre du 10/10/2026, verbatim : « Il n'y a aucune restriction à utiliser
 les images officielles des raquettes. Jamais un fabricant ne s'opposera à la promotion des produits
