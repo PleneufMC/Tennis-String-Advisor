@@ -7,6 +7,57 @@
 > **Branche de référence** : `main` (seule branche longue ; la production Netlify en déploie)
 > **Repo** : https://github.com/PleneufMC/Tennis-String-Advisor.git
 
+**Changelog (numéro de version à fixer à la fusion)** — **Rigidité par jauge : modèle et table (chantier D1)**
+(décision de Pierre du 10/10/2026 : « GO » sur le chantier D ; `tsa-core`). `TennisString` gagne deux champs
+optionnels, `stiffnessByGauge` (rigidité TWU mesurée par jauge nominale, lb/in, 51 lbs / Fast) et
+`stiffnessByGaugeSuspect`, et `strings-database.ts` la fonction `stringStiffnessAt(fiche, jauge)` : la mesure pour une
+jauge mesurée d'une série saine, sinon la rigidité de la fiche (règle C) étiquetée « jauge non mesurée », jamais
+interpolée. **101 fiches** portent une table (164 jauges sur 361, hybrides exclus), générée hors ligne depuis le relevé de
+D0 par `scripts/scraper/c2-par-jauge.mts` selon l'appariement strict de #110 (modèle exact, jauge nominale exacte, même
+matière, ligne unique) : les 103 fiches de #110 deviennent 101, car `babolat-rpm-soft` et `babolat-rpm-team` (matière TWU
+« Nylon » et « Nylon/Polyester » contre un type Polyester) sont écartées par la contrainte de matière, et la jauge 1.30
+de `wilson-natural-gut` (deux lignes TWU) n'est pas écrite. **24 séries suspectes** (une jauge plus épaisse mesurée plus
+souple, jauges hors fiche comprises : NXT 1.35, Origin, Black Code 1.32…) : valeurs conservées et marquées, aucune n'est
+utilisée pour le calcul avant l'arbitrage de Pierre (D4). `catalog.json` : `stiffness_by_gauge` et
+`stiffness_by_gauge_suspect` (`null` si absents). **Aucune valeur affichée, note, formule ni RCS modifié**, et aucune
+surface ne lit la table avant D2/D3 : empreinte identique de la grille de 138 546 combinaisons (RCS, recommandation, alerte
+bras des deux profils ; `scripts/scraper/c2-empreinte-grille.mts`, rejouable sur tout état), alerte bras avancée inchangée, diff de `src/` strictement additif, `catalog.json` et 308 fiches EN
+identiques à l'octet hors les deux nouvelles clés, 319 pages FR prérendues identiques hors scripts et styles. Coût : environ
+1 kB de JS initial en plus sur quatre routes qui embarquent la base. Contrôle 13 quater (17 tests négatifs), contrôle 15
+étendu. `c2-par-jauge.mts --apercu-d4` estime l'effet d'une adoption future sur l'alerte bras (rien n'est adopté).
+
+**Changelog (numéro de version à fixer à la fusion)** — **Relevé TWU complet versionné (chantier D0, rigidité par
+jauge)** (décision de Pierre du 10/10/2026 : « GO » sur le chantier D ; `tsa-core`). Le relevé TWU du 29/09/2026
+(788 enregistrements, sha256 `01c07cc…8872`, identique à celui du 10/10) est versionné en entier dans
+`data/reference/twu-releve-complet.json` : les 8 champs bruts de chaque enregistrement, inchangés (ils reconstruisent le
+relevé brut à l'octet près), plus `model`, `suffix`, `calibre` et `gaugeNameMm` lus dans l'intitulé (formats de suffixe
+stricts de #110 ; 35 intitulés restent entiers) ; URL, date et conditions (51 lbs, Fast) valent pour le fichier. Il remplace
+l'extrait de 35 lignes `twu-lignes-citees.json` (supprimé) comme référence du contrôle 13 ter. Régénération hors ligne,
+reproductible depuis le relevé brut local non versionné : `npx tsx scripts/scraper/twu-releve.mts [--check]` ; aucune
+requête réseau vers TWU. **Aucune valeur, note, formule ni seuil modifié** : RCS et alertes bras inchangés. Ancrage (date,
+788, sha256) dans `STIFFNESS_SOURCE.fullSurvey` ; contrôle 13 ter étendu : nombre, sha256 du brut reconstruit depuis le
+fichier versionné (sans le brut local), schéma strict, champs dérivés, régénération identique si le brut local est présent ;
+7 tests négatifs ajoutés. Premier jalon du chantier D : la table de rigidité par jauge (D1) s'appuie sur ce fichier.
+
+**Changelog (numéro de version à fixer à la fusion)** — **Règle C de jauge de référence, lot 2 des rigidités de
+laboratoire (C2)** (décisions de Pierre du 10/10/2026 : règle C, « aucune correction qui baisse une alerte pour
+l'instant », lot 2 approuvé ; `tsa-core`). **Règle C** : la rigidité d'une fiche = la mesure TWU de la jauge la plus
+rigide mesurée parmi ses jauges (seule règle sans baisse d'alerte, sur-alerte assumée sur les jauges fines), en
+attendant la règle D (rigidité par jauge). **16 fiches** : Black Code 210 → 249,7, Pro Red Code 225 → 232, Hawk
+215 → 230,3, Gamma Moto 205 → 226,9, Black Code 4S 209,2 → 242,9, Razor Code 220 → 242,9 (ni les configurations
+enregistrées sous « 4S », 222, ni sous « ATP Razor Code », 202, ne perdent une alerte) ; lot 2 : Völkl Power Fiber II
+152 → 158,9, ALU Power Vibe 200 → 208, Element Rough 188 → 198,3, Eco Spin 213 → 213,2, Solstice Power 200 → 209,2,
+NRG2 148 → 164, NXT 152 → 173,7, Xcel Power 140 → 162,3, Origin 155 → 171,5, XR3 158 → 162,9. **Effet** (grille du
+contrôle 5, 138 546 combinaisons, contre `main`) : alerte bras avancée standard 5,24 → 5,77 %, sensible 19,76 →
+21,23 % ; 2 774 alertes apparues, **0 disparue**. Aucune note /10, formule ni seuil modifié. Génération non
+vérifiable (aucune fiche TW) pour Xcel Power, probablement ancien, Origin et XR3. **Non appliqué, GO de Pierre
+requis** : 54 fiches mesurées dont la valeur C serait inférieure à l'actuelle (liste dans la PR), 25 autres hausses
+hors lot. Contrôle 13 ter étendu (règle C, plancher des anciens identifiants, jauge nominale, matière,
+15 tests négatifs), extrait versionné `data/reference/twu-lignes-citees.json` (la copie du 08/08 n'a aucun
+multifilament), outil `c2-effet-alertes.mts --base=<commit>`. ⚠️ Chiffres d'articles à reprendre par
+`tsa-redacteur` (liste dans la PR) : « polyester et tennis elbow » et « cordage et tennis elbow » (FR, EN), cartes
+d'index du blog.
+
 **Changelog v2.3.8 → v2.3.9** — **Images officielles des fabricants**
 (`tsa-core`, décision de Pierre du 10/10/2026, verbatim : « Il n'y a aucune restriction à utiliser
 les images officielles des raquettes. Jamais un fabricant ne s'opposera à la promotion des produits

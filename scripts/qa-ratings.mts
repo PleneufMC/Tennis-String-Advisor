@@ -36,6 +36,8 @@ import {
   REMOVED_STRING_IDS,
   meetsMinRating,
   compareOptionalDesc,
+  stringStiffnessAt,
+  STIFFNESS_UNMEASURED_LABEL,
 } from '../src/data/strings-database';
 import {
   STRING_TESTER_RATINGS,
@@ -1104,48 +1106,68 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
 // 13 ter. RIGIDITÉS DE LABORATOIRE, champ `stiffness` (C2, 10/10/2026)
 // ---------------------------------------------------------------------------
 // src/data/string-stiffness-provenance.ts consigne, pour chaque fiche réappariée sur le couple exact
-// (modèle, jauge), les mesures TWU et le sort de la rigidité : appliquée, retenue (la valeur dépend de la
-// jauge de référence, décision de produit) ou en quarantaine. Échoue si : (a) une fiche « appliquée » n'a
-// pas pour rigidité la mesure TWU enregistrée ou ne respecte pas sa règle (jauge unique ; plancher = toutes
-// les jauges mesurées, toutes plus rigides que l'ancienne valeur, valeur la plus basse) ; (b) une rigidité
-// baisse sans GO enregistré (règle 2), ou une fiche non appliquée a bougé en silence ; (c) une mesure n'est
-// pas celle du modèle exact, d'une jauge de la fiche, ni retrouvée dans la copie VERSIONNÉE du relevé TWU
-// (polyesters, mêmes conditions 51 lbs / Fast) ; (d) une surface du site importe la provenance. Chaque garde
-// est rejouée sur une copie altérée : un garde-fou muet fait échouer l'audit.
+// (modèle, jauge), les mesures TWU et le sort de la rigidité : appliquée, retenue (la règle C la BAISSERAIT,
+// GO de Pierre requis) ou en quarantaine. RÈGLE C (décision de Pierre du 10/10/2026) : rigidité = mesure de la
+// jauge la plus rigide mesurée. Échoue si : (a) une fiche « appliquée » n'a pas pour rigidité la mesure TWU
+// enregistrée ou ne respecte pas sa règle (jauge unique ; plancher = toutes les jauges mesurées, toutes plus
+// rigides que l'ancienne valeur, valeur la plus basse ; plus-rigide = la plus haute des mesures) ; (b) une rigidité
+// baisse sans GO enregistré (règle 2), un ancien identifiant fusionné retrouve une valeur inférieure à celle
+// d'avant la fusion, une fiche est « retenue » alors que C la hausserait, ou une fiche non appliquée a bougé en
+// silence ; (c) une mesure n'est pas celle du modèle exact, d'une jauge de la fiche, ni retrouvée (valeur, 51 lbs /
+// Fast, matière, jauge nominale) dans le relevé TWU COMPLET versionné (D0) et la copie des polyesters ; (d) une surface
+// du site importe la provenance. Chaque garde est rejouée sur une copie altérée : un garde-fou muet fait échouer l'audit.
 {
   const before = failures.length;
   const SP = await import('../src/data/string-stiffness-provenance');
   type SProv = Readonly<Record<string, (typeof SP.STRING_STIFFNESS_PROVENANCE)[string]>>;
-  type TwuRow = { name: string; refTensionLbs: number; swingSpeed: string; material: string | null; stiffnessLbIn: number };
-  const twuRef = new Map((JSON.parse(readFileSync(SP.STIFFNESS_SOURCE.versionedCopy, 'utf8')).records as TwuRow[]).map((r) => [r.name, r]));
-  const escapeRe = (x: string) => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  type TwuRow = { name: string; refTensionLbs: number; swingSpeed: string; material: string | null; stiffnessLbIn: number; gaugeNominalMm?: number | null };
+  const load = (p: string) => new Map((JSON.parse(readFileSync(p, 'utf8')).records as TwuRow[]).map((r) => [r.name, r]));
+  const SV = SP.STIFFNESS_SOURCE.fullSurvey;
+  const twuRef = load(SP.STIFFNESS_SOURCE.versionedCopy); // 480 polyesters du 08/08, sans jauge nominale
+  const surveyRef = load(SV.file); // le relevé COMPLET du 29/09 (788 enregistrements, toutes matières, jauge nominale) — D0
+  // TWU range multifilaments et synthétiques sous « Nylon… » : la matière se vérifie par famille, pas par égalité.
+  const MATERIALS: Record<string, RegExp> = { Polyester: /^Polyester$/, 'Natural Gut': /^Gut$/, Multifilament: /^(Nylon|Polyolefin)/, Synthetic: /^(Nylon|Polyolefin)/ };
+  const fold = (x: string) => x.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/['’`]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
+  const TWU_SUFFIX = /\s+\d{2}L?(?:\s*\((\d\.\d+)\)|\s*\/\s*(\d\.\d+))?$/;
   const checkStiffness = (strings: readonly (typeof stringsDatabase)[number][], prov: SProv, ref: Map<string, TwuRow>,
-    aliases: Readonly<Record<string, string>> = LEGACY_STRING_ALIASES): string[] => {
+    aliases: Readonly<Record<string, string>> = LEGACY_STRING_ALIASES, cited: Map<string, TwuRow> = surveyRef): string[] => {
     const issues: string[] = [];
     for (const [id, e] of Object.entries(prov)) {
       const s = strings.find((x) => x.id === id);
-      // Une fiche fusionnée depuis (alias hérité) garde son entrée comme historique : rien à contrôler.
-      if (!s) { if (aliases[id] === undefined) issues.push(`${id} : provenance d'un cordage absent du catalogue`); continue; }
+      // Une fiche fusionnée depuis (alias hérité) garde son entrée comme historique et comme PLANCHER : ses configurations
+      // enregistrées retrouvent la fiche conservée, dont la rigidité ne doit pas être inférieure (règle 2).
+      if (!s) {
+        const target = strings.find((x) => x.id === aliases[id]);
+        if (aliases[id] === undefined) issues.push(`${id} : provenance d'un cordage absent du catalogue`);
+        else if (target && target.stiffness < e.before && !e.loweringApprovedBy) {
+          issues.push(`${id} : ancien identifiant fusionné dans ${target.id} : ses configurations passeraient de ${e.before} à ${target.stiffness} lb/in sans GO de Pierre (règle 2)`);
+        }
+        continue;
+      }
       if (!e.note.trim()) issues.push(`${id} : motif absent`);
       const seen = new Set<string>();
       for (const m of e.measures) {
-        // Modèle EXACT : « Black Code » ne prend pas « Black Code 4S 17 (1.25) », seul le calibre suit le nom.
-        const hit = new RegExp(`^${escapeRe(`${s.brand} ${s.model}`)}\\s+\\d{2}L?(?:\\s*\\((\\d\\.\\d+)\\)|\\s*/\\s*(\\d\\.\\d+))?$`).exec(m.twu);
-        if (!hit) issues.push(`${id} : ligne TWU « ${m.twu} » d'un autre modèle`);
-        else if ((hit[1] ?? hit[2]) !== undefined && Math.abs(Number(hit[1] ?? hit[2]) - Number(m.gauge)) > 0.005) {
-          issues.push(`${id} : « ${m.twu} » mesurée en ${hit[1] ?? hit[2]} mm, enregistrée en ${m.gauge}`);
+        // Modèle EXACT : « Black Code » ne prend pas « Black Code 4S 17 (1.25) », seul le calibre suit le nom ; casse,
+        // accents et tirets ne comptent pas (« Volkl Power-Fiber II » = « Völkl Power Fiber II »).
+        const sfx = TWU_SUFFIX.exec(m.twu);
+        if (!sfx || fold(m.twu.slice(0, sfx.index)) !== fold(`${s.brand} ${s.model}`)) issues.push(`${id} : ligne TWU « ${m.twu} » d'un autre modèle`);
+        else if ((sfx[1] ?? sfx[2]) !== undefined && Math.abs(Number(sfx[1] ?? sfx[2]) - Number(m.gauge)) > 0.005) {
+          issues.push(`${id} : « ${m.twu} » mesurée en ${sfx[1] ?? sfx[2]} mm, enregistrée en ${m.gauge}`);
         }
         if (!s.gauges.includes(m.gauge)) issues.push(`${id} : jauge ${m.gauge} absente de la fiche (${s.gauges.join(', ')})`);
         if (seen.has(m.gauge)) issues.push(`${id} : jauge ${m.gauge} mesurée deux fois`);
         seen.add(m.gauge);
-        const r = ref.get(m.twu);
-        if (!r || r.stiffnessLbIn !== m.lbIn) {
-          issues.push(`${id} : « ${m.twu} » = ${m.lbIn} lb/in absente de la copie versionnée du relevé TWU${r ? ` (${r.stiffnessLbIn} publié)` : ''}`);
-        } else if (r.refTensionLbs !== SP.STIFFNESS_SOURCE.referenceTensionLbs || r.swingSpeed !== SP.STIFFNESS_SOURCE.swingSpeed || r.material !== s.type) {
-          issues.push(`${id} : « ${m.twu} » hors conditions de référence ou d'un autre matériau (${r.refTensionLbs} lbs, ${r.swingSpeed}, ${r.material})`);
+        const c = cited.get(m.twu), r = ref.get(m.twu);
+        if (!c || c.stiffnessLbIn !== m.lbIn || (s.type === 'Polyester' && (!r || r.stiffnessLbIn !== m.lbIn))) {
+          issues.push(`${id} : « ${m.twu} » = ${m.lbIn} lb/in absente de la copie versionnée du relevé TWU${c ? ` (${c.stiffnessLbIn} publié)` : ''}`);
+        } else if (c.refTensionLbs !== SP.STIFFNESS_SOURCE.referenceTensionLbs || c.swingSpeed !== SP.STIFFNESS_SOURCE.swingSpeed || !MATERIALS[s.type]?.test(c.material ?? '')) {
+          issues.push(`${id} : « ${m.twu} » hors conditions de référence ou d'un autre matériau (${c.refTensionLbs} lbs, ${c.swingSpeed}, ${c.material})`);
+        } else if (c.gaugeNominalMm == null || Math.abs(c.gaugeNominalMm - Number(m.gauge)) > 0.005) {
+          issues.push(`${id} : « ${m.twu} » : jauge nominale TWU ${c.gaugeNominalMm} mm, enregistrée en ${m.gauge}`);
         }
       }
       const lbs = e.measures.map((m) => m.lbIn);
+      const top = lbs.length > 0 ? Math.max(...lbs) : undefined;
       const floorHolds = lbs.length > 0 && s.gauges.every((g) => e.measures.some((m) => m.gauge === g)) && Math.min(...lbs) > e.before;
       if (e.status === 'appliquee') {
         const used = e.measures.find((m) => m.gauge === e.appliedGauge);
@@ -1156,13 +1178,14 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
         if (e.rule === 'plancher' && !(floorHolds && used.lbIn === Math.min(...lbs))) {
           issues.push(`${id} : règle « plancher » non remplie (toutes les jauges mesurées, toutes > ${e.before}, valeur la plus basse)`);
         }
+        if (e.rule === 'plus-rigide' && used.lbIn !== top) issues.push(`${id} : règle « plus-rigide » non remplie (la mesure la plus rigide est ${top}, appliquée : ${used.lbIn})`);
         if (s.stiffness < e.before && !e.loweringApprovedBy) issues.push(`${id} : rigidité abaissée de ${e.before} à ${s.stiffness} sans GO de Pierre (règle 2)`);
       } else {
         if (s.stiffness !== e.before) issues.push(`${id} : « ${e.status} » mais la rigidité a bougé (${e.before} -> ${s.stiffness}) sans passer par « appliquee »`);
         if (e.status === 'quarantaine' && e.measures.length > 0) issues.push(`${id} : en quarantaine avec des mesures`);
         if (e.status === 'retenue-jauge' && e.measures.length === 0) issues.push(`${id} : retenue sans mesure`);
-        if (e.status === 'retenue-jauge' && (floorHolds || (s.gauges.length === 1 && lbs[0] > e.before))) {
-          issues.push(`${id} : hausse applicable sans choix de jauge, mais non appliquée`);
+        if (e.status === 'retenue-jauge' && top !== undefined && top >= e.before) {
+          issues.push(`${id} : hausse applicable sans choix de jauge (règle C : ${top} ≥ ${e.before}), mais non appliquée`);
         }
       }
     }
@@ -1185,14 +1208,19 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
   const negatives: Array<[string, string[], string]> = [
     ['rigidité appliquée retouchée (+0,1)', checkStiffness(withStiffness('luxilon-savage', 234.4), P0, twuRef), 'luxilon-savage : rigidité'],
     ['mesure inventée, absente du relevé TWU', checkStiffness(stringsDatabase, patch('luxilon-savage', (e) => ({ ...e, measures: [{ ...e.measures[0], lbIn: 236 }] })), twuRef), 'absente de la copie versionnée'],
-    ['fiche retenue appliquée en silence', checkStiffness(withStiffness('head-hawk', 204.6), P0, twuRef), 'head-hawk : « retenue-jauge »'],
+    ['fiche retenue appliquée en silence', checkStiffness(withStiffness('head-hawk', 204.6), patch('head-hawk', (e) => ({ ...e, status: 'retenue-jauge' as const })), twuRef), 'head-hawk : « retenue-jauge »'],
     ['baisse appliquée sans GO (règle 2)', checkStiffness(stringsDatabase, patch('luxilon-savage', (e) => ({ ...e, before: 250 })), twuRef), 'sans GO de Pierre'],
-    ['plancher sur des jauges non toutes mesurées', checkStiffness(stringsDatabase, patch('tecnifibre-black-code-4s', (e) => ({ ...e, measures: e.measures.filter((m) => m.gauge !== '1.30') })), twuRef), 'règle « plancher » non remplie'],
+    ['plancher sur des jauges non toutes mesurées', checkStiffness(stringsDatabase, patch('tecnifibre-black-code-4s', (e) => ({ ...e, rule: 'plancher' as const, appliedGauge: '1.25', measures: e.measures.filter((m) => m.gauge !== '1.30') })), twuRef), 'règle « plancher » non remplie'],
     ['ligne TWU d\'un autre modèle', checkStiffness(stringsDatabase, patch('tecnifibre-black-code', (e) => ({ ...e, measures: [{ twu: 'Tecnifibre Black Code 4S 17 (1.25)', gauge: '1.24', lbIn: 209.2 }, ...e.measures.slice(1)] })), twuRef), 'd\'un autre modèle'],
     ['jauge absente de la fiche', checkStiffness(stringsDatabase, patch('gamma-moto', (e) => ({ ...e, measures: [{ ...e.measures[0], gauge: '1.30' }, e.measures[1]] })), twuRef), 'absente de la fiche'],
     ['hausse sûre laissée de côté', checkStiffness(withStiffness('tecnifibre-black-code-4s', 200), patch('tecnifibre-black-code-4s', (e) => ({ ...e, status: 'retenue-jauge' as const })), twuRef), 'hausse applicable sans choix de jauge'],
     ['surface qui importe la provenance', scanSurfaces([{ path: 'src/app/x.tsx', src: "import { STRING_STIFFNESS_PROVENANCE } from '@/data/string-stiffness-provenance';" }]), 'src/app/x.tsx'],
     ['provenance d\'une fiche absente sans alias', checkStiffness(stringsDatabase, { ...P0, 'cordage-inconnu': P0['luxilon-savage'] }, twuRef), 'cordage-inconnu : provenance d\'un cordage absent'],
+    ['règle C : une mesure moins rigide retenue', checkStiffness(withStiffness('head-hawk', 204.6), patch('head-hawk', (e) => ({ ...e, appliedGauge: '1.25' })), twuRef), 'règle « plus-rigide » non remplie'],
+    ['règle C : une baisse sans GO (règle 2)', checkStiffness(stringsDatabase, patch('head-hawk', (e) => ({ ...e, before: 250 })), twuRef), 'head-hawk : rigidité abaissée'],
+    ['ancien identifiant : valeur d\'avant la fusion non respectée', checkStiffness(stringsDatabase, patch('tecnifibre-4s', (e) => ({ ...e, before: 250 })), twuRef), 'tecnifibre-4s : ancien identifiant fusionné'],
+    ['jauge nominale TWU différente de celle enregistrée', checkStiffness(stringsDatabase, patch('gamma-moto', (e) => ({ ...e, measures: [e.measures[0], { ...e.measures[1], gauge: '1.24' }] })), twuRef), 'jauge nominale TWU'],
+    ['matière TWU incompatible avec le type de la fiche', checkStiffness(stringsDatabase.map((s) => (s.id === 'wilson-nxt' ? { ...s, type: 'Natural Gut' as const } : s)), P0, twuRef), 'd\'un autre matériau'],
   ];
   for (const [name, found, needle] of negatives) {
     if (!found.some((i) => i.includes(needle))) fail(`rigidités de laboratoire : garde-fou muet sur « ${name} » (${needle})`);
@@ -1200,13 +1228,189 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
   // Cas permis : fiche fusionnée depuis (alias) ; son entrée reste comme historique, sans alerte.
   const afterMerge = checkStiffness(stringsDatabase.filter((s) => s.id !== 'tecnifibre-4s'), P0, twuRef, { ...LEGACY_STRING_ALIASES, 'tecnifibre-4s': 'tecnifibre-black-code-4s' });
   if (afterMerge.length > 0) fail(`rigidités de laboratoire : une fiche fusionnée (alias) fait échouer le contrôle : ${afterMerge[0]}`);
+  // Cas permis : fiche retenue parce que la règle C la BAISSERAIT (GO requis) : valeur inchangée, aucune alerte.
+  const held = checkStiffness(withStiffness('head-hawk', 250), patch('head-hawk', (e) => ({ ...e, status: 'retenue-jauge' as const, before: 250 })), twuRef);
+  if (held.length > 0) fail(`rigidités de laboratoire : une fiche retenue (C la baisserait) fait échouer le contrôle : ${held[0]}`);
+  // D0 : le relevé complet versionné est la référence de tout ce qui précède. Contrôlés : nombre d'enregistrements, sha256 du
+  // relevé brut RECONSTRUIT depuis les 8 champs bruts (aucun fichier local requis), schéma, champs dérivés de l'intitulé ; et,
+  // si le brut local (non versionné) est présent, son sha256 et sa régénération doivent redonner le fichier versionné.
+  const RV = await import('./scraper/twu-releve.mts');
+  type Survey = { records: any[]; [k: string]: unknown };
+  const SHAPE = [...RV.RAW_KEYS, ...RV.DERIVED_KEYS].join();
+  const num = (v: unknown) => typeof v === 'number' && Number.isFinite(v);
+  const str = (v: unknown) => typeof v === 'string' && v !== '';
+  const orNull = (v: unknown, valid: (x: unknown) => boolean) => v === null || valid(v);
+  const rowIssue = (r: any): string | null => {
+    if (Object.keys(r).join() !== SHAPE) return "champs ≠ schéma (8 bruts puis 4 dérivés, dans l'ordre)";
+    if (r.refTensionLbs !== SP.STIFFNESS_SOURCE.referenceTensionLbs || r.swingSpeed !== SP.STIFFNESS_SOURCE.swingSpeed) return 'hors 51 lbs / Fast';
+    if (!str(r.name) || !str(r.model) || !num(r.stiffnessLbIn) || r.stiffnessLbIn <= 0 || !num(r.tensionLossPct)) return 'intitulé, modèle, rigidité ou perte de tension invalide';
+    if (!orNull(r.material, str) || !orNull(r.suffix, str) || !orNull(r.calibre, str) || !orNull(r.gaugeNominalMm, num) || !orNull(r.gaugeNameMm, num) || !orNull(r.spinPotential, num)) return 'type de champ';
+    if (r.name !== (r.suffix === null ? r.model : `${r.model} ${r.suffix}`)) return 'intitulé ≠ modèle + suffixe';
+    const cal = r.suffix?.match(/^\d{2}L?/i)?.[0], mm = r.suffix?.match(/(\d\.\d+)\)?$/)?.[1];
+    if (r.calibre !== (cal === undefined ? null : cal.toUpperCase())) return 'calibre ≠ suffixe';
+    if (r.gaugeNameMm !== (mm === undefined ? null : Number(mm))) return 'jauge du nom ≠ suffixe';
+    return null;
+  };
+  const checkSurvey = (f: Survey): string[] => {
+    const out: string[] = [];
+    const rows = Array.isArray(f.records) ? f.records : [];
+    if (rows.length !== SV.records || f.rawRecords !== SV.records) out.push(`${rows.length} enregistrements, en-tête ${f.rawRecords}, ancrage ${SV.records}`);
+    if (f.rawSha256 !== SV.sha256 || f.retrieved !== SV.retrieved || f.url !== SP.STIFFNESS_SOURCE.url) out.push('en-tête ≠ ancrage (sha256, date, URL) de string-stiffness-provenance.ts');
+    const cond = f.conditions as { refTensionLbs?: number; swingSpeed?: string } | undefined;
+    if (cond?.refTensionLbs !== SP.STIFFNESS_SOURCE.referenceTensionLbs || cond?.swingSpeed !== SP.STIFFNESS_SOURCE.swingSpeed) out.push("conditions de l'en-tête ≠ 51 lbs / Fast");
+    const bad = rows.map((r, i) => [i, rowIssue(r)] as const).filter(([, m]) => m !== null);
+    if (bad.length > 0) out.push(`enregistrement ${bad[0][0]} (« ${rows[bad[0][0]].name} ») : ${bad[0][1]}${bad.length > 1 ? ` (+ ${bad.length - 1} autre(s))` : ''}`);
+    if (RV.sha256(RV.rawTextOf(rows)) !== SV.sha256) out.push("le relevé brut reconstruit depuis les champs bruts n'a pas le sha256 ancré");
+    return out;
+  };
+  const survey = JSON.parse(readFileSync(SV.file, 'utf8')) as Survey;
+  checkSurvey(survey).forEach((i) => fail(`relevé TWU versionné : ${i}`));
+  const mutate = (f: (s: Survey) => void): Survey => { const c = structuredClone(survey); f(c); return c; };
+  const surveyNegatives: Array<[string, Survey, string]> = [
+    ['une rigidité retouchée (+0,1)', mutate((s) => { s.records[10].stiffnessLbIn += 0.1; }), 'sha256'],
+    ['un enregistrement retiré', mutate((s) => { s.records.pop(); }), 'enregistrements'],
+    ['une vitesse de balayage différente', mutate((s) => { s.records[3].swingSpeed = 'Medium'; }), '51 lbs / Fast'],
+    ["un modèle qui n'est plus celui de l'intitulé", mutate((s) => { s.records[5].model += 'X'; }), 'intitulé ≠ modèle'],
+    ["un calibre qui n'est plus celui du suffixe", mutate((s) => { s.records.find((r) => r.calibre === '16')!.calibre = '17'; }), 'calibre ≠ suffixe'],
+    ['un champ inconnu', mutate((s) => { s.records[0].extra = 1; }), 'champs ≠ schéma'],
+    ["un sha256 d'en-tête modifié", mutate((s) => { s.rawSha256 = '0'.repeat(64); }), 'en-tête ≠ ancrage'],
+  ];
+  for (const [name, f, needle] of surveyNegatives) {
+    if (!checkSurvey(f).some((i) => i.includes(needle))) fail(`relevé TWU versionné : garde-fou muet sur « ${name} » (${needle})`);
+  }
+  const rawBytes = existsSync(SV.raw) ? readFileSync(SV.raw) : null;
+  if (rawBytes && RV.sha256(rawBytes) !== SV.sha256) fail(`relevé TWU versionné : le relevé brut local a un autre sha256 (${RV.sha256(rawBytes).slice(0, 7)}…) que l'ancrage`);
+  else if (rawBytes && JSON.stringify(RV.normaliseRows(JSON.parse(rawBytes.toString('utf8')))) !== JSON.stringify(survey.records)) {
+    fail('relevé TWU versionné : la régénération depuis le relevé brut local diffère du fichier versionné (npx tsx scripts/scraper/twu-releve.mts)');
+  }
   if (failures.length === before) {
     const count = (st: string) => Object.values(P0).filter((e) => e.status === st).length;
     const measures = Object.values(P0).reduce((a, e) => a + e.measures.length, 0);
     const merged = Object.keys(P0).filter((id) => !stringsDatabase.some((s) => s.id === id)).length;
-    ok(`rigidités de laboratoire : ${Object.keys(P0).length} fiches en provenance (${count('appliquee')} appliquées, ${count('retenue-jauge')} retenues faute de jauge de référence, ` +
-      `${count('quarantaine')} en quarantaine${merged > 0 ? `, dont ${merged} fusionnée(s) depuis` : ''}), ${measures} mesures TWU retrouvées dans ${SP.STIFFNESS_SOURCE.versionedCopy} (modèle exact, jauge de la fiche, ` +
-      `${SP.STIFFNESS_SOURCE.referenceTensionLbs} lbs / ${SP.STIFFNESS_SOURCE.swingSpeed}), aucune baisse sans GO, aucune surface ne lit la provenance, ${negatives.length} tests négatifs détectés`);
+    const ruleC = Object.values(P0).filter((e) => e.rule === 'plus-rigide').length;
+    ok(`rigidités de laboratoire : ${Object.keys(P0).length} fiches en provenance (${count('appliquee')} appliquées dont ${ruleC} par la règle C, ${count('retenue-jauge')} retenues car C baisserait, ` +
+      `${count('quarantaine')} en quarantaine${merged > 0 ? `, dont ${merged} ancien(s) identifiant(s) fusionné(s) servant de plancher` : ''}), ${measures} mesures TWU retrouvées dans ${SV.file} ` +
+      `(${SV.records} enregistrements, sha256 du brut reconstruit ${SV.sha256.slice(0, 7)}…${SV.sha256.slice(-4)}${rawBytes ? ', = relevé brut local' : ''}) et ${SP.STIFFNESS_SOURCE.versionedCopy} ` +
+      `(modèle exact, jauge nominale, matière, ${SP.STIFFNESS_SOURCE.referenceTensionLbs} lbs / ${SP.STIFFNESS_SOURCE.swingSpeed}), ` +
+      `aucune baisse sans GO, aucune surface ne lit la provenance, ${negatives.length + surveyNegatives.length} tests négatifs détectés`);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 13 quater. RIGIDITÉ PAR JAUGE : `stiffnessByGauge` et `stringStiffnessAt` (D1, 10/10/2026)
+// ---------------------------------------------------------------------------
+// Table GÉNÉRÉE (scripts/scraper/c2-par-jauge.mts) depuis le relevé TWU complet versionné. Échoue si : (a) une valeur par jauge n'est
+// pas celle de l'UNIQUE ligne du relevé de ce modèle exact, de cette jauge nominale (± 0,005 mm) et de la même matière, si une jauge
+// établie est omise, ou si une jauge ambiguë (deux lignes) ou d'une autre matière est écrite ; (b) une clé n'est pas une jauge de la
+// fiche, ou un hybride porte une table ; (c) le drapeau « suspecte » diffère de la non-monotonie recalculée sur TOUTES les lignes du
+// modèle (jauges hors fiche comprises) ; (d) stringStiffnessAt s'écarte du contrat : la mesure pour une jauge mesurée d'une série
+// saine, sinon la rigidité de la fiche étiquetée « jauge non mesurée », jamais interpolée ; (e) une fiche appliquée par la règle C
+// n'a pas pour rigidité le maximum de sa table, ou sa table contredit la provenance ; (f) une surface du site lit la table (liste
+// blanche de deux fichiers jusqu'à D2/D3). Chaque garde est rejouée sur une copie altérée : un garde-fou muet fait échouer l'audit.
+{
+  const before = failures.length;
+  const SP = await import('../src/data/string-stiffness-provenance');
+  type Rec = { name: string; model: string; suffix: string | null; material: string | null; gaugeNominalMm: number | null; stiffnessLbIn: number; f: string };
+  const fold = (x: string) => x.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/['’`]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
+  const records = (JSON.parse(readFileSync(SP.STIFFNESS_SOURCE.fullSurvey.file, 'utf8')).records as Rec[]).map((r) => ({ ...r, f: fold(r.model) }));
+  const FAMILY: Record<string, RegExp> = { Polyester: /^Polyester$/, 'Natural Gut': /^Gut$/, Multifilament: /^(Nylon|Polyolefin)/, Synthetic: /^(Nylon|Polyolefin)/ };
+  type Str = (typeof stringsDatabase)[number];
+  const sameMaterial = (s: Str) => (r: Rec) => FAMILY[s.type]?.test(r.material ?? '') === true;
+  const modelLines = (s: Str) => records.filter((r) => r.suffix !== null && r.gaugeNominalMm !== null && r.f === fold(`${s.brand} ${s.model}`));
+  // Table attendue : par jauge de la fiche, l'UNIQUE ligne de même matière (aucune ligne : non mesurée ; deux : ambiguë).
+  const expectedTable = (s: Str): Record<string, number> => {
+    const lines = modelLines(s);
+    return Object.fromEntries(s.gauges.flatMap((g): [string, number][] => {
+      const l = lines.filter((r) => Math.abs(r.gaugeNominalMm! - Number(g)) <= 0.005);
+      return l.length === 1 && sameMaterial(s)(l[0]) ? [[g, l[0].stiffnessLbIn]] : [];
+    }));
+  };
+  // Non monotone : la mesure la plus basse d'une jauge est sous la plus haute de la jauge précédente (suffit pour toutes les paires).
+  const nonMonotone = (s: Str): boolean => {
+    const byG = new Map<number, number[]>();
+    for (const r of modelLines(s).filter(sameMaterial(s))) byG.set(r.gaugeNominalMm!, [...(byG.get(r.gaugeNominalMm!) ?? []), r.stiffnessLbIn]);
+    const g = [...byG.keys()].sort((a, b) => a - b);
+    return g.some((x, i) => i > 0 && Math.max(...byG.get(g[i - 1])!) > Math.min(...byG.get(x)!));
+  };
+  const SYMBOLS = /stiffnessByGauge|stiffness_by_gauge|stringStiffnessAt|STIFFNESS_UNMEASURED_LABEL/;
+  const ALLOWED = ['src/data/strings-database.ts', 'scripts/catalog/catalog-json.mjs'];
+  const checkByGauge = (strings: readonly Str[], at: typeof stringStiffnessAt, files: { path: string; src: string }[], label: string = STIFFNESS_UNMEASURED_LABEL): string[] => {
+    const out: string[] = [];
+    if (label !== 'jauge non mesurée') out.push(`étiquette de repli « ${label} » ≠ « jauge non mesurée »`);
+    for (const s of strings) {
+      const want = expectedTable(s), have: Record<string, number> = s.stiffnessByGauge ?? {};
+      if (s.type === 'Hybrid' && Object.keys(have).length > 0) out.push(`${s.id} : un hybride ne peut pas porter de table (aucune ligne TWU de ce modèle)`);
+      for (const g of new Set([...Object.keys(want), ...Object.keys(have)])) {
+        if (!s.gauges.includes(g)) out.push(`${s.id} : jauge ${g} absente de la fiche (${s.gauges.join(', ')})`);
+        else if (have[g] === undefined) out.push(`${s.id} : jauge ${g} établie dans le relevé (${want[g]}) mais omise de la table`);
+        else if (want[g] === undefined) out.push(`${s.id} : jauge ${g} = ${have[g]} sans ligne unique de même matière dans le relevé (invention, ambiguïté ou autre matière)`);
+        else if (have[g] !== want[g]) out.push(`${s.id} : jauge ${g} = ${have[g]} ≠ relevé ${want[g]}`);
+      }
+      const suspect = Object.keys(have).length > 0 && nonMonotone(s);
+      if (Boolean(s.stiffnessByGaugeSuspect) !== suspect) out.push(`${s.id} : série ${suspect ? 'non monotone non marquée suspecte' : 'monotone ou sans table marquée suspecte'}`);
+      for (const g of [...s.gauges, '1.275', 'abc']) {
+        const r = at(s, g), m = have[g], measured = m !== undefined && !s.stiffnessByGaugeSuspect;
+        const wantAt = measured ? { lbIn: m, basis: 'mesure-twu-jauge' } : { lbIn: s.stiffness, basis: m !== undefined ? 'serie-suspecte' : 'jauge-non-mesuree' };
+        if (r.lbIn !== wantAt.lbIn || r.basis !== wantAt.basis || (r.basis === 'jauge-non-mesuree' && r.label !== 'jauge non mesurée')) {
+          out.push(`${s.id} @${g} : stringStiffnessAt = ${r.lbIn} (${r.basis}, « ${r.label} »), attendu ${wantAt.lbIn} (${wantAt.basis}) : repli = rigidité de la fiche, jamais interpolé`);
+        }
+        if (Number.isFinite(Number(g)) && at(s, Number(g)).lbIn !== r.lbIn) out.push(`${s.id} @${g} : la jauge numérique donne une autre rigidité que la chaîne`);
+      }
+    }
+    for (const [id, e] of Object.entries(SP.STRING_STIFFNESS_PROVENANCE)) {
+      const s = strings.find((x) => x.id === id);
+      if (!s || e.status !== 'appliquee') continue;
+      for (const m of e.measures) if (s.stiffnessByGauge?.[m.gauge] !== m.lbIn) out.push(`${id} : la mesure de la provenance (${m.gauge} = ${m.lbIn}) n'est pas dans la table`);
+      const top = Math.max(...Object.values(s.stiffnessByGauge ?? { none: NaN }));
+      if (e.rule !== 'plancher' && s.stiffness !== top) out.push(`${id} : règle C, rigidité ${s.stiffness} ≠ maximum de la table (${top})`);
+    }
+    for (const f of files) if (!ALLOWED.includes(f.path) && SYMBOLS.test(f.src)) out.push(`${f.path} lit la rigidité par jauge (liste blanche : ${ALLOWED.join(', ')}) : pas avant D2/D3`);
+    return out;
+  };
+  const walkFiles = (d: string): string[] => readdirSync(d).flatMap((n) => (statSync(`${d}/${n}`).isDirectory() ? walkFiles(`${d}/${n}`) : [`${d}/${n}`]));
+  const surfaces = [...walkFiles('src'), ...walkFiles('scripts/catalog'), ...walkFiles('scripts/en-products'), ...walkFiles('public')]
+    .filter((f) => /\.(tsx?|m?js|html?)$/.test(f)).map((p) => ({ path: p, src: readFileSync(p, 'utf8') }));
+  checkByGauge(stringsDatabase, stringStiffnessAt, surfaces).forEach((i) => fail(`rigidité par jauge : ${i}`));
+  // Tests négatifs : chaque altération doit être détectée.
+  const tab = (id: string) => stringsDatabase.find((s) => s.id === id)!.stiffnessByGauge!;
+  const mod = (id: string, patch: Partial<Str>): Str[] => stringsDatabase.map((s) => (s.id === id ? { ...s, ...patch } : s));
+  const interpolating: typeof stringStiffnessAt = (s, g) => {
+    const r = stringStiffnessAt(s, g), v = Object.values(s.stiffnessByGauge ?? {});
+    return r.basis === 'jauge-non-mesuree' && v.length > 1 ? { ...r, lbIn: v.reduce((a, b) => a + b, 0) / v.length } : r;
+  };
+  const none: { path: string; src: string }[] = [];
+  const negatives: Array<[string, string[], string]> = [
+    ['une valeur par jauge retouchée (+0,1)', checkByGauge(mod('wilson-nxt', { stiffnessByGauge: { ...tab('wilson-nxt'), '1.30': 173.8 } }), stringStiffnessAt, none), 'wilson-nxt : jauge 1.30'],
+    ['une jauge établie omise', checkByGauge(mod('wilson-nxt', { stiffnessByGauge: { '1.30': 173.7 } }), stringStiffnessAt, none), 'omise de la table'],
+    ['une jauge inventée (non mesurée)', checkByGauge(mod('solinco-hyper-g', { stiffnessByGauge: { ...tab('solinco-hyper-g'), '1.30': 221 } }), stringStiffnessAt, none), 'sans ligne unique'],
+    ["une clé qui n'est pas une jauge de la fiche", checkByGauge(mod('wilson-nxt', { stiffnessByGauge: { ...tab('wilson-nxt'), '1.35': 152 } }), stringStiffnessAt, none), 'absente de la fiche'],
+    ['une jauge ambiguë (deux lignes TWU) écrite', checkByGauge(mod('wilson-natural-gut', { stiffnessByGauge: { ...tab('wilson-natural-gut'), '1.30': 96.6 } }), stringStiffnessAt, none), 'wilson-natural-gut : jauge 1.30'],
+    ["une jauge d'une autre matière écrite", checkByGauge(mod('babolat-rpm-soft', { stiffnessByGauge: { '1.30': 154.9 } }), stringStiffnessAt, none), 'babolat-rpm-soft : jauge 1.30'],
+    ['une table sur un hybride', checkByGauge(mod('wilson-duo-control', { stiffnessByGauge: { '1.25/1.30': 160 } }), stringStiffnessAt, none), 'un hybride ne peut pas'],
+    ['une série non monotone non marquée', checkByGauge(mod('tecnifibre-black-code', { stiffnessByGaugeSuspect: undefined }), stringStiffnessAt, none), 'non monotone non marquée'],
+    ['une série monotone marquée suspecte', checkByGauge(mod('luxilon-savage', { stiffnessByGaugeSuspect: true }), stringStiffnessAt, none), 'monotone ou sans table marquée'],
+    ['une interpolation entre jauges mesurées', checkByGauge(stringsDatabase, interpolating, none), 'jamais interpolé'],
+    ["une valeur de calcul tirée d'une série suspecte", checkByGauge(stringsDatabase, (s, g) => stringStiffnessAt({ ...s, stiffnessByGaugeSuspect: undefined }, g), none), 'attendu'],
+    ['un libellé de repli modifié', checkByGauge(stringsDatabase, (s, g) => { const r = stringStiffnessAt(s, g); return r.basis === 'jauge-non-mesuree' ? { ...r, label: 'inconnue' } : r; }, none), '« inconnue »'],
+    ["l'étiquette exportée modifiée", checkByGauge(stringsDatabase, stringStiffnessAt, none, 'non mesurée'), 'étiquette de repli'],
+    ['règle C : rigidité de la fiche ≠ maximum de sa table', checkByGauge(mod('head-hawk', { stiffness: 215 }), stringStiffnessAt, none), 'règle C'],
+    ['une mesure de la provenance absente de la table', checkByGauge(mod('head-hawk', { stiffnessByGauge: { '1.20': 194.3, '1.25': 204.6 } }), stringStiffnessAt, none), 'provenance'],
+    ['une surface FR qui lit la table', checkByGauge(stringsDatabase, stringStiffnessAt, [{ path: 'src/app/x.tsx', src: 'stringStiffnessAt(s, g)' }]), 'src/app/x.tsx'],
+    ['un lecteur EN du catalogue', checkByGauge(stringsDatabase, stringStiffnessAt, [{ path: 'public/en/strings.html', src: 'row.stiffness_by_gauge' }]), 'public/en/strings.html'],
+  ];
+  for (const [name, found, needle] of negatives) {
+    if (!found.some((i) => i.includes(needle))) fail(`rigidité par jauge : garde-fou muet sur « ${name} » (${needle})`);
+  }
+  if (failures.length === before) {
+    const withTable = stringsDatabase.filter((s) => s.stiffnessByGauge);
+    const measured = withTable.reduce((n, s) => n + Object.keys(s.stiffnessByGauge!).length, 0);
+    const total = stringsDatabase.filter((s) => s.type !== 'Hybrid').reduce((n, s) => n + s.gauges.length, 0);
+    const c = [0, 0, 0]; // fiche = maximum de sa table, fiche supérieure (une baisse), fiche inférieure (une hausse)
+    for (const s of withTable) { const top = Math.max(...Object.values(s.stiffnessByGauge!)); c[top === s.stiffness ? 0 : top < s.stiffness ? 1 : 2]++; }
+    ok(`rigidité par jauge : ${withTable.length} fiches avec table (${measured}/${total} jauges mesurées, hors hybrides), ${withTable.filter((s) => s.stiffnessByGaugeSuspect).length} séries suspectes marquées (valeurs conservées, non utilisées), ` +
+      `chaque valeur retrouvée dans ${SP.STIFFNESS_SOURCE.fullSurvey.file} (modèle exact, jauge nominale, même matière, ligne unique), repli = rigidité de la fiche étiquetée « ${STIFFNESS_UNMEASURED_LABEL} » sur ${stringsDatabase.length} fiches, jamais interpolé ; ` +
+      `règle C : ${c[0]} fiches égales au maximum de leur table, ${c[1]} à valeur de fiche supérieure (baisse sans GO : non appliquée), ${c[2]} inférieure (hausse en attente) ; ` +
+      `aucune surface du site ne lit la table (${surfaces.length} fichiers lus, ${ALLOWED.length} autorisés), ${negatives.length} tests négatifs détectés`);
   }
 }
 
@@ -1295,7 +1499,7 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
 // au build. Échoue si : (a) un fichier servi sous public/ lit encore le
 // catalogue dans Supabase ; (b) le JSON servi diffère du TS ; (c) le JSON est
 // versionné (il serait éditable à la main) ou n'est plus généré au build ;
-// (d) il cite une chaîne de testeurs ; (e) une valeur absente y est comblée.
+// (d) il cite une chaîne de testeurs ; (e) une valeur absente y est comblée ; (f) sa rigidité par jauge (D1) diffère du TS.
 {
   const before = failures.length;
   const READ_PATTERNS: RegExp[] = [
@@ -1338,9 +1542,19 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
   const nullS = cat.strings.filter((s: { comfort: number | null }) => s.comfort === null).length;
   if (absentS !== nullS) fail(`source unique : ${absentS} notes confort absentes dans le TS, ${nullS} null dans le JSON`);
   if (cat.racquets.length !== racquetsDatabase.length || cat.strings.length !== stringsDatabase.length) fail('source unique : comptes JSON ≠ TS');
+  // (f) rigidité par jauge (D1) : table et drapeau « suspecte » du JSON = ceux du TS, `null` quand le TS n'en a pas (jamais comblée).
+  type ByGaugeRow = { id: string; stiffness_by_gauge: unknown; stiffness_by_gauge_suspect: unknown };
+  const jsonRows = new Map<string, ByGaugeRow>((cat.strings as ByGaugeRow[]).map((r) => [r.id, r]));
+  for (const s of stringsDatabase) {
+    const j = jsonRows.get(s.id);
+    if (JSON.stringify(j?.stiffness_by_gauge) !== JSON.stringify(s.stiffnessByGauge ?? null) || JSON.stringify(j?.stiffness_by_gauge_suspect) !== JSON.stringify(s.stiffnessByGaugeSuspect ?? null)) {
+      fail(`source unique : ${s.id} : rigidité par jauge du JSON ≠ TS (absente = null, jamais comblée)`);
+    }
+  }
+  const jsonTables = (cat.strings as ByGaugeRow[]).filter((r) => r.stiffness_by_gauge !== null).length;
   if (failures.length === before) {
     ok(`source unique : ${scanned} fichiers public/ sans lecture Supabase du catalogue, catalog.json ${state} ` +
-      `(${cat.racquets.length} raquettes / ${cat.strings.length} cordages, ${nullR} RA null, ${nullS} notes null), non versionné, généré en prebuild, aucune chaîne citée`);
+      `(${cat.racquets.length} raquettes / ${cat.strings.length} cordages, ${nullR} RA null, ${nullS} notes null, ${jsonTables} tables de rigidité par jauge), non versionné, généré en prebuild, aucune chaîne citée`);
   }
 }
 
