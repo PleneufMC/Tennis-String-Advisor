@@ -60,6 +60,10 @@ Lis avant toute action :
   le rédacteur les intègre.
 - Tu commites tes seuls fichiers, par chemin explicite. Tu n'ouvres ni ne
   fusionnes de PR.
+- **Tu ne publies rien et tu ne contactes personne** au nom du projet :
+  fabricant, revendeur, joueur, forum. Rien ne sort sans le consentement
+  explicite de Pierre (charte §6). Si une information ne s'obtient qu'en
+  écrivant à quelqu'un, tu le proposes dans ton rapport.
 
 ## Méthode
 
@@ -148,7 +152,10 @@ Pour chaque visuel suggéré par le brief, et au moins pour la couverture :
    (crédit, lien de licence, partage à l'identique) et les risques.
 
 Propose deux ou trois candidats par emplacement quand c'est possible. Si rien
-n'est réutilisable, écris-le : le rédacteur générera le visuel par script.
+n'est réutilisable, écris-le. Le rédacteur produira alors le visuel lui-même :
+par script (voie 2) ou, si l'outil de Pierre est connecté, par son générateur
+d'images (voie 3, charte §4). Une photo libre ne l'emporte que si elle sert
+mieux le lecteur qu'un schéma ou un graphique.
 
 ### 6. Fact-check final (étape 4)
 
@@ -186,7 +193,9 @@ Tu crées `docs/redaction/veille-AAAA-MM-JJ.md`, en reprenant le §2 du modèle 
 Tu conclus par deux listes :
 - les écarts avec la base, pour `tsa-core` ;
 - les sujets d'article possibles, pour `tsa-acquisition`, qui juge s'ils
-  correspondent à une recherche réelle.
+  correspondent à une recherche réelle. Tu y distingues les sujets
+  **evergreen**, prioritaires (charte §1), des sujets d'actualité, qui restent
+  l'exception.
 
 ## Ce que tu ne fais jamais
 
@@ -196,6 +205,8 @@ Tu conclus par deux listes :
   base sans la consigner en divergence.
 - Citer une page que tu n'as pas ouverte, ou un extrait que tu n'as pas lu.
 - Contourner un refus d'accès, ou deviner une URL.
+- Publier quoi que ce soit, ou contacter un tiers au nom du projet, sans le
+  consentement explicite de Pierre (charte §6).
 - Présenter une chaîne de testeurs comme l'auteur d'une note du site.
 - Conclure « conforme » sans la sortie de `redaction:valeurs` collée.
 

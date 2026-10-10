@@ -26,6 +26,10 @@
  *     l'empreinte de son fichier. L'exception TOMBE dès que l'article est
  *     modifié : on ajoute alors un visuel, ou l'on renouvelle l'exception avec
  *     un motif daté — un acte visible dans le diff de la PR, jamais silencieux.
+ *  7. Illustrations générées (voie 3 de la charte, générateur MCP de Pierre) :
+ *     toute image inscrite dans la section « Illustrations générées » de
+ *     CREDITS.md porte une légende qui le dit (« générée » / « generated »).
+ *     Une image générée ne passe jamais pour une photo.
  * Index (/blog/, /en/blog/) : points 2 (sans JSON-LD) et 4 seulement.
  *
  * Usage :
@@ -125,23 +129,30 @@ function imageSize(path) {
   return null;
 }
 
-// CREDITS.md : première cellule de chaque ligne de tableau ; « a-fr.svg / -en.svg » couvre les deux
+// CREDITS.md : première cellule de chaque ligne de tableau ; « a-fr.svg / -en.svg » couvre les deux.
+// Les fichiers de la section « Illustrations générées » sont aussi relevés à part (point 7).
 function creditedFiles() {
   const names = new Set();
-  if (!existsSync(CREDITS_FILE)) return names;
+  const generated = new Set();
+  if (!existsSync(CREDITS_FILE)) return { names, generated };
+  let section = '';
   for (const line of readFileSync(CREDITS_FILE, 'utf8').split(/\r?\n/)) {
+    if (line.startsWith('## ')) section = line;
     const m = line.match(/^\|\s*([^|]+?)\s*\|/);
     if (!m) continue;
     const parts = m[1].split(/\s*\/\s*/);
     const first = parts[0];
     if (!/\.(webp|png|jpe?g|svg|gif|avif)$/i.test(first)) continue;
-    names.add(first);
+    const files = [first];
     for (const p of parts.slice(1)) {
-      if (p.startsWith('-')) names.add(first.replace(/-(fr|en)(\.[a-z0-9]+)$/i, '') + p);
-      else names.add(p);
+      files.push(p.startsWith('-') ? first.replace(/-(fr|en)(\.[a-z0-9]+)$/i, '') + p : p);
+    }
+    for (const file of files) {
+      names.add(file);
+      if (/Illustrations générées/i.test(section)) generated.add(file);
     }
   }
-  return names;
+  return { names, generated };
 }
 
 function jsonLdImages(html, rel) {
@@ -177,7 +188,7 @@ const loadExceptions = () => {
   return new Map((data.articles ?? []).map((a) => [a.fichier, a]));
 };
 
-const credited = creditedFiles();
+const { names: credited, generated } = creditedFiles();
 const exceptions = loadExceptions();
 const usedExceptions = new Set();
 const remoteChecks = []; // [rel, url]
@@ -257,6 +268,17 @@ for (const { label, dir } of UNIVERSES) {
       if (!cap) fail(`${rel} : couverture sans légende`);
       else if (!/^(Photo|Illustration)\b/.test(text(cap))) {
         fail(`${rel} : la légende de couverture doit commencer par « Photo » ou « Illustration » (lu : « ${text(cap).slice(0, 40)}… »)`);
+      }
+    }
+
+    // 7. Illustrations générées : légendées comme telles
+    for (const [, , inner] of figures) {
+      const src = attr((inner.match(/<img\b[^>]*>/i) ?? [''])[0], 'src');
+      const base = src ? src.split('/').pop().split(/[?#]/)[0] : null;
+      if (!base || !generated.has(base)) continue;
+      const cap = (inner.match(/<figcaption[^>]*>([\s\S]*?)<\/figcaption>/i) ?? [])[1];
+      if (!cap || !/(générée|generated)/i.test(text(cap))) {
+        fail(`${rel} : ${base} est une illustration générée (CREDITS.md) mais sa légende ne le dit pas — « Illustration générée » / « Illustration (AI-generated) »`);
       }
     }
 

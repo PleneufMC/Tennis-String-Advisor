@@ -7,7 +7,8 @@
 | Branche | `agent/redaction/<slug-fr>` |
 | Ouvert le | AAAA-MM-JJ, par l'orchestrateur |
 | Demande d'origine | « citation exacte de Pierre, ou ligne du plan éditorial » |
-| Statut | brief · faits · rédaction · vérification · PR #… · en ligne le … · relevé S+4 le … |
+| Statut | brief · faits · rédaction · vérification · PR #… · GO de Pierre le … · en ligne le … · relevé S+4 le … |
+| Mise à jour planifiée | AAAA-MM-JJ, obligatoire si le titre ou le slug porte une année ; sinon « sans objet » |
 
 > Règles : `docs/redaction/CHARTE.md`. Déroulé : `docs/redaction/README.md`.
 > On n'écrit que dans ses sections ; on répond aux questions qui nous sont
@@ -23,6 +24,12 @@
 - Requête principale EN : …
 - Requêtes secondaires : …
 - Intention, en une phrase (ce que le lecteur veut savoir ou décider) : …
+
+### Durée de vie (evergreen d'abord, charte §1)
+
+- Durée de vie attendue : … (des années · une saison · quelques semaines)
+- Pourquoi : … (intention durable, ou raison qui justifie l'exception d'actualité)
+- Année dans le titre ou le slug : non · oui, parce que … → date de mise à jour planifiée en en-tête
 
 ### SERP observée
 
@@ -100,9 +107,14 @@ Statuts : **confirmé** · **divergent** (→ `tsa-core`) · **introuvable** · 
 
 ## 3. Iconographie — `tsa-pigiste` (candidats) · `tsa-redacteur` (décision)
 
-| # | Emplacement | Page de l'image | Auteur | Licence (lue le) | Obligations | Risques (marque, personne) | Décision du rédacteur |
-|---|---|---|---|---|---|---|---|
-| I1 | couverture | | | | | | |
+Voies (charte §4) : **1** photo à licence explicite · **2** visuel généré par
+script · **3** illustration générée par l'outil MCP de Pierre (seulement s'il est
+connecté). Le visuel qui sert le mieux le lecteur l'emporte. Pour la voie 3, le
+rédacteur note ici le prompt employé, puis le recopie dans `CREDITS.md`.
+
+| # | Emplacement | Voie | Page de l'image ou prompt | Auteur | Licence (lue le) | Obligations | Risques (marque, personne, texte incrusté) | Décision du rédacteur |
+|---|---|---|---|---|---|---|---|---|
+| I1 | couverture | | | | | | | |
 
 ---
 

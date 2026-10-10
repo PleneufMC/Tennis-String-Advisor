@@ -1,10 +1,16 @@
 # La chaîne éditoriale de Tennis String Advisor
 
-> **Version 1.0 — 10 octobre 2026.** Demande de Pierre : « il me semble important
+> **Version 1.1 — 10 octobre 2026.** Demande de Pierre : « il me semble important
 > qu'en tant que site sérieux, il y ait 1 pigiste qui recherche l'info brute, un
 > rédacteur qui fait les articles/blog et enfin un spécialiste du SEO […] qu'ils
 > aient le réflexe de travailler ensemble ». Et : « les articles doivent être
 > systématiquement assortis d'images quitte à les générer ».
+>
+> Ses décisions du même jour sont intégrées :
+> - « Un article semaine serait top mais il faut viser le plus evergreen
+>   possible » (charte §1) ;
+> - un générateur d'images en MCP sur n8n (charte §4, voie 3) ;
+> - « pas de publication sans mon consentement » (charte §6).
 >
 > Ce fichier dit **qui fait quoi, dans quel ordre**. Les règles de fond (faits,
 > santé, images, typographie) sont dans [`CHARTE.md`](CHARTE.md). Le modèle de
@@ -29,8 +35,9 @@ Autour de la chaîne :
 - **L'orchestrateur** (le fil principal de la session) lance les agents,
   transmet le contexte, relaie les questions. Il ne rédige rien et ne tranche
   aucun fait.
-- **Pierre** décide des sujets, des arbitrages et de la publication (GO de
-  fusion).
+- **Pierre** décide des sujets et des arbitrages. **Rien n'est publié sans son
+  consentement explicite** (charte §6) ; son GO sur une PR vaut pour la mise en
+  ligne de cette PR sur le site, et pour rien d'autre.
 
 ---
 
@@ -96,8 +103,8 @@ Git, sur la branche partagée :
 (6) tsa-redacteur ─ CONTRÔLES : build, audit:blog-funnel, audit:blog-images,
         │   redaction:valeurs, aucun marqueur « À SOURCER », rendu Playwright
         │   (chrome) FR + EN à 1280 et 390 px, thèmes clair et sombre
-(7) tsa-redacteur ─ PR vers main (dossier + articles + images + index + sitemap) → GO de Pierre
-        │
+(7) tsa-redacteur ─ PR vers main (dossier + articles + images + index + sitemap)
+        │   → GO de Pierre = son consentement à la mise en ligne sur le site, rien d'autre
 (8) tsa-acquisition ─ VÉRIFICATION EN PRODUCTION ; relevé S+4 avec tsa-measure
 ```
 
@@ -157,7 +164,8 @@ ses faits. Personne ne tranche en silence :
 | ce qui est un fait, et sa source | le pigiste ; pour toute donnée de la base, `tsa-core` |
 | les mots, l'angle, les visuels | le rédacteur |
 | la découvrabilité : requête, titre, balises, maillage | `tsa-acquisition` |
-| le sujet, la publication, tout arbitrage | Pierre |
+| le sujet, tout arbitrage | Pierre |
+| toute publication (fusion, forum, réseau social, newsletter, soumission externe) | Pierre, par un consentement explicite, chaque fois (charte §6) |
 
 ---
 
@@ -179,7 +187,10 @@ ses faits. Personne ne tranche en silence :
 - **Jamais** :
   - rédiger un paragraphe ;
   - décider d'un fait ;
-  - fusionner sans le GO de Pierre.
+  - publier quoi que ce soit (fusion, forum, réseau social, newsletter,
+    soumission externe) sans le consentement explicite de Pierre. Quand il le
+    donne, l'orchestrateur le cite mot pour mot dans le brief de l'agent qui
+    agit.
 
 ---
 
@@ -190,5 +201,5 @@ ses faits. Personne ne tranche en silence :
 | fiches produit EN générées (`scripts/en-products/`), sitemap, robots, métadonnées des pages de l'application | `tsa-acquisition`, seul |
 | données de la base | `tsa-core` |
 | liens d'affiliation | `tsa-revenue` |
-| message sur un forum ou un réseau | rédigé par `tsa-acquisition`, **validé par Pierre** un par un |
-| rythme de publication | Pierre ; un article par semaine au plus, publié et indexé, vaut mieux que trois brouillons |
+| message sur un forum, publication sur un réseau social, newsletter, soumission à un moteur ou à un annuaire | préparé par `tsa-acquisition` ; diffusé **seulement avec le consentement explicite de Pierre**, chaque fois (charte §6) |
+| rythme de publication | **cible : un article par semaine**, evergreen d'abord (charte §1). Un article publié et indexé vaut mieux que trois brouillons |

@@ -21,7 +21,14 @@ images outillée : `npm run audit:blog-images`, bloquant, dans `audit:all` ; 17 
 33 sans visuel de corps sont listés en exception datée, qui tombe dès que l'article change.
 Vérificateur des valeurs produit citées par un article : `npm run redaction:valeurs`. §2
 (actualisation 31/08), §5, §5 bis (`seo-content-strategist` : ne plus invoquer), §5 ter
-(nouveau), §6 et §9 mis à jour.
+(nouveau), §6 et §9 mis à jour. Décisions de Pierre du même jour, intégrées à la charte
+(v1.1) et aux prompts :
+- images générées par **son outil MCP hébergé sur n8n** (voie ouverte dès qu'il est
+  connecté, coût assumé par lui ; prompt en anglais, sans texte incrusté, contrôle
+  visuel, légende « Illustration générée », prompt consigné dans `CREDITS.md`) ;
+- **un article par semaine, evergreen d'abord** ;
+- **aucune publication sans son consentement explicite**, son GO sur une PR ne valant
+  que pour le site.
 
 **Changelog v2.2.11 → v2.2.12** — **Filtres « Caractéristiques » inatteignables sur
 `/racquets`** (signalement de Pierre du 10/10/2026, `tsa-core`). Dès `lg`, la colonne de
@@ -626,6 +633,15 @@ ciblé) pour une correction ; veille (pigiste seul) sur demande.
 relance le destinataire. Un désaccord remonte à Pierre, il ne se tranche pas en
 silence. Faits : pigiste (et `tsa-core` pour la base). Mots : rédacteur.
 Découvrabilité : acquisition. Publication : Pierre.
+
+**Rythme.** Un article par semaine, **evergreen d'abord** (décision de Pierre du
+10/10/2026, charte §1) : l'actualité reste l'exception, et chaque brief justifie
+la durée de vie de son sujet.
+
+**Consentement.** Rien ne se publie sans le consentement explicite de Pierre :
+fusion sur `main`, forum, réseau social, newsletter, soumission externe
+(charte §6). Son GO sur une PR vaut pour la mise en ligne de cette PR sur le
+site, et pour rien d'autre.
 
 **Contrôles propres à la chaîne** :
 
