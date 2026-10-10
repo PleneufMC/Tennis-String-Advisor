@@ -223,26 +223,27 @@
       <p class="text-gray-600">Find the perfect setup for your playing style in a few steps</p>
     </div>
 
-    <!-- Progress Steps -->
-    <div class="flex justify-center items-center gap-4 mb-12">
+    <!-- Progress Steps — sous sm, les libellés passent aux lecteurs d'écran
+         seulement : la rangée demandait 445 px pour 358 à 390 px de large. -->
+    <div class="flex justify-center items-center gap-2 sm:gap-4 mb-12">
       <div class="flex items-center gap-2">
         <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold step-active" id="step1-indicator">1</div>
-        <span class="text-sm font-medium text-gray-700">Profile</span>
+        <span class="sr-only sm:not-sr-only text-sm font-medium text-gray-700">Profile</span>
       </div>
       <div class="w-16 h-1 bg-gray-200 rounded" id="progress1"></div>
       <div class="flex items-center gap-2">
         <div class="w-10 h-10 rounded-full flex items-center justify-center text-gray-500 font-bold step-pending" id="step2-indicator">2</div>
-        <span class="text-sm font-medium text-gray-500">Style</span>
+        <span class="sr-only sm:not-sr-only text-sm font-medium text-gray-500">Style</span>
       </div>
       <div class="w-16 h-1 bg-gray-200 rounded" id="progress2"></div>
       <div class="flex items-center gap-2">
         <div class="w-10 h-10 rounded-full flex items-center justify-center text-gray-500 font-bold step-pending" id="step3-indicator">3</div>
-        <span class="text-sm font-medium text-gray-500">Budget</span>
+        <span class="sr-only sm:not-sr-only text-sm font-medium text-gray-500">Budget</span>
       </div>
       <div class="w-16 h-1 bg-gray-200 rounded" id="progress3"></div>
       <div class="flex items-center gap-2">
         <div class="w-10 h-10 rounded-full flex items-center justify-center text-gray-500 font-bold step-pending" id="step4-indicator">4</div>
-        <span class="text-sm font-medium text-gray-500">Result</span>
+        <span class="sr-only sm:not-sr-only text-sm font-medium text-gray-500">Result</span>
       </div>
     </div>
 
