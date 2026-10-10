@@ -362,7 +362,11 @@ export default function RacquetsPage() {
             'w-full lg:w-72 flex-shrink-0 transition-all duration-300',
             showFilters ? 'block' : 'hidden lg:block'
           )}>
-            <div className="bg-white rounded-2xl shadow-lg p-6 lg:sticky lg:top-24">
+            {/* Collante sur lg, donc bornée à la fenêtre et défilable : sans
+                max-h, le bas de la colonne (« Caractéristiques ») restait
+                hors écran jusqu'à la fin des 129 cartes. Même règle que
+                /tennis-strings ; contrôlé par `npm run audit:sticky`. */}
+            <div className="bg-white rounded-2xl shadow-lg p-6 lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="font-bold text-lg text-gray-900 flex items-center gap-2">
                   <Filter className="h-5 w-5 text-green-600" />
