@@ -7,6 +7,35 @@
 > **Branche de référence** : `main` (seule branche longue ; la production Netlify en déploie)
 > **Repo** : https://github.com/PleneufMC/Tennis-String-Advisor.git
 
+**Changelog (numéro de version à fixer à la fusion)** — **Nature des notes /10 des cordages
+étiquetée sur les surfaces EN, notes retirées des métadonnées** (décision de Pierre du 10/10/2026 :
+« Cordages : garder les notes et les étiqueter partout », suite à la PR #103 ; `tsa-acquisition`).
+**Aucune note modifiée**, aucune donnée, aucun RCS ni alerte bras touchés (`audit:ratings`
+inchangé : 5,12 % / 19,56 %). Trois libellés, lus tels quels dans `public/js/rating-labels.js`
+(source unique, requise aussi par le générateur des fiches) : « TSA editorial rating » (156
+cordages), « TSA editorial rating, harmonised with tester reviews » (les 18 de
+`tester-ratings.ts`), « Not published » (7 sans note), et la mention « Team assessment, not
+laboratory-measured. Stiffness (lb/in) is the measured quantity behind the RCS. ». Le libellé
+précède toujours la première note : fiches `/en/strings/<id>.html` (181 ; les 7 sans note n'ont
+plus qu'une ligne « Not published »), catalogue `strings.html` (cartes, filtres), comparateur
+(ligne « Rating basis »), configurateur (carte du cordage recommandé). La liste des 18 est relue
+dans `src/data/tester-ratings.ts` à chaque génération (`scripts/en-products/rating-basis.mjs`,
+échec bruyant si un id manque au catalogue) et écrite dans `public/data/string-rating-basis.json`
+(non versionné) pour les pages dynamiques : repère transitoire, le catalogue EN de `tsa-core` ne
+porte pas ce drapeau (question posée). Repli si ce fichier est injoignable : libellé éditorial
+simple et erreur en console, jamais une note sans libellé. **Métadonnées** : plus aucune note
+dans les `description`/`og:description` des 181 fiches EN (type, rigidité, tension et jauges à
+la place), de `strings.html` ni du bloc `generateMetadata` de la fiche cordage FR
+(`src/app/tennis-strings/[slug]/page.tsx`, ce bloc seul) ; aucune note dans le JSON-LD. Contrôle
+`npm run audit:string-labels` (`scripts/qa-string-rating-labels.mjs`, périmètre `tsa-measure`,
+ajouté à `audit:all`) : fiches, métadonnées EN et FR (y compris la sortie de `npm run build`),
+pages dynamiques, 23 tests négatifs. ⚠️ Restent, non traités ici : l'étiquetage des surfaces FR
+(`tsa-core`), la description FR de `/tennis-strings` (`src/app/tennis-strings/layout.tsx`
+annonce encore « contrôle, confort, effet et durabilité »), le tri des candidats du
+configurateur EN par note éditoriale avec un repli à 5 quand la note manque, et deux articles EN qui citent ces notes
+dans leur corps (`best-polyester-tennis-strings-2026`, `polyester-strings-tennis-elbow`,
+propositions au rédacteur).
+
 **Changelog v2.3.3 → v2.3.4** — **Trois composants aux faux avis supprimés** (décision de Pierre du
 10/10/2026, repérés par `tsa-acquisition` pendant la PR #102). `src/components/sections/testimonials.tsx`
 (témoignages nominatifs inventés, « 4.9/5 », « 50,000+ Utilisateurs »), `featured-products.tsx` (4,8 sur
