@@ -1,11 +1,21 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.2.11
+> **Version** : 2.2.12
 > **Date** : 10 octobre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
 > **Branche de référence** : `main` (seule branche longue ; la production Netlify en déploie)
 > **Repo** : https://github.com/PleneufMC/Tennis-String-Advisor.git
+
+**Changelog v2.2.11 → v2.2.12** — **Filtres « Caractéristiques » inatteignables sur
+`/racquets`** (signalement de Pierre du 10/10/2026, `tsa-core`). Dès `lg`, la colonne de
+filtres est collante (`lg:sticky lg:top-24`) mais n'était pas bornée : 800 px de haut
+sous 96 px d'en-tête, son bas (« Caractéristiques », poids/RA/prix) restait hors écran
+jusqu'à 33 200 px de défilement sur 33 909 à 1280 × 800 — clic impossible. Défaut
+antérieur à #97 : `304589b` (13/09) avait borné la colonne de `/tennis-strings`, pas
+celle de `/racquets`. Corrigé par la même borne (`lg:max-h-[calc(100vh-7rem)]
+lg:overflow-y-auto`). Garde-fou `npm run audit:sticky` (statique ; `--url` pour le
+contrôle navigateur).
 
 **Changelog v2.2.10 → v2.2.11** — **Photos produit manquantes** (`tsa-core`, demande de
 Pierre du 09/10/2026). Couverture **58/129 raquettes, 53/181 cordages** (52/52 avant) :
@@ -375,6 +385,11 @@ UX/UI du 13/09 puis reproduits en mesure Playwright avant correction :
   disparaît. Corrigé en resserrant la nav entre `lg` et `xl` ; espacements
   pleins retrouvés dès `xl`, aucun lien masqué. Débordement 69/36 px → 0.
   Défaut absent de l'audit, qui ne teste que 390 et 1440 px.
+- **`/racquets` dès `lg` (corrigé le 10/10/2026)** : colonne de filtres collante
+  non bornée, « Caractéristiques » hors écran et non cliquable à 1280 × 800 et
+  1024 × 700 jusqu'au bout de la liste. Bornée comme `/tennis-strings` ;
+  `npm run audit:sticky` échoue sur toute classe `sticky` sans `max-h-` ni
+  `overflow-y-auto` (hors barres `top-0`).
 
 ### La mesure (1er janv. → 9 août 2026, 221 jours)
 
@@ -647,4 +662,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.2.11 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.2.12 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
