@@ -103,8 +103,8 @@ function ratingRow(label, value) {
 
 /**
  * Bloc « Playing ratings (out of 10) » d'une fiche cordage. La nature des notes se lit
- * AVANT la première note (décision de Pierre du 10/10/2026) : « TSA editorial rating »
- * ou « …, harmonised with tester reviews », puis la mention courte. Sans aucune note
+ * AVANT la première note : « TSA editorial rating » ou « …, harmonised with tester
+ * reviews » (libellés de référence du 10/10/2026), puis la mention courte. Sans aucune note
  * publiée, une seule ligne « Not published » remplace les cinq lignes. Les lignes
  * suivent RATING_LABELS.NOTE_FIELDS : la liste qui décide de « note publiée » est donc
  * celle qui est affichée.
@@ -276,9 +276,10 @@ export function stringPage(s, images = {}) {
   const tension = has(s.tension_min) && has(s.tension_max) ? `${s.tension_min} – ${s.tension_max}` : null;
   const gauges = has(s.gauges) ? s.gauges.join(', ') : null;
   const title = `${name}: ${s.type.toLowerCase()} string stiffness, tension and gauges`;
-  // Caractéristiques seulement : aucune note /10 dans les métadonnées (décision de
-  // Pierre du 10/10/2026). Une meta ne dit pas en quelques mots que la note est une
-  // appréciation de l'équipe ; le libellé vit dans la fiche, avant la première note.
+  // Caractéristiques seulement : aucune note /10 dans les métadonnées. Une meta ne peut
+  // pas porter le libellé de la note (appréciation de l'équipe) : il vit dans la fiche,
+  // avant la première note (suite du principe décidé par Pierre le 10/10/2026 : les
+  // notes s'étiquettent).
   const description =
     `${name}: ${s.type.toLowerCase()} string, stiffness ${s.stiffness} lb/in` +
     (tension ? `, recommended tension ${s.tension_min}-${s.tension_max} kg` : '') +

@@ -1,11 +1,16 @@
 /**
  * Nature des notes /10 des cordages — surfaces EN (tsa-acquisition, 10/10/2026).
  *
- * Décision de Pierre du 10/10/2026 : « Cordages : garder les notes et les étiqueter
- * partout. » Les notes /10 des cordages sont une appréciation de l'équipe, pas une
- * mesure de laboratoire ; seule la rigidité (lb/in) est mesurée et fonde le RCS. Ni
- * les chaînes de testeurs ni Tennis Warehouse ne sont jamais cités comme auteurs de
- * ces notes (charte, F5) : les libellés ci-dessous sont les seuls à employer.
+ * Principe décidé par Pierre le 10/10/2026 : « Cordages : garder les notes et les
+ * étiqueter partout. » Les notes /10 des cordages sont une appréciation de l'équipe,
+ * pas une mesure de laboratoire ; la rigidité (lb/in), indiquée à part, est la donnée
+ * du cordage que le RCS utilise. Ni les chaînes de testeurs ni Tennis Warehouse ne
+ * sont jamais cités comme auteurs de ces notes (charte, F5).
+ *
+ * Les libellés ci-dessous sont les LIBELLÉS DE RÉFÉRENCE arrêtés le 10/10/2026 (principe
+ * décidé par Pierre ; formulation exacte à valider par lui). `npm run audit:string-labels`
+ * les compare mot pour mot à sa propre constante de référence : en changer un se fait
+ * aux deux endroits.
  *
  * SOURCE UNIQUE des libellés. Ce fichier est chargé tel quel par les pages
  * dynamiques (strings, compare, configurator) ET lu par le générateur des fiches
@@ -38,8 +43,11 @@
   };
 
   // Mention courte, à placer près des notes ; sans note publiée, elle n'a pas d'objet
-  // et n'est pas affichée.
-  var NOTE = 'Team assessment, not laboratory-measured. Stiffness (lb/in) is the measured quantity behind the RCS.';
+  // et n'est pas affichée. Elle n'affirme PAS que la rigidité est « mesurée » : ce n'est
+  // pas assuré pour les 181 fiches (certaines n'ont aucune source, TWU mesure chaque
+  // jauge séparément ; règle 3, PR #105). Elle dit seulement que la rigidité, indiquée
+  // à part, est la donnée du cordage utilisée par le RCS.
+  var NOTE = 'Team assessment, not laboratory-measured. Stiffness (lb/in), shown separately, is the string data the RCS uses.';
 
   // Champs /10 d'un cordage affichés sur les surfaces EN.
   var NOTE_FIELDS = ['control', 'comfort', 'spin', 'power', 'durability'];

@@ -2,16 +2,20 @@
 /**
  * QA NATURE DES NOTES DES CORDAGES — surfaces EN (tsa-acquisition, 10/10/2026).
  *
- * Décision de Pierre du 10/10/2026 : « Cordages : garder les notes et les étiqueter
- * partout. » Constat d'origine (PR #103, docs/arbitrages/2026-10-10_provenance-notes-
- * cordages.html) : les notes /10 des cordages ne viennent pas de Tennis Warehouse (12
- * reprises sur 1 182) ; l'origine de 1 062 d'entre elles est inconnue ; seule la rigidité
- * (lb/in) est mesurée et fonde le RCS. Ni les chaînes de testeurs ni Tennis Warehouse ne
- * sont cités comme auteurs de ces notes. Ce script vérifie, sans rien modifier :
+ * Principe décidé par Pierre le 10/10/2026 : « Cordages : garder les notes et les
+ * étiqueter partout. » Constat d'origine (PR #103, docs/arbitrages/2026-10-10_provenance-
+ * notes-cordages.html) : les notes /10 des cordages ne viennent pas de Tennis Warehouse
+ * (12 reprises sur 1 182) ; l'origine de 1 062 d'entre elles est inconnue. La rigidité
+ * (lb/in), indiquée à part, est la donnée du cordage que le RCS utilise ; qu'elle soit
+ * « mesurée » n'est pas assuré pour les 181 fiches (PR #105, règle 3) : aucune surface ne
+ * l'affirme. Ni les chaînes de testeurs ni Tennis Warehouse ne sont cités comme auteurs
+ * de ces notes. Ce script vérifie, sans rien modifier :
  *
- *  1. LIBELLÉS — public/js/rating-labels.js porte, MOT POUR MOT, les trois libellés et la
- *     mention courte arrêtés (CONTRACT ci-dessous). Changer un libellé impose de changer
- *     le contrat ici : un glissement de vocabulaire est toujours un diff visible.
+ *  1. LIBELLÉS DE RÉFÉRENCE — public/js/rating-labels.js porte, MOT POUR MOT, les trois
+ *     libellés et la mention courte de la constante CONTRACT ci-dessous (libellés arrêtés
+ *     le 10/10/2026 ; le principe est celui de Pierre, la formulation exacte est à
+ *     valider par lui). Changer un libellé impose de changer le contrat ici : un
+ *     glissement de vocabulaire est toujours un diff visible.
  *  2. CORDAGES HARMONISÉS — trois lectures indépendantes de la même liste doivent
  *     s'accorder : le tableau de src/data/tester-ratings.ts lu par expression régulière,
  *     le même tableau évalué par le générateur, et public/data/string-rating-basis.json
@@ -33,10 +37,17 @@
  *     build` (.next) est présente et plus récente que ce fichier, les pages FR qu'elle a
  *     produites n'ont ni note dans title/description/og/twitter ni propriété de note
  *     dans leur JSON-LD (sortie périmée : AVERT, pas d'échec).
- *  7. TESTS NÉGATIFS — chaque garde-fou est éprouvé sur une altération qui DOIT échouer
+ *  7. MENTION FR ET FORMULE ÉCARTÉE — (a) toute occurrence, dans src/, de la première
+ *     phrase de la mention FR de référence (CONTRACT.noteFr, pour l'agent FR) est suivie
+ *     du texte entier (apostrophes, entités JSX et espaces normalisés) ; aucune
+ *     occurrence = étiquetage FR pas encore fusionné, contrôle inactif (AVERT) ; (b) aucune
+ *     surface (fiches et pages EN, public/js, src/) n'affirme que la rigidité est « la
+ *     grandeur mesurée » : pas assuré pour les 181 fiches.
+ *  8. TESTS NÉGATIFS — chaque garde-fou est éprouvé sur une altération qui DOIT échouer
  *     (libellé retiré, faux libellé, libellé placé après les notes, note modifiée, note
  *     dans une meta, aggregateRating, note hors bloc, page sans libellés, liste
- *     incomplète, note dans la meta FR, libellé reformulé…). Un garde-fou muet échoue.
+ *     incomplète, note dans la meta FR, libellé reformulé, ancienne mention rétablie,
+ *     mention FR altérée…) et sur un témoin qui DOIT passer. Un garde-fou muet échoue.
  *
  * Ce script n'ouvre pas de navigateur : l'affichage des pages dynamiques (catalogue,
  * comparateur, configurateur) est vérifié en exécution par la PR, pas ici.
@@ -58,13 +69,21 @@ const FICHES_DIR = 'public/en/strings';
 const LABELS_JS = 'public/js/rating-labels.js';
 const FR_PAGE = 'src/app/tennis-strings/[slug]/page.tsx';
 
-// Le contrat : les libellés de Pierre, à utiliser tels quels (10/10/2026).
+// Constante de référence : libellés arrêtés le 10/10/2026. Le principe (étiqueter les notes)
+// est décidé par Pierre ; la formulation exacte reste à valider par lui : ne pas lui
+// attribuer les mots. Le contrôle est mot pour mot par rapport à cette constante.
 const CONTRACT = {
   editorial: 'TSA editorial rating',
   harmonised: 'TSA editorial rating, harmonised with tester reviews',
   none: 'Not published',
-  note: 'Team assessment, not laboratory-measured. Stiffness (lb/in) is the measured quantity behind the RCS.',
+  note: 'Team assessment, not laboratory-measured. Stiffness (lb/in), shown separately, is the string data the RCS uses.',
+  // Même mention en français, pour l'étiquetage des surfaces FR (agent FR) : sert au seul contrôle de dérive.
+  noteFr: "Appréciation de l'équipe, non mesurée en laboratoire. La rigidité (lb/in), indiquée à part, est la donnée du cordage utilisée par le RCS.",
 };
+// Première phrase de la mention FR : repère les occurrences dans src/.
+const NOTE_FR_LEAD = "Appréciation de l'équipe";
+// Formules écartées : « la rigidité est la grandeur mesurée » n'est pas assurée pour les 181 fiches.
+const DISCARDED_RE = /measured quantity|grandeur mesur[ée]e/i;
 const NOTE_FIELDS = ['control', 'comfort', 'spin', 'power', 'durability'];
 
 let failures = 0;
@@ -254,6 +273,39 @@ function labelsContractProblems(labels) {
   return problems;
 }
 
+// Normalisation pour comparer la mention FR écrite dans du code (JSX, chaînes, entités) à la référence.
+const normFr = (s) =>
+  s
+    .replace(/\\(['"`])/g, '$1') // apostrophe échappée dans une chaîne
+    .replace(/['"`]\s*\+\s*['"`]/g, '') // chaînes littérales mises bout à bout
+    .replace(/\{\s*(['"`])\s\1\s*\}/g, ' ') // {' '} de JSX
+    .replace(/&apos;|&#39;|&#x27;|&rsquo;|[’‘]/g, "'")
+    .replace(/&nbsp;|[  ]/g, ' ')
+    .replace(/\s+/g, ' ');
+
+/** Chaque occurrence de la première phrase de la mention FR doit être suivie du texte de référence entier. */
+function frMentionProblems(files) {
+  const ref = normFr(CONTRACT.noteFr);
+  const lead = normFr(NOTE_FR_LEAD);
+  const problems = [];
+  let found = 0;
+  for (const { path: p, src } of files) {
+    const n = normFr(src);
+    for (let i = n.indexOf(lead); i !== -1; i = n.indexOf(lead, i + 1)) {
+      found++;
+      const fragment = n.slice(i, i + ref.length);
+      if (fragment !== ref) problems.push(`${p} : « ${fragment.slice(0, 80)}… » diffère de la mention FR de référence`);
+    }
+  }
+  return { problems, found };
+}
+
+/** Formule écartée (« la rigidité est la grandeur mesurée ») dans un texte de surface. */
+function discardedPhraseProblems(where, text) {
+  const m = DISCARDED_RE.exec(text);
+  return m ? [`${where} : formule écartée « ${m[0]} » (la rigidité mesurée n'est pas assurée pour les 181 fiches, règle 3)`] : [];
+}
+
 // ---------------------------------------------------------------------------
 // Exécution
 // ---------------------------------------------------------------------------
@@ -263,7 +315,7 @@ process.stdout.write('QA nature des notes des cordages (EN)\n');
 {
   const problems = labelsContractProblems(RATING_LABELS);
   if (problems.length) problems.forEach(fail);
-  else ok('libellés : les trois libellés et la mention courte sont ceux de Pierre (10/10/2026), mot pour mot');
+  else ok('libellés : les trois libellés et la mention courte sont conformes, mot pour mot, aux libellés de référence arrêtés le 10/10/2026 (principe décidé par Pierre)');
 }
 
 // 2. Cordages harmonisés ----------------------------------------------------
@@ -372,6 +424,10 @@ const frSource = readFileSync(path.join(ROOT, FR_PAGE), 'utf8');
 // 6 bis. Sortie du build Next (si présente et à jour) : les pages FR réellement produites
 const FR_BUILD_DIR = '.next/server/app/tennis-strings';
 let frBuilt = null;
+// Page FR minimale au format de la sortie de Next (balises meta auto-fermantes), pour éprouver
+// le garde-fou même quand .next est absent : le nombre de tests négatifs ne dépend pas du build.
+const FR_PAGE_SAMPLE =
+  '<html><head><title>Head Lynx Tour — cordage polyester</title><meta name="description" content="Head Lynx Tour : cordage polyester, rigidité 210 lb/in."/></head><body></body></html>';
 {
   const dir = path.join(ROOT, FR_BUILD_DIR);
   const buildId = path.join(ROOT, '.next/BUILD_ID');
@@ -392,7 +448,39 @@ let frBuilt = null;
   }
 }
 
-// 7. Tests négatifs -----------------------------------------------------------
+// 7. Mention FR de référence et formule écartée --------------------------------
+const walkSrc = (dir) =>
+  readdirSync(path.join(ROOT, dir), { withFileTypes: true }).flatMap((e) => {
+    const rel = `${dir}/${e.name}`;
+    if (e.isDirectory()) return walkSrc(rel);
+    return /\.(tsx?|mts|jsx?|mjs)$/.test(e.name) ? [rel] : [];
+  });
+{
+  const before = failures;
+  const srcFiles = walkSrc('src').map((p) => ({ path: p, src: readFileSync(path.join(ROOT, p), 'utf8') }));
+  const fr = frMentionProblems(srcFiles);
+  fr.problems.forEach(fail);
+  if (fr.found === 0) warn('mention FR de référence absente de src/ (étiquetage FR pas encore fusionné) : contrôle de dérive inactif');
+  const jsFiles = readdirSync(path.join(ROOT, 'public/js')).filter((f) => f.endsWith('.js')).map((f) => `public/js/${f}`);
+  let scanned = 0;
+  for (const r of rows) {
+    scanned++;
+    discardedPhraseProblems(`fiche EN ${r.id}`, rendered.get(r.id)).forEach(fail);
+  }
+  for (const f of [...topLevelPages, ...jsFiles, ...srcFiles.map((s) => s.path)]) {
+    scanned++;
+    const text = srcFiles.find((s) => s.path === f)?.src ?? readFileSync(path.join(ROOT, f), 'utf8');
+    discardedPhraseProblems(f, text).forEach(fail);
+  }
+  if (failures === before) {
+    ok(
+      `mention FR et formule écartée : ${fr.found} occurrence(s) de la mention FR dans src/${fr.found ? ', conformes' : ''} ; ` +
+        `aucune des ${scanned} surfaces (fiches et pages EN, public/js, src/) n'affirme « grandeur mesurée »`,
+    );
+  }
+}
+
+// 8. Tests négatifs -----------------------------------------------------------
 {
   const before = failures;
   const pick = (kind) => rows.find((r) => expectedOf(r) === kind);
@@ -457,9 +545,27 @@ let frBuilt = null;
     ['liste des harmonisés incomplète', () => basisFileProblems({ harmonised: fromGenerator.slice(1) }, fromGenerator)],
     ['cordage non harmonisé dans la liste', () => basisFileProblems({ harmonised: [...fromGenerator, E.id] }, fromGenerator)],
     ['note dans la meta FR', () => frMetadataProblems(swap(frSource, 'Calculez le RCS de ce cordage avec votre raquette.`', 'Contrôle ${string.control}/10. Calculez le RCS de ce cordage avec votre raquette.`'))],
-    ...(frBuilt ? [["note dans la meta d'une page FR construite", () => metadataProblems(swap(frBuilt, /(<meta name="description" content=")/, '$1Contrôle 9/10. '), 'page FR')]] : []),
+    ["note dans la meta d'une page FR construite", () => metadataProblems(swap(frBuilt ?? FR_PAGE_SAMPLE, /(<meta name="description" content=")/, '$1Contrôle 9/10. '), 'page FR')],
     ['libellé du contrat modifié', () => labelsContractProblems({ ...RATING_LABELS, LABEL: { ...RATING_LABELS.LABEL, harmonised: 'TSA rating, harmonised' } })],
     ['URL de la liste des harmonisés ≠ fichier généré', () => labelsContractProblems({ ...RATING_LABELS, BASIS_URL: '/data/harmonised.json' })],
+    [
+      'ancienne mention (« measured quantity ») rétablie dans une fiche',
+      () => ficheProblems(inSection(hHtml, (s) => swap(s, CONTRACT.note, 'Team assessment, not laboratory-measured. Stiffness (lb/in) is the measured quantity behind the RCS.')), ctx(H)),
+    ],
+    [
+      'ancienne mention rétablie dans la constante des libellés',
+      () => labelsContractProblems({ ...RATING_LABELS, NOTE: 'Team assessment, not laboratory-measured. Stiffness (lb/in) is the measured quantity behind the RCS.' }),
+    ],
+    ['formule écartée dans une page EN', () => discardedPhraseProblems('page', swap(stringsHtml, '</body>', '<p>Stiffness is the measured quantity behind the RCS.</p></body>'))],
+    ['formule écartée en français', () => discardedPhraseProblems('src/x.tsx', 'La rigidité est la grandeur mesurée derrière le RCS.')],
+    [
+      'mention FR altérée dans src/',
+      () => frMentionProblems([{ path: 'src/x.tsx', src: '<p>Appréciation de l’équipe, non mesurée en laboratoire. La rigidité est la grandeur mesurée derrière le RCS.</p>' }]).problems,
+    ],
+    [
+      'mention FR tronquée dans src/',
+      () => frMentionProblems([{ path: 'src/x.tsx', src: "const NOTE = 'Appréciation de l\\'équipe, non mesurée en laboratoire.';" }]).problems,
+    ],
   ];
   for (const [name, run] of negatives) {
     let found;
@@ -471,7 +577,24 @@ let frBuilt = null;
     }
     if (found.length === 0) fail(`test négatif : garde-fou muet sur « ${name} »`);
   }
-  if (failures === before) ok(`tests négatifs : ${negatives.length} altérations détectées (libellé, nature, ordre, note, meta, JSON-LD, page dynamique, liste, meta FR, contrat)`);
+  // Témoins positifs : la mention FR correctement écrite (JSX avec entité et {' '}, apostrophe
+  // typographique, chaînes mises bout à bout, apostrophe échappée) DOIT passer, une fois chacune.
+  const controls = [
+    ["JSX avec &apos; et {' '}", "<p>\n  Appréciation de l&apos;équipe, non mesurée en laboratoire. La rigidité (lb/in),{' '}\n  indiquée à part, est la donnée du cordage utilisée par le RCS.\n</p>"],
+    ['apostrophe typographique', `<p>${CONTRACT.noteFr.replace("l'équipe", 'l’équipe')}</p>`],
+    ['chaînes mises bout à bout', `const NOTE = 'Appréciation de l’équipe, non mesurée en laboratoire. ' + 'La rigidité (lb/in), indiquée à part, est la donnée du cordage utilisée par le RCS.';`],
+    ['apostrophe échappée', `const NOTE = '${CONTRACT.noteFr.replace("l'équipe", "l\\'équipe")}';`],
+  ];
+  for (const [name, src] of controls) {
+    const r = frMentionProblems([{ path: 'src/x.tsx', src }]);
+    if (r.problems.length > 0 || r.found !== 1) fail(`témoin positif « ${name} » : la mention FR correcte est refusée ou introuvable (${r.problems[0] ?? `${r.found} occurrence(s)`})`);
+  }
+  if (failures === before) {
+    ok(
+      `tests négatifs : ${negatives.length} altérations détectées (libellé, nature, ordre, note, meta, JSON-LD, page dynamique, liste, meta FR, contrat, ancienne mention, mention FR) ; ` +
+        `${controls.length} témoins positifs acceptés (mention FR bien écrite)`,
+    );
+  }
 }
 
 process.stdout.write(`\n${failures === 0 ? 'Conforme' : 'NON CONFORME'} — ${failures} échec(s), ${warnings} avertissement(s)\n`);

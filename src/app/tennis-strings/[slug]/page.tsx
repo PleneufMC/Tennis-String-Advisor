@@ -39,9 +39,10 @@ export function generateMetadata({ params }: { params: { slug: string } }): Meta
   // Chaque fragment n'est émis que si la valeur existe (option A, 29/09/2026) :
   // jamais une tension inventée dans un extrait de recherche.
   // Des caractéristiques seulement — type, rigidité, tension, jauges — et aucune note /10 :
-  // décision de Pierre du 10/10/2026 (« garder les notes et les étiqueter partout »). Une note
-  // est une appréciation de l'équipe, non mesurée en laboratoire ; elle se lit dans la fiche,
-  // avec son libellé, pas dans un extrait de recherche qui ne peut pas le porter.
+  // suite du principe décidé par Pierre le 10/10/2026 (« garder les notes et les étiqueter
+  // partout »). Une note est une appréciation de l'équipe, non mesurée en laboratoire ; elle
+  // se lit dans la fiche, avec son libellé, pas dans un extrait de recherche qui ne peut pas
+  // le porter.
   const tension = string.recommendedTension;
   const description =
     `${name} : cordage ${string.type.toLowerCase()}, rigidité ${string.stiffness} lb/in, ` +

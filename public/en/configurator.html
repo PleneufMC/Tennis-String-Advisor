@@ -618,7 +618,7 @@
             </div>
             <span class="bg-purple-100 text-purple-800 text-sm font-medium px-3 py-1 rounded-full" id="rec-string-type">—</span>
           </div>
-          <!-- Nature of the ratings (Pierre's decision of 10/10/2026): the label comes before the notes -->
+          <!-- Nature of the ratings (labelling principle decided on 10/10/2026): the label comes before the notes -->
           <p class="mt-3 text-sm font-medium text-gray-700" id="rec-string-basis"></p>
           <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-3">
             <div>
@@ -1251,8 +1251,8 @@
         spin: TSACatalog.display(s.spin, '/10'),
         control: TSACatalog.display(s.control, '/10'),
         comfort: TSACatalog.display(s.comfort, '/10'),
-        // Nature des notes (décision de Pierre du 10/10/2026) : « TSA editorial rating »,
-        // « …, harmonised with tester reviews » ou « Not published » (/js/rating-labels.js).
+        // Nature des notes (libellés de référence du 10/10/2026, /js/rating-labels.js) :
+        // « TSA editorial rating », « …, harmonised with tester reviews » ou « Not published ».
         basis: TSARatingLabels.basis(s),
         basisLabel: TSARatingLabels.label(s),
         price: TSACatalog.display(s.price_eur, '€'),
