@@ -7,6 +7,46 @@
 > **Branche de référence** : `main` (seule branche longue ; la production Netlify en déploie)
 > **Repo** : https://github.com/PleneufMC/Tennis-String-Advisor.git
 
+**Changelog (numéro de version à fixer à la fusion)** — **Comptages du catalogue : plus aucun
+total écrit à la main sur les pages EN, et un garde-fou** (`tsa-acquisition`, demande du 10/10/2026
+après la fusion des deux doublons, 181 → 179 cordages). **Constat** : quatre pages EN statiques
+annonçaient encore « 181 strings » — `index.html` (méta, `og:description`, phrase d'accroche, tuile de
+statistique, carte « String Catalog »), `strings.html` (méta, `og:description`, JSON-LD
+`numberOfItems: 181`), `faq.html` (première réponse), `auth.html` (avantages du compte) — et rien ne
+le signalait ; les 129 raquettes étaient justes mais écrites à la main de la même façon.
+**Principe** : pas de comptage exact écrit à la main quand on peut l'éviter. Les textes statiques
+(méta, accroches, tuiles) portent une **borne basse vraie** — « more than 120 racquets », « more than
+170 strings », « 120+ », « 170+ » — lisible par les moteurs sans JavaScript et sans requête de plus
+(`catalog.json` pèse 134 Ko : trop pour deux chiffres de l'accueil). Les pages catalogue lisaient
+déjà le total dans `catalog.json` (« 179 strings from 22 different brands ») ; les pages FR le lisent
+au build (`stringsDatabase.length`, relu dans la sortie de `npm run build` : « 129 raquettes »,
+« 179 cordages »). `numberOfItems` est **retiré** de `strings.html` et `racquets.html` : une `ItemList`
+de deux exemples ne peut pas déclarer un total qu'un JSON-LD statique ne tient pas à jour
+(génération au build écartée : elle réécrirait des fichiers versionnés). Au passage, la description
+JSON-LD de `racquets.html` (« detailed specs: weight, head size, balance, RA stiffness ») est alignée
+sur la phrase de l'accueil corrigée le 10/10 : « where published » (RA absent de 29 fiches,
+équilibre de 91, sur 129). **Garde-fou** `npm run audit:comptages` (`scripts/qa-comptages-catalogue.mjs`,
+**périmètre `tsa-measure`, signalé dans la PR**, ajouté à `audit:all`) : les deux totaux sont lus dans
+`src/data/` par le chargeur de `catalog.json` ; échec si une page de `public/` (hors blog), un texte de
+`src/` (blocs `metadata`, JSON-LD, JSX ; analyse syntaxique, commentaires ignorés), un gabarit de
+`scripts/en-products` ou la sortie du build (`.next`, si à jour) annonce un total « N
+cordages|strings|raquettes|racquets » (N de 100 à 250 ; aussi « 181 fiches cordages », « 181 string
+pages », une tuile en deux `<div>`, `numberOfItems`) différent du catalogue. Une borne (« more than »,
+« 170+ », « plus de ») n'échoue que si elle est fausse ; « 102 polyesters » et « 102 polyester strings »
+(sous-familles) ne déclenchent rien. Blog : AVERT seulement (5 aujourd'hui : 4 phrases datées du
+9 octobre, et `guide-materiel-tennis.html:908`, « 181 cordages » sans date, au rédacteur).
+Exceptions : liste explicite, datée, motivée, vide à ce jour ; une exception inutilisée échoue.
+117 tests négatifs et 46 témoins positifs permanents ; **le contrôle échoue sur `origin/main`**
+(760d835 : 10 échecs, lignes citées dans la PR). Aucune donnée, aucun RCS, aucune alerte bras,
+aucune note touchés. **Rigidité « mesurée »** : balayage de 645 fichiers (pages EN, fiches générées,
+`public/js`, sortie du build FR) — aucune formulation ne présente la rigidité d'un cordage comme
+mesurée ; la mention d'étiquetage (« est la donnée du cordage utilisée par le RCS ») est inchangée.
+⚠️ Restent, non traités ici : des textes français dans les pages EN (compteur de résultats
+« cordage(s) trouvé(s) » / « raquette(s) trouvée(s) » de `strings.html` et `racquets.html`, noms
+« Cordages » / « Raquettes » du fil d'Ariane JSON-LD) ; « 29 raquettes sur 129 » écrit en dur dans
+`configurator/page.tsx` (verrou, et pas un total accolé à un nom : hors garde-fou) ; les cinq mentions
+du blog ci-dessus (`tsa-redacteur`).
+
 **Changelog v2.3.8 → v2.3.9** — **Images officielles des fabricants**
 (`tsa-core`, décision de Pierre du 10/10/2026, verbatim : « Il n'y a aucune restriction à utiliser
 les images officielles des raquettes. Jamais un fabricant ne s'opposera à la promotion des produits
@@ -897,6 +937,7 @@ pas. Les modifications d'articles existants y restent soumises.
   npm run audit:contrast      # si un composant visuel est touché
   npm run audit:blog-funnel   # si public/blog ou public/en/blog est touché
   npm run audit:blog-images   # idem (règle images, §5 ter)
+  npm run audit:comptages     # si une page publique, un bloc metadata ou src/data change
   ```
 - **Pas de suite de tests dans le dépôt.** Tout agent qui modifie une fonction de
   calcul ou une règle métier **ajoute un contrôle** dans le script `qa-*`
