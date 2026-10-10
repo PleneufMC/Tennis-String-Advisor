@@ -248,6 +248,9 @@ function labelsContractProblems(labels) {
   }
   if (labels.NOTE !== CONTRACT.note) problems.push(`${LABELS_JS} : mention courte = « ${labels.NOTE} », « ${CONTRACT.note} » attendue`);
   if (labels.NOTE_FIELDS.join() !== NOTE_FIELDS.join()) problems.push(`${LABELS_JS} : NOTE_FIELDS = ${labels.NOTE_FIELDS.join()}, ${NOTE_FIELDS.join()} attendu`);
+  // Les pages lisent l'URL ; le générateur écrit le chemin : les deux doivent désigner le même fichier.
+  const served = `/${BASIS_JSON_PATH.replace(/^public\//, '')}`;
+  if (labels.BASIS_URL !== served) problems.push(`${LABELS_JS} : BASIS_URL = ${labels.BASIS_URL}, le générateur écrit ${BASIS_JSON_PATH} (servi sur ${served})`);
   return problems;
 }
 
@@ -456,6 +459,7 @@ let frBuilt = null;
     ['note dans la meta FR', () => frMetadataProblems(swap(frSource, 'Calculez le RCS de ce cordage avec votre raquette.`', 'Contrôle ${string.control}/10. Calculez le RCS de ce cordage avec votre raquette.`'))],
     ...(frBuilt ? [["note dans la meta d'une page FR construite", () => metadataProblems(swap(frBuilt, /(<meta name="description" content=")/, '$1Contrôle 9/10. '), 'page FR')]] : []),
     ['libellé du contrat modifié', () => labelsContractProblems({ ...RATING_LABELS, LABEL: { ...RATING_LABELS.LABEL, harmonised: 'TSA rating, harmonised' } })],
+    ['URL de la liste des harmonisés ≠ fichier généré', () => labelsContractProblems({ ...RATING_LABELS, BASIS_URL: '/data/harmonised.json' })],
   ];
   for (const [name, run] of negatives) {
     let found;

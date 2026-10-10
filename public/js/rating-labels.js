@@ -37,11 +37,9 @@
     none: 'Not published'
   };
 
-  // Mention courte, à placer près des notes. Les deux phrases sont séparées pour
-  // les rares endroits où la première n'a pas d'objet (aucune note publiée).
-  var NOTE_ASSESSMENT = 'Team assessment, not laboratory-measured.';
-  var NOTE_STIFFNESS = 'Stiffness (lb/in) is the measured quantity behind the RCS.';
-  var NOTE = NOTE_ASSESSMENT + ' ' + NOTE_STIFFNESS;
+  // Mention courte, à placer près des notes ; sans note publiée, elle n'a pas d'objet
+  // et n'est pas affichée.
+  var NOTE = 'Team assessment, not laboratory-measured. Stiffness (lb/in) is the measured quantity behind the RCS.';
 
   // Champs /10 d'un cordage affichés sur les surfaces EN.
   var NOTE_FIELDS = ['control', 'comfort', 'spin', 'power', 'durability'];
@@ -110,8 +108,6 @@
   return {
     LABEL: LABEL,
     NOTE: NOTE,
-    NOTE_ASSESSMENT: NOTE_ASSESSMENT,
-    NOTE_STIFFNESS: NOTE_STIFFNESS,
     NOTE_FIELDS: NOTE_FIELDS,
     BASIS_URL: BASIS_URL,
     hasRating: hasRating,

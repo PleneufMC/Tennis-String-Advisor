@@ -29,7 +29,7 @@ la place), de `strings.html` ni du bloc `generateMetadata` de la fiche cordage F
 (`src/app/tennis-strings/[slug]/page.tsx`, ce bloc seul) ; aucune note dans le JSON-LD. Contrôle
 `npm run audit:string-labels` (`scripts/qa-string-rating-labels.mjs`, périmètre `tsa-measure`,
 ajouté à `audit:all`) : fiches, métadonnées EN et FR (y compris la sortie de `npm run build`),
-pages dynamiques, 23 tests négatifs. ⚠️ Restent, non traités ici : l'étiquetage des surfaces FR
+pages dynamiques, 24 tests négatifs. ⚠️ Restent, non traités ici : l'étiquetage des surfaces FR
 (`tsa-core`), la description FR de `/tennis-strings` (`src/app/tennis-strings/layout.tsx`
 annonce encore « contrôle, confort, effet et durabilité »), le tri des candidats du
 configurateur EN par note éditoriale avec un repli à 5 quand la note manque, et deux articles EN qui citent ces notes
