@@ -121,10 +121,20 @@
  * *dérivées des specs* (poids, tamis, RA, plan de cordage) et non comme des
  * mesures de test terrain. Inventer des notes « puissance 8/10 » sans source
  * serait exactement l'erreur que l'audit reproche.
+ *
+ * ⚠️ Décision de Pierre du 10/10/2026 : AUCUNE note déduite des
+ * caractéristiques n'est plus affichée, nulle part. Le site montre l'avis des
+ * testeurs seul pour les raquettes évaluées (`racquetTesterSynthesis`), les
+ * caractéristiques seules pour les autres. Contrôle 16 de `audit:ratings`.
  */
 
 import type { TennisRacquet } from '@/data/racquets-database';
-import { RACQUET_TESTER_RATINGS, blendRacquetNote } from '@/data/racquet-tester-ratings';
+import {
+  RACQUET_TESTER_RATINGS,
+  RACQUET_TESTER_SOURCE,
+  RACQUET_DISPLAYED_CRITERIA,
+  type RacquetTesterCriterion,
+} from '@/data/racquet-tester-ratings';
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  Constantes mesurées sur la base réelle (129 raquettes, 8 août 2026)
@@ -157,25 +167,37 @@ export const DEFAULT_RACQUET_RA = 64;
 export const RA_RANGE = { min: 55, median: 64, max: 72 } as const;
 
 /**
- * Bornes réelles du poids (g) pour les JUNIORS — mesurées, non supposées.
+ * Bornes réelles du poids (g) des JUNIORS (longueur < 27 pouces) — mesurées
+ * sur les 29 fiches junior le 10/10/2026 : 170-255 g, médiane 235 g.
  * Le minimum de 170 g correspond aux raquettes 19 pouces.
+ *
+ * (Jusqu'au 10/10/2026, `WEIGHT_RANGE` portait ici `max: 320`, le maximum
+ * ADULTE : l'échelle junior n'était donc pas celle des juniors au-dessus de la
+ * médiane.) Contrôle 17 de `audit:ratings` : ces bornes doivent rester celles
+ * du catalogue.
  */
-export const WEIGHT_RANGE = { min: 170, median: 235, max: 320 } as const;
+export const JUNIOR_WEIGHT_RANGE = { min: 170, median: 235, max: 255 } as const;
 
 /** Bornes réelles du tamis (sq.in) — mesurées, non supposées. */
 export const HEAD_SIZE_RANGE = { min: 82, median: 100, max: 115 } as const;
 
 /**
- * Bornes du poids pour les raquettes ADULTES uniquement (mesurées : 102
- * modèles, 225-320 g).
+ * Bornes du poids pour les raquettes ADULTES uniquement (mesurées : 100
+ * modèles de 27 pouces et plus, 225-320 g, médiane 300 g).
  *
- * Les 27 juniors (170-255 g) écrasent l'échelle : sur l'intervalle complet
+ * Les juniors (170-255 g) écrasent l'échelle : sur l'intervalle complet
  * 170-320 g, toutes les raquettes adultes se retrouvent tassées dans le haut
  * de la plage et leurs maniabilités deviennent indiscernables. Les notes
  * dérivées d'un modèle adulte utilisent donc cet intervalle, celles d'un
- * junior l'intervalle complet.
+ * junior `JUNIOR_WEIGHT_RANGE`.
  */
 export const ADULT_WEIGHT_RANGE = { min: 225, median: 300, max: 320 } as const;
+
+/**
+ * Nombre de cordes du plan (montants + travers) — bornes réelles du catalogue :
+ * 33 (16x17) à 38 (18x20), médiane 35 (16x19). Contrôle 17 de `audit:ratings`.
+ */
+export const STRING_COUNT_RANGE = { min: 33, median: 35, max: 38 } as const;
 
 /**
  * `true` si le RA de cette raquette est une estimation et non une donnée
@@ -241,19 +263,82 @@ function scale(
 }
 
 /**
- * Dérive un profil de jeu à partir des specs mesurables.
+ * Échelle LINÉAIRE unique ancrée sur la médiane (médiane -> 5), de pente fixée
+ * par le plus grand des deux demi-intervalles du catalogue. Une même différence
+ * de valeur donne donc partout la même différence de note, et aucune valeur du
+ * catalogue n'atteint la saturation du côté le plus court.
  *
- * Physique retenue, volontairement simple et explicable :
- *  - **Puissance** : croît avec le tamis (surface de frappe, effet trampoline)
- *    et la rigidité du cadre (moins d'énergie dissipée en flexion).
- *  - **Contrôle** : inverse de la puissance dans ses deux composantes, plus
- *    un bonus pour les plans de cordage denses (18x20).
+ * Pourquoi pour le poids (10/10/2026) : `scale()` est linéaire par morceaux.
+ * Sur l'échelle adulte (225 / 300 / 320 g), 5 g valaient 0,33 point sous 300 g
+ * et 1,25 point au-dessus ; 320 g saturait à 10/10 en stabilité (0/10 en
+ * maniabilité). Rien en physique ne justifie qu'un même écart de masse compte
+ * près de quatre fois plus au-dessus de 300 g : l'inertie et la quantité de
+ * mouvement sont proportionnelles à la masse. Ici, 10 g = 0,67 point partout
+ * (5 / 75 g par gramme) ; 225 g -> 0, 300 g -> 5, 320 g -> 6,3.
+ * Sous la médiane, la pente est inchangée (elle était déjà 5 / 75 g).
+ */
+export function linearScore(value: number, range: { min: number; median: number; max: number }): number {
+  const half = Math.max(range.median - range.min, range.max - range.median);
+  if (half <= 0) return 5;
+  return Math.min(10, Math.max(0, 5 + (5 * (value - range.median)) / half));
+}
+
+/**
+ * Nombre de cordes du plan (montants + travers), `null` si le plan est illisible.
+ * « 16x19 » -> 35. Un plan absent reste absent : la note de plan devient alors
+ * neutre (5) et `basis` l'affiche « ND ».
+ */
+export function stringCount(pattern: string | null | undefined): number | null {
+  const m = /^\s*(\d{2})\s*x\s*(\d{2})\s*$/i.exec(pattern ?? '');
+  return m ? Number(m[1]) + Number(m[2]) : null;
+}
+
+/** Début du `basis` de tout profil déduit des specs (contrôlé par `audit:ratings`). */
+export const PROFILE_BASIS_PREFIX = 'Déduit des caractéristiques';
+
+/**
+ * Dérive un profil de jeu à partir des specs mesurables — mêmes règles pour
+ * toutes les raquettes. Aucune de ces notes n'est une mesure de test ni un avis
+ * de testeur. `basis` l'explicite.
+ *
+ * ⚠️ N'EST PLUS AFFICHÉ (décision de Pierre du 10/10/2026) et n'a plus aucun
+ * appelant applicatif : il ne nourrit ni le RCS, ni l'alerte bras, ni le
+ * classement. Conservé, formule corrigée, en attendant l'arbitrage « conserver
+ * ou retirer » ; seuls `audit:ratings` (contrôles 3 et 17) l'exécutent. Le
+ * contrôle 16 échoue si une surface l'importe.
+ *
+ * Physique retenue (révision du 10/10/2026, une justification par règle) :
+ *  - **Puissance** (inchangée) : croît avec le tamis (cordes plus longues, tamis
+ *    plus souple et zone de frappe plus large) et avec la rigidité du cadre
+ *    (moins d'énergie perdue en flexion du cadre).
+ *  - **Contrôle** = moyenne, à parts égales, de trois facteurs physiques :
+ *      1. tamis plus petit : cordes plus courtes, tamis moins déformable, angle
+ *         de sortie plus régulier ;
+ *      2. plan plus dense (plus de cordes, montants + travers) : tamis plus
+ *         raide, sortie plus basse et plus prévisible. Variable continue : une
+ *         corde de plus compte toujours dans le même sens (l'ancienne règle
+ *         pénalisait le 16x19 de 0,4 mais laissait le 16x17 et le 18x16 neutres,
+ *         donc mieux notés qu'un 16x19, plus dense) ;
+ *      3. masse : à l'impact, une raquette plus lourde recule et tourne moins,
+ *         la direction de la balle est moins perturbée.
+ *    Le RA est NEUTRE en contrôle : la balle quitte le tamis (~4-5 ms) avant que
+ *    le cadre n'ait achevé sa flexion (mode fondamental vers 120-180 Hz, soit
+ *    une demi-période de 3 à 4 ms et plus) ; l'effet de la rigidité porte sur
+ *    la vitesse de sortie, déjà comptée en puissance. Le compter aussi en
+ *    contrôle (« souple = contrôle ») le comptait deux fois.
+ *    À l'ordre près, un travers de plus (+1 corde) pèse environ trois fois plus
+ *    que 2 in² de tamis en moins, ce qui correspond à l'estimation membrane
+ *    (raideur du tamis ~ cordes / longueur : +3 % contre +1 %).
  *  - **Confort** : décroît avec le RA (cadre rigide = plus de vibrations
  *    transmises) et croît avec la masse (inertie qui absorbe le choc).
- *  - **Maniabilité** : inverse du poids.
- *  - **Stabilité** : croît avec le poids (résistance à la torsion à l'impact).
+ *  - **Maniabilité** : inverse de la masse. **Stabilité** : croît avec la masse.
+ *    La masse est notée sur une échelle LINÉAIRE (`linearScore`) : 10 g = 0,67
+ *    point sur toute la plage adulte (225-320 g), sans saturation.
  *
- * Aucune de ces notes n'est une mesure de test. `basis` l'explicite.
+ * Limite connue, mesurée : l'équilibre et le swingweight, qui décident souvent
+ * de la maniabilité et de la stabilité ressenties, manquent pour la plupart des
+ * fiches ; ce profil ne peut donc pas départager deux raquettes de specs
+ * proches. Accord avec les avis de testeurs : PR du 10/10/2026 et contrôle 17.
  */
 export function deriveRacquetProfile(racquet: TennisRacquet): RacquetProfile {
   const ra = effectiveRacquetRA(racquet);
@@ -289,90 +374,105 @@ export function deriveRacquetProfile(racquet: TennisRacquet): RacquetProfile {
     typeof lengthInches === 'number' && lengthInches > 0
       ? lengthInches < 27
       : racquet.category === 'Junior';
-  const wRange = isJunior ? WEIGHT_RANGE : ADULT_WEIGHT_RANGE;
+  const wRange = isJunior ? JUNIOR_WEIGHT_RANGE : ADULT_WEIGHT_RANGE;
 
   const headPower = scale(head, HEAD_SIZE_RANGE);
   const raPower = scale(ra, RA_RANGE);
-
-  // Plan de cordage : un plan dense (ex. 18x20) favorise le contrôle.
-  const dense = /18\s*x\s*20|18x19/i.test(racquet.stringPattern ?? '');
-  const open = /16\s*x\s*18|16x19/i.test(racquet.stringPattern ?? '');
-  const patternControl = dense ? 1.2 : open ? -0.4 : 0;
+  // Masse : échelle linéaire, sans coude ni saturation (voir `linearScore`).
+  const mass = linearScore(weight, wRange);
+  // Plan : nombre de cordes, échelle linéaire ; plan illisible -> neutre (5).
+  const strings = stringCount(racquet.stringPattern);
+  const pattern = strings === null ? 5 : linearScore(strings, STRING_COUNT_RANGE);
 
   const estimated = isRacquetStiffnessEstimated(racquet);
+  const plan = strings === null ? 'ND' : racquet.stringPattern;
 
   return {
     power: clamp10(headPower * 0.55 + raPower * 0.45),
-    control: clamp10(
-      (10 - headPower) * 0.5 + (10 - raPower) * 0.3 + 5 * 0.2 + patternControl,
-    ),
-    comfort: clamp10(
-      scale(ra, RA_RANGE, true) * 0.65 + scale(weight, wRange) * 0.35,
-    ),
-    maneuverability: clamp10(scale(weight, wRange, true)),
-    stability: clamp10(scale(weight, wRange)),
+    // Trois facteurs à parts égales ; le RA n'y entre pas (voir ci-dessus).
+    control: clamp10(((10 - headPower) + pattern + mass) / 3),
+    comfort: clamp10(scale(ra, RA_RANGE, true) * 0.65 + mass * 0.35),
+    maneuverability: clamp10(10 - mass),
+    stability: clamp10(mass),
     derived: true,
     basis: estimated
-      ? `Dérivé des specs (tamis ${head} in², poids ${weight} g, RA ${ra} estimé, plan ${racquet.stringPattern ?? 'ND'})`
-      : `Dérivé des specs (tamis ${head} in², poids ${weight} g, RA ${ra}, plan ${racquet.stringPattern ?? 'ND'})`,
+      ? `${PROFILE_BASIS_PREFIX} (tamis ${head} in², poids ${weight} g, RA ${ra} estimé, plan ${plan})`
+      : `${PROFILE_BASIS_PREFIX} (tamis ${head} in², poids ${weight} g, RA ${ra}, plan ${plan})`,
   };
 }
 
+
 // ─────────────────────────────────────────────────────────────────────────────
-//  Profil affiché : dérivé des specs, harmonisé avec les avis de testeurs
+//  Ce que le site affiche sur une raquette (décision de Pierre du 10/10/2026)
 // ─────────────────────────────────────────────────────────────────────────────
 //
-// Décision tsa-core du 09/10/2026 (mandat de Pierre : « harmoniser les notes »),
-// même méthode que les cordages (PR #73) : pour les 11 raquettes rapprochées
-// avec certitude de génération, chaque note = moyenne (profil dérivé des specs,
-// avis de testeurs recalé sur l'échelle du profil). Les autres gardent le profil
-// dérivé seul. `deriveRacquetProfile` reste PUREMENT dérivé des specs : son
-// libellé n'est donc jamais rendu faux (règle 3). Provenance et règles de
-// rapprochement : `src/data/racquet-tester-ratings.ts`.
+// Une seule règle, sur toutes les surfaces (comparateur, configurateur, PDF
+// Premium, FR et EN) : AUCUNE note déduite des caractéristiques.
+//   - raquette évaluée (18 au 10/10/2026) : l'avis des testeurs SEUL, tel que
+//     dans la synthèse — moyenne des 20 critères et cinq critères, sur 20, sans
+//     recalage ni moyenne avec `deriveRacquetProfile`. L'ancien « profil
+//     combiné » faisait la moyenne des deux : on ne pouvait plus le confronter
+//     aux testeurs, puisque leur avis était dedans (tsa-measure) ;
+//   - raquette non évaluée : ses caractéristiques seules.
+// Même valeur pour une même raquette partout : la moyenne /20 affichée est
+// `docxAverage20`, celle de /statistics. Aucune chaîne de testeurs n'est citée.
+// Historique : jusqu'au 10/10/2026, `/compare` mettait côte à côte le profil
+// combiné des raquettes évaluées et le profil dérivé des autres, sans étiquette
+// (Gravity Tour combinée contre Gravity MP dérivée). Contrôle 16.
 
-export interface DisplayedRacquetProfile extends Omit<RacquetProfile, 'derived'> {
-  /** `true` si l'avis de testeurs entre dans les notes. */
-  withTesters: boolean;
-  /** Libellé à afficher au-dessus des notes : il dit ce que les notes contiennent. */
+/** Titre de l'avis de testeurs, identique sur toutes les surfaces. */
+export const TESTER_SYNTHESIS_LABEL = 'Avis de testeurs (synthèse)';
+
+export interface RacquetTesterSynthesis {
   label: string;
+  /** Moyenne des 20 critères de la synthèse, /20, telle quelle. */
+  average20: number;
+  /** Cinq critères affichés, /20, tels quels (entiers de la synthèse). */
+  criteria: ReadonlyArray<{ key: RacquetTesterCriterion; label: string; value20: number }>;
 }
 
-export const PROFILE_LABEL_SPECS = 'Profil dérivé des specs';
-export const PROFILE_LABEL_BLENDED = 'Profil combiné : specs et avis de testeurs';
-
-/** Profil à afficher (configurateur, comparateur, PDF). */
-export function racquetProfile(racquet: TennisRacquet): DisplayedRacquetProfile {
-  const d = deriveRacquetProfile(racquet);
+/** Avis de testeurs d'une raquette évaluée ; `null` si elle ne l'est pas (aucune note). */
+export function racquetTesterSynthesis(racquet: Pick<TennisRacquet, 'id'>): RacquetTesterSynthesis | null {
   const entry = RACQUET_TESTER_RATINGS[racquet.id];
-  if (!entry) {
-    return {
-      power: d.power, control: d.control, comfort: d.comfort,
-      maneuverability: d.maneuverability, stability: d.stability,
-      basis: d.basis, withTesters: false, label: PROFILE_LABEL_SPECS,
-    };
-  }
+  if (!entry) return null;
   return {
-    power: blendRacquetNote(d.power, entry, 'power'),
-    control: blendRacquetNote(d.control, entry, 'control'),
-    comfort: blendRacquetNote(d.comfort, entry, 'comfort'),
-    maneuverability: blendRacquetNote(d.maneuverability, entry, 'maneuverability'),
-    stability: blendRacquetNote(d.stability, entry, 'stability'),
-    basis:
-      `Moyenne de deux lectures : ${d.basis.charAt(0).toLowerCase()}${d.basis.slice(1)} ; ` +
-      `avis de testeurs consolidés (génération ${entry.testedGeneration.split(' ')[0]}). ` +
-      `Appréciation, pas une mesure.`,
-    withTesters: true,
-    label: PROFILE_LABEL_BLENDED,
+    label: TESTER_SYNTHESIS_LABEL,
+    average20: entry.docxAverage20,
+    criteria: RACQUET_DISPLAYED_CRITERIA.map((key) => ({
+      key,
+      label: RACQUET_TESTER_SOURCE.criteria[key],
+      value20: entry.raw20[key],
+    })),
   };
+}
+
+/** Note /20 au format du site, identique à /statistics : 16,55 · 15,0 · 13,6. */
+export function formatScore20(value: number): string {
+  return value.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 2 });
+}
+
+/** Ligne d'une vue comparative : la raquette (ses caractéristiques) et l'avis à part. */
+export interface ComparableRacquet {
+  racquet: TennisRacquet;
+  /** Moyenne des 20 critères testeurs, /20 ; `null` = non évaluée (jamais 0). */
+  testerAverage20: number | null;
+}
+
+/** Données du comparateur : aucune note déduite, l'avis de testeurs à part. */
+export function racquetsForComparison(racquets: readonly TennisRacquet[]): ComparableRacquet[] {
+  return racquets.map((racquet) => ({
+    racquet,
+    testerAverage20: RACQUET_TESTER_RATINGS[racquet.id]?.docxAverage20 ?? null,
+  }));
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  Classement « Top raquettes » — critère recommandé pour /statistics
 // ─────────────────────────────────────────────────────────────────────────────
 //
-// Pourquoi pas le profil dérivé : il décrit des COMPROMIS (puissance et contrôle
-// sont inverses par construction), pas une qualité — sa moyenne classe des
-// specs, pas des raquettes. Pourquoi pas le RA : « proche de 68 » n'a aucun
+// Pourquoi pas le profil dérivé : il décrit des COMPROMIS (puissance contre
+// contrôle, maniabilité contre stabilité), pas une qualité — sa moyenne classe
+// des specs, pas des raquettes. Pourquoi pas le RA : « proche de 68 » n'a aucun
 // fondement. Le seul jugement global sourcé est la moyenne des 20 critères des
 // avis de testeurs. On ne classe donc QUE les raquettes rapprochées ; une
 // raquette sans avis n'est ni classée ni comptée comme zéro (même règle que

@@ -1,11 +1,36 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.3.0
+> **Version** : 2.3.1
 > **Date** : 10 octobre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
 > **Branche de référence** : `main` (seule branche longue ; la production Netlify en déploie)
 > **Repo** : https://github.com/PleneufMC/Tennis-String-Advisor.git
+
+**Changelog v2.3.0 → v2.3.1** — **Plus aucune note de raquette déduite des
+caractéristiques** (décision de Pierre du 10/10/2026, après consultation de `tsa-revenue`,
+`tsa-acquisition` et `tsa-measure` ; `tsa-core`, suite au retrait de l'article Gravity MP
+vs Tour, #99). Constat : `/compare` mettait côte à côte le profil **combiné** (specs +
+testeurs) des 18 raquettes évaluées et le profil **dérivé** des autres, sans étiquette —
+Gravity MP (dérivée) 3,3/6,2/7,4/5,3/4,7 contre Gravity Tour (combinée)
+3,0/5,2/7,0/4,2/5,1 ; configurateur et PDF Premium affichaient l'un ou l'autre selon la
+raquette. Mesure : même corrigé, le profil dérivé ne départage pas deux raquettes proches
+(accord avec les testeurs ρ ≤ 0,31, négatif en maniabilité et stabilité : équilibre et
+swingweight absents de la plupart des fiches). **Règle unique, FR, EN et PDF** : raquette
+évaluée = « Avis de testeurs (synthèse) » **seul**, moyenne des 20 critères et cinq
+critères **sur 20, tels quels** (ni recalage ni moyenne 50/50 avec le profil déduit :
+invérifiable, la référence était dedans) ; raquette non évaluée = **caractéristiques
+seules**. Comparateur : tamis, poids, RA, prix, plan (équilibre et swingweight quand ils
+sont publiés), puis la moyenne /20 sur une ligne distincte, « non évaluée » sinon, sans
+barre ni couleur de classement. Même moyenne partout (`/statistics`, comparateur,
+configurateur, PDF). `deriveRacquetProfile` n'a plus d'appelant applicatif : formule
+corrigée conservée (contrôle sans RA, masse en échelle linéaire), conservation ou retrait
+à arbitrer. Contrôles : 16 (liste blanche des imports de `racquet-scoring`, libellés
+interdits dans `src/`, `public/` et les fiches EN, comparateur et PDF vérifiés en
+exécution, 7 tests négatifs), 17 (formule), 14 (avis affiché = synthèse telle quelle).
+RCS, alertes bras (5,12 % / 19,56 %) et Top 10 inchangés. Au passage : en thème sombre,
+les textes du bloc de comparaison (cartes restées blanches, texte éclairci) étaient
+illisibles — corrigé.
 
 **Changelog v2.2.12 → v2.3.0** — **Équipe éditoriale** (demande de Pierre du 10/10/2026 :
 « 1 pigiste qui recherche l'info brute, un rédacteur qui fait les articles/blog et enfin un
@@ -314,6 +339,11 @@ corrigé dans la même PR.
   photographique à la place. Autorisation TW non obtenue, TWE non demandée :
   photos conservées par décision de Pierre du 10/10/2026, en connaissance du
   risque. Tennis-Point : collecte refusée (429), aucune photo.
+- Notes de raquette (décision de Pierre du 10/10/2026) : **aucune note déduite
+  des caractéristiques** n'est affichée, nulle part (comparateur, configurateur,
+  PDF Premium, FR et EN). Raquette évaluée : « Avis de testeurs (synthèse) »,
+  moyenne et cinq critères /20 tels quels ; sinon, caractéristiques seules.
+  Garde-fou : contrôle 16 de `audit:ratings`.
 
 ### Cassé ou incomplet
 
@@ -757,4 +787,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.3.0 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.3.1 — Tennis String Advisor — « Mesurer avant d'affirmer. »*

@@ -24,7 +24,8 @@ import {
 import {
   effectiveRacquetRA,
   isRacquetStiffnessEstimated,
-  racquetProfile,
+  racquetTesterSynthesis,
+  formatScore20,
 } from '@/lib/racquet-scoring';
 import type { TennisString } from '@/data/strings-database';
 
@@ -666,13 +667,20 @@ export default function ConfiguratorPage() {
                       {isRacquetStiffnessEstimated(selectedRacquet) && ' (estime)'}
                       {' '}| Poids: {selectedRacquet.weight}g | Tamis: {selectedRacquet.headSize} sq in
                     </div>
+                    {/* Décision de Pierre du 10/10/2026 : aucune note déduite des
+                        caractéristiques. Raquette évaluée : l'avis des testeurs
+                        seul, sur 20, tel que dans la synthèse ; sinon rien de plus
+                        que les caractéristiques ci-dessus. */}
                     {(() => {
-                      const p = racquetProfile(selectedRacquet);
+                      const t = racquetTesterSynthesis(selectedRacquet);
+                      if (!t) return null;
                       return (
-                        <div style={{ color: 'var(--tint-blue-fg)', fontSize: '0.75rem', marginTop: '0.25rem' }}>
-                          {p.label} : puissance {p.power}/10 · controle {p.control}/10 ·
-                          confort {p.comfort}/10 · maniabilite {p.maneuverability}/10 ·
-                          stabilite {p.stability}/10
+                        <div
+                          data-tester-synthesis
+                          style={{ color: 'var(--tint-blue-fg)', fontSize: '0.75rem', marginTop: '0.25rem' }}
+                        >
+                          {t.label} : moyenne {formatScore20(t.average20)} /20 ·{' '}
+                          {t.criteria.map((c) => `${c.label.toLowerCase()} ${c.value20}/20`).join(' · ')}
                         </div>
                       );
                     })()}
