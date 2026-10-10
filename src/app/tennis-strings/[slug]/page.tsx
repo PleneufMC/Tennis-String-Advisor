@@ -5,6 +5,8 @@ import { stringsDatabase } from '@/data/strings-database';
 import { BuyButton } from '@/components/product/buy-button';
 import { ProductImage } from '@/components/product/product-image';
 import { SpecList, RatingBar, type Spec } from '@/components/product/spec-list';
+import { StringRatingLabel, StringRatingsNotice } from '@/components/product/string-rating-label';
+import { stringRatingNature } from '@/lib/string-rating-nature';
 import { resolveSiteUrl } from '@/lib/seo/route-metadata';
 import { getAlternateUrl } from '@/lib/i18n/route-map';
 
@@ -183,6 +185,18 @@ export default function StringPage({ params }: { params: { slug: string } }) {
         <h2 className="mb-3 text-xl font-semibold text-slate-900 dark:text-white">
           Notes de jeu
         </h2>
+        {/* Nature des notes, juste sous le titre : appréciation de l'équipe, jamais une
+            mesure (principe décidé le 10/10/2026). Un cordage sans note n'a rien à
+            étiqueter : les cinq lignes ci-dessous disent « Non publié ». */}
+        {stringRatingNature(string) !== 'none' && (
+          <div className="mb-3" data-testid="string-ratings-nature">
+            <StringRatingLabel
+              string={string}
+              className="text-sm font-semibold text-slate-800 dark:text-slate-200"
+            />
+            <StringRatingsNotice className="mt-1 text-sm text-slate-600 dark:text-slate-400" />
+          </div>
+        )}
         <RatingBar label="Contrôle" value={string.control} />
         <RatingBar label="Confort" value={string.comfort} />
         <RatingBar label="Effet" value={string.spin} />

@@ -1,13 +1,13 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.3.4
+> **Version** : 2.3.8
 > **Date** : 10 octobre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
 > **Branche de référence** : `main` (seule branche longue ; la production Netlify en déploie)
 > **Repo** : https://github.com/PleneufMC/Tennis-String-Advisor.git
 
-**Changelog (numéro de version à fixer à la fusion)** — **Nature des notes /10 des cordages
+**Changelog v2.3.7 → v2.3.8** — **Nature des notes /10 des cordages
 étiquetée sur les surfaces EN, notes retirées des métadonnées** (principe décidé par Pierre le
 10/10/2026 : « Cordages : garder les notes et les étiqueter partout », suite à la PR #103 ;
 `tsa-acquisition`). **Aucune note modifiée**, aucune donnée, aucun RCS ni alerte bras touchés
@@ -45,6 +45,78 @@ le tri des candidats du configurateur EN par note éditoriale avec un repli à 5
 manque, et deux articles EN qui citent ces notes dans leur corps
 (`best-polyester-tennis-strings-2026`, `polyester-strings-tennis-elbow`, propositions au
 rédacteur).
+
+**Changelog v2.3.6 → v2.3.7** — **Notes /10 des cordages étiquetées sur
+toutes les surfaces françaises** (principe décidé par Pierre le 10/10/2026, « Cordages : garder les
+notes et les étiqueter partout », suite à la PR #103 ; `tsa-core`, C4). La **formulation** des
+libellés et de la mention est une proposition de l'orchestrateur, **pas encore validée par Pierre**.
+Chaque cordage porte la nature de ses notes : « Appréciation éditoriale TSA » (156 fiches),
+« Appréciation éditoriale TSA, harmonisée avec des avis de testeurs » (les 18 de
+`STRING_TESTER_RATINGS`), rien pour les 7 fiches sans note (« Non publié » sur chaque ligne).
+Mention : « Appréciation de l'équipe, non mesurée en laboratoire. La rigidité (lb/in), indiquée à
+part, est la donnée du cordage utilisée par le RCS. » Elle n'affirme pas que la rigidité est
+« mesurée » : des rigidités du catalogue n'ont aucune source et TWU mesure chaque jauge séparément
+(chantier C2, PR #105). Libellés et mention sont centralisés dans `src/lib/string-rating-nature.ts`
+(composants `StringRatingLabel` et `StringRatingsNotice`) ; la liste des 18 vient de
+`STRING_TESTER_RATINGS`, comme dans le générateur des fiches EN ; les chaînes de testeurs ne sont
+jamais citées. Surfaces traitées : fiche `/tennis-strings/[slug]`, carte du catalogue (pleine et
+compacte) et page du catalogue (tri, filtre « Notes minimum »), `/compare` en mode cordages
+(étiquette par cordage, bloc « Nature des notes » avant les barres, avertissement si deux natures
+sont mêlées), configurateur (résumé du cordage, analyse avancée), `/statistics` (classement des
+cordages) et PDF Premium (notes, analyse avancée, méthodologie) ; la description du catalogue
+(`tennis-strings/layout.tsx`) ne promet plus de notes. **Aucune note ni aucun calcul modifié** :
+RCS, alertes bras (5,12 % / 19,56 %), second filet « confort » et `advanced-rcs.ts` inchangés. Tri
+par défaut « Note globale » **mesuré, non modifié** : sur 174 cordages classés (41 valeurs
+distinctes), les 18 harmonisés tiennent 5 des 10 premières places et 8 des 20 premières ; avec leur
+ancienne note, 2 places du top 10 changeraient et un cordage bougerait jusqu'à 95 rangs — décision de
+Pierre en attente. Contrôle 18 de `audit:ratings` (liste blanche de 8 surfaces, 543 rendus serveur,
+4 PDF, 17 tests négatifs). ⚠️ Restent, non traités ici : fiches et pages EN, métadonnées de la fiche
+(PR #106, `tsa-acquisition`), tableau « Les mieux notés » de l'article `meilleur-cordage-polyester-2026`
+et notes citées dans `cordage-polyester-tennis-elbow` (`tsa-redacteur`), tri par défaut neutre proposé
+par `tsa-revenue` (sous réserve d'avis juridique), et l'étiquette « Appréciation éditoriale TSA » reste
+discutable pour les 12 notes de Tecnifibre Triax et Wilson NXT, recopiées de Tennis Warehouse et
+conservées par décision de Pierre (PR #105) : à arbitrer.
+
+**Changelog v2.3.5 → v2.3.6** — **Deux doublons fusionnés : 181 → 179 cordages**
+(décision de Pierre du 10/10/2026 : « deux doublons probables : vérifier, puis fusionner » ; `tsa-core`).
+**4S = Black Code 4S** : la fiche Tennis Warehouse « Tecnifibre 4S » dit « The name of this string has
+changed from Black Code 4S to 4S. Same string, different name. » ; TW n'a qu'une revue (« Black Code 4S »),
+TWU ne liste que « Black Code 4S », la fiche officielle Tecnifibre « 4S » donne les mêmes jauges (1.20, 1.25,
+1.30), la même section carrée et le même procédé Thermocore. **ATP Razor Code = Razor Code**, preuve
+indirecte (aucune source n'annonce de renommage) : la fiche TW « Razor Code » s'ouvre sur « Tecnifibre ATP
+Razor Code 17 is… », TW n'a qu'une revue (« ATP Razor Code »), TWU ne liste que « Razor Code », la fiche
+officielle « Razor Code » donne les mêmes jauges, des détaillants vendent les deux noms. Ids conservés : les
+plus anciens (`tecnifibre-black-code-4s`, 29/08/2025 ; `tecnifibre-razor-code`, 03/06/2026 ; les deux autres
+datent de la fusion b4e74ad du 07/08/2026). `LEGACY_STRING_ALIASES` : 8 → 10 alias ; redirections permanentes (308) FR et
+EN (`/en/strings/<id>.html`, fiches générées depuis le 09/10) dans `next.config.js` ; photo de la 4S déplacée
+vers la fiche conservée ; descriptions des fiches conservées citant l'autre nom ; provenance des notes à jour.
+**Effet** (cette PR seule) : alerte bras avancée standard 5,12 → 5,16 %, sensible 19,56 → 19,54 % (deux
+fiches de moins). **Règle 2** : les configurations enregistrées sous « 4S » (222, sans source) prennent la
+rigidité de la fiche conservée, soit une baisse de 1,4 à 2,4 points d'indice ; celles de « ATP Razor Code »
+(202) passent à 220, une hausse. Contrôle 10 (18 identifiants refusés) et nouveau contrôle 10 bis
+(8 tests négatifs). **Notes TW conservées** : les 12 notes /10 de Tecnifibre Triax et Wilson NXT, recopiées de
+Tennis Warehouse, sont conservées (décision de Pierre du 10/10/2026), en connaissance du risque (les
+conditions de TW interdisent la reproduction sans permission écrite), et seront ajoutées à la demande
+d'autorisation écrite ; non modifiées.
+
+**Changelog v2.3.4 → v2.3.5** — **Rigidités de laboratoire, premier lot : les
+8 polyesters (C2)** (décision de Pierre du 10/10/2026 : « on aligne leur rigidité sur la mesure faite sur
+le bon modèle et la bonne jauge » ; `tsa-core`). TWU mesure chaque jauge séparément : l'écart entre jauges
+d'un même polyester atteint 47 lb/in (Black Code : 202,9 en 1.18, 249,7 en 1.28), soit 5 points d'indice
+RCS, alors qu'une fiche porte UNE rigidité. La jauge de référence est une **décision de produit, non
+tranchée** (posée comme telle dans `racquet-scoring.ts`). N'est appliqué que ce qui n'en demande aucune :
+**Savage** 220 → 234,3 (jauge unique) et **Black Code 4S** 200 → 209,2 (la plus basse des trois jauges
+mesurées, toutes plus rigides que 200). **Retenus** (valeur dépendante de la jauge, certaines baisseraient
+une alerte : règle 2, GO de Pierre) : Black Code, Pro Red Code, Hawk, Gamma Moto. **Quarantaine** (aucune
+ligne TWU à ce nom) : 4S, ATP Razor Code. **Effet** sur les 140 094 combinaisons du contrôle 5 : alerte
+bras avancée standard 5,12 → 5,20 %, sensible 19,56 → 19,78 % (+112 / +303). Aucune note /10, formule ni
+seuil modifié. Provenance : `src/data/string-stiffness-provenance.ts` (non affiché), contrôle 13 ter de
+`audit:ratings`, outil `scripts/scraper/c2-effet-alertes.mts` ; relevé TWU du 10/10 identique à celui du
+29/09. **Notes TW conservées** : les 12 notes /10 de Tecnifibre Triax et Wilson NXT, recopiées de Tennis
+Warehouse, sont conservées (décision de Pierre du 10/10/2026), en connaissance du risque (les conditions de
+TW interdisent la reproduction sans permission écrite), et seront ajoutées à la demande d'autorisation
+écrite ; non modifiées. ⚠️ L'article « polyester et tennis elbow » (FR, EN) cite le tableau des polyesters
+à 200 lb/in ou moins : Black Code 4S en sort (23 → 22), à corriger par `tsa-redacteur` à la fusion.
 
 **Changelog v2.3.3 → v2.3.4** — **Trois composants aux faux avis supprimés** (décision de Pierre du
 10/10/2026, repérés par `tsa-acquisition` pendant la PR #102). `src/components/sections/testimonials.tsx`
@@ -387,8 +459,9 @@ Links, déploiement Netlify (adaptateur OpenNext). (Zustand est déclaré dans
 **HTML statiques** dans `public/blog/*.html` et `public/en/*.html`. Le
 `route-map.ts` fait le pont entre les deux univers.
 
-**Base** : 129 raquettes, 181 cordages (`src/data/*.ts` ; 190 avant le
-nettoyage du 28/09/2026, 174 après, 181 depuis le lot 3 Toroline du 29/09/2026).
+**Base** : 129 raquettes, 179 cordages (`src/data/*.ts` ; 190 avant le
+nettoyage du 28/09/2026, 174 après, 181 depuis le lot 3 Toroline du 29/09/2026,
+179 depuis la fusion de deux doublons le 10/10/2026).
 
 **Écosystème** : tennismatchfinder.net (même propriétaire) référence TSA.
 ⚠️ **Corrigé le 31/08/2026** — ce site était présenté ici comme « un canal de
@@ -415,7 +488,7 @@ corrigé dans la même PR.
 - Échelle d'alerte bras remise en monotonie (43,9 % → 13,9 % d'alertes).
 - Export PDF, thème sombre, i18n FR/EN livrés.
 - Photos produit Tennis Warehouse (29/09/2026) et Tennis Warehouse Europe
-  (10/10/2026) : 58/129 raquettes, 53/181 cordages, hébergées chez nous, FR et
+  (10/10/2026) : 58/129 raquettes, 53/179 cordages, hébergées chez nous, FR et
   EN ; drapeau `PRODUCT_IMAGES_ENABLED` et commande `purge` (globale ou par
   source) pour le retrait ; associations vérifiées par script (tamis, plan de
   cordage, RA, poids, jauge, coloris), quarantaine sinon, illustration non
@@ -677,7 +750,7 @@ Le compte utilisateur héberge des agents transverses (`~/.claude/agents/`)
 antérieurs à cette équipe et qui mentionnent TSA. **Dans ce dépôt, l'équipe
 `tsa-*` fait foi** — les connaissances TSA des agents globaux datent d'un état
 antérieur du code (ils citent 104 raquettes / 165 cordages ; le réel vérifié
-est 129 / 181 (190 avant le nettoyage du 28/09/2026), formule TypeScript dans `advanced-rcs.ts` et
+est 129 / 179 (190 avant le nettoyage du 28/09/2026, 181 avant la fusion du 10/10/2026), formule TypeScript dans `advanced-rcs.ts` et
 `strings-database.ts`). Correction 13/08 : les pondérations RCS
 W_RA=0.28 / W_Cordage=0.42 / W_Tension=0.22 / W_Interaction=0.08 citées par
 `algorithm-validator` ne sont PAS introuvables — elles vivent dans
@@ -870,4 +943,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.3.4 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.3.8 — Tennis String Advisor — « Mesurer avant d'affirmer. »*

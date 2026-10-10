@@ -650,7 +650,7 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
 
   // c) liste de refus : aucun identifiant retiré ne doit réapparaître.
   const refused = [...REMOVED_STRING_IDS, ...Object.keys(LEGACY_STRING_ALIASES)];
-  if (refused.length !== 16) fail(`liste de refus : ${refused.length} identifiants au lieu des 16 retirés le 28/09/2026`);
+  if (refused.length !== 18) fail(`liste de refus : ${refused.length} identifiants au lieu des 18 retirés (16 le 28/09/2026, 2 doublons fusionnés le 10/10/2026)`);
   for (const id of refused) if (ids.has(id)) fail(`identifiant retiré réapparu dans la base : ${id}`);
 
   // d) chaque alias doit pointer vers un identifiant présent.
@@ -664,6 +664,78 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
         `(marque, modèle), ${refused.length} identifiants retirés absents, ` +
         `${Object.keys(LEGACY_STRING_ALIASES).length} alias vers des cibles présentes`
     );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 10 bis. DOUBLONS FUSIONNÉS DU 10/10/2026 (décision de Pierre : « deux doublons probables :
+//         vérifier, puis fusionner »)
+// ---------------------------------------------------------------------------
+// tecnifibre-4s -> tecnifibre-black-code-4s (TW : « Same string, different name ») et
+// tecnifibre-atp-razor-code -> tecnifibre-razor-code. La fiche la plus ancienne reste, l'autre devient un
+// alias : les anciennes URL et configurations doivent continuer de répondre. Échoue si : (a) un alias de
+// fusion ne pointe pas vers la fiche conservée, ou l'ancien id est encore au catalogue ; (b) la fiche
+// conservée perd une jauge de l'ancienne, ne dit plus sous quel autre nom le produit se vend, ou n'a plus la
+// photo déplacée ; (c) l'ancien id reste au manifeste de photos, dans la provenance des notes ou dans les
+// décisions du collecteur ; (d) un ancien id, parmi les 10 alias, n'a plus sa redirection permanente FR vers
+// la fiche conservée dans next.config.js, ou, pour les 2 fusions (fiches EN générées depuis le 09/10), sa
+// redirection EN. Chaque garde est rejouée sur une copie altérée.
+{
+  const before = failures.length;
+  const MERGED = {
+    'tecnifibre-4s': { into: 'tecnifibre-black-code-4s', gauges: ['1.20', '1.25', '1.30'], alsoSoldAs: '« 4S »', photoMoved: true },
+    'tecnifibre-atp-razor-code': { into: 'tecnifibre-razor-code', gauges: ['1.20', '1.25', '1.30'], alsoSoldAs: '« ATP Razor Code »', photoMoved: false },
+  } as const;
+  const { PRODUCT_IMAGES: IMAGES } = await import('../src/data/product-images');
+  const { STRING_RATINGS_PROVENANCE: NOTE_PROVENANCE } = await import('../src/data/string-ratings-provenance');
+  const decisions = JSON.parse(readFileSync('scripts/scraper/product-images-mapping.json', 'utf8')).strings as Record<string, unknown>;
+  const redirectsSrc = readFileSync('next.config.js', 'utf8');
+  const hasRedirect = (src: string, from: string, to: string) =>
+    new RegExp(`source:\\s*'${from.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}',\\s*destination:\\s*'${to.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}',\\s*permanent:\\s*true`).test(src);
+  const checkMerges = (
+    strings: readonly (typeof stringsDatabase)[number][], aliases: Readonly<Record<string, string>>,
+    images: Record<string, unknown>, notes: Record<string, unknown>, mapping: Record<string, unknown>, redirects: string,
+  ): string[] => {
+    const issues: string[] = [];
+    for (const [from, m] of Object.entries(MERGED)) {
+      if (aliases[from] !== m.into) issues.push(`${from} : alias vers « ${aliases[from] ?? 'rien'} », « ${m.into} » attendu`);
+      if (strings.some((s) => s.id === from)) issues.push(`${from} : fiche fusionnée encore au catalogue`);
+      const kept = strings.find((s) => s.id === m.into);
+      if (!kept) { issues.push(`${from} : fiche conservée ${m.into} absente`); continue; }
+      const lost = m.gauges.filter((g) => !kept.gauges.includes(g));
+      if (lost.length > 0) issues.push(`${m.into} : jauge(s) ${lost.join(', ')} de l'ancienne fiche ${from} perdue(s)`);
+      if (!kept.description.includes(m.alsoSoldAs)) issues.push(`${m.into} : la description ne dit plus que le produit se vend aussi sous ${m.alsoSoldAs}`);
+      if (m.photoMoved && !(m.into in images)) issues.push(`${m.into} : la photo de ${from} n'a pas suivi`);
+      if (from in images) issues.push(`${from} : photo restée au manifeste`);
+      if (from in notes) issues.push(`${from} : provenance des notes d'une fiche fusionnée`);
+      if (from in mapping) issues.push(`${from} : décision du collecteur d'images d'une fiche fusionnée`);
+      if (!hasRedirect(redirects, `/en/strings/${from}.html`, `/en/strings/${m.into}.html`)) issues.push(`${from} : redirection permanente EN vers ${m.into} absente de next.config.js`);
+    }
+    for (const [from, to] of Object.entries(aliases)) {
+      if (!hasRedirect(redirects, `/tennis-strings/${from}`, `/tennis-strings/${to}`)) issues.push(`${from} : redirection permanente FR vers ${to} absente de next.config.js`);
+    }
+    return issues;
+  };
+  checkMerges(stringsDatabase, LEGACY_STRING_ALIASES, IMAGES, NOTE_PROVENANCE, decisions, redirectsSrc).forEach((i) => fail(`doublons fusionnés : ${i}`));
+  const keptBc4s = stringsDatabase.find((s) => s.id === 'tecnifibre-black-code-4s')!;
+  const ghost = { ...keptBc4s, id: 'tecnifibre-4s' };
+  const negatives: Array<[string, string[], string]> = [
+    ['alias de fusion retiré', checkMerges(stringsDatabase, { ...LEGACY_STRING_ALIASES, 'tecnifibre-4s': undefined as unknown as string }, IMAGES, NOTE_PROVENANCE, decisions, redirectsSrc), 'tecnifibre-4s : alias vers'],
+    ['ancienne fiche revenue au catalogue', checkMerges([...stringsDatabase, ghost], LEGACY_STRING_ALIASES, IMAGES, NOTE_PROVENANCE, decisions, redirectsSrc), 'fiche fusionnée encore au catalogue'],
+    ['jauge de l\'ancienne fiche perdue', checkMerges(stringsDatabase.map((s) => (s.id === 'tecnifibre-razor-code' ? { ...s, gauges: ['1.25'] } : s)), LEGACY_STRING_ALIASES, IMAGES, NOTE_PROVENANCE, decisions, redirectsSrc), 'perdue(s)'],
+    ['autre nom du produit effacé de la description', checkMerges(stringsDatabase.map((s) => (s.id === 'tecnifibre-black-code-4s' ? { ...s, description: 'Section carrée.' } : s)), LEGACY_STRING_ALIASES, IMAGES, NOTE_PROVENANCE, decisions, redirectsSrc), 'se vend aussi sous'],
+    ['photo restée sur l\'ancien id', checkMerges(stringsDatabase, LEGACY_STRING_ALIASES, { ...IMAGES, 'tecnifibre-4s': {} }, NOTE_PROVENANCE, decisions, redirectsSrc), 'photo restée au manifeste'],
+    ['photo non déplacée vers la fiche conservée', checkMerges(stringsDatabase, LEGACY_STRING_ALIASES, Object.fromEntries(Object.entries(IMAGES).filter(([k]) => k !== 'tecnifibre-black-code-4s')), NOTE_PROVENANCE, decisions, redirectsSrc), 'la photo de tecnifibre-4s n\'a pas suivi'],
+    ['provenance des notes d\'une fiche fusionnée', checkMerges(stringsDatabase, LEGACY_STRING_ALIASES, IMAGES, { ...NOTE_PROVENANCE, 'tecnifibre-atp-razor-code': {} }, decisions, redirectsSrc), 'provenance des notes d\'une fiche fusionnée'],
+    ['redirections permanentes retirées', checkMerges(stringsDatabase, LEGACY_STRING_ALIASES, IMAGES, NOTE_PROVENANCE, decisions, ''), 'redirection permanente FR'],
+  ];
+  for (const [name, found, needle] of negatives) {
+    if (!found.some((i) => i.includes(needle))) fail(`doublons fusionnés : garde-fou muet sur « ${name} » (${needle})`);
+  }
+  if (!negatives.some(([, found]) => found.some((i) => i.includes('redirection permanente EN')))) fail('doublons fusionnés : garde-fou muet sur la redirection EN');
+  if (failures.length === before) {
+    ok(`doublons fusionnés : ${Object.keys(MERGED).length} fiches (tecnifibre-4s, tecnifibre-atp-razor-code) -> fiches les plus anciennes ; jauges conservées, autre nom cité, photo déplacée, ` +
+      `plus d'ancien id au manifeste, aux notes ni au collecteur, ${Object.keys(LEGACY_STRING_ALIASES).length} redirections permanentes FR + ${Object.keys(MERGED).length} EN dans next.config.js, ${negatives.length} tests négatifs détectés`);
   }
 }
 
@@ -1018,6 +1090,116 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
 }
 
 // ---------------------------------------------------------------------------
+// 13 ter. RIGIDITÉS DE LABORATOIRE, champ `stiffness` (C2, 10/10/2026)
+// ---------------------------------------------------------------------------
+// src/data/string-stiffness-provenance.ts consigne, pour chaque fiche réappariée sur le couple exact
+// (modèle, jauge), les mesures TWU et le sort de la rigidité : appliquée, retenue (la valeur dépend de la
+// jauge de référence, décision de produit) ou en quarantaine. Échoue si : (a) une fiche « appliquée » n'a
+// pas pour rigidité la mesure TWU enregistrée ou ne respecte pas sa règle (jauge unique ; plancher = toutes
+// les jauges mesurées, toutes plus rigides que l'ancienne valeur, valeur la plus basse) ; (b) une rigidité
+// baisse sans GO enregistré (règle 2), ou une fiche non appliquée a bougé en silence ; (c) une mesure n'est
+// pas celle du modèle exact, d'une jauge de la fiche, ni retrouvée dans la copie VERSIONNÉE du relevé TWU
+// (polyesters, mêmes conditions 51 lbs / Fast) ; (d) une surface du site importe la provenance. Chaque garde
+// est rejouée sur une copie altérée : un garde-fou muet fait échouer l'audit.
+{
+  const before = failures.length;
+  const SP = await import('../src/data/string-stiffness-provenance');
+  type SProv = Readonly<Record<string, (typeof SP.STRING_STIFFNESS_PROVENANCE)[string]>>;
+  type TwuRow = { name: string; refTensionLbs: number; swingSpeed: string; material: string | null; stiffnessLbIn: number };
+  const twuRef = new Map((JSON.parse(readFileSync(SP.STIFFNESS_SOURCE.versionedCopy, 'utf8')).records as TwuRow[]).map((r) => [r.name, r]));
+  const escapeRe = (x: string) => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const checkStiffness = (strings: readonly (typeof stringsDatabase)[number][], prov: SProv, ref: Map<string, TwuRow>,
+    aliases: Readonly<Record<string, string>> = LEGACY_STRING_ALIASES): string[] => {
+    const issues: string[] = [];
+    for (const [id, e] of Object.entries(prov)) {
+      const s = strings.find((x) => x.id === id);
+      // Une fiche fusionnée depuis (alias hérité) garde son entrée comme historique : rien à contrôler.
+      if (!s) { if (aliases[id] === undefined) issues.push(`${id} : provenance d'un cordage absent du catalogue`); continue; }
+      if (!e.note.trim()) issues.push(`${id} : motif absent`);
+      const seen = new Set<string>();
+      for (const m of e.measures) {
+        // Modèle EXACT : « Black Code » ne prend pas « Black Code 4S 17 (1.25) », seul le calibre suit le nom.
+        const hit = new RegExp(`^${escapeRe(`${s.brand} ${s.model}`)}\\s+\\d{2}L?(?:\\s*\\((\\d\\.\\d+)\\)|\\s*/\\s*(\\d\\.\\d+))?$`).exec(m.twu);
+        if (!hit) issues.push(`${id} : ligne TWU « ${m.twu} » d'un autre modèle`);
+        else if ((hit[1] ?? hit[2]) !== undefined && Math.abs(Number(hit[1] ?? hit[2]) - Number(m.gauge)) > 0.005) {
+          issues.push(`${id} : « ${m.twu} » mesurée en ${hit[1] ?? hit[2]} mm, enregistrée en ${m.gauge}`);
+        }
+        if (!s.gauges.includes(m.gauge)) issues.push(`${id} : jauge ${m.gauge} absente de la fiche (${s.gauges.join(', ')})`);
+        if (seen.has(m.gauge)) issues.push(`${id} : jauge ${m.gauge} mesurée deux fois`);
+        seen.add(m.gauge);
+        const r = ref.get(m.twu);
+        if (!r || r.stiffnessLbIn !== m.lbIn) {
+          issues.push(`${id} : « ${m.twu} » = ${m.lbIn} lb/in absente de la copie versionnée du relevé TWU${r ? ` (${r.stiffnessLbIn} publié)` : ''}`);
+        } else if (r.refTensionLbs !== SP.STIFFNESS_SOURCE.referenceTensionLbs || r.swingSpeed !== SP.STIFFNESS_SOURCE.swingSpeed || r.material !== s.type) {
+          issues.push(`${id} : « ${m.twu} » hors conditions de référence ou d'un autre matériau (${r.refTensionLbs} lbs, ${r.swingSpeed}, ${r.material})`);
+        }
+      }
+      const lbs = e.measures.map((m) => m.lbIn);
+      const floorHolds = lbs.length > 0 && s.gauges.every((g) => e.measures.some((m) => m.gauge === g)) && Math.min(...lbs) > e.before;
+      if (e.status === 'appliquee') {
+        const used = e.measures.find((m) => m.gauge === e.appliedGauge);
+        if (!used) { issues.push(`${id} : jauge appliquée ${e.appliedGauge} sans mesure enregistrée`); continue; }
+        if (s.stiffness !== used.lbIn) issues.push(`${id} : rigidité ${s.stiffness} ≠ mesure TWU enregistrée ${used.lbIn} (« ${used.twu} »)`);
+        if (e.rule === undefined) issues.push(`${id} : règle d'application absente`);
+        if (e.rule === 'jauge-unique' && s.gauges.length !== 1) issues.push(`${id} : règle « jauge-unique » sur ${s.gauges.length} jauges`);
+        if (e.rule === 'plancher' && !(floorHolds && used.lbIn === Math.min(...lbs))) {
+          issues.push(`${id} : règle « plancher » non remplie (toutes les jauges mesurées, toutes > ${e.before}, valeur la plus basse)`);
+        }
+        if (s.stiffness < e.before && !e.loweringApprovedBy) issues.push(`${id} : rigidité abaissée de ${e.before} à ${s.stiffness} sans GO de Pierre (règle 2)`);
+      } else {
+        if (s.stiffness !== e.before) issues.push(`${id} : « ${e.status} » mais la rigidité a bougé (${e.before} -> ${s.stiffness}) sans passer par « appliquee »`);
+        if (e.status === 'quarantaine' && e.measures.length > 0) issues.push(`${id} : en quarantaine avec des mesures`);
+        if (e.status === 'retenue-jauge' && e.measures.length === 0) issues.push(`${id} : retenue sans mesure`);
+        if (e.status === 'retenue-jauge' && (floorHolds || (s.gauges.length === 1 && lbs[0] > e.before))) {
+          issues.push(`${id} : hausse applicable sans choix de jauge, mais non appliquée`);
+        }
+      }
+    }
+    return issues;
+  };
+  // (d) aucune surface du site n'importe la provenance (les commentaires peuvent citer le fichier).
+  const IMPORTS = /from\s*['"][^'"]*string-stiffness-provenance['"]|import\(\s*['"][^'"]*string-stiffness-provenance['"]\s*\)|STRING_STIFFNESS_PROVENANCE|STIFFNESS_SOURCE/;
+  const scanSurfaces = (files: { path: string; src: string }[]) =>
+    files.filter((f) => f.path !== 'src/data/string-stiffness-provenance.ts' && IMPORTS.test(f.src)).map((f) => `${f.path} lit la provenance des rigidités`);
+  const walkAll = (d: string): string[] =>
+    readdirSync(d).flatMap((n) => (statSync(`${d}/${n}`).isDirectory() ? walkAll(`${d}/${n}`) : [`${d}/${n}`]));
+  const surfaceFiles = [...walkAll('src'), ...walkAll('scripts/catalog'), ...walkAll('scripts/en-products'), ...walkAll('public/js')]
+    .filter((f) => /\.(tsx?|m?js)$/.test(f)).map((p) => ({ path: p, src: readFileSync(p, 'utf8') }));
+  const P0 = SP.STRING_STIFFNESS_PROVENANCE;
+  const issues = [...checkStiffness(stringsDatabase, P0, twuRef), ...scanSurfaces(surfaceFiles)];
+  issues.forEach((i) => fail(`rigidités de laboratoire : ${i}`));
+  // Tests négatifs : chaque altération doit être détectée.
+  const withStiffness = (id: string, v: number) => stringsDatabase.map((s) => (s.id === id ? { ...s, stiffness: v } : s));
+  const patch = (id: string, f: (e: SProv[string]) => SProv[string]): SProv => ({ ...P0, [id]: f(P0[id]) });
+  const negatives: Array<[string, string[], string]> = [
+    ['rigidité appliquée retouchée (+0,1)', checkStiffness(withStiffness('luxilon-savage', 234.4), P0, twuRef), 'luxilon-savage : rigidité'],
+    ['mesure inventée, absente du relevé TWU', checkStiffness(stringsDatabase, patch('luxilon-savage', (e) => ({ ...e, measures: [{ ...e.measures[0], lbIn: 236 }] })), twuRef), 'absente de la copie versionnée'],
+    ['fiche retenue appliquée en silence', checkStiffness(withStiffness('head-hawk', 204.6), P0, twuRef), 'head-hawk : « retenue-jauge »'],
+    ['baisse appliquée sans GO (règle 2)', checkStiffness(stringsDatabase, patch('luxilon-savage', (e) => ({ ...e, before: 250 })), twuRef), 'sans GO de Pierre'],
+    ['plancher sur des jauges non toutes mesurées', checkStiffness(stringsDatabase, patch('tecnifibre-black-code-4s', (e) => ({ ...e, measures: e.measures.filter((m) => m.gauge !== '1.30') })), twuRef), 'règle « plancher » non remplie'],
+    ['ligne TWU d\'un autre modèle', checkStiffness(stringsDatabase, patch('tecnifibre-black-code', (e) => ({ ...e, measures: [{ twu: 'Tecnifibre Black Code 4S 17 (1.25)', gauge: '1.24', lbIn: 209.2 }, ...e.measures.slice(1)] })), twuRef), 'd\'un autre modèle'],
+    ['jauge absente de la fiche', checkStiffness(stringsDatabase, patch('gamma-moto', (e) => ({ ...e, measures: [{ ...e.measures[0], gauge: '1.30' }, e.measures[1]] })), twuRef), 'absente de la fiche'],
+    ['hausse sûre laissée de côté', checkStiffness(withStiffness('tecnifibre-black-code-4s', 200), patch('tecnifibre-black-code-4s', (e) => ({ ...e, status: 'retenue-jauge' as const })), twuRef), 'hausse applicable sans choix de jauge'],
+    ['surface qui importe la provenance', scanSurfaces([{ path: 'src/app/x.tsx', src: "import { STRING_STIFFNESS_PROVENANCE } from '@/data/string-stiffness-provenance';" }]), 'src/app/x.tsx'],
+    ['provenance d\'une fiche absente sans alias', checkStiffness(stringsDatabase, { ...P0, 'cordage-inconnu': P0['luxilon-savage'] }, twuRef), 'cordage-inconnu : provenance d\'un cordage absent'],
+  ];
+  for (const [name, found, needle] of negatives) {
+    if (!found.some((i) => i.includes(needle))) fail(`rigidités de laboratoire : garde-fou muet sur « ${name} » (${needle})`);
+  }
+  // Cas permis : fiche fusionnée depuis (alias) ; son entrée reste comme historique, sans alerte.
+  const afterMerge = checkStiffness(stringsDatabase.filter((s) => s.id !== 'tecnifibre-4s'), P0, twuRef, { ...LEGACY_STRING_ALIASES, 'tecnifibre-4s': 'tecnifibre-black-code-4s' });
+  if (afterMerge.length > 0) fail(`rigidités de laboratoire : une fiche fusionnée (alias) fait échouer le contrôle : ${afterMerge[0]}`);
+  if (failures.length === before) {
+    const count = (st: string) => Object.values(P0).filter((e) => e.status === st).length;
+    const measures = Object.values(P0).reduce((a, e) => a + e.measures.length, 0);
+    const merged = Object.keys(P0).filter((id) => !stringsDatabase.some((s) => s.id === id)).length;
+    ok(`rigidités de laboratoire : ${Object.keys(P0).length} fiches en provenance (${count('appliquee')} appliquées, ${count('retenue-jauge')} retenues faute de jauge de référence, ` +
+      `${count('quarantaine')} en quarantaine${merged > 0 ? `, dont ${merged} fusionnée(s) depuis` : ''}), ${measures} mesures TWU retrouvées dans ${SP.STIFFNESS_SOURCE.versionedCopy} (modèle exact, jauge de la fiche, ` +
+      `${SP.STIFFNESS_SOURCE.referenceTensionLbs} lbs / ${SP.STIFFNESS_SOURCE.swingSpeed}), aucune baisse sans GO, aucune surface ne lit la provenance, ${negatives.length} tests négatifs détectés`);
+  }
+}
+
+// ---------------------------------------------------------------------------
 // 14. RAQUETTES — AVIS DE TESTEURS (09/10/2026 ; affiché seul depuis le 10/10/2026)
 // ---------------------------------------------------------------------------
 // Garde trois choses : (a) aucun avis n'est appliqué à une fiche dont les specs
@@ -1148,6 +1330,307 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
   if (failures.length === before) {
     ok(`source unique : ${scanned} fichiers public/ sans lecture Supabase du catalogue, catalog.json ${state} ` +
       `(${cat.racquets.length} raquettes / ${cat.strings.length} cordages, ${nullR} RA null, ${nullS} notes null), non versionné, généré en prebuild, aucune chaîne citée`);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 18. NATURE DES NOTES DE CORDAGE — ÉTIQUETÉE SUR CHAQUE SURFACE FRANÇAISE
+//     (principe décidé par Pierre le 10/10/2026 : « garder les notes et les étiqueter partout » ;
+//      formulation des libellés et de la mention proposée par l'orchestrateur, pas encore validée)
+// ---------------------------------------------------------------------------
+// Les notes /10 des cordages ne sont pas des mesures (PR #103 : 12 notes sur 1 182 viennent
+// de Tennis Warehouse, l'origine de 1 062 est inconnue). Elles s'affichent donc avec leur
+// nature, cordage par cordage : « Appréciation éditoriale TSA » (fiches à note éditoriale
+// seule), « …, harmonisée avec des avis de testeurs » (les 18 de `STRING_TESTER_RATINGS`),
+// rien pour une fiche sans note (« Non publié »). Bloc DISTINCT et groupé : tout ce qui
+// concerne cette règle est ici. Échoue si :
+// (a) un libellé ou la mention dévie du texte figé ci-dessous, cite une chaîne de testeurs ou
+//     Tennis Warehouse, ou affirme que la rigidité du catalogue est « mesurée » (faux tant que
+//     le chantier C2 n'a pas apparié les rigidités sur (modèle, jauge) : TWU mesure chaque
+//     jauge séparément et des rigidités du catalogue n'ont aucune source) ;
+// (b) la nature d'une fiche ne se déduit plus de ses notes et de la liste des 18 ;
+// (c) un fichier de la liste blanche des surfaces perd son étiquette (composant ou
+//     constante de src/lib/string-rating-nature.ts), ou un fichier de src/ lit des notes de
+//     cordage sans être déclaré dans cette liste ;
+// (d) en exécution, la fiche et la carte du catalogue (pleine et compacte) de CHAQUE cordage
+//     n'affichent pas l'étiquette de leur nature (ou affichent celle d'une autre, ou une
+//     étiquette pour un cordage sans note) ;
+// (e) en exécution, le PDF d'une configuration (données assemblées, puis rendu enregistré
+//     par un jsPDF factice) omet l'étiquette des notes imprimées ;
+// (f) la description du catalogue (métadonnées) promet des notes ;
+// (g) un des tests négatifs permanents ne détecte plus l'altération qu'il plante.
+// Affichage seulement : aucune note ni aucun calcul n'est touché. La provenance détaillée
+// des notes n'est lue par aucun de ces fichiers (contrôle 13 bis, qui scanne tout src/).
+{
+  const before = failures.length;
+  const N = await import('../src/lib/string-rating-nature');
+  const { default: React } = await import('react');
+  (globalThis as { React?: unknown }).React ??= React; // JSX « classique » sous tsx (Next : runtime automatique)
+  const { renderToStaticMarkup } = await import('react-dom/server');
+  type Nature = 'editorial' | 'harmonized' | 'none';
+  // Les cinq notes affichées (comme côté EN) : « sans note » = aucune des cinq n'est publiée.
+  const FIELDS5 = ['control', 'comfort', 'spin', 'power', 'durability'] as const;
+  const EXPECT: Readonly<Record<Nature, string>> = {
+    editorial: 'Appréciation éditoriale TSA',
+    harmonized: 'Appréciation éditoriale TSA, harmonisée avec des avis de testeurs',
+    none: 'Non publié',
+  };
+  const NOTICE =
+    "Appréciation de l'équipe, non mesurée en laboratoire. La rigidité (lb/in) est la donnée du cordage utilisée par le RCS.";
+  const PROPOSED = 'formulation proposée le 10/10/2026, pas encore validée par Pierre : la changer ici ET dans src/lib/string-rating-nature.ts, en connaissance de cause';
+
+  // (a) textes figés (formulation proposée, à valider), sans chaîne de testeurs ni Tennis Warehouse, sans « rigidité mesurée ».
+  for (const k of ['editorial', 'harmonized', 'none'] as const) {
+    if (N.STRING_RATING_LABELS[k] !== EXPECT[k]) fail(`nature des notes : libellé « ${k} » = « ${N.STRING_RATING_LABELS[k]} », « ${EXPECT[k]} » attendu (${PROPOSED})`);
+  }
+  if (N.STRING_RATINGS_NOTICE !== NOTICE) {
+    fail(`nature des notes : la mention a changé — « ${N.STRING_RATINGS_NOTICE} » (${PROPOSED})`);
+  }
+  const wording = [...Object.values(N.STRING_RATING_LABELS), N.STRING_RATINGS_NOTICE].join('\n');
+  for (const c of [...TESTER_RATINGS_SOURCE.channels, ...RACQUET_TESTER_SOURCE.channels]) {
+    if (wording.includes(c)) fail(`nature des notes : un libellé cite la chaîne de testeurs « ${c} » (jamais cités comme auteurs des notes)`);
+  }
+  if (/Tennis Warehouse|\bTWU?\b/.test(wording)) fail('nature des notes : un libellé cite Tennis Warehouse (les notes ne viennent pas de TW)');
+  if (/rigidit[^.]*mesur|mesur[^.]*rigidit/i.test(N.STRING_RATINGS_NOTICE)) {
+    fail('nature des notes : la mention affirme que la rigidité est mesurée — faux tant que le chantier C2 (réappariement TWU sur (modèle, jauge), PR #105) n’a pas couvert le catalogue (règle 3) ; adapter ce contrôle à ce moment-là');
+  }
+
+  // (b) la nature se déduit des notes publiées et de la liste des 18.
+  const harmonizedIds = new Set(Object.keys(STRING_TESTER_RATINGS));
+  const expectedNature = (s: (typeof stringsDatabase)[number]): Nature =>
+    FIELDS5.every((f) => s[f] === undefined) ? 'none' : harmonizedIds.has(s.id) ? 'harmonized' : 'editorial';
+  const natureCount: Record<Nature, number> = { editorial: 0, harmonized: 0, none: 0 };
+  for (const s of stringsDatabase) {
+    const n = N.stringRatingNature(s);
+    natureCount[n]++;
+    if (n !== expectedNature(s)) fail(`nature des notes : ${s.id} classé « ${n} », « ${expectedNature(s)} » attendu`);
+    const label = N.stringRatingLabel(s);
+    if ((n === 'none') !== (label === null) || (label !== null && label !== EXPECT[n])) fail(`nature des notes : ${s.id} (${n}) porte l’étiquette « ${label} »`);
+  }
+  for (const id of harmonizedIds) {
+    const s = stringsDatabase.find((x) => x.id === id);
+    if (s && N.stringRatingNature(s) !== 'harmonized') fail(`nature des notes : ${id} (18 harmonisés) n’est pas classé « harmonized »`);
+  }
+  if (natureCount.harmonized !== harmonizedIds.size) fail(`nature des notes : ${natureCount.harmonized} fiches harmonisées pour ${harmonizedIds.size} en provenance`);
+  if (natureCount.editorial + natureCount.harmonized + natureCount.none !== stringsDatabase.length) fail('nature des notes : une fiche sans nature');
+  // Sémantique sur des fiches synthétiques (le catalogue actuel est « tout ou rien » et ne l'éprouve pas) : chacune des
+  // cinq notes affichées suffit à faire « une note » ; performance, polyvalence et innovation n'en font pas une à elles
+  // seules (elles ne s'affichent pas seules) ; un identifiant harmonisé sans note reste « sans note ».
+  const aHarmonizedId = [...harmonizedIds][0];
+  for (const f of FIELDS5) {
+    if (N.stringRatingNature({ id: 'zz-synthetique', [f]: 5 } as never) !== 'editorial') fail(`nature des notes : la seule note « ${f} » ne fait pas une fiche à note éditoriale`);
+    if (N.stringRatingNature({ id: aHarmonizedId, [f]: 5 } as never) !== 'harmonized') fail(`nature des notes : la seule note « ${f} » d'un cordage harmonisé ne le classe pas « harmonized »`);
+  }
+  for (const f of ['performance', 'versatility', 'innovation']) {
+    if (N.stringRatingNature({ id: 'zz-synthetique', [f]: 5 } as never) !== 'none') fail(`nature des notes : « ${f} » seul compte comme une note affichée (cinq notes affichées seulement, comme côté EN)`);
+  }
+  if (N.stringRatingNature({ id: aHarmonizedId } as never) !== 'none') fail('nature des notes : un cordage harmonisé sans aucune note n’est pas « none »');
+
+  // (c) liste blanche des surfaces + découverte des surfaces non déclarées.
+  const stripComments = (raw: string) => raw.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
+  type Need = [pattern: RegExp, min: number, what: string];
+  const SURFACES: Readonly<Record<string, Need[]>> = {
+    'src/app/tennis-strings/[slug]/page.tsx': [
+      [/<StringRatingLabel\b/g, 1, 'étiquette des notes de jeu'],
+      [/<StringRatingsNotice\b/g, 1, 'mention sous « Notes de jeu »'],
+    ],
+    'src/components/product/string-card.tsx': [[/<StringRatingLabel\b/g, 2, 'étiquette (carte complète et carte compacte)']],
+    'src/app/tennis-strings/page.tsx': [
+      [/<StringRatingsNotice\b/g, 2, 'mention (barre d’outils du tri et filtre « Notes minimum »)'],
+      [/<StringCard\b/g, 1, 'cartes étiquetées'],
+    ],
+    'src/app/compare/page.tsx': [
+      [/<StringRatingLabel\b/g, 3, 'étiquette (ligne par cordage, carte sélectionnée, liste de choix)'],
+      [/<StringRatingsNotice\b/g, 1, 'mention'],
+      [/<StringRatingsNatureBlock\b/g, 1, 'bloc « Nature des notes » avant les barres'],
+    ],
+    'src/app/configurator/page.tsx': [
+      [/<StringRatingLabel\b/g, 3, 'étiquette (résumé du cordage, analyse avancée : principal et travers)'],
+      [/<StringRatingsNotice\b/g, 1, 'mention sous l’analyse avancée'],
+    ],
+    'src/app/statistics/page.tsx': [
+      [/STRING_RATING_LABELS\[/g, 1, 'libellé de nature dans la légende du classement'],
+      [/<StringRatingsNotice\b/g, 1, 'mention'],
+      [/<StringRatingLabel\b/g, 1, 'étiquette par ligne si les natures sont mêlées'],
+    ],
+    'src/lib/pdf-configuration-data.ts': [
+      [/\bstringRatingLabel\(/g, 2, 'étiquette des notes du montant et du travers'],
+      [/\bSTRING_RATINGS_NOTICE\b/g, 2, 'mention imprimée'],
+    ],
+    'src/lib/pdf-export.ts': [
+      [/\bratingsLabel\b/g, 4, 'étiquette imprimée près des notes et de l’analyse'],
+      [/\bratingsNotice\b/g, 4, 'mention imprimée près des notes et dans la méthodologie'],
+    ],
+  };
+  const surfaceFindings = (file: string, raw: string): string[] => {
+    const needs = SURFACES[file];
+    if (!needs) return [];
+    const code = stripComments(raw);
+    return needs.flatMap(([re, min, what]) => {
+      const n = (code.match(re) ?? []).length;
+      return n >= min ? [] : [`${file} : ${what} — ${n} occurrence(s) de ${re.source}, ${min} attendue(s)`];
+    });
+  };
+  const NOTE_READ = /\.(performance|control|comfort|durability|versatility|innovation|spin|power)\b|const\s*\{[^}]*\b(performance|control|comfort|durability|versatility|innovation|spin|power)\b[^}]*\}\s*=\s*(string|s|stringItem)\b/;
+  const DATA_IMPORT = /from\s*['"][^'"]*(strings-database|\/tester-ratings|string-card|pdf-configuration-data)['"]/;
+  const undeclaredFindings = (file: string, raw: string): string[] => {
+    if (file.startsWith('src/data/') || file in SURFACES) return [];
+    const code = stripComments(raw);
+    return NOTE_READ.test(code) && DATA_IMPORT.test(code)
+      ? [`${file} : lit des notes de cordage sans être déclaré parmi les surfaces étiquetées (liste blanche du contrôle 18)`]
+      : [];
+  };
+  const walkTree = (d: string): string[] =>
+    readdirSync(d).flatMap((n) => (statSync(`${d}/${n}`).isDirectory() ? walkTree(`${d}/${n}`) : [`${d}/${n}`]));
+  const srcTs = walkTree('src').filter((f) => /\.(tsx?|mts)$/.test(f));
+  const sources = new Map<string, string>();
+  for (const file of Object.keys(SURFACES)) {
+    if (!existsSync(file)) { fail(`nature des notes : surface déclarée absente (${file})`); continue; }
+    sources.set(file, readFileSync(file, 'utf8'));
+    for (const msg of surfaceFindings(file, sources.get(file)!)) fail(`nature des notes : ${msg}`);
+  }
+  for (const file of srcTs) for (const msg of undeclaredFindings(file, readFileSync(file, 'utf8'))) fail(`nature des notes : ${msg}`);
+
+  // (d) exécution : fiche et carte (pleine, compacte) de CHAQUE cordage, rendues côté serveur.
+  const labelTag = (n: Nature) => `>${EXPECT[n]}<`;
+  const renderFindings = (surface: string, id: string, html: string, nature: Nature): string[] => {
+    const found: string[] = [];
+    if (nature === 'none') {
+      if (html.includes('data-rating-nature=') || html.includes('Appréciation')) found.push(`${surface} ${id} : étiquette affichée pour un cordage sans note`);
+      if (!html.includes('Non publié')) found.push(`${surface} ${id} : « Non publié » absent`);
+      return found;
+    }
+    if (!html.includes(`data-rating-nature="${nature}"`) || !html.includes(labelTag(nature))) {
+      found.push(`${surface} ${id} : étiquette « ${EXPECT[nature]} » absente alors que des notes sont rendues`);
+    }
+    for (const other of ['editorial', 'harmonized'] as const) {
+      if (other !== nature && html.includes(labelTag(other))) found.push(`${surface} ${id} : étiquette d’une autre nature (« ${EXPECT[other]} »)`);
+    }
+    return found;
+  };
+  const ficheMod = (await import('../src/app/tennis-strings/[slug]/page')) as { default: (p: { params: { slug: string } }) => never };
+  const { StringCard } = await import('../src/components/product/string-card');
+  let renders = 0;
+  let sample: { fiche: string; id: string } | null = null;
+  const renderBad: string[] = [];
+  for (const s of stringsDatabase) {
+    const n = N.stringRatingNature(s);
+    const fiche = renderToStaticMarkup(ficheMod.default({ params: { slug: s.id } }));
+    const card = renderToStaticMarkup(React.createElement(StringCard, { string: s }));
+    const compact = renderToStaticMarkup(React.createElement(StringCard, { string: s, compact: true }));
+    renders += 3;
+    renderBad.push(...renderFindings('fiche', s.id, fiche, n), ...renderFindings('carte', s.id, card, n), ...renderFindings('carte compacte', s.id, compact, n));
+    if (n !== 'none' && !fiche.includes('data-rating-notice="full"')) renderBad.push(`fiche ${s.id} : mention absente sous « Notes de jeu »`);
+    if (n === 'harmonized' && !sample) sample = { fiche, id: s.id };
+  }
+  if (renderBad.length > 0) fail(`nature des notes : ${renderBad.length} défaut(s) de rendu serveur (fiche, carte pleine, carte compacte), par exemple : ${renderBad.slice(0, 3).join(' | ')}`);
+
+  // (e) exécution : PDF. Données assemblées, puis rendu par un jsPDF factice qui enregistre le texte.
+  const { buildConfigurationPdfData } = await import('../src/lib/pdf-configuration-data');
+  const { exportConfigurationPdf } = await import('../src/lib/pdf-export');
+  const printed: string[] = [];
+  class FakePdf {
+    setFont() {} setFontSize() {} setTextColor() {} setFillColor() {} setDrawColor() {} rect() {} roundedRect() {} line() {} setLineWidth() {}
+    addPage() {} setPage() {} save() {}
+    getNumberOfPages() { return 1; }
+    splitTextToSize(t: string) { return [t]; }
+    text(t: string | string[]) { printed.push(...(Array.isArray(t) ? t : [t])); }
+  }
+  const harmonizedMain = stringsDatabase.find((s) => N.stringRatingNature(s) === 'harmonized')!;
+  const editorialCross = stringsDatabase.find((s) => N.stringRatingNature(s) === 'editorial')!;
+  const noneString = stringsDatabase.find((s) => N.stringRatingNature(s) === 'none');
+  const pdfFor = async (main: string, cross: string | null) => {
+    printed.length = 0;
+    const data = buildConfigurationPdfData({
+      name: 'audit', racquetId: racquetsDatabase[0].id, mainStringId: main, crossStringId: cross, mainGauge: '1.25', crossGauge: '1.25',
+      mainTension: 23, crossTension: 22, rating: 0, notes: null, rcsScore: 0, compatibility: 0, createdAt: '2026-10-10T00:00:00.000Z',
+    });
+    (globalThis as { window?: unknown }).window = { jspdf: { jsPDF: FakePdf } };
+    try { await exportConfigurationPdf(data); } finally { delete (globalThis as { window?: unknown }).window; }
+    return { data, text: printed.join('\n') };
+  };
+  const pdfFindings = (name: string, data: { mainString?: { ratingsLabel?: string }; crossString?: { ratingsLabel?: string } | null; ratingsNotice?: string }, text: string, main: Nature, cross: Nature | null): string[] => {
+    const found: string[] = [];
+    const expected = (n: Nature | null) => (n === null || n === 'none' ? undefined : EXPECT[n]);
+    if (data.mainString?.ratingsLabel !== expected(main)) found.push(`${name} : étiquette des données du montant « ${data.mainString?.ratingsLabel} », « ${expected(main)} » attendue`);
+    if (cross !== null && data.crossString?.ratingsLabel !== expected(cross)) found.push(`${name} : étiquette des données du travers « ${data.crossString?.ratingsLabel} », « ${expected(cross)} » attendue`);
+    const anyLabel = expected(main) !== undefined || expected(cross) !== undefined;
+    if (anyLabel !== (data.ratingsNotice === NOTICE)) found.push(`${name} : mention des données ${data.ratingsNotice === undefined ? 'absente' : 'inattendue'}`);
+    // Chaque emplacement d'impression est vérifié séparément (une étiquette présente à un seul endroit ne
+    // doit pas masquer l'absence aux autres) : le bloc « Notes du cordage » imprime l'étiquette SEULE sur sa
+    // ligne, l'analyse avancée la précède de « Notes utilisees - … : », la méthodologie reprend la mention.
+    const lines = text.split('\n');
+    const mainLabel = expected(main);
+    const crossLabel = expected(cross);
+    if (mainLabel !== undefined) {
+      if (!lines.some((l) => l === mainLabel)) found.push(`${name} : étiquette « ${mainLabel} » absente du bloc « Notes du cordage » imprimé`);
+      if (!lines.some((l) => l.includes('Notes utilisees') && l.includes(mainLabel))) found.push(`${name} : étiquette du montant absente de l’analyse avancée imprimée`);
+    }
+    if (crossLabel !== undefined && !lines.some((l) => l.includes('Notes utilisees') && l.includes('Travers') && l.includes(crossLabel))) {
+      found.push(`${name} : étiquette du travers absente de l’analyse avancée imprimée`);
+    }
+    if (anyLabel) {
+      if (!lines.some((l) => l === NOTICE)) found.push(`${name} : mention absente du bloc « Notes du cordage » imprimé`);
+      if (!lines.some((l) => l.includes(`Notes /10 du cordage : ${NOTICE}`))) found.push(`${name} : mention absente de la méthodologie imprimée`);
+    }
+    if (!anyLabel && (text.includes('Appréciation') || text.includes('non mesurée en laboratoire'))) found.push(`${name} : étiquette ou mention imprimée pour des notes qui n’existent pas`);
+    return found;
+  };
+  const pdfCases: Array<[string, string, string | null, Nature, Nature | null]> = [
+    ['PDF montant harmonisé', harmonizedMain.id, null, 'harmonized', null],
+    ['PDF hybride harmonisé + éditorial', harmonizedMain.id, editorialCross.id, 'harmonized', 'editorial'],
+    ['PDF montant éditorial', editorialCross.id, null, 'editorial', null],
+  ];
+  if (noneString) pdfCases.push(['PDF cordage sans note', noneString.id, null, 'none', null]);
+  const pdfRuns: Array<{ data: Awaited<ReturnType<typeof pdfFor>>['data']; text: string }> = [];
+  for (const [name, main, cross, nm, nc] of pdfCases) {
+    const run = await pdfFor(main, cross);
+    pdfRuns.push(run);
+    for (const msg of pdfFindings(name, run.data, run.text, nm, nc)) fail(`nature des notes : ${msg}`);
+  }
+
+  // (f) métadonnées du catalogue : la description d'un extrait de recherche ne peut pas porter le libellé,
+  //     elle ne promet donc aucune note (relevé par tsa-acquisition le 10/10/2026).
+  const LAYOUT = 'src/app/tennis-strings/layout.tsx';
+  const layoutFindings = (raw: string): string[] => {
+    const m = /description:\s*`([^`]*)`/.exec(stripComments(raw));
+    if (!m) return [`${LAYOUT} : description introuvable`];
+    const promise = /(?<![\wéèêàâîôûç])(notes?|not[ée]e?s?|contr[ôo]le|confort|effets?|durabilit[ée]|puissance|spin)(?![\wéèêàâîôûç])|\/\s*10/i;
+    return promise.test(m[1])
+      ? [`${LAYOUT} : la description annonce des notes (« ${m[1].slice(0, 90)}… »)`]
+      : [];
+  };
+  const layoutSource = readFileSync(LAYOUT, 'utf8');
+  for (const msg of layoutFindings(layoutSource)) fail(`nature des notes : ${msg}`);
+
+  // (g) tests négatifs permanents : chaque altération plantée doit être détectée.
+  const srcOf = (f: string) => sources.get(f) ?? '';
+  const planted: Array<[string, string[]]> = [
+    ['étiquette retirée de /compare', surfaceFindings('src/app/compare/page.tsx', srcOf('src/app/compare/page.tsx').replace(/<StringRatingLabel\b/g, '<Removed'))],
+    ['étiquette retirée de la carte du catalogue', surfaceFindings('src/components/product/string-card.tsx', srcOf('src/components/product/string-card.tsx').replace(/<StringRatingLabel\b/g, '<Removed'))],
+    ['étiquette retirée du configurateur', surfaceFindings('src/app/configurator/page.tsx', srcOf('src/app/configurator/page.tsx').replace(/<StringRatingLabel\b/g, '<Removed'))],
+    ['mention retirée de la fiche', surfaceFindings('src/app/tennis-strings/[slug]/page.tsx', srcOf('src/app/tennis-strings/[slug]/page.tsx').replace(/<StringRatingsNotice\b/g, '<Removed'))],
+    ['étiquette retirée du PDF (données)', surfaceFindings('src/lib/pdf-configuration-data.ts', srcOf('src/lib/pdf-configuration-data.ts').replace(/\bstringRatingLabel\(/g, 'noop('))],
+    ['étiquette citée en commentaire seulement', surfaceFindings('src/app/statistics/page.tsx', srcOf('src/app/statistics/page.tsx').replace(/<StringRatingLabel\b/g, '// <StringRatingLabel').replace(/STRING_RATING_LABELS\[/g, '// STRING_RATING_LABELS['))],
+    ['surface non déclarée', undeclaredFindings('src/app/top/page.tsx', "import { stringsDatabase } from '@/data/strings-database';\nexport default () => stringsDatabase.map((s) => s.control.toFixed(1));")],
+    ['fiche rendue sans étiquette', sample ? renderFindings('fiche', sample.id, sample.fiche.split(EXPECT.harmonized).join(''), 'harmonized') : []],
+    ['fiche rendue avec l’étiquette d’une autre nature', sample ? renderFindings('fiche', sample.id, sample.fiche.split(EXPECT.harmonized).join(EXPECT.editorial), 'harmonized') : []],
+    ['étiquette sur un cordage sans note', renderFindings('carte', 'sans-note', `<p data-rating-nature="editorial">${EXPECT.editorial}</p>Non publié`, 'none')],
+    ['PDF imprimé sans étiquette', pdfFindings('PDF', pdfRuns[0].data, pdfRuns[0].text.split(EXPECT.harmonized).join(''), 'harmonized', null)],
+    ['PDF imprimé sans mention', pdfFindings('PDF', pdfRuns[0].data, pdfRuns[0].text.split(NOTICE).join(''), 'harmonized', null)],
+    ['PDF : étiquette seule retirée du bloc des notes', pdfFindings('PDF', pdfRuns[0].data, pdfRuns[0].text.split('\n').filter((l) => l !== EXPECT.harmonized).join('\n'), 'harmonized', null)],
+    ['PDF : étiquette retirée de l’analyse avancée', pdfFindings('PDF', pdfRuns[0].data, pdfRuns[0].text.split('\n').filter((l) => !l.includes('Notes utilisees')).join('\n'), 'harmonized', null)],
+    ['PDF : mention retirée de la méthodologie', pdfFindings('PDF', pdfRuns[0].data, pdfRuns[0].text.split('\n').filter((l) => !l.includes('Notes /10 du cordage')).join('\n'), 'harmonized', null)],
+    ['PDF hybride : étiquette du travers retirée', pdfFindings('PDF', pdfRuns[1].data, pdfRuns[1].text.split('\n').filter((l) => !l.includes('Travers')).join('\n'), 'harmonized', 'editorial')],
+    ['description du catalogue annonçant des notes', layoutFindings(layoutSource.replace('de chaque référence', 'de chaque référence ; contrôle, confort, effet et durabilité quand la note existe'))],
+  ];
+  for (const [name, hits] of planted) if (hits.length === 0) fail(`nature des notes : garde-fou muet sur « ${name} »`);
+
+  if (failures.length === before) {
+    ok(`nature des notes : ${stringsDatabase.length} cordages = ${natureCount.harmonized} harmonisés + ${natureCount.editorial} à note éditoriale + ${natureCount.none} sans note ; ` +
+      `textes figés (formulation proposée, à valider par Pierre ; aucune chaîne de testeurs, ni TW, ni « rigidité mesurée ») ; description du catalogue sans promesse de note ; ${Object.keys(SURFACES).length} surfaces déclarées portent l’étiquette ` +
+      `et aucune surface de ${srcTs.length} fichiers src/ n’est restée hors liste ; ${renders} rendus serveur (fiche + carte pleine + carte compacte) étiquetés selon la nature ; ` +
+      `${pdfCases.length} PDF vérifiés (données et texte imprimé) ; ${planted.length} tests négatifs détectés`);
   }
 }
 
