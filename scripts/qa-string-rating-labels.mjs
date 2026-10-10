@@ -6,7 +6,7 @@
  * étiqueter partout. » Constat d'origine (PR #103, docs/arbitrages/2026-10-10_provenance-
  * notes-cordages.html) : les notes /10 des cordages ne viennent pas de Tennis Warehouse
  * (12 reprises sur 1 182) ; l'origine de 1 062 d'entre elles est inconnue. La rigidité
- * (lb/in), indiquée à part, est la donnée du cordage que le RCS utilise ; qu'elle soit
+ * (lb/in) est la donnée du cordage que le RCS utilise ; qu'elle soit
  * « mesurée » n'est pas assuré pour les 181 fiches (PR #105, règle 3) : aucune surface ne
  * l'affirme. Ni les chaînes de testeurs ni Tennis Warehouse ne sont cités comme auteurs
  * de ces notes. Ce script vérifie, sans rien modifier :
@@ -76,9 +76,9 @@ const CONTRACT = {
   editorial: 'TSA editorial rating',
   harmonised: 'TSA editorial rating, harmonised with tester reviews',
   none: 'Not published',
-  note: 'Team assessment, not laboratory-measured. Stiffness (lb/in), shown separately, is the string data the RCS uses.',
+  note: 'Team assessment, not laboratory-measured. Stiffness (lb/in) is the string data the RCS uses.',
   // Même mention en français, pour l'étiquetage des surfaces FR (agent FR) : sert au seul contrôle de dérive.
-  noteFr: "Appréciation de l'équipe, non mesurée en laboratoire. La rigidité (lb/in), indiquée à part, est la donnée du cordage utilisée par le RCS.",
+  noteFr: "Appréciation de l'équipe, non mesurée en laboratoire. La rigidité (lb/in) est la donnée du cordage utilisée par le RCS.",
 };
 // Première phrase de la mention FR : repère les occurrences dans src/.
 const NOTE_FR_LEAD = "Appréciation de l'équipe";
@@ -580,9 +580,9 @@ const walkSrc = (dir) =>
   // Témoins positifs : la mention FR correctement écrite (JSX avec entité et {' '}, apostrophe
   // typographique, chaînes mises bout à bout, apostrophe échappée) DOIT passer, une fois chacune.
   const controls = [
-    ["JSX avec &apos; et {' '}", "<p>\n  Appréciation de l&apos;équipe, non mesurée en laboratoire. La rigidité (lb/in),{' '}\n  indiquée à part, est la donnée du cordage utilisée par le RCS.\n</p>"],
+    ["JSX avec &apos; et {' '}", "<p>\n  Appréciation de l&apos;équipe, non mesurée en laboratoire. La rigidité (lb/in){' '}\n  est la donnée du cordage utilisée par le RCS.\n</p>"],
     ['apostrophe typographique', `<p>${CONTRACT.noteFr.replace("l'équipe", 'l’équipe')}</p>`],
-    ['chaînes mises bout à bout', `const NOTE = 'Appréciation de l’équipe, non mesurée en laboratoire. ' + 'La rigidité (lb/in), indiquée à part, est la donnée du cordage utilisée par le RCS.';`],
+    ['chaînes mises bout à bout', `const NOTE = 'Appréciation de l’équipe, non mesurée en laboratoire. ' + 'La rigidité (lb/in) est la donnée du cordage utilisée par le RCS.';`],
     ['apostrophe échappée', `const NOTE = '${CONTRACT.noteFr.replace("l'équipe", "l\\'équipe")}';`],
   ];
   for (const [name, src] of controls) {

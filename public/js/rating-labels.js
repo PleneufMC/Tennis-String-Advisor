@@ -3,8 +3,8 @@
  *
  * Principe décidé par Pierre le 10/10/2026 : « Cordages : garder les notes et les
  * étiqueter partout. » Les notes /10 des cordages sont une appréciation de l'équipe,
- * pas une mesure de laboratoire ; la rigidité (lb/in), indiquée à part, est la donnée
- * du cordage que le RCS utilise. Ni les chaînes de testeurs ni Tennis Warehouse ne
+ * pas une mesure de laboratoire ; la rigidité (lb/in) est la donnée du cordage que le
+ * RCS utilise. Ni les chaînes de testeurs ni Tennis Warehouse ne
  * sont jamais cités comme auteurs de ces notes (charte, F5).
  *
  * Les libellés ci-dessous sont les LIBELLÉS DE RÉFÉRENCE arrêtés le 10/10/2026 (principe
@@ -45,9 +45,9 @@
   // Mention courte, à placer près des notes ; sans note publiée, elle n'a pas d'objet
   // et n'est pas affichée. Elle n'affirme PAS que la rigidité est « mesurée » : ce n'est
   // pas assuré pour les 181 fiches (certaines n'ont aucune source, TWU mesure chaque
-  // jauge séparément ; règle 3, PR #105). Elle dit seulement que la rigidité, indiquée
-  // à part, est la donnée du cordage utilisée par le RCS.
-  var NOTE = 'Team assessment, not laboratory-measured. Stiffness (lb/in), shown separately, is the string data the RCS uses.';
+  // jauge séparément ; règle 3, PR #105). Elle dit seulement que la rigidité est la
+  // donnée du cordage utilisée par le RCS (elle n'est pas affichée partout : carte du catalogue FR, comparateur).
+  var NOTE = 'Team assessment, not laboratory-measured. Stiffness (lb/in) is the string data the RCS uses.';
 
   // Champs /10 d'un cordage affichés sur les surfaces EN.
   var NOTE_FIELDS = ['control', 'comfort', 'spin', 'power', 'durability'];

@@ -16,9 +16,9 @@
 `public/js/rating-labels.js` (source unique, requise aussi par le générateur des fiches) :
 « TSA editorial rating » (156 cordages), « TSA editorial rating, harmonised with tester reviews »
 (les 18 de `tester-ratings.ts`), « Not published » (7 sans note), et la mention « Team
-assessment, not laboratory-measured. Stiffness (lb/in), shown separately, is the string data the
+assessment, not laboratory-measured. Stiffness (lb/in) is the string data the
 RCS uses. » ; référence FR pour l'étiquetage des surfaces FR :
-« Appréciation de l'équipe, non mesurée en laboratoire. La rigidité (lb/in), indiquée à part,
+« Appréciation de l'équipe, non mesurée en laboratoire. La rigidité (lb/in)
 est la donnée du cordage utilisée par le RCS. » La mention n'affirme **pas** que la rigidité est
 « mesurée » : ce n'est pas assuré pour les 181 fiches (règle 3 ; PR #105 : des rigidités n'ont
 aucune source, TWU mesure chaque jauge séparément). Le libellé précède toujours la première
