@@ -49,7 +49,8 @@ const APP_ROUTES: Array<{
 // Articles de blog réellement présents dans `public/blog/*.html`.
 // (Liste explicite : pas d'accès filesystem au runtime sur l'edge.)
 const BLOG_SLUGS: string[] = [
-  'head-gravity-mp-vs-gravity-tour-2025.html',
+  // Comparatif Gravity MP vs Tour retiré le 10/10/2026 (décision de Pierre) :
+  // 301 vers le classement 2026, cf. redirects() de next.config.js.
   'plan-de-cordage-tennis.html',
   'jauge-cordage-tennis.html',
   'guide-tension-cordage-tennis.html',
