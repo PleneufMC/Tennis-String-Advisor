@@ -442,7 +442,9 @@ export const STRING_STIFFNESS_PROVENANCE: Readonly<Record<string, StringStiffnes
       'APPARIEMENT MANUEL, seule exception au motif strict (liste blanche MANUAL_PAIRINGS, décision de l\'orchestrateur du 10/10/2026) : « Babolat RPM Team 16 Black » = 280,6 lb/in, matière Polyester, jauge nominale 1.30, ligne unique à cette jauge ; ' +
       'l\'intitulé n\'est écarté du motif strict que par le suffixe de coloris « Black » (la fiche est noire depuis #114, sur main au 10/10/2026). Règle C : 1.30 (280,6). ' +
       'La ligne 1.25 « Babolat RPM Team 17 (1.25) » (matière TWU « Nylon/Polyester », 245,2) n\'est pas enregistrée (matière différente de celle de la fiche) et ne contredit pas : la règle C retient la plus rigide mesurée aux jauges de la fiche. ' +
-      'Couverture partielle : seule la 1.30 est mesurée en polyester (1.25 : ligne « Nylon/Polyester » écartée ; 1.35, si la fiche la porte : non mesurée) ; valeur plancher, hausse établie dans son sens (+55,6 lb/in). Série non suspecte (une seule ligne polyester). Une erreur d\'identité ne peut produire qu\'une sur-alerte (règle 2).',
+      'Couverture partielle : seule la 1.30 est mesurée en polyester (1.25 : ligne « Nylon/Polyester » écartée ; 1.35, si la fiche la porte : non mesurée) ; valeur plancher, hausse établie dans son sens (+55,6 lb/in). Série non suspecte (une seule ligne polyester). ' +
+      'Recoupement indirect (copie locale du 29/09 de la fiche Tennis Warehouse « RPM Team 17/1.25 », non versionnée) : co-polyester monofilament octogonal, noir, « l\'un des plus fermes des cordages Babolat testés » ; l\'étiquette TWU « Nylon/Polyester » de la ligne 1.25 n\'est donc probablement pas fiable. ' +
+      'Une erreur d\'identité ne peut produire qu\'une sur-alerte (règle 2).',
   },
 
   // ---- Lot 3 : hausses établies mais NON appliquées -------------------------------------------------------------

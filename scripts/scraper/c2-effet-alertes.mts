@@ -110,6 +110,7 @@ console.log(`\nRigidités en BAISSE par rapport à l'état de référence : ${lo
 const WITNESSES: Array<[string, string, string]> = [
   ['babolat-pure-drive-standard', 'luxilon-4g', 'Pure Drive (RA 69) + Luxilon 4G'],
   ['babolat-pure-drive-standard', 'babolat-revenge', 'Pure Drive (RA 69) + Babolat Revenge'],
+  ['babolat-pure-drive-standard', 'babolat-rpm-team', 'Pure Drive (RA 69) + Babolat RPM Team'],
   ['yonex-ezone-100', 'solinco-mach-10', 'EZONE 100 (RA 68) + Solinco Mach-10'],
   ['wilson-pro-staff-97-v14', 'tecnifibre-razor-soft', 'Pro Staff 97 v14 (RA 66) + Razor Soft'],
   ['babolat-pure-aero-standard', 'luxilon-element', 'Pure Aero (RA 66) + Luxilon Element'],
