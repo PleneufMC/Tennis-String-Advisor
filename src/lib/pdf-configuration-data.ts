@@ -39,6 +39,7 @@ import {
   racquetTesterSynthesis,
   formatScore20,
 } from '@/lib/racquet-scoring';
+import { STRING_RATINGS_NOTICE, stringRatingLabel } from '@/lib/string-rating-nature';
 import type {
   ConfigurationPdfData,
   PdfRacquetSpecs,
@@ -146,6 +147,8 @@ export function buildConfigurationPdfData(
           durability: mainString.durability,
         },
         priceEur: mainString.price?.europe,
+        // Nature des notes /10 ci-dessus (principe décidé le 10/10/2026) ; absente si aucune note.
+        ratingsLabel: stringRatingLabel(mainString) ?? undefined,
       }
     : undefined;
 
@@ -164,6 +167,7 @@ export function buildConfigurationPdfData(
           durability: crossString.durability,
         },
         priceEur: crossString.price?.europe,
+        ratingsLabel: stringRatingLabel(crossString) ?? undefined,
       }
     : null;
 
@@ -274,6 +278,8 @@ export function buildConfigurationPdfData(
     crossString: crossDetail,
     advanced,
     compatibilityAdvice,
+    // Mention imprimée avec les notes du cordage : seulement si une note est publiée quelque part.
+    ratingsNotice: mainDetail?.ratingsLabel || crossDetail?.ratingsLabel ? STRING_RATINGS_NOTICE : undefined,
   };
 }
 

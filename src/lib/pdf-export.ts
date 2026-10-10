@@ -146,6 +146,12 @@ export interface PdfStringDetail {
   tension: number;
   stiffness?: number;
   ratings?: PdfStringRatings;
+  /**
+   * Nature des notes /10 ci-dessus (« Appréciation éditoriale TSA »…), fournie par
+   * `lib/string-rating-nature`. Absente = aucune note publiée. Toute note imprimée porte
+   * cette étiquette (principe décidé le 10/10/2026, contrôle 18 de `audit:ratings`).
+   */
+  ratingsLabel?: string;
   priceEur?: number;
 }
 
@@ -187,6 +193,8 @@ export interface ConfigurationPdfData {
   crossString?: PdfStringDetail | null;
   advanced?: PdfAdvancedAnalysis;
   compatibilityAdvice?: string;
+  /** Mention imprimée avec les notes du cordage : ce que sont ces notes, ce sur quoi repose le RCS. */
+  ratingsNotice?: string;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -519,9 +527,25 @@ export async function exportConfigurationPdf(data: ConfigurationPdfData): Promis
   // Notes du cordage principal.
   if (m?.ratings) {
     L.y += 3;
-    L.ensure(12);
+    // Avec l'étiquette, le bloc (titre, étiquette, mention, cinq barres : ~55 mm) reste d'un seul tenant :
+    // sans cela le titre et l'étiquette restaient seuls en bas d'une page, leurs barres sur la suivante.
+    L.ensure(m.ratingsLabel ? 58 : 12);
     L.text(`Notes du cordage montants (base TSA)`, MARGIN_X + 2.5, { size: 9, bold: true });
     L.y += 5.6;
+    // Nature des notes, avant les barres : appréciation de l'équipe, jamais une mesure.
+    if (m.ratingsLabel) {
+      L.text(m.ratingsLabel, MARGIN_X + 2.5, { size: 8.4, bold: true, color: DARK });
+      L.y += 4.4;
+      if (data.ratingsNotice) {
+        doc
+          .splitTextToSize(latin1(data.ratingsNotice), CONTENT_W - 5)
+          .forEach((line: string) => {
+            L.text(line, MARGIN_X + 2.5, { size: 7.6, color: GRAY });
+            L.y += 3.8;
+          });
+      }
+      L.y += 2.2;
+    }
     scoreBar(L, 'Controle', m.ratings.control, 10);
     scoreBar(L, 'Confort', m.ratings.comfort, 10);
     scoreBar(L, 'Effet (spin)', m.ratings.spin, 10);
@@ -532,6 +556,9 @@ export async function exportConfigurationPdf(data: ConfigurationPdfData): Promis
   // ------------------------------------------- Analyse avancée (Premium)
   if (data.advanced) {
     const a = data.advanced;
+    // Titre, phrase d'intro, étiquettes des notes et cinq barres (~70 mm) d'un seul tenant quand des notes
+    // sont étiquetées ; sans étiquette, la pagination d'origine est conservée.
+    if (m?.ratingsLabel || c?.ratingsLabel) L.ensure(72);
     sectionTitle(L, 'Analyse avancee du setup');
     L.ensure(10);
     L.text(
@@ -540,6 +567,22 @@ export async function exportConfigurationPdf(data: ConfigurationPdfData): Promis
       { size: 8.2, color: GRAY },
     );
     L.y += 6;
+    // Les sous-scores partent des notes /10 du cordage : on dit de quelle nature elles sont
+    // (montants, puis travers pour un hybride), cordage par cordage. Rien si l'analyse n'est
+    // pas calculable (note absente) : on n'affirme pas que des notes alimentent un calcul vide.
+    if (Object.values(a.subScores).some((v) => v !== null)) {
+      const feeding: Array<[string, string | undefined]> = [
+        [c ? 'Montants' : 'Cordage', m?.ratingsLabel],
+        ['Travers', c?.ratingsLabel],
+      ];
+      feeding.forEach(([who, label]) => {
+        if (!label) return;
+        L.ensure(6);
+        L.text(`Notes utilisees - ${who} : ${label}`, MARGIN_X + 2.5, { size: 8.2, color: GRAY });
+        L.y += 4.6;
+      });
+      L.y += 1.4;
+    }
     scoreBar(L, 'Puissance', a.subScores.power, 100, 'non disponible');
     scoreBar(L, 'Controle', a.subScores.control, 100, 'non disponible');
     scoreBar(L, 'Confort', a.subScores.comfort, 100, 'non disponible');
@@ -588,6 +631,7 @@ export async function exportConfigurationPdf(data: ConfigurationPdfData): Promis
   bulletList(L, [
     "L'indice de fermete combine la rigidite du cadre (RA), celle du cordage (lb/in) et la tension. Plus il est eleve, plus le montage est ferme.",
     'Les sous-scores 0-100 partent des notes du cordage puis sont ajustes par la tension, la jauge, le tamis et le RA du cadre.',
+    ...(data.ratingsNotice ? [`Notes /10 du cordage : ${data.ratingsNotice}`] : []),
     "Aucune note de la raquette n'est deduite de ses caracteristiques. Pour une raquette evaluee, l'avis de testeurs est une synthese d'avis publies (moyenne de 20 criteres, sur 20), reproduite telle quelle.",
     'Un RA signale comme estime signifie que le fabricant ne publie pas cette valeur : la mediane de la base est utilisee a la place.',
     'Le confort est pondere plus fortement que les autres criteres dans le score global : la sante du bras est prioritaire.',

@@ -1,11 +1,42 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.3.6
+> **Version** : 2.3.7
 > **Date** : 10 octobre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
 > **Branche de référence** : `main` (seule branche longue ; la production Netlify en déploie)
 > **Repo** : https://github.com/PleneufMC/Tennis-String-Advisor.git
+
+**Changelog v2.3.6 → v2.3.7** — **Notes /10 des cordages étiquetées sur
+toutes les surfaces françaises** (principe décidé par Pierre le 10/10/2026, « Cordages : garder les
+notes et les étiqueter partout », suite à la PR #103 ; `tsa-core`, C4). La **formulation** des
+libellés et de la mention est une proposition de l'orchestrateur, **pas encore validée par Pierre**.
+Chaque cordage porte la nature de ses notes : « Appréciation éditoriale TSA » (156 fiches),
+« Appréciation éditoriale TSA, harmonisée avec des avis de testeurs » (les 18 de
+`STRING_TESTER_RATINGS`), rien pour les 7 fiches sans note (« Non publié » sur chaque ligne).
+Mention : « Appréciation de l'équipe, non mesurée en laboratoire. La rigidité (lb/in), indiquée à
+part, est la donnée du cordage utilisée par le RCS. » Elle n'affirme pas que la rigidité est
+« mesurée » : des rigidités du catalogue n'ont aucune source et TWU mesure chaque jauge séparément
+(chantier C2, PR #105). Libellés et mention sont centralisés dans `src/lib/string-rating-nature.ts`
+(composants `StringRatingLabel` et `StringRatingsNotice`) ; la liste des 18 vient de
+`STRING_TESTER_RATINGS`, comme dans le générateur des fiches EN ; les chaînes de testeurs ne sont
+jamais citées. Surfaces traitées : fiche `/tennis-strings/[slug]`, carte du catalogue (pleine et
+compacte) et page du catalogue (tri, filtre « Notes minimum »), `/compare` en mode cordages
+(étiquette par cordage, bloc « Nature des notes » avant les barres, avertissement si deux natures
+sont mêlées), configurateur (résumé du cordage, analyse avancée), `/statistics` (classement des
+cordages) et PDF Premium (notes, analyse avancée, méthodologie) ; la description du catalogue
+(`tennis-strings/layout.tsx`) ne promet plus de notes. **Aucune note ni aucun calcul modifié** :
+RCS, alertes bras (5,12 % / 19,56 %), second filet « confort » et `advanced-rcs.ts` inchangés. Tri
+par défaut « Note globale » **mesuré, non modifié** : sur 174 cordages classés (41 valeurs
+distinctes), les 18 harmonisés tiennent 5 des 10 premières places et 8 des 20 premières ; avec leur
+ancienne note, 2 places du top 10 changeraient et un cordage bougerait jusqu'à 95 rangs — décision de
+Pierre en attente. Contrôle 18 de `audit:ratings` (liste blanche de 8 surfaces, 543 rendus serveur,
+4 PDF, 17 tests négatifs). ⚠️ Restent, non traités ici : fiches et pages EN, métadonnées de la fiche
+(PR #106, `tsa-acquisition`), tableau « Les mieux notés » de l'article `meilleur-cordage-polyester-2026`
+et notes citées dans `cordage-polyester-tennis-elbow` (`tsa-redacteur`), tri par défaut neutre proposé
+par `tsa-revenue` (sous réserve d'avis juridique), et l'étiquette « Appréciation éditoriale TSA » reste
+discutable pour les 12 notes de Tecnifibre Triax et Wilson NXT, recopiées de Tennis Warehouse et
+conservées par décision de Pierre (PR #105) : à arbitrer.
 
 **Changelog v2.3.5 → v2.3.6** — **Deux doublons fusionnés : 181 → 179 cordages**
 (décision de Pierre du 10/10/2026 : « deux doublons probables : vérifier, puis fusionner » ; `tsa-core`).
@@ -873,4 +904,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.3.6 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.3.7 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
