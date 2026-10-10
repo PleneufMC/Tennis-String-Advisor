@@ -1,11 +1,34 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.2.10
-> **Date** : 9 octobre 2026
+> **Version** : 2.2.11
+> **Date** : 10 octobre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
 > **Branche de référence** : `main` (seule branche longue ; la production Netlify en déploie)
 > **Repo** : https://github.com/PleneufMC/Tennis-String-Advisor.git
+
+**Changelog v2.2.10 → v2.2.11** — **Photos produit manquantes** (`tsa-core`, demande de
+Pierre du 09/10/2026). Couverture **58/129 raquettes, 53/181 cordages** (52/52 avant) :
+seconde source **Tennis Warehouse Europe** (même groupe, plan du site publié, une fiche par
+coloris et par jauge) ; TWE a **refusé la collecte automatisée (HTTP 406)** après ~160
+pages, rien n'a été contourné. **Décision de Pierre du 10/10/2026, en connaissance du
+risque** : les photos Tennis Warehouse (US et Europe) sont **conservées** (« on n'a aucune
+raison de les jeter »), y compris les 5 photos TWE, sans autorisation écrite obtenue.
+Puis **Tennis-Point** (demande de Pierre du 10/10, `tennis-point.fr`, plan du site Shopify,
+débit 3 s) : **HTTP 429 après ~60 requêtes, collecte arrêtée, 0 photo retenue** (les 3
+fiches lues restent ambiguës : Pure Aero Team, Pure Drive RG, Extreme MP). Tennis-Point
+ne publie aucune clause de réutilisation des images (CGV, mentions légales :
+« © Copyright Tennis-Point 2026 ») ; son programme d'affiliation Awin annonce des
+« données produit détaillées » pour les partenaires, voie autorisée possible une fois
+l'affiliation active. Source `tennis-point` prête dans le collecteur, `purge tennis-point`
+opérationnelle. Les 7 raquettes alignées le 09/10
+vérifiées : Boom Pro passait la photo 2024 (remplacée par la 2026), EZONE 100 et T-Fight 305S
+sortent de quarantaine, Percept 100 illustrée (TWE), Percept 100D reste en quarantaine.
+Contrôle poids non cordé ajouté (±5 g, TWE). Les **310 fiches EN statiques affichent la
+même photo ou l'illustration** (`scripts/catalog/product-images.mjs`). Le visuel neutre
+devient une **illustration** (trait SVG, nom du produit, « Illustration — photo non
+disponible ») : aucune image générée d'un produit réel (règle 3). `purge <source>` retire
+une seule source. Contrôle 12 étendu (deux sources, fiches EN sans photo en JSON-LD/og:image).
 
 **Changelog v2.2.9 → v2.2.10** — **Fiches produit anglaises** (`tsa-acquisition`,
 09/10/2026) : 129 raquettes et 181 cordages ont leur fiche EN, `/en/racquets/<id>.html`
@@ -250,10 +273,14 @@ corrigé dans la même PR.
   vérité unique, `POST /api/configurations` renvoie 403 au-delà de 3 configs.
 - Échelle d'alerte bras remise en monotonie (43,9 % → 13,9 % d'alertes).
 - Export PDF, thème sombre, i18n FR/EN livrés.
-- Photos produit Tennis Warehouse (29/09/2026) : 52/129 raquettes, 52/181
-  cordages, hébergées chez nous ; drapeau `PRODUCT_IMAGES_ENABLED` et commande
-  `purge` pour le retrait ; associations vérifiées par script (tamis, plan de
-  cordage, RA, jauge, coloris), quarantaine sinon. Autorisation TW non obtenue.
+- Photos produit Tennis Warehouse (29/09/2026) et Tennis Warehouse Europe
+  (10/10/2026) : 58/129 raquettes, 53/181 cordages, hébergées chez nous, FR et
+  EN ; drapeau `PRODUCT_IMAGES_ENABLED` et commande `purge` (globale ou par
+  source) pour le retrait ; associations vérifiées par script (tamis, plan de
+  cordage, RA, poids, jauge, coloris), quarantaine sinon, illustration non
+  photographique à la place. Autorisation TW non obtenue, TWE non demandée :
+  photos conservées par décision de Pierre du 10/10/2026, en connaissance du
+  risque. Tennis-Point : collecte refusée (429), aucune photo.
 
 ### Cassé ou incomplet
 
@@ -620,4 +647,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.2.10 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.2.11 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
