@@ -1112,7 +1112,7 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
 // baisse sans GO enregistré (règle 2), un ancien identifiant fusionné retrouve une valeur inférieure à celle
 // d'avant la fusion, une fiche est « retenue » alors que C la hausserait, ou une fiche non appliquée a bougé en
 // silence ; (c) une mesure n'est pas celle du modèle exact, d'une jauge de la fiche, ni retrouvée (valeur, 51 lbs /
-// Fast, matière, jauge nominale) dans l'extrait VERSIONNÉ du relevé TWU et la copie des polyesters ; (d) une surface
+// Fast, matière, jauge nominale) dans le relevé TWU COMPLET versionné (D0) et la copie des polyesters ; (d) une surface
 // du site importe la provenance. Chaque garde est rejouée sur une copie altérée : un garde-fou muet fait échouer l'audit.
 {
   const before = failures.length;
@@ -1120,14 +1120,15 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
   type SProv = Readonly<Record<string, (typeof SP.STRING_STIFFNESS_PROVENANCE)[string]>>;
   type TwuRow = { name: string; refTensionLbs: number; swingSpeed: string; material: string | null; stiffnessLbIn: number; gaugeNominalMm?: number | null };
   const load = (p: string) => new Map((JSON.parse(readFileSync(p, 'utf8')).records as TwuRow[]).map((r) => [r.name, r]));
+  const SV = SP.STIFFNESS_SOURCE.fullSurvey;
   const twuRef = load(SP.STIFFNESS_SOURCE.versionedCopy); // 480 polyesters du 08/08, sans jauge nominale
-  const citedRef = load(SP.STIFFNESS_SOURCE.citedLines); // extrait verbatim du relevé du 10/10 (toutes matières)
+  const surveyRef = load(SV.file); // le relevé COMPLET du 29/09 (788 enregistrements, toutes matières, jauge nominale) — D0
   // TWU range multifilaments et synthétiques sous « Nylon… » : la matière se vérifie par famille, pas par égalité.
   const MATERIALS: Record<string, RegExp> = { Polyester: /^Polyester$/, 'Natural Gut': /^Gut$/, Multifilament: /^(Nylon|Polyolefin)/, Synthetic: /^(Nylon|Polyolefin)/ };
   const fold = (x: string) => x.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/['’`]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
   const TWU_SUFFIX = /\s+\d{2}L?(?:\s*\((\d\.\d+)\)|\s*\/\s*(\d\.\d+))?$/;
   const checkStiffness = (strings: readonly (typeof stringsDatabase)[number][], prov: SProv, ref: Map<string, TwuRow>,
-    aliases: Readonly<Record<string, string>> = LEGACY_STRING_ALIASES, cited: Map<string, TwuRow> = citedRef): string[] => {
+    aliases: Readonly<Record<string, string>> = LEGACY_STRING_ALIASES, cited: Map<string, TwuRow> = surveyRef): string[] => {
     const issues: string[] = [];
     for (const [id, e] of Object.entries(prov)) {
       const s = strings.find((x) => x.id === id);
@@ -1228,19 +1229,68 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
   // Cas permis : fiche retenue parce que la règle C la BAISSERAIT (GO requis) : valeur inchangée, aucune alerte.
   const held = checkStiffness(withStiffness('head-hawk', 250), patch('head-hawk', (e) => ({ ...e, status: 'retenue-jauge' as const, before: 250 })), twuRef);
   if (held.length > 0) fail(`rigidités de laboratoire : une fiche retenue (C la baisserait) fait échouer le contrôle : ${held[0]}`);
-  // Relevé brut local (non versionné) : s'il est présent, l'extrait versionné lui est identique ligne à ligne.
-  const RAW = 'scripts/scraper/out/twu-strings.json';
-  const raw = existsSync(RAW) ? new Map((JSON.parse(readFileSync(RAW, 'utf8')) as TwuRow[]).map((r) => [r.name, r])) : null;
-  if (raw) for (const [n, c] of citedRef) if (JSON.stringify(raw.get(n)) !== JSON.stringify(c)) fail(`rigidités de laboratoire : « ${n} » de l'extrait diffère du relevé brut local`);
+  // D0 : le relevé complet versionné est la référence de tout ce qui précède. Contrôlés : nombre d'enregistrements, sha256 du
+  // relevé brut RECONSTRUIT depuis les 8 champs bruts (aucun fichier local requis), schéma, champs dérivés de l'intitulé ; et,
+  // si le brut local (non versionné) est présent, son sha256 et sa régénération doivent redonner le fichier versionné.
+  const RV = await import('./scraper/twu-releve.mts');
+  type Survey = { records: any[]; [k: string]: unknown };
+  const SHAPE = [...RV.RAW_KEYS, ...RV.DERIVED_KEYS].join();
+  const num = (v: unknown) => typeof v === 'number' && Number.isFinite(v);
+  const str = (v: unknown) => typeof v === 'string' && v !== '';
+  const orNull = (v: unknown, valid: (x: unknown) => boolean) => v === null || valid(v);
+  const rowIssue = (r: any): string | null => {
+    if (Object.keys(r).join() !== SHAPE) return "champs ≠ schéma (8 bruts puis 4 dérivés, dans l'ordre)";
+    if (r.refTensionLbs !== SP.STIFFNESS_SOURCE.referenceTensionLbs || r.swingSpeed !== SP.STIFFNESS_SOURCE.swingSpeed) return 'hors 51 lbs / Fast';
+    if (!str(r.name) || !str(r.model) || !num(r.stiffnessLbIn) || r.stiffnessLbIn <= 0 || !num(r.tensionLossPct)) return 'intitulé, modèle, rigidité ou perte de tension invalide';
+    if (!orNull(r.material, str) || !orNull(r.suffix, str) || !orNull(r.calibre, str) || !orNull(r.gaugeNominalMm, num) || !orNull(r.gaugeNameMm, num) || !orNull(r.spinPotential, num)) return 'type de champ';
+    if (r.name !== (r.suffix === null ? r.model : `${r.model} ${r.suffix}`)) return 'intitulé ≠ modèle + suffixe';
+    const cal = r.suffix?.match(/^\d{2}L?/i)?.[0], mm = r.suffix?.match(/(\d\.\d+)\)?$/)?.[1];
+    if (r.calibre !== (cal === undefined ? null : cal.toUpperCase())) return 'calibre ≠ suffixe';
+    if (r.gaugeNameMm !== (mm === undefined ? null : Number(mm))) return 'jauge du nom ≠ suffixe';
+    return null;
+  };
+  const checkSurvey = (f: Survey): string[] => {
+    const out: string[] = [];
+    const rows = Array.isArray(f.records) ? f.records : [];
+    if (rows.length !== SV.records || f.rawRecords !== SV.records) out.push(`${rows.length} enregistrements, en-tête ${f.rawRecords}, ancrage ${SV.records}`);
+    if (f.rawSha256 !== SV.sha256 || f.retrieved !== SV.retrieved || f.url !== SP.STIFFNESS_SOURCE.url) out.push('en-tête ≠ ancrage (sha256, date, URL) de string-stiffness-provenance.ts');
+    const cond = f.conditions as { refTensionLbs?: number; swingSpeed?: string } | undefined;
+    if (cond?.refTensionLbs !== SP.STIFFNESS_SOURCE.referenceTensionLbs || cond?.swingSpeed !== SP.STIFFNESS_SOURCE.swingSpeed) out.push("conditions de l'en-tête ≠ 51 lbs / Fast");
+    const bad = rows.map((r, i) => [i, rowIssue(r)] as const).filter(([, m]) => m !== null);
+    if (bad.length > 0) out.push(`enregistrement ${bad[0][0]} (« ${rows[bad[0][0]].name} ») : ${bad[0][1]}${bad.length > 1 ? ` (+ ${bad.length - 1} autre(s))` : ''}`);
+    if (RV.sha256(RV.rawTextOf(rows)) !== SV.sha256) out.push("le relevé brut reconstruit depuis les champs bruts n'a pas le sha256 ancré");
+    return out;
+  };
+  const survey = JSON.parse(readFileSync(SV.file, 'utf8')) as Survey;
+  checkSurvey(survey).forEach((i) => fail(`relevé TWU versionné : ${i}`));
+  const mutate = (f: (s: Survey) => void): Survey => { const c = structuredClone(survey); f(c); return c; };
+  const surveyNegatives: Array<[string, Survey, string]> = [
+    ['une rigidité retouchée (+0,1)', mutate((s) => { s.records[10].stiffnessLbIn += 0.1; }), 'sha256'],
+    ['un enregistrement retiré', mutate((s) => { s.records.pop(); }), 'enregistrements'],
+    ['une vitesse de balayage différente', mutate((s) => { s.records[3].swingSpeed = 'Medium'; }), '51 lbs / Fast'],
+    ["un modèle qui n'est plus celui de l'intitulé", mutate((s) => { s.records[5].model += 'X'; }), 'intitulé ≠ modèle'],
+    ["un calibre qui n'est plus celui du suffixe", mutate((s) => { s.records.find((r) => r.calibre === '16')!.calibre = '17'; }), 'calibre ≠ suffixe'],
+    ['un champ inconnu', mutate((s) => { s.records[0].extra = 1; }), 'champs ≠ schéma'],
+    ["un sha256 d'en-tête modifié", mutate((s) => { s.rawSha256 = '0'.repeat(64); }), 'en-tête ≠ ancrage'],
+  ];
+  for (const [name, f, needle] of surveyNegatives) {
+    if (!checkSurvey(f).some((i) => i.includes(needle))) fail(`relevé TWU versionné : garde-fou muet sur « ${name} » (${needle})`);
+  }
+  const rawBytes = existsSync(SV.raw) ? readFileSync(SV.raw) : null;
+  if (rawBytes && RV.sha256(rawBytes) !== SV.sha256) fail(`relevé TWU versionné : le relevé brut local a un autre sha256 (${RV.sha256(rawBytes).slice(0, 7)}…) que l'ancrage`);
+  else if (rawBytes && JSON.stringify(RV.normaliseRows(JSON.parse(rawBytes.toString('utf8')))) !== JSON.stringify(survey.records)) {
+    fail('relevé TWU versionné : la régénération depuis le relevé brut local diffère du fichier versionné (npx tsx scripts/scraper/twu-releve.mts)');
+  }
   if (failures.length === before) {
     const count = (st: string) => Object.values(P0).filter((e) => e.status === st).length;
     const measures = Object.values(P0).reduce((a, e) => a + e.measures.length, 0);
     const merged = Object.keys(P0).filter((id) => !stringsDatabase.some((s) => s.id === id)).length;
     const ruleC = Object.values(P0).filter((e) => e.rule === 'plus-rigide').length;
     ok(`rigidités de laboratoire : ${Object.keys(P0).length} fiches en provenance (${count('appliquee')} appliquées dont ${ruleC} par la règle C, ${count('retenue-jauge')} retenues car C baisserait, ` +
-      `${count('quarantaine')} en quarantaine${merged > 0 ? `, dont ${merged} ancien(s) identifiant(s) fusionné(s) servant de plancher` : ''}), ${measures} mesures TWU retrouvées dans ${SP.STIFFNESS_SOURCE.citedLines}` +
-      `${raw ? ' (= relevé brut local)' : ''} et ${SP.STIFFNESS_SOURCE.versionedCopy} (modèle exact, jauge nominale, matière, ${SP.STIFFNESS_SOURCE.referenceTensionLbs} lbs / ${SP.STIFFNESS_SOURCE.swingSpeed}), ` +
-      `aucune baisse sans GO, aucune surface ne lit la provenance, ${negatives.length} tests négatifs détectés`);
+      `${count('quarantaine')} en quarantaine${merged > 0 ? `, dont ${merged} ancien(s) identifiant(s) fusionné(s) servant de plancher` : ''}), ${measures} mesures TWU retrouvées dans ${SV.file} ` +
+      `(${SV.records} enregistrements, sha256 du brut reconstruit ${SV.sha256.slice(0, 7)}…${SV.sha256.slice(-4)}${rawBytes ? ', = relevé brut local' : ''}) et ${SP.STIFFNESS_SOURCE.versionedCopy} ` +
+      `(modèle exact, jauge nominale, matière, ${SP.STIFFNESS_SOURCE.referenceTensionLbs} lbs / ${SP.STIFFNESS_SOURCE.swingSpeed}), ` +
+      `aucune baisse sans GO, aucune surface ne lit la provenance, ${negatives.length + surveyNegatives.length} tests négatifs détectés`);
   }
 }
 
