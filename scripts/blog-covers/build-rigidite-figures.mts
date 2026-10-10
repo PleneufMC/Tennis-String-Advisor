@@ -233,7 +233,7 @@ function polyestersFigure(fa: Facts, lang: Lang): string {
 
   // Zones 200 et 240 (traits pointillés + effectifs)
   for (const [v, side] of [[ZONE_SOFT_MAX, 'end'], [ZONE_FIRM_MIN, 'start']] as const) {
-    o.push(`<line x1="${f1(X(v))}" y1="60" x2="${f1(X(v))}" y2="${Y_AXIS}" style="${STYLE.grid};stroke-dasharray:5 4;stroke:var(--tsa-muted)"/>`);
+    o.push(`<line x1="${f1(X(v))}" y1="60" x2="${f1(X(v))}" y2="${Y_AXIS}" style="stroke:var(--tsa-muted);stroke-width:1;fill:none;stroke-dasharray:5 4"/>`);
     const tx = side === 'end' ? X(v) - 8 : X(v) + 8;
     const n = side === 'end' ? fa.nSoft : fa.nFirm;
     o.push(`<text x="${f1(tx)}" y="32" font-size="20" font-weight="600" text-anchor="${side}" fill="currentColor">${side === 'end' ? '≤' : '≥'}${NB}${v}${NB}lb/in</text>`);
