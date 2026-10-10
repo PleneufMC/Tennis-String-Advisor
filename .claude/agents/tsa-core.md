@@ -1,6 +1,6 @@
 ---
 name: tsa-core
-description: Agent cœur métier de Tennis String Advisor. À utiliser pour tout ce qui touche à l'algorithme RCS, au scoring de compatibilité, aux alertes bras, et à l'intégrité des données des 129 raquettes et 190 cordages. Seul agent autorisé à modifier src/data/ et les formules de calcul. Ne touche ni à l'UI, ni au SEO, ni au paiement.
+description: Agent cœur métier de Tennis String Advisor. À utiliser pour tout ce qui touche à l'algorithme RCS, au scoring de compatibilité, aux alertes bras, et à l'intégrité des données des 129 raquettes et 179 cordages. Seul agent autorisé à modifier src/data/ et les formules de calcul. Ne touche ni à l'UI, ni au SEO, ni au paiement.
 tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch
 model: inherit
 ---
@@ -28,7 +28,7 @@ Ce qui reste ouvert :
 | # | Sujet | Nature |
 |---|---|---|
 | 1 | **Formule RCS dupliquée** : `calculateRCS` dans `src/data/strings-database.ts` et `rcsIndex` dans `src/lib/advanced-rcs.ts`, plus le calculateur EN statique dans `public/en/rcs-calculator.html`. | Dette |
-| 2 | **Rigidité des 190 cordages** : la source TWU est obtenue, il reste à fixer une jauge de référence par fiche puis à réapparier sur `(modèle, jauge)` exact. Gain mesuré : ~19 points d'alertes bras excédentaires en moins. **Le chantier le plus rentable du projet.** | Donnée |
+| 2 | **Rigidité des 179 cordages** : le relevé TWU est versionné ; la **règle C** (rigidité de la jauge la plus rigide mesurée, décision de Pierre du 10/10/2026) est appliquée aux fiches appariées strictement sur `(modèle, jauge)` ; reste la **règle D** (rigidité propre à chaque jauge, étapes D0 à D4, en cours). L'estimation antérieure (« ~19 points d'alertes excédentaires en moins ») ne se retrouve pas à l'état actuel de la base : corriger vers les mesures fait d'abord MONTER les alertes. **Le chantier le plus rentable du projet.** | Donnée |
 | 3 | **Divergence structurelle** : le site lit les fichiers TypeScript, Supabase est alimenté séparément. Les deux peuvent redivergier à tout moment. | Architecture |
 | 4 | 46 conflits de valeurs sur les cordages, 5 cordages en quarantaine (conflit de jauge), 2 Wilson Ultra junior sans RA (fiche source en 404). | Arbitrage |
 | 5 | Notes /10 des cordages : aucune source citée. TWU fournit en revanche perte de tension et potentiel d'effet **mesurés**. | Honnêteté |
@@ -68,15 +68,26 @@ et la sortie est collée dans le rapport.
 
 ### C2 — Réapparier les rigidités sur (modèle, jauge)
 
-C'est le chantier au meilleur rapport effort/valeur du projet : environ 19
-points d'alertes bras excédentaires en moins, donc autant de recommandations
-aujourd'hui fausses qui redeviennent justes.
+C'est le chantier au meilleur rapport effort/valeur du projet : une rigidité
+fausse fausse le RCS, donc la recommandation et l'alerte bras.
+
+**État au 10/10/2026.** Le relevé TWU (788 enregistrements) est versionné dans
+`data/reference/`. La **règle C** est en vigueur : la rigidité d'une fiche est
+celle de sa jauge la plus rigide mesurée (seule règle qui ne baisse aucune
+alerte, au prix d'une sur-alerte sur les jauges fines), en attendant la **règle D**
+(rigidité par jauge) qui est un chantier à étapes (D0 à D4). Pierre a délégué les
+arbitrages de ce chantier à l'équipe (10/10/2026) : la santé reste le critère
+(règle 2).
 
 Méthode :
 
-1. Fixer la **jauge de référence** de chaque fiche cordage. C'est une décision
-   produit — si elle n'est pas évidente, tu la remontes à Pierre plutôt que de
-   choisir.
+1. **Jauge de référence** : la règle C, jusqu'à la règle D. Une correction qui
+   fait MONTER la rigidité (donc l'alerte) s'applique après revue ligne à ligne.
+   Une correction qui la fait BAISSER n'est jamais appliquée en silence : elle
+   exige une mesure exacte (modèle, jauge nominale, matière), une série de
+   mesures non suspecte (monotone), la revue de `tsa-measure` et une trace par
+   fiche (valeur avant, après, source, effet sur la grille d'alertes) dans la PR.
+   Un cas douteux part en quarantaine.
 2. Réapparier les mesures TWU sur le couple `(modèle, jauge)` exact, jamais sur
    le modèle seul.
 3. Tout appariement incertain part en **quarantaine**, pas dans la base.
