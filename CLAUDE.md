@@ -7,6 +7,35 @@
 > **Branche de référence** : `main` (seule branche longue ; la production Netlify en déploie)
 > **Repo** : https://github.com/PleneufMC/Tennis-String-Advisor.git
 
+**Changelog (numéro de version à fixer à la fusion)** — **Lot 3 des rigidités de laboratoire : 22 hausses établies par la
+règle C, garde de série suspecte (C2)** (décision de l'orchestrateur du 10/10/2026, Pierre ayant délégué les arbitrages ;
+`tsa-core`). **Raison** : le fact-check des articles santé (PR #116) montre que la base SOUS-ESTIME la rigidité mesurée par
+TWU de cordages cités comme « les plus souples » (Mach-10 195 → 222,3, Signum Pro X-Perience 205 → 224,6, Razor Soft
+185 → 212, Poly Tour Spin 200 → 213,7, Element 190 → 208, Head Lynx Tour 210 → 228,6) : le sens défavorable au bras (règle 2).
+Le chantier D étant suspendu, la règle C reste le régime des fiches ; elle est appliquée pleinement dans le sens qui protège
+(les hausses), **sans aucune baisse** (les 53 baisses restent en attente de GO). **Appliqué** : 22 fiches, dont Luxilon 4G
+265 → 286,9 et Babolat Revenge 230 → 276 (les deux nouveaux maximums du catalogue), Yonex Poly Tour Spin G 215 → 237,2, Pro Red
+Code Wax 220 → 235,5, TGV 145 → 165,2 ; valeurs, jauges et lignes TWU dans `string-stiffness-provenance.ts`. **Non appliqué** :
+2 hausses **retenues par la garde de série suspecte** (Solinco X-Natural 147 → 158,9, Wilson Sensation 165 → 168,6 ; aucune alerte
+en jeu) et 5 fiches en **quarantaine** dont l'appariement strict n'est pas établi : **Babolat RPM Team** (225 → 245,2 sur une
+ligne TWU de matière « Nylon/Polyester », ou 280,6 sur « RPM Team 16 Black », polyester, 1.30, intitulé non reconnu : la seule hausse
+écartée qui pèse sur les alertes, 208 à 686 alertes standard de plus selon la ligne ; désaccord de matière à lever) et quatre fiches
+dont la jauge TWU est à 0,01 ou 0,02 mm de la leur (Gosen OG Sheep Micro, Wilson NXT Power, Head FXP, Wilson NXT Control).
+**Dénombrement** : 25 hausses listées en #110, 24 depuis D1 (RPM Team écartée par la matière) ; pour les 27 de `tsa-measure`
+(liste nominative non consultée), la seule combinaison d'appariement testée qui en donne 27 est ces 24 plus 3 obtenues avec une
+tolérance de ±0,01 mm (Gosen, NXT Power, FXP) : à confirmer par comparaison des listes. **Garde de série suspecte** (une jauge plus épaisse mesurée plus souple, D1) : une mesure est « contredite » si une
+jauge plus épaisse du modèle, hors fiche comprise, est plus souple ; la hausse est appliquée si la mesure la plus rigide n'est
+contredite par aucune jauge plus épaisse, ou si la plus rigide des mesures non contredites reste ≥ la valeur actuelle ; sinon elle
+est retenue. Wilson NXT (lot 2, approuvé avant la garde) en est exempté par un motif daté. **Effet** (grille du contrôle 5, 138 546
+combinaisons, contre la tête de #115) : alerte bras avancée standard 5,77 → 6,61 %, sensible 21,23 → 22,87 %,
+`calculateCompatibility` 14,10 → 15,21 %, « Très Ferme » 7,02 → 7,93 % ; 1 170 / 2 261 / 1 533 alertes apparues, **0 disparue**,
+0 rigidité en baisse. Aucune note /10, formule ni seuil modifié. **Contrôles** : 13 ter (statut `retenue-serie-suspecte`, garde
+rejouée depuis le relevé, quarantaine vérifiée, intitulés à jauge seule, 13 essais négatifs), 13 quater (une hausse établie est
+appliquée ou retenue, décomptes recalculés : 46 fiches égales au maximum de leur table, 53 supérieures, 2 inférieures), outil
+`c2-effet-alertes.mts` étendu. ⚠️ Chiffres d'articles à reprendre par `tsa-redacteur` (liste dans la PR) : médiane et maximum des
+polyesters, effectifs ≤ 200 et ≥ 240, classement des 18 polyesters à avis de testeurs (Mach-10, X-Perience, Lynx Tour), « 265 =
+le plus rigide » (6 articles) ; descriptions « souple » / « confort » de 20 fiches à revoir dans une PR de textes.
+
 **Changelog (numéro de version à fixer à la fusion)** — **Rigidité par jauge : modèle et table (chantier D1)**
 (décision de Pierre du 10/10/2026 : « GO » sur le chantier D ; `tsa-core`). `TennisString` gagne deux champs
 optionnels, `stiffnessByGauge` (rigidité TWU mesurée par jauge nominale, lb/in, 51 lbs / Fast) et
