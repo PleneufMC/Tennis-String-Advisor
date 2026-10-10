@@ -1,11 +1,26 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.3.2
+> **Version** : 2.3.3
 > **Date** : 10 octobre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
 > **Branche de référence** : `main` (seule branche longue ; la production Netlify en déploie)
 > **Repo** : https://github.com/PleneufMC/Tennis-String-Advisor.git
+
+**Changelog v2.3.2 → v2.3.3** — **Provenance des notes /10 des cordages**
+(demande de Pierre du 10/10/2026 : « souvent les notes d'origines viennent de tennis warehouse »,
+`tsa-core`, C4). 109 pages Tennis Warehouse lues (robots.txt respecté, robot nommé, ≥ 3 s, pages
+trouvées par liens, 1 page 404, aucun refus). **Hypothèse non vérifiée** : sur 1 182 notes
+publiées (174 cordages), 425 sont comparables à un score TW établi et **37 seulement sont
+identiques** ; reprise intégrale sur **2 fiches** (Triax, NXT, lot du 04/08/2026), ailleurs au
+niveau du hasard (25 égalités pour 16,6 attendues) ; 163 proches (≤ 0,5), 225 écarts. Les
+anciennes notes des 18 cordages harmonisés ne viennent pas de TW et TW ne corrobore la synthèse
+des testeurs sur aucun axe (n = 15) : indépendance non établie. Le confort publié suit la
+rigidité du catalogue (ρ −0,92) ; le retirer ôterait 0,45 pt d'alertes bras (standard 5,12 →
+4,67 %) et 0,84 pt (sensible 19,56 → 18,72 %), le remplacer par le confort TW en ajouterait.
+**Aucune note modifiée** : provenance par champ dans `src/data/string-ratings-provenance.ts`
+(non affichée), contrôle 13 bis de `audit:ratings` (tests négatifs) ; écarts et choix du confort
+remontés à Pierre (C5).
 
 **Changelog v2.3.1 → v2.3.2** — **Corrections d'affirmations fausses** (`tsa-acquisition`, PR #102,
 relevées pendant la consultation du 10/10/2026 sur les notes de profil). (1) `public/en/index.html`
@@ -808,4 +823,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.3.2 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.3.3 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
