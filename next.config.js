@@ -115,6 +115,14 @@ const nextConfig = {
       { source: '/tennis-strings/wilson-element', destination: '/tennis-strings/luxilon-element', permanent: true },
       { source: '/tennis-strings/wilson-savage', destination: '/tennis-strings/luxilon-savage', permanent: true },
       { source: '/tennis-strings/:slug(yonex-aerobite|babolat-ifeel-66|babolat-ifeel-68|head-hawk-xtreme|head-triumphant|wilson-zone-pro|wilson-velocity|luxilon-wrz)', destination: '/tennis-strings', permanent: true },
+      // --- 301 : article de blog retiré (décision de Pierre du 10/10/2026). Le
+      // comparatif Gravity MP vs Tour opposait deux profils de natures
+      // différentes ; cible = classement 2026, qui présente la Gravity Tour avec
+      // les données du site. Les deux formes répondaient 200 (Netlify sert
+      // aussi l'URL sans `.html`). `statusCode: 301` plutôt que `permanent`
+      // (qui émet un 308) : 301 demandé explicitement.
+      { source: '/blog/head-gravity-mp-vs-gravity-tour-2025.html', destination: '/blog/meilleures-raquettes-tennis-2026.html', statusCode: 301 },
+      { source: '/blog/head-gravity-mp-vs-gravity-tour-2025', destination: '/blog/meilleures-raquettes-tennis-2026.html', statusCode: 301 },
       { source: '/premium', destination: '/pricing', permanent: true },
       { source: '/guides', destination: '/blog/', permanent: true },
       { source: '/recommendations', destination: '/configurator', permanent: true },
