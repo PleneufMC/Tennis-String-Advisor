@@ -1,11 +1,40 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.3.8
+> **Version** : 2.3.9
 > **Date** : 10 octobre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
 > **Branche de référence** : `main` (seule branche longue ; la production Netlify en déploie)
 > **Repo** : https://github.com/PleneufMC/Tennis-String-Advisor.git
+
+**Changelog v2.3.8 → v2.3.9** — **Images officielles des fabricants**
+(`tsa-core`, décision de Pierre du 10/10/2026, verbatim : « Il n'y a aucune restriction à utiliser
+les images officielles des raquettes. Jamais un fabricant ne s'opposera à la promotion des produits
+de sa marque. »). **Prise en connaissance du risque**, même cadre que le 29/09 sur Tennis Warehouse :
+tolérance supposée, aucune licence écrite ; les conditions d'utilisation de Wilson, Babolat,
+Tecnifibre et Yonex **interdisent la reproduction sans autorisation écrite** (texte exact dans la
+PR). Couverture **65/129 raquettes et 60/181 cordages** (58 et 53 avant), **125 fiches EN sur 310**.
+Quatorze photos nouvelles, source `fabricant:<marque>` au manifeste (page, image, date, crédit
+« Photo : <Marque> ») : Wilson 4 (Ultra 25 et 26 V5, US Open Jr 19, Blade Feel Jr 26), Yonex 3
+(Percept 97, 97D, 100D), Babolat 3 (Xcel, RPM Power, RPM Hurricane), Tecnifibre 4 (Red Code, XR3,
+Razor Soft, Duramix HD). Packshot de face seulement, image PUBLIÉE par la page (aucune URL composée,
+aucun hotlink), aplatie sur blanc et rognée ; les emballages Yonex à portraits de joueurs sont
+écartés. Même rigueur d'association que pour TW (tamis, plan, poids non cordé, RA, millésime ou
+génération lus dans l'intitulé, jauge, coloris), plus deux attestations humaines consignées au
+mapping : `identification: nom+poids` (page sans tamis ni plan) et `colourVisual` (coloris non
+publié, vu sur le packshot). Générations : la page officielle ne distingue que celle en vente ;
+Pure Aero Team (fiche RA 67, Gen9 = 70) et Clash 100 Pro v2 (la v3 officielle est en 16x20, 305 g)
+sont des générations antérieures, sans page ; TF40 305 et Tempo 285 ont leur génération en vente mais la fiche ne dit pas laquelle
+(arbitrage de Pierre). **Collecte** : robots.txt lu, ≥ 3 s entre requêtes (10 s pour luxilon.com,
+`Crawl-delay`), premier 403/406/429 ou page anti-robot = arrêt pour le site et hôte consigné
+(`scripts/scraper/out/refused-hosts.json`). Incidents : **head.com a répondu 429 « Vercel Security
+Checkpoint » dès robots.txt** (aucune page lue, 39 fiches Head sans photo) ; **luxilon.com a répondu
+403 à la première requête du collecteur** alors que `curl` venait d'obtenir 200 : arrêt, non
+retenté, non contourné. `purge fabricant:<marque>` retire une marque (testé : 4 photos Wilson
+retirées, audit vert, manifeste identique après reconstruction). Le contrôle 12 de `audit:ratings`
+vérifie l'hôte de chaque source, le crédit (table générée avec le manifeste, FR et EN), les hôtes
+d'images absents de `src/` et des fiches EN ; tests négatifs rejetés : libellé de crédit manquant
+(FR et EN) et hotlink dans `src/`.
 
 **Changelog v2.3.7 → v2.3.8** — **Nature des notes /10 des cordages
 étiquetée sur les surfaces EN, notes retirées des métadonnées** (principe décidé par Pierre le
@@ -487,14 +516,18 @@ corrigé dans la même PR.
   vérité unique, `POST /api/configurations` renvoie 403 au-delà de 3 configs.
 - Échelle d'alerte bras remise en monotonie (43,9 % → 13,9 % d'alertes).
 - Export PDF, thème sombre, i18n FR/EN livrés.
-- Photos produit Tennis Warehouse (29/09/2026) et Tennis Warehouse Europe
-  (10/10/2026) : 58/129 raquettes, 53/179 cordages, hébergées chez nous, FR et
-  EN ; drapeau `PRODUCT_IMAGES_ENABLED` et commande `purge` (globale ou par
-  source) pour le retrait ; associations vérifiées par script (tamis, plan de
-  cordage, RA, poids, jauge, coloris), quarantaine sinon, illustration non
-  photographique à la place. Autorisation TW non obtenue, TWE non demandée :
-  photos conservées par décision de Pierre du 10/10/2026, en connaissance du
-  risque. Tennis-Point : collecte refusée (429), aucune photo.
+- Photos produit Tennis Warehouse (29/09/2026), Tennis Warehouse Europe et
+  sites officiels des fabricants (10/10/2026) : 65/129 raquettes, 60/179
+  cordages, hébergées chez nous, FR (125 fiches EN sur 310 comprises) ;
+  drapeau `PRODUCT_IMAGES_ENABLED` et commande `purge` (globale ou par source,
+  ex. `purge fabricant:wilson`) pour le retrait ; associations vérifiées par
+  script (tamis, plan de cordage, RA, poids, jauge, coloris), quarantaine sinon,
+  illustration non photographique à la place. Autorisation TW non obtenue, TWE
+  et fabricants non demandés : photos conservées / posées par décisions de
+  Pierre du 10/10/2026, en connaissance du risque. Tennis-Point : collecte
+  refusée (429), aucune photo. Fabricants : head.com (429) et luxilon.com (403)
+  ont refusé le robot, wilson.com, babolat.com, tecnifibre.com et yonex.com
+  l'ont accepté (14 photos).
 - Notes de raquette (décision de Pierre du 10/10/2026) : **aucune note déduite
   des caractéristiques** n'est affichée, nulle part (comparateur, configurateur,
   PDF Premium, FR et EN). Raquette évaluée : « Avis de testeurs (synthèse) »,
@@ -943,4 +976,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.3.8 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.3.9 — Tennis String Advisor — « Mesurer avant d'affirmer. »*

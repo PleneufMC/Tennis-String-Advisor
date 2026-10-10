@@ -835,21 +835,29 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
 
 // ---------------------------------------------------------------------------
 // 12. PHOTOS PRODUIT (Tennis Warehouse, décision de Pierre du 29/09/2026 ;
-//     Tennis Warehouse Europe et fiches EN depuis le 09/10/2026)
+//     Tennis Warehouse Europe et fiches EN depuis le 09/10/2026 ;
+//     images officielles des fabricants, source `fabricant:<marque>`, depuis le 10/10/2026)
 // ---------------------------------------------------------------------------
 // Dispositif désactivable et purgeable (src/lib/product-images.ts). Une photo
 // fausse est une information fausse : chaque entrée du manifeste doit viser un
-// produit existant, du bon type, avec un fichier hébergé chez nous et sa
-// provenance. Aucune URL de TW ne doit servir une image (hotlink), et aucune
+// produit existant, du bon type, avec un fichier hébergé chez nous, sa
+// provenance (page et image servies par l'hôte de SA source) et un crédit
+// affichable. Aucune URL de source ne doit servir une image (hotlink), et aucune
 // page ne doit propager ces photos (JSON-LD, og:image).
 {
   const before = failures.length;
-  const { PRODUCT_IMAGES } = await import('../src/data/product-images');
-  const SOURCE_HOSTS = {
+  const { PRODUCT_IMAGES, PRODUCT_IMAGE_CREDITS } = await import('../src/data/product-images');
+  const SOURCE_HOSTS: Record<string, { page: string; image: string }> = {
     'tennis-warehouse': { page: 'https://www.tennis-warehouse.com/', image: 'https://img.tennis-warehouse.com/' },
     'tennis-warehouse-europe': { page: 'https://www.tenniswarehouse-europe.com/', image: 'https://img.tenniswarehouse-europe.com/' },
     'tennis-point': { page: 'https://www.tennis-point.fr/products/', image: 'https://cdn.shopify.com/s/files/1/0638/1885/8538/' },
-  } as const;
+    'fabricant:wilson': { page: 'https://www.wilson.com/en-us/products/', image: 'https://www.wilson.com/cdn/shop/files/' },
+    'fabricant:babolat': { page: 'https://www.babolat.com/fr/', image: 'https://media.babolat.com/image/upload/' },
+    'fabricant:tecnifibre': { page: 'https://www.tecnifibre.com/products/', image: 'https://cdn.shopify.com/s/files/1/0907/5425/3144/files/' },
+    'fabricant:yonex': { page: 'https://www.yonex.com/tennis/', image: 'https://www.yonex.com/media/catalog/product/' },
+  };
+  // Hôtes d'images de toutes les sources : jamais appelés par l'application ni par les fiches EN.
+  const IMAGE_HOSTS_RE = /img\.tennis-?warehouse(-europe)?\.com|cdn\.shopify\.com\/s\/files|wilson\.com\/cdn\/shop|media\.babolat\.com|yonex\.com\/media\/catalog/;
   const { existsSync, readdirSync, statSync } = await import('node:fs');
   const racquetIds = new Set(racquetsDatabase.map((r) => r.id));
   const stringIds = new Set(stringsDatabase.map((s) => s.id));
@@ -865,8 +873,9 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
     const size = statSync(disk).size;
     bytes += size;
     if (size > 120_000) fail(`photo ${id} : ${Math.round(size / 1024)} Ko (> 120 Ko)`);
-    const hosts = SOURCE_HOSTS[e.source as keyof typeof SOURCE_HOSTS];
+    const hosts = SOURCE_HOSTS[e.source];
     if (!hosts) { fail(`photo ${id} : source inattendue ${e.source}`); continue; }
+    if (!PRODUCT_IMAGE_CREDITS[e.source]) fail(`photo ${id} : aucun libellé de crédit pour la source ${e.source}`);
     if (!e.sourcePageUrl.startsWith(hosts.page)) fail(`photo ${id} : page source invalide pour ${e.source}`);
     if (!e.sourceImageUrl.startsWith(hosts.image)) fail(`photo ${id} : image source invalide pour ${e.source}`);
     if (!e.twProduct) fail(`photo ${id} : intitulé du produit source absent (association non auditable)`);
@@ -890,8 +899,8 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
     readdirSync(d).flatMap((n) => (statSync(`${d}/${n}`).isDirectory() ? walk(`${d}/${n}`) : [`${d}/${n}`]));
   for (const file of walk('src').filter((f) => /\.(tsx?|mts)$/.test(f) && !allowed.has(f))) {
     const src = readFileSync(file, 'utf8');
-    if (/img\.tennis-?warehouse(-europe)?\.com|cdn\.shopify\.com\/s\/files\/1\/0638|\/images\/products\/|PRODUCT_IMAGES|getProductImage/.test(src)) {
-      fail(`${file} : référence directe aux photos TW (hotlink ou propagation hors du composant)`);
+    if (IMAGE_HOSTS_RE.test(src) || /\/images\/products\/|PRODUCT_IMAGES|getProductImage|productImageCredit/.test(src)) {
+      fail(`${file} : référence directe aux photos (hotlink ou propagation hors du composant)`);
     }
   }
   // Fiches EN statiques (générées au build) : rendues ici en mémoire avec le même
@@ -911,9 +920,11 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
         const ld = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].map((m) => m[1]).join('\n');
         if (/"image"|\/images\/products\//.test(ld)) fail(`fiche EN ${kind}/${item.id} : photo propagée dans le JSON-LD`);
         if (/og:image/.test(html)) fail(`fiche EN ${kind}/${item.id} : og:image présent`);
-        if (/img\.tennis-?warehouse(-europe)?\.com|cdn\.shopify\.com/.test(html)) fail(`fiche EN ${kind}/${item.id} : hotlink vers la source`);
+        if (IMAGE_HOSTS_RE.test(html)) fail(`fiche EN ${kind}/${item.id} : hotlink vers la source`);
         if (expected) {
+          const credit = (PRODUCT_IMAGE_CREDITS as Record<string, string>)[(expected as unknown as { source: string }).source];
           if (!html.includes(`<img src="${expected.file}"`)) fail(`fiche EN ${kind}/${item.id} : photo validée non affichée`);
+          else if (!credit || !html.includes(`Photo: ${credit}`)) fail(`fiche EN ${kind}/${item.id} : crédit « Photo: ${credit} » absent`);
           else shown++;
         } else if (!html.includes('data-product-image="illustration"')) {
           fail(`fiche EN ${kind}/${item.id} : ni photo ni illustration`);
