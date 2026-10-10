@@ -85,6 +85,7 @@ Faits recalculés par le rédacteur à partir de la base de la branche (fonction
 - **Q-3** · de `tsa-redacteur` à `tsa-acquisition` · 2026-10-10 — Au-delà de la dérogation numérique : la réponse n° 1 de la FAQ des deux articles « polyester » disait « safer than any polyester » (EN) et « reste plus prudent qu'un polyester » (FR). L'absolu « any » est faux depuis que le Wilson NXT (173,7, indice 25) est plus rigide que les polyesters les plus souples (164,6 à 165,7, indice 24). Reformulé en « En général… » / « In general… », texte visible et JSON-LD identiques. À valider.
 - **Q-4** · de `tsa-redacteur` à l'orchestrateur · 2026-10-10 — La liste de la PR #110 (§ 9) ne cite pas la médiane de la section 4 des articles « polyester » (« juste au-dessus de la médiane du catalogue (215) », FR l. 375, EN l. 321) : corrigée en 217,3. Elle ne dit pas non plus que la transparence EN de l'article « tennis elbow » n'avait pas la ligne « une rigidité par cordage, pas par jauge » de la version FR : ajoutée pour que FR et EN disent la même chose.
 - **Q-5** · de `tsa-redacteur` à `tsa-core` · 2026-10-10 — Information : la règle D (rigidité par jauge) et le lot 3 changeront de nouveau ces chiffres. `scripts/blog-covers/build-rigidite-figures.mts --check` échoue si un graphique ou un chiffre clé du texte ne colle plus à la base ; il peut être branché dans `audit:all` (propriétaire `tsa-measure`).
+- **Q-6** · de `tsa-redacteur` à `tsa-pigiste` · 2026-10-10 — `npm run redaction:valeurs` était inutilisable sur `main` : `scripts/redaction/verifier-valeurs.mts` importe `racquetProfile`, retiré de `racquet-scoring.ts` par « aucune note déduite » (CLAUDE.md v2.3.1). Correctif minimal dans un commit isolé de cette PR (un champ `profil.*` est refusé, le reste est inchangé ; cinq cas négatifs rejetés). Le vérificateur est à `tsa-pigiste` : valider, ou le reprendre dans sa propre PR (le commit se retire sans effet sur le reste de la PR).
 
 ---
 
@@ -234,6 +235,7 @@ cordage solinco-mach-10                      | confort  | 8,8    | poly §4 tabl
 cordage toroline-o-toro                      | rigidite | 165,7  | poly §4 tableau
 cordage toroline-o-toro                      | confort  | 8,1    | poly §4 tableau, note de confort
 cordage head-lynx-tour                       | rigidite | 210    | poly §4 phrase « plus rigide que le Head Lynx Tour »
+cordage yonex-poly-tour-rev                  | rigidite | 205    | poly §4 note sous le tableau (égalité à 205 avec le Signum Pro X-Perience)
 # ===== section 5, leviers (Luxilon 4G à 22 kg, RA 65 ; autre cadre ; autre tension ; autre cordage)
 rcs head-extreme-standard + luxilon-4g @ 22                            | rcs | 35     | poly §5 point de départ
 rcs head-extreme-standard + toroline-o-toro @ 22                       | rcs | 24     | poly §5 changer de cordage
@@ -418,6 +420,7 @@ Sortie de `npm run redaction:valeurs -- docs/redaction/coherence-chiffres-regle-
   OK    cordage toroline-o-toro | rigidite | 165,7
   OK    cordage toroline-o-toro | confort | 8,1
   OK    cordage head-lynx-tour | rigidite | 210
+  OK    cordage yonex-poly-tour-rev | rigidite | 205
   OK    rcs head-extreme-standard + luxilon-4g @ 22 | rcs | 35
   OK    rcs head-extreme-standard + toroline-o-toro @ 22 | rcs | 24
   OK    rcs head-gravity-team + luxilon-4g @ 22 | rcs | 33
@@ -460,7 +463,7 @@ Sortie de `npm run redaction:valeurs -- docs/redaction/coherence-chiffres-regle-
   OK    rcs head-extreme-standard + luxilon-alu-power @ 18 | rcs | 29
   OK    rcs head-gravity-team + luxilon-alu-power @ 22 | rcs | 30
 
-172 valeur(s) contrôlée(s), 0 écart(s)
+173 valeur(s) contrôlée(s), 0 écart(s)
 ```
 
 ### Affirmations
@@ -524,4 +527,4 @@ Les valeurs agrégées (effectifs, extrêmes, médianes, effectifs du graphique)
 
 ## 7. Journal
 
-- 2026-10-10 · `tsa-redacteur` — Passe numérique après la règle C (PR #110) : chiffres des quatre articles, du guide et des cartes d'index recalculés depuis la base de la branche ; phrases de santé relues (« en général » à la place d'absolus, hybrides, jauge fine) ; phrase de méthode et marqueur † adaptés (jauge la plus rigide mesurée) ; deux graphiques tirés de la base ajoutés (`scripts/blog-covers/build-rigidite-figures.mts`), exceptions de `audit:blog-images` retirées pour les quatre articles. RELAIS → `tsa-pigiste` : fact-check des seules valeurs touchées (§ 5, Q-2). RELAIS → `tsa-acquisition` : relire la dérogation (§ 1, Q-3). QUESTIONS À `tsa-core` : Q-1, Q-5.
+- 2026-10-10 · `tsa-redacteur` — Passe numérique après la règle C (PR #110) : chiffres des quatre articles, du guide et des cartes d'index recalculés depuis la base de la branche ; phrases de santé relues (« en général » à la place d'absolus, hybrides, jauge fine) ; phrase de méthode et marqueur † adaptés (jauge la plus rigide mesurée) ; deux graphiques tirés de la base ajoutés (`scripts/blog-covers/build-rigidite-figures.mts`), exceptions de `audit:blog-images` retirées pour les quatre articles. Instrument : `scripts/redaction/verifier-valeurs.mts` réparé (import cassé sur `main`), commit isolé. RELAIS → `tsa-pigiste` : fact-check des seules valeurs touchées (§ 5, Q-2) et avis sur le correctif du vérificateur (Q-6). RELAIS → `tsa-acquisition` : relire la dérogation (§ 1, Q-3). QUESTIONS À `tsa-core` : Q-1, Q-5.
