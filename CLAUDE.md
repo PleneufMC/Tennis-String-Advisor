@@ -1,11 +1,32 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.3.1
+> **Version** : 2.3.2
 > **Date** : 10 octobre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
 > **Branche de référence** : `main` (seule branche longue ; la production Netlify en déploie)
 > **Repo** : https://github.com/PleneufMC/Tennis-String-Advisor.git
+
+**Changelog v2.3.1 → v2.3.2** — **Corrections d'affirmations fausses** (`tsa-acquisition`, PR #102,
+relevées pendant la consultation du 10/10/2026 sur les notes de profil). (1) `public/en/index.html`
+déclarait en JSON-LD un `aggregateRating` 4,8 sur 70 avis **sans aucun avis derrière**
+(règle 3) : retiré, ainsi qu'un `Organization.logo` en 404 ; plus aucun `aggregateRating` /
+`Review` / `ratingValue` / `reviewCount` sur les 678 pages HTML. (2) Le configurateur EN
+codait en dur 12 fiches de secours aux valeurs périmées (Pure Drive RA 72 au lieu de 69,
+RPM Blast 10/8/5 au lieu de 9,4/9,0/6,6, EZONE 100 RA 62 au lieu de 68…) : elles sont
+désormais lues dans `public/data/catalog.json`, sans repli codé en dur ; le RCS du profil
+« avancé polyvalent » passe de 36 à 35 (même palier, même alerte). Barre d'étapes du
+configurateur EN : débordement de 27 px à 390 px corrigé. (3) Métadonnées de `/compare` :
+plus aucune promesse de notes de confort ou de contrôle. (4) Comptages périmés (« 190
+cordages », « 107+ / 173+ », « specs complètes ») remplacés par le nombre lu au build ou
+une formulation qui ne vieillit pas. (5) Article « guerre du spin » : Pure Aero 98 en 16x20
+comme sa fiche. Les trois articles modifiés (guerre du spin, challengers FR et EN) étaient
+en exception de `audit:blog-images` : exceptions **renouvelées avec motif daté**
+(correction d'exactitude urgente) ; leur visuel de corps reste à créer. ⚠️ Restent, non
+traités : trois composants inutilisés aux faux avis (`src/components/sections/testimonials.tsx`,
+`featured-products.tsx`, `hero.tsx`), l'étiquetage des notes cordages EN, le RA par défaut du
+calculateur EN (63 contre 64 en FR), « Premium from €4.99 » affiché alors que le checkout EN
+est fermé, la `SearchAction` de `layout.tsx` vers une route `/search` inexistante.
 
 **Changelog v2.3.0 → v2.3.1** — **Plus aucune note de raquette déduite des
 caractéristiques** (décision de Pierre du 10/10/2026, après consultation de `tsa-revenue`,
@@ -594,7 +615,7 @@ Le compte utilisateur héberge des agents transverses (`~/.claude/agents/`)
 antérieurs à cette équipe et qui mentionnent TSA. **Dans ce dépôt, l'équipe
 `tsa-*` fait foi** — les connaissances TSA des agents globaux datent d'un état
 antérieur du code (ils citent 104 raquettes / 165 cordages ; le réel vérifié
-est 129 / 190, formule TypeScript dans `advanced-rcs.ts` et
+est 129 / 181 (190 avant le nettoyage du 28/09/2026), formule TypeScript dans `advanced-rcs.ts` et
 `strings-database.ts`). Correction 13/08 : les pondérations RCS
 W_RA=0.28 / W_Cordage=0.42 / W_Tension=0.22 / W_Interaction=0.08 citées par
 `algorithm-validator` ne sont PAS introuvables — elles vivent dans
@@ -787,4 +808,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.3.1 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.3.2 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
