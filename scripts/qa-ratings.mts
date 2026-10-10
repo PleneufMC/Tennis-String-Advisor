@@ -50,12 +50,20 @@ import { calculateAdvancedRcs, stringTypeToFamily } from '../src/lib/advanced-rc
 import {
   DEFAULT_RACQUET_RA,
   RA_RANGE,
+  ADULT_WEIGHT_RANGE,
+  JUNIOR_WEIGHT_RANGE,
+  STRING_COUNT_RANGE,
   effectiveRacquetRA,
   deriveRacquetProfile,
   racquetProfile,
+  racquetsForComparison,
+  assertSingleProfileNature,
   rankRacquetsByTesterAverage,
+  stringCount,
+  linearScore,
   PROFILE_LABEL_SPECS,
   PROFILE_LABEL_BLENDED,
+  PROFILE_BASIS_PREFIX,
 } from '../src/lib/racquet-scoring';
 import {
   RACQUET_TESTER_RATINGS,
@@ -933,7 +941,7 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
     // (b) recalcul à l'identique et échelle.
     const d = deriveRacquetProfile(r);
     const p = racquetProfile(r);
-    if (!p.withTesters || p.label !== PROFILE_LABEL_BLENDED) fail(`raquettes testeurs : ${id} n'est pas affiché comme profil combiné`);
+    if (!p.withTesters || p.nature !== 'specs+testeurs' || p.label !== PROFILE_LABEL_BLENDED) fail(`raquettes testeurs : ${id} n'est pas affiché comme profil combiné`);
     for (const a of axes) {
       const expected = Math.round(Math.min(10, Math.max(0, (d[a] + recalibratedTesterNote(e, a)) / 2)) * 10 + 1e-9) / 10;
       if (p[a] !== expected) fail(`raquettes testeurs : ${id}.${a} = ${p[a]}, ${expected} attendu par la provenance`);
@@ -958,15 +966,16 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
   for (const r of racquetsDatabase.filter((x) => !RACQUET_TESTER_RATINGS[x.id])) {
     const d = deriveRacquetProfile(r);
     const p = racquetProfile(r);
-    if (p.withTesters || p.label !== PROFILE_LABEL_SPECS || p.basis !== d.basis || axes.some((a) => p[a] !== d[a])) {
+    if (p.withTesters || p.nature !== 'specs' || p.label !== PROFILE_LABEL_SPECS || p.basis !== d.basis || axes.some((a) => p[a] !== d[a])) {
       fail(`raquettes testeurs : ${r.id} sans avis mais profil affiché ≠ profil dérivé`);
     } else untouched++;
   }
-  if (racquetsDatabase.some((r) => !deriveRacquetProfile(r).basis.startsWith('Dérivé des specs'))) {
-    fail('deriveRacquetProfile ne doit contenir que des specs : son libellé « Dérivé des specs » doit rester vrai');
+  if (racquetsDatabase.some((r) => !deriveRacquetProfile(r).basis.startsWith(PROFILE_BASIS_PREFIX))) {
+    fail(`deriveRacquetProfile ne doit contenir que des specs : son libellé « ${PROFILE_BASIS_PREFIX} » doit rester vrai`);
   }
-  // (d) surfaces d'affichage : profil via racquetProfile, libellé non codé en dur.
-  for (const file of ['src/app/configurator/page.tsx', 'src/app/compare/page.tsx', 'src/lib/pdf-configuration-data.ts']) {
+  // (d) surfaces d'UNE raquette : profil via racquetProfile, libellé non codé en dur.
+  //     (Les vues qui comparent plusieurs raquettes relèvent du contrôle 16.)
+  for (const file of ['src/app/configurator/page.tsx', 'src/lib/pdf-configuration-data.ts']) {
     const src = readFileSync(file, 'utf8');
     if (/deriveRacquetProfile\s*\(/.test(src)) fail(`${file} : affiche deriveRacquetProfile() au lieu de racquetProfile() — libellé faux pour les raquettes à avis`);
   }
@@ -1056,6 +1065,182 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
   if (failures.length === before) {
     ok(`source unique : ${scanned} fichiers public/ sans lecture Supabase du catalogue, catalog.json ${state} ` +
       `(${cat.racquets.length} raquettes / ${cat.strings.length} cordages, ${nullR} RA null, ${nullS} notes null), non versionné, généré en prebuild, aucune chaîne citée`);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 16. VUES COMPARATIVES — une seule nature de profil par vue (10/10/2026)
+// ---------------------------------------------------------------------------
+// Défaut corrigé : `/compare` mettait côte à côte le profil COMBINÉ (specs +
+// testeurs) des 18 raquettes évaluées et le profil DÉRIVÉ des specs des autres,
+// sans étiquette par raquette (Gravity MP dérivée contre Gravity Tour combinée :
+// la MP « gagnait » 4 axes sur 5). Garde : (a) `racquetProfile` (deux natures
+// possibles) n'est appelé que par les vues d'UNE raquette ; toute autre surface
+// de src/ qui affiche ou classe des raquettes passe par `racquetsForComparison`
+// ou par le classement testeurs ; (b) `racquetsForComparison` rend une seule
+// nature sur tout le catalogue, l'avis /20 à part, jamais comblé ; (c) le
+// classement /statistics ne range que des fiches à avis ; (d) tests négatifs
+// permanents : le détecteur et l'assertion doivent rejeter un mélange.
+{
+  const before = failures.length;
+  const SINGLE_RACQUET_VIEWS = new Set(['src/app/configurator/page.tsx', 'src/lib/pdf-configuration-data.ts']);
+  const SCORING = 'src/lib/racquet-scoring.ts';
+  // Détecteur statique, réutilisé par le test négatif ci-dessous.
+  const mixedNatureFindings = (file: string, raw: string): string[] => {
+    const found: string[] = [];
+    if (file === SCORING) return found;
+    // Les commentaires ne comptent pas (src/types/index.ts cite deriveRacquetProfile()).
+    const src = raw.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
+    if (/\bderiveRacquetProfile\s*\(/.test(src)) found.push(`${file} : appelle deriveRacquetProfile() directement (passer par racquetsForComparison ou racquetProfile)`);
+    if (/\bracquetProfile\s*\(/.test(src) && !SINGLE_RACQUET_VIEWS.has(file)) {
+      found.push(`${file} : appelle racquetProfile(), dont la nature varie d'une raquette à l'autre, hors vue d'une seule raquette — utiliser racquetsForComparison`);
+    }
+    return found;
+  };
+  const walkSrc = (d: string): string[] =>
+    readdirSync(d).flatMap((n) => (statSync(`${d}/${n}`).isDirectory() ? walkSrc(`${d}/${n}`) : [`${d}/${n}`]));
+  const srcFiles = walkSrc('src').filter((f) => /\.(tsx?|mts)$/.test(f));
+  for (const file of srcFiles) for (const msg of mixedNatureFindings(file, readFileSync(file, 'utf8'))) fail(`natures de profil : ${msg}`);
+  // Le comparateur doit passer par la fonction homogène et afficher l'avis à part.
+  const cmp = readFileSync('src/app/compare/page.tsx', 'utf8');
+  if (!/racquetsForComparison\s*\(/.test(cmp)) fail('natures de profil : /compare ne passe pas par racquetsForComparison()');
+  if (!/testerAverage20/.test(cmp) || !/non évaluée/.test(cmp)) fail('natures de profil : /compare n’affiche pas l’avis de testeurs à part (« non évaluée » si absent)');
+  if (/Profil de jeu \(calculé\)/.test(cmp)) fail('natures de profil : /compare garde l’ancien en-tête « Profil de jeu (calculé) »');
+
+  // (b) exécution sur tout le catalogue, et sur la paire d'origine.
+  const rows = racquetsForComparison(racquetsDatabase);
+  const natures = new Set(rows.map((r) => r.profile.nature));
+  if (natures.size !== 1 || !natures.has('specs')) fail(`natures de profil : racquetsForComparison rend ${[...natures].join(', ')} — attendu « specs » seul`);
+  const axes = ['power', 'control', 'comfort', 'maneuverability', 'stability'] as const;
+  let rated = 0;
+  for (const row of rows) {
+    const d = deriveRacquetProfile(row.racquet);
+    if (axes.some((a) => row.profile[a] !== d[a]) || row.profile.label !== PROFILE_LABEL_SPECS || row.profile.withTesters) {
+      fail(`natures de profil : ${row.racquet.id} — profil comparé ≠ profil déduit des caractéristiques`);
+    }
+    const e = RACQUET_TESTER_RATINGS[row.racquet.id];
+    if (e ? row.testerAverage20 !== e.docxAverage20 : row.testerAverage20 !== null) {
+      fail(`natures de profil : ${row.racquet.id} — moyenne testeurs ${row.testerAverage20} (attendu ${e ? e.docxAverage20 : 'null'})`);
+    }
+    if (e) rated++;
+  }
+  const origin = racquetsForComparison(['head-gravity-mp', 'head-gravity-tour'].map((id) => racquetsDatabase.find((r) => r.id === id)!));
+  if (new Set(origin.map((r) => r.profile.nature)).size !== 1) fail('natures de profil : Gravity MP / Tour encore comparées sur deux natures');
+
+  // (c) classement : uniquement des fiches à avis (une seule nature, « testeurs »).
+  if (rankRacquetsByTesterAverage(racquetsDatabase).some((x) => RACQUET_TESTER_RATINGS[x.racquet.id] === undefined)) {
+    fail('natures de profil : le classement testeurs range une raquette sans avis');
+  }
+
+  // (d) tests négatifs permanents : un mélange DOIT être rejeté.
+  let assertionRejects = false;
+  try { assertSingleProfileNature(['specs', 'specs+testeurs']); } catch { assertionRejects = true; }
+  if (!assertionRejects) fail('natures de profil : assertSingleProfileNature accepte un mélange (test négatif)');
+  const planted = mixedNatureFindings('src/app/top-raquettes/page.tsx', 'const p = racquets.map((r) => racquetProfile(r));');
+  if (planted.length === 0) fail('natures de profil : le détecteur ne voit pas racquetProfile() dans une vue multi-raquettes (test négatif)');
+  if (mixedNatureFindings('src/app/compare/page.tsx', 'racquets.map((r) => deriveRacquetProfile(r))').length === 0) {
+    fail('natures de profil : le détecteur ne voit pas deriveRacquetProfile() dans une vue (test négatif)');
+  }
+
+  if (failures.length === before) {
+    ok(`natures de profil : ${srcFiles.length} fichiers src/ sans mélange, racquetProfile limité à ${SINGLE_RACQUET_VIEWS.size} vues d'une raquette, ` +
+      `comparateur homogène sur ${rows.length} raquettes (« specs » seul, ${rated} avis /20 à part, ${rows.length - rated} « non évaluée »), ` +
+      `tests négatifs rejetés (assertion + 2 sources plantées)`);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 17. FORMULE DU PROFIL DÉDUIT DES CARACTÉRISTIQUES (révision du 10/10/2026)
+// ---------------------------------------------------------------------------
+// Ce qui a été corrigé, et que ce bloc empêche de revenir :
+//   - le RA entrait dans le CONTRÔLE (souple = contrôle) : la Gravity MP (RA 57)
+//     passait devant la Gravity Tour (RA 59, tamis 98, +10 g) ; il est neutre ;
+//   - la règle de plan pénalisait le 16x19 et laissait 16x17 / 18x16 neutres :
+//     un plan plus ouvert était mieux noté qu'un plus dense ;
+//   - l'échelle de poids saturait (320 g = 10/10) et valait 0,25 pt/g au-dessus
+//     de 300 g contre 0,067 au-dessous ;
+//   - le poids n'entrait pas dans le contrôle.
+// Les accords avec les avis de testeurs sont IMPRIMÉS (information), pas exigés :
+// le but est un sens physique correct, pas de coller aux 18 raquettes évaluées.
+{
+  const before = failures.length;
+  const axes = ['power', 'control', 'comfort', 'maneuverability', 'stability'] as const;
+  const isJunior = (r: (typeof racquetsDatabase)[number]) => {
+    const len = (r as { length?: number }).length;
+    return typeof len === 'number' && len > 0 ? len < 27 : r.category === 'Junior';
+  };
+  // (a) bornes des échelles = bornes réelles du catalogue (sinon saturation ou trou).
+  const bounds = (v: number[]) => { const s = [...v].sort((a, b) => a - b); return { min: s[0], median: s[Math.floor(s.length / 2)], max: s[s.length - 1] }; };
+  const same = (a: { min: number; median: number; max: number }, b: typeof a) => a.min === b.min && a.median === b.median && a.max === b.max;
+  const adult = bounds(racquetsDatabase.filter((r) => !isJunior(r)).map((r) => r.weight));
+  const junior = bounds(racquetsDatabase.filter(isJunior).map((r) => r.weight));
+  const counts = racquetsDatabase.map((r) => stringCount(r.stringPattern));
+  if (!same(ADULT_WEIGHT_RANGE, adult)) fail(`formule : ADULT_WEIGHT_RANGE ${JSON.stringify(ADULT_WEIGHT_RANGE)} ≠ catalogue ${JSON.stringify(adult)}`);
+  if (!same(JUNIOR_WEIGHT_RANGE, junior)) fail(`formule : JUNIOR_WEIGHT_RANGE ${JSON.stringify(JUNIOR_WEIGHT_RANGE)} ≠ catalogue ${JSON.stringify(junior)}`);
+  const unreadable = racquetsDatabase.filter((_, i) => counts[i] === null);
+  for (const r of unreadable) fail(`formule : plan « ${r.stringPattern} » illisible pour ${r.id} (la note de plan serait neutre par défaut)`);
+  if (unreadable.length === 0 && !same(STRING_COUNT_RANGE, bounds(counts as number[]))) {
+    fail(`formule : STRING_COUNT_RANGE ${JSON.stringify(STRING_COUNT_RANGE)} ≠ catalogue ${JSON.stringify(bounds(counts as number[]))}`);
+  }
+  // (b) masse linéaire et sans saturation : deux poids adultes différents ne
+  //     partagent jamais la même stabilité, et 5 g valent autant sous et sur 300 g.
+  const base = racquetsDatabase.find((r) => r.id === 'babolat-pure-drive-standard')!;
+  const at = (patch: Partial<typeof base>) => deriveRacquetProfile({ ...base, ...patch });
+  const byWeight = new Map<number, number>();
+  for (const r of racquetsDatabase.filter((x) => !isJunior(x))) byWeight.set(r.weight, deriveRacquetProfile(r).stability);
+  const ws = [...byWeight.keys()].sort((a, b) => a - b);
+  if (ws.some((w, i) => i > 0 && !(byWeight.get(w)! > byWeight.get(ws[i - 1])!))) fail('formule : la stabilité sature ou n’est pas strictement croissante sur la plage adulte');
+  const below = at({ weight: 300 }).stability - at({ weight: 295 }).stability;
+  const above = at({ weight: 305 }).stability - at({ weight: 300 }).stability;
+  if (Math.abs(below - above) > 0.11) fail(`formule : 5 g valent ${below.toFixed(2)} sous 300 g et ${above.toFixed(2)} au-dessus — échelle de poids coudée`);
+  // (c) contrôle : sens physique de chaque facteur, RA neutre.
+  const c = (patch: Partial<typeof base>) => at(patch).control;
+  if (!(c({ headSize: 98 }) > c({ headSize: 100 }))) fail('formule : un tamis plus petit ne donne pas plus de contrôle');
+  if (!(c({ stringPattern: '18x20' }) > c({ stringPattern: '16x19' }))) fail('formule : un plan plus dense ne donne pas plus de contrôle');
+  if (!(c({ stringPattern: '16x19' }) > c({ stringPattern: '16x17' })) || !(c({ stringPattern: '16x19' }) > c({ stringPattern: '18x16' }))) {
+    fail('formule : un plan plus ouvert (16x17, 18x16) est noté au moins aussi bien qu’un 16x19 en contrôle');
+  }
+  if (!(c({ weight: 310 }) > c({ weight: 300 }))) fail('formule : la masse n’entre pas dans le contrôle');
+  if (c({ stiffness: 57 }) !== c({ stiffness: 72 })) fail('formule : le RA modifie le contrôle (« souple = contrôle » compté deux fois avec la puissance)');
+  if (!(at({ stiffness: 72 }).power > at({ stiffness: 57 }).power) || !(at({ stiffness: 57 }).comfort > at({ stiffness: 72 }).comfort)) {
+    fail('formule : le RA ne joue plus son rôle en puissance (rigide = puissant) ou en confort (rigide = moins confortable)');
+  }
+  // (d) paires de contrôle documentées (une seule spec ou un sens physique non ambigu).
+  const g = (id: string) => deriveRacquetProfile(racquetsDatabase.find((r) => r.id === id)!);
+  const PAIRS: [string, string, (typeof axes)[number]][] = [
+    ['wilson-blade-98-18x20-v9', 'wilson-blade-98-16x19-v9', 'control'],
+    ['babolat-pure-strike-98-18x20', 'babolat-pure-strike-98-16x19', 'control'],
+    ['yonex-percept-100d', 'yonex-percept-100', 'control'],
+    ['babolat-pure-aero-98', 'babolat-pure-aero-standard', 'control'],
+    ['wilson-pro-staff-97-v14', 'babolat-pure-drive-standard', 'control'],
+    ['babolat-pure-drive-standard', 'wilson-pro-staff-97-v14', 'power'],
+    ['wilson-pro-staff-97-v14', 'babolat-pure-drive-standard', 'stability'],
+    ['head-radical-pro', 'head-radical-mp', 'stability'],
+    ['head-radical-mp', 'head-radical-pro', 'maneuverability'],
+    ['head-gravity-tour', 'head-gravity-mp', 'stability'],
+    ['head-gravity-mp', 'head-gravity-tour', 'maneuverability'],
+  ];
+  for (const [a, b, ax] of PAIRS) if (!(g(a)[ax] > g(b)[ax])) fail(`formule : paire de contrôle inversée — ${a} ${g(a)[ax]} ≤ ${b} ${g(b)[ax]} en ${ax}`);
+  // (e) accord avec les avis de testeurs sur les 18 (Spearman, inversions
+  //     flagrantes = écart testeurs ≥ 3 /20 classé à l'envers) : IMPRIMÉ.
+  const CRIT = { power: 'PUI', control: 'PRE', comfort: 'CNF', maneuverability: 'MAN', stability: 'STA' } as const;
+  const rank = (v: number[]) => { const o = v.map((x, i) => [x, i] as const).sort((p, q) => p[0] - q[0]); const r = new Array<number>(v.length); let i = 0;
+    while (i < o.length) { let j = i; while (j + 1 < o.length && o[j + 1][0] === o[i][0]) j++; for (let k = i; k <= j; k++) r[o[k][1]] = (i + j) / 2 + 1; i = j + 1; } return r; };
+  const pearson = (x: number[], y: number[]) => { const n = x.length, mx = x.reduce((p, q) => p + q) / n, my = y.reduce((p, q) => p + q) / n;
+    let sxy = 0, sx = 0, sy = 0; for (let i = 0; i < n; i++) { sxy += (x[i] - mx) * (y[i] - my); sx += (x[i] - mx) ** 2; sy += (y[i] - my) ** 2; } return sxy / Math.sqrt(sx * sy); };
+  const tested = Object.entries(RACQUET_TESTER_RATINGS).map(([id, e]) => ({ d: g(id), e }));
+  const agreement = axes.map((ax) => {
+    const d = tested.map((t) => t.d[ax]), t = tested.map((x) => x.e.raw20[CRIT[ax]]);
+    let inv = 0, n = 0;
+    for (let i = 0; i < d.length; i++) for (let j = i + 1; j < d.length; j++) { if (Math.abs(t[i] - t[j]) < 3) continue; n++; if ((d[i] - d[j]) * (t[i] - t[j]) < 0) inv++; }
+    return `${ax} ρ=${pearson(rank(d), rank(t)).toFixed(2)} inv ${inv}/${n}`;
+  });
+  if (failures.length === before) {
+    const mp = g('head-gravity-mp'), tour = g('head-gravity-tour');
+    ok(`formule : échelles = bornes du catalogue (adulte ${adult.min}-${adult.max} g, junior ${junior.min}-${junior.max} g, ${STRING_COUNT_RANGE.min}-${STRING_COUNT_RANGE.max} cordes), ` +
+      `masse linéaire sans saturation (10 g = ${(linearScore(310, ADULT_WEIGHT_RANGE) - linearScore(300, ADULT_WEIGHT_RANGE)).toFixed(2)} pt partout), contrôle = tamis + plan + masse avec RA neutre, ${PAIRS.length} paires dans le sens physique ; ` +
+      `Gravity MP/Tour contrôle ${mp.control}/${tour.control}`);
+    ok(`formule : accord avec les avis de testeurs (18 raquettes, information) — ${agreement.join(' · ')}`);
   }
 }
 

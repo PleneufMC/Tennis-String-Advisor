@@ -10,10 +10,12 @@ import { Badge } from '@/components/ui/badge';
 import { ProductImage } from '@/components/product/product-image';
 import { cn } from '@/lib/utils';
 import {
-  racquetProfile,
+  racquetsForComparison,
   effectiveRacquetRA,
   isRacquetStiffnessEstimated,
   RA_RANGE,
+  PROFILE_LABEL_SPECS,
+  type ComparableRacquet,
 } from '@/lib/racquet-scoring';
 import { 
   Search, 
@@ -132,6 +134,33 @@ function ComparisonBar({ label, values, maxValue, minValue = 0, unit, colors, mi
   );
 }
 
+/** Moyenne testeurs /20 au format du site (comme /statistics) : 16,55 · 15,0. */
+const fmt20 = (v: number) => v.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 2 });
+
+/**
+ * Ligne « avis de testeurs », DISTINCTE du profil : la moyenne /20 quand elle
+ * existe, « non évaluée » sinon. Pas de barre : une absence n'est ni un zéro ni
+ * une pénalité, et une barre tronquée exagérerait des écarts de quelques
+ * dixièmes que la synthèse elle-même lit comme des égalités (< 0,5 /20).
+ */
+function TesterAverageRow({ values, colors }: { values: (number | null)[]; colors: string[] }) {
+  return (
+    <div className="flex items-center justify-between gap-2" data-testid="tester-average-row">
+      <span className="text-sm font-medium text-gray-700 dark:text-gray-200">Moyenne des avis (/20)</span>
+      <div className="flex flex-wrap justify-end gap-x-3 gap-y-1">
+        {values.map((value, index) => (
+          <span
+            key={index}
+            className={cn('text-xs font-semibold', value === null ? 'text-gray-500 dark:text-gray-400' : colors[index])}
+          >
+            {value === null ? 'non évaluée' : `${fmt20(value)} /20`}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function ComparePage() {
   const [mode, setMode] = useState<CompareMode>('racquets');
   const [selectedItems, setSelectedItems] = useState<ComparisonItem[]>([]);
@@ -193,18 +222,29 @@ export default function ComparePage() {
     }
   };
 
+  // Nature du profil et avis de testeurs, par raquette (étiquette de chaque carte).
+  const comparableById = useMemo(() => {
+    if (mode !== 'racquets') return new Map<string, ComparableRacquet>();
+    const racquets = selectedItems.map(si => si.item as TennisRacquet);
+    return new Map(racquetsForComparison(racquets).map(r => [r.racquet.id, r]));
+  }, [selectedItems, mode]);
+
   // Get comparison specs
   const comparisonSpecs = useMemo(() => {
     if (selectedItems.length === 0) return null;
 
     if (mode === 'racquets') {
       const racquets = selectedItems.map(si => si.item as TennisRacquet);
-      // Les cordages exposent 5 notes interprétables, les raquettes n'avaient que
-      // des specs brutes : la comparaison était asymétrique. `deriveRacquetProfile`
-      // calcule 5 notes équivalentes à partir des specs réelles (poids, tamis, RA,
-      // plan de cordage) — les champs `power`/`control`/... de l'interface
-      // `Racquet` de types/index.ts sont, eux, renseignés sur 0 des 129 raquettes.
-      const profiles = racquets.map(r => racquetProfile(r));
+      // Une seule nature de profil par vue (10/10/2026). Jusque-là, ce bloc
+      // affichait côte à côte un profil COMBINÉ (specs + testeurs) pour les
+      // raquettes évaluées et un profil DÉRIVÉ des specs pour les autres, sans
+      // étiquette par raquette : la Gravity MP (dérivée) battait la Gravity Tour
+      // (combinée) sur 4 axes sur 5. Toutes les raquettes sont désormais notées
+      // sur le même profil déduit des caractéristiques ; l'avis de testeurs est
+      // donné à part (`testerAverage`). `racquetsForComparison` échoue si une vue
+      // mêle deux natures ; contrôle 16 de `audit:ratings`.
+      const rows: ComparableRacquet[] = racquetsForComparison(racquets);
+      const profiles = rows.map(r => r.profile);
       return {
         weight: racquets.map(r => r.weight),
         headSize: racquets.map(r => r.headSize),
@@ -218,6 +258,7 @@ export default function ComparePage() {
         comfort: profiles.map(p => p.comfort),
         maneuverability: profiles.map(p => p.maneuverability),
         stability: profiles.map(p => p.stability),
+        testerAverage: rows.map(r => r.testerAverage20),
       };
     } else {
       const strings = selectedItems.map(si => si.item as TennisString);
@@ -377,6 +418,20 @@ export default function ComparePage() {
                           </div>
                         )}
                       </div>
+                      {/* Étiquette par raquette : ce que contiennent ses notes. */}
+                      {(() => {
+                        const row = comparableById.get(racquet.id);
+                        if (!row) return null;
+                        return (
+                          <div className="mt-2 space-y-0.5 text-[11px] leading-snug text-gray-500 dark:text-gray-400">
+                            <p data-profile-nature={row.profile.nature}>{row.profile.label}</p>
+                            <p data-tester-average={row.testerAverage20 ?? 'none'}>
+                              Avis de testeurs :{' '}
+                              {row.testerAverage20 === null ? 'non évaluée' : `${fmt20(row.testerAverage20)} /20`}
+                            </p>
+                          </div>
+                        );
+                      })()}
                     </>
                   )}
 
@@ -465,15 +520,18 @@ export default function ComparePage() {
                     colors={colors.slice(0, selectedItems.length)}
                   />
 
-                  {/* Profil dérivé : rétablit la symétrie avec les cordages. */}
-                  <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
+                  {/* Profil : une seule nature pour toutes les raquettes comparées. */}
+                  <div className="pt-2 border-t border-gray-200 dark:border-gray-700" data-testid="profile-block">
                     <p className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-1">
-                      Profil de jeu (calculé)
+                      {PROFILE_LABEL_SPECS}
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
-                      Notes déduites des specs ci-dessus (poids, tamis, RA, plan de
-                      cordage), moyennées avec des avis de testeurs consolidés quand
-                      il en existe pour ce modèle. Ni mesures, ni données fabricant.
+                      Mêmes règles pour toutes les raquettes : tamis, plan de cordage,
+                      poids et RA. Ni mesure, ni donnée fabricant, ni avis de testeurs.
+                      L&apos;équilibre et le swingweight, qui décident souvent de la
+                      maniabilité et de la stabilité ressenties, n&apos;y entrent pas :
+                      ces notes ne départagent pas deux raquettes aux caractéristiques
+                      proches.
                     </p>
                   </div>
                   <ComparisonBar
@@ -509,6 +567,23 @@ export default function ComparePage() {
                     maxValue={10}
                     colors={colors.slice(0, selectedItems.length)}
                   />
+
+                  {/* Avis de testeurs : à part, jamais mêlé au profil ci-dessus. */}
+                  <div className="pt-2 border-t border-gray-200 dark:border-gray-700 space-y-2" data-testid="tester-block">
+                    <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                      Avis de testeurs
+                    </p>
+                    <TesterAverageRow
+                      values={comparisonSpecs.testerAverage as (number | null)[]}
+                      colors={colors.slice(0, selectedItems.length)}
+                    />
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      Moyenne de vingt critères d&apos;avis de testeurs consolidés,
+                      donnée à part : elle n&apos;entre pas dans le profil ci-dessus.
+                      « Non évaluée » : aucun avis rapproché de cette raquette, ni bonus
+                      ni pénalité. Un écart inférieur à 0,5 /20 se lit comme une égalité.
+                    </p>
+                  </div>
                 </>
               ) : (
                 <>

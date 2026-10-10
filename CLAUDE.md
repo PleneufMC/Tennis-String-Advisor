@@ -1,11 +1,33 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.2.12
+> **Version** : 2.2.13
 > **Date** : 10 octobre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
 > **Branche de référence** : `main` (seule branche longue ; la production Netlify en déploie)
 > **Repo** : https://github.com/PleneufMC/Tennis-String-Advisor.git
+
+**Changelog v2.2.12 → v2.2.13** — **Comparateur : une seule nature de profil par vue ;
+formule du profil déduit des caractéristiques révisée** (`tsa-core`, 10/10/2026, suite au
+retrait de l'article Gravity MP vs Tour, #99). `/compare` mettait côte à côte le profil
+**combiné** (specs + testeurs) des 18 raquettes évaluées et le profil **dérivé** des
+autres, sans étiquette par raquette : Gravity MP (dérivée) 3,3/6,2/7,4/5,3/4,7 contre
+Gravity Tour (combinée) 3,0/5,2/7,0/4,2/5,1. Désormais toutes les raquettes comparées
+sont notées sur le même « Profil déduit des caractéristiques », étiqueté sur chaque
+carte ; la moyenne testeurs /20 est donnée **à part** (« non évaluée » sinon, ni bonus
+ni pénalité). `racquetsForComparison` + contrôle 16 (tests négatifs intégrés).
+Configurateur et PDF (une raquette, libellé affiché) inchangés dans leur principe ;
+`/statistics`, blog et comparateur EN vérifiés homogènes. **Formule** : contrôle =
+tamis + plan (nombre de cordes) + masse, à parts égales, **RA neutre** (il était compté
+deux fois, en puissance et en contrôle) ; la règle de plan qui pénalisait le 16x19 et
+laissait le 16x17 neutre est remplacée ; masse en **échelle linéaire** (10 g = 0,67 pt
+partout, 320 g = 6,3 au lieu de 10). Sur les 18 raquettes évaluées : contrôle ρ 0,31 →
+0,31, inversions flagrantes 10 → 6 sur 49 ; **maniabilité et stabilité restent en
+désaccord avec les testeurs** (ρ −0,15 / −0,28 : équilibre et swingweight absents des
+fiches) — arbitrage remonté à Pierre. 43 raquettes bougent de plus d'un point ; décalages
+d'ancrage des 18 profils combinés recalculés ; RCS, alertes bras (5,12 % / 19,56 %) et
+Top 10 inchangés. Contrôle 17. Libellés : « Profil déduit des caractéristiques »,
+« Profil combiné : caractéristiques et avis de testeurs ».
 
 **Changelog v2.2.11 → v2.2.12** — **Filtres « Caractéristiques » inatteignables sur
 `/racquets`** (signalement de Pierre du 10/10/2026, `tsa-core`). Dès `lg`, la colonne de
@@ -291,6 +313,11 @@ corrigé dans la même PR.
   photographique à la place. Autorisation TW non obtenue, TWE non demandée :
   photos conservées par décision de Pierre du 10/10/2026, en connaissance du
   risque. Tennis-Point : collecte refusée (429), aucune photo.
+- Comparateur `/compare` (10/10/2026) : une seule nature de profil par vue —
+  toutes les raquettes sur le profil déduit des caractéristiques, étiqueté par
+  raquette, avis de testeurs /20 à part. Les vues d'une seule raquette
+  (configurateur, PDF) gardent le profil combiné pour les 18 raquettes évaluées,
+  libellé affiché. Garde-fou : contrôle 16 de `audit:ratings`.
 
 ### Cassé ou incomplet
 
@@ -662,4 +689,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.2.12 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.2.13 — Tennis String Advisor — « Mesurer avant d'affirmer. »*

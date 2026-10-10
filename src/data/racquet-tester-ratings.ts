@@ -61,9 +61,14 @@ export const RACQUET_AXIS_TO_CRITERION: Readonly<Record<RacquetProfileAxis, Racq
   power: 'PUI', control: 'PRE', comfort: 'CNF', maneuverability: 'MAN', stability: 'STA',
 };
 
-/** Décalage d'ancrage par axe (/10), mesuré sur les raquettes rapprochées. */
+/**
+ * Décalage d'ancrage par axe (/10), mesuré sur les raquettes rapprochées.
+ * Recalculé le 10/10/2026 après la révision de `deriveRacquetProfile` (contrôle
+ * sans RA, masse en échelle linéaire) : contrôle −2,8 → −2,2, confort −2,2 →
+ * −2,4, maniabilité −2,9 → −2,4, stabilité −1,7 → −2,3 ; puissance inchangée.
+ */
 export const RACQUET_ANCHOR_SHIFT: Readonly<Record<RacquetProfileAxis, number>> = {
-  power: -2.5, control: -2.8, comfort: -2.2, maneuverability: -2.9, stability: -1.7,
+  power: -2.5, control: -2.2, comfort: -2.4, maneuverability: -2.4, stability: -2.3,
 };
 
 export interface RacquetTesterEntry {
