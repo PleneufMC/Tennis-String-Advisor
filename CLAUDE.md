@@ -7,6 +7,25 @@
 > **Branche de référence** : `main` (seule branche longue ; la production Netlify en déploie)
 > **Repo** : https://github.com/PleneufMC/Tennis-String-Advisor.git
 
+**Changelog (numéro de version à fixer à la fusion)** — **Rigidité par jauge : modèle et table (chantier D1)**
+(décision de Pierre du 10/10/2026 : « GO » sur le chantier D ; `tsa-core`). `TennisString` gagne deux champs
+optionnels, `stiffnessByGauge` (rigidité TWU mesurée par jauge nominale, lb/in, 51 lbs / Fast) et
+`stiffnessByGaugeSuspect`, et `strings-database.ts` la fonction `stringStiffnessAt(fiche, jauge)` : la mesure pour une
+jauge mesurée d'une série saine, sinon la rigidité de la fiche (règle C) étiquetée « jauge non mesurée », jamais
+interpolée. **101 fiches** portent une table (164 jauges sur 361, hybrides exclus), générée hors ligne depuis le relevé de
+D0 par `scripts/scraper/c2-par-jauge.mts` selon l'appariement strict de #110 (modèle exact, jauge nominale exacte, même
+matière, ligne unique) : les 103 fiches de #110 deviennent 101, car `babolat-rpm-soft` et `babolat-rpm-team` (matière TWU
+« Nylon » et « Nylon/Polyester » contre un type Polyester) sont écartées par la contrainte de matière, et la jauge 1.30
+de `wilson-natural-gut` (deux lignes TWU) n'est pas écrite. **24 séries suspectes** (une jauge plus épaisse mesurée plus
+souple, jauges hors fiche comprises : NXT 1.35, Origin, Black Code 1.32…) : valeurs conservées et marquées, aucune n'est
+utilisée pour le calcul avant l'arbitrage de Pierre (D4). `catalog.json` : `stiffness_by_gauge` et
+`stiffness_by_gauge_suspect` (`null` si absents). **Aucune valeur affichée, note, formule ni RCS modifié**, et aucune
+surface ne lit la table avant D2/D3 : empreinte identique de la grille de 138 546 combinaisons (RCS, recommandation, alerte
+bras des deux profils ; `scripts/scraper/c2-empreinte-grille.mts`, rejouable sur tout état), alerte bras avancée inchangée, diff de `src/` strictement additif, `catalog.json` et 308 fiches EN
+identiques à l'octet hors les deux nouvelles clés, 319 pages FR prérendues identiques hors scripts et styles. Coût : environ
+1 kB de JS initial en plus sur quatre routes qui embarquent la base. Contrôle 13 quater (17 tests négatifs), contrôle 15
+étendu. `c2-par-jauge.mts --apercu-d4` estime l'effet d'une adoption future sur l'alerte bras (rien n'est adopté).
+
 **Changelog (numéro de version à fixer à la fusion)** — **Relevé TWU complet versionné (chantier D0, rigidité par
 jauge)** (décision de Pierre du 10/10/2026 : « GO » sur le chantier D ; `tsa-core`). Le relevé TWU du 29/09/2026
 (788 enregistrements, sha256 `01c07cc…8872`, identique à celui du 10/10) est versionné en entier dans

@@ -36,6 +36,8 @@ import {
   REMOVED_STRING_IDS,
   meetsMinRating,
   compareOptionalDesc,
+  stringStiffnessAt,
+  STIFFNESS_UNMEASURED_LABEL,
 } from '../src/data/strings-database';
 import {
   STRING_TESTER_RATINGS,
@@ -1295,6 +1297,124 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
 }
 
 // ---------------------------------------------------------------------------
+// 13 quater. RIGIDITÉ PAR JAUGE : `stiffnessByGauge` et `stringStiffnessAt` (D1, 10/10/2026)
+// ---------------------------------------------------------------------------
+// Table GÉNÉRÉE (scripts/scraper/c2-par-jauge.mts) depuis le relevé TWU complet versionné. Échoue si : (a) une valeur par jauge n'est
+// pas celle de l'UNIQUE ligne du relevé de ce modèle exact, de cette jauge nominale (± 0,005 mm) et de la même matière, si une jauge
+// établie est omise, ou si une jauge ambiguë (deux lignes) ou d'une autre matière est écrite ; (b) une clé n'est pas une jauge de la
+// fiche, ou un hybride porte une table ; (c) le drapeau « suspecte » diffère de la non-monotonie recalculée sur TOUTES les lignes du
+// modèle (jauges hors fiche comprises) ; (d) stringStiffnessAt s'écarte du contrat : la mesure pour une jauge mesurée d'une série
+// saine, sinon la rigidité de la fiche étiquetée « jauge non mesurée », jamais interpolée ; (e) une fiche appliquée par la règle C
+// n'a pas pour rigidité le maximum de sa table, ou sa table contredit la provenance ; (f) une surface du site lit la table (liste
+// blanche de deux fichiers jusqu'à D2/D3). Chaque garde est rejouée sur une copie altérée : un garde-fou muet fait échouer l'audit.
+{
+  const before = failures.length;
+  const SP = await import('../src/data/string-stiffness-provenance');
+  type Rec = { name: string; model: string; suffix: string | null; material: string | null; gaugeNominalMm: number | null; stiffnessLbIn: number; f: string };
+  const fold = (x: string) => x.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/['’`]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
+  const records = (JSON.parse(readFileSync(SP.STIFFNESS_SOURCE.fullSurvey.file, 'utf8')).records as Rec[]).map((r) => ({ ...r, f: fold(r.model) }));
+  const FAMILY: Record<string, RegExp> = { Polyester: /^Polyester$/, 'Natural Gut': /^Gut$/, Multifilament: /^(Nylon|Polyolefin)/, Synthetic: /^(Nylon|Polyolefin)/ };
+  type Str = (typeof stringsDatabase)[number];
+  const sameMaterial = (s: Str) => (r: Rec) => FAMILY[s.type]?.test(r.material ?? '') === true;
+  const modelLines = (s: Str) => records.filter((r) => r.suffix !== null && r.gaugeNominalMm !== null && r.f === fold(`${s.brand} ${s.model}`));
+  // Table attendue : par jauge de la fiche, l'UNIQUE ligne de même matière (aucune ligne : non mesurée ; deux : ambiguë).
+  const expectedTable = (s: Str): Record<string, number> => {
+    const lines = modelLines(s);
+    return Object.fromEntries(s.gauges.flatMap((g): [string, number][] => {
+      const l = lines.filter((r) => Math.abs(r.gaugeNominalMm! - Number(g)) <= 0.005);
+      return l.length === 1 && sameMaterial(s)(l[0]) ? [[g, l[0].stiffnessLbIn]] : [];
+    }));
+  };
+  // Non monotone : la mesure la plus basse d'une jauge est sous la plus haute de la jauge précédente (suffit pour toutes les paires).
+  const nonMonotone = (s: Str): boolean => {
+    const byG = new Map<number, number[]>();
+    for (const r of modelLines(s).filter(sameMaterial(s))) byG.set(r.gaugeNominalMm!, [...(byG.get(r.gaugeNominalMm!) ?? []), r.stiffnessLbIn]);
+    const g = [...byG.keys()].sort((a, b) => a - b);
+    return g.some((x, i) => i > 0 && Math.max(...byG.get(g[i - 1])!) > Math.min(...byG.get(x)!));
+  };
+  const SYMBOLS = /stiffnessByGauge|stiffness_by_gauge|stringStiffnessAt|STIFFNESS_UNMEASURED_LABEL/;
+  const ALLOWED = ['src/data/strings-database.ts', 'scripts/catalog/catalog-json.mjs'];
+  const checkByGauge = (strings: readonly Str[], at: typeof stringStiffnessAt, files: { path: string; src: string }[], label: string = STIFFNESS_UNMEASURED_LABEL): string[] => {
+    const out: string[] = [];
+    if (label !== 'jauge non mesurée') out.push(`étiquette de repli « ${label} » ≠ « jauge non mesurée »`);
+    for (const s of strings) {
+      const want = expectedTable(s), have: Record<string, number> = s.stiffnessByGauge ?? {};
+      if (s.type === 'Hybrid' && Object.keys(have).length > 0) out.push(`${s.id} : un hybride ne peut pas porter de table (aucune ligne TWU de ce modèle)`);
+      for (const g of new Set([...Object.keys(want), ...Object.keys(have)])) {
+        if (!s.gauges.includes(g)) out.push(`${s.id} : jauge ${g} absente de la fiche (${s.gauges.join(', ')})`);
+        else if (have[g] === undefined) out.push(`${s.id} : jauge ${g} établie dans le relevé (${want[g]}) mais omise de la table`);
+        else if (want[g] === undefined) out.push(`${s.id} : jauge ${g} = ${have[g]} sans ligne unique de même matière dans le relevé (invention, ambiguïté ou autre matière)`);
+        else if (have[g] !== want[g]) out.push(`${s.id} : jauge ${g} = ${have[g]} ≠ relevé ${want[g]}`);
+      }
+      const suspect = Object.keys(have).length > 0 && nonMonotone(s);
+      if (Boolean(s.stiffnessByGaugeSuspect) !== suspect) out.push(`${s.id} : série ${suspect ? 'non monotone non marquée suspecte' : 'monotone ou sans table marquée suspecte'}`);
+      for (const g of [...s.gauges, '1.275', 'abc']) {
+        const r = at(s, g), m = have[g], measured = m !== undefined && !s.stiffnessByGaugeSuspect;
+        const wantAt = measured ? { lbIn: m, basis: 'mesure-twu-jauge' } : { lbIn: s.stiffness, basis: m !== undefined ? 'serie-suspecte' : 'jauge-non-mesuree' };
+        if (r.lbIn !== wantAt.lbIn || r.basis !== wantAt.basis || (r.basis === 'jauge-non-mesuree' && r.label !== 'jauge non mesurée')) {
+          out.push(`${s.id} @${g} : stringStiffnessAt = ${r.lbIn} (${r.basis}, « ${r.label} »), attendu ${wantAt.lbIn} (${wantAt.basis}) : repli = rigidité de la fiche, jamais interpolé`);
+        }
+        if (Number.isFinite(Number(g)) && at(s, Number(g)).lbIn !== r.lbIn) out.push(`${s.id} @${g} : la jauge numérique donne une autre rigidité que la chaîne`);
+      }
+    }
+    for (const [id, e] of Object.entries(SP.STRING_STIFFNESS_PROVENANCE)) {
+      const s = strings.find((x) => x.id === id);
+      if (!s || e.status !== 'appliquee') continue;
+      for (const m of e.measures) if (s.stiffnessByGauge?.[m.gauge] !== m.lbIn) out.push(`${id} : la mesure de la provenance (${m.gauge} = ${m.lbIn}) n'est pas dans la table`);
+      const top = Math.max(...Object.values(s.stiffnessByGauge ?? { none: NaN }));
+      if (e.rule !== 'plancher' && s.stiffness !== top) out.push(`${id} : règle C, rigidité ${s.stiffness} ≠ maximum de la table (${top})`);
+    }
+    for (const f of files) if (!ALLOWED.includes(f.path) && SYMBOLS.test(f.src)) out.push(`${f.path} lit la rigidité par jauge (liste blanche : ${ALLOWED.join(', ')}) : pas avant D2/D3`);
+    return out;
+  };
+  const walkFiles = (d: string): string[] => readdirSync(d).flatMap((n) => (statSync(`${d}/${n}`).isDirectory() ? walkFiles(`${d}/${n}`) : [`${d}/${n}`]));
+  const surfaces = [...walkFiles('src'), ...walkFiles('scripts/catalog'), ...walkFiles('scripts/en-products'), ...walkFiles('public')]
+    .filter((f) => /\.(tsx?|m?js|html?)$/.test(f)).map((p) => ({ path: p, src: readFileSync(p, 'utf8') }));
+  checkByGauge(stringsDatabase, stringStiffnessAt, surfaces).forEach((i) => fail(`rigidité par jauge : ${i}`));
+  // Tests négatifs : chaque altération doit être détectée.
+  const tab = (id: string) => stringsDatabase.find((s) => s.id === id)!.stiffnessByGauge!;
+  const mod = (id: string, patch: Partial<Str>): Str[] => stringsDatabase.map((s) => (s.id === id ? { ...s, ...patch } : s));
+  const interpolating: typeof stringStiffnessAt = (s, g) => {
+    const r = stringStiffnessAt(s, g), v = Object.values(s.stiffnessByGauge ?? {});
+    return r.basis === 'jauge-non-mesuree' && v.length > 1 ? { ...r, lbIn: v.reduce((a, b) => a + b, 0) / v.length } : r;
+  };
+  const none: { path: string; src: string }[] = [];
+  const negatives: Array<[string, string[], string]> = [
+    ['une valeur par jauge retouchée (+0,1)', checkByGauge(mod('wilson-nxt', { stiffnessByGauge: { ...tab('wilson-nxt'), '1.30': 173.8 } }), stringStiffnessAt, none), 'wilson-nxt : jauge 1.30'],
+    ['une jauge établie omise', checkByGauge(mod('wilson-nxt', { stiffnessByGauge: { '1.30': 173.7 } }), stringStiffnessAt, none), 'omise de la table'],
+    ['une jauge inventée (non mesurée)', checkByGauge(mod('solinco-hyper-g', { stiffnessByGauge: { ...tab('solinco-hyper-g'), '1.30': 221 } }), stringStiffnessAt, none), 'sans ligne unique'],
+    ["une clé qui n'est pas une jauge de la fiche", checkByGauge(mod('wilson-nxt', { stiffnessByGauge: { ...tab('wilson-nxt'), '1.35': 152 } }), stringStiffnessAt, none), 'absente de la fiche'],
+    ['une jauge ambiguë (deux lignes TWU) écrite', checkByGauge(mod('wilson-natural-gut', { stiffnessByGauge: { ...tab('wilson-natural-gut'), '1.30': 96.6 } }), stringStiffnessAt, none), 'wilson-natural-gut : jauge 1.30'],
+    ["une jauge d'une autre matière écrite", checkByGauge(mod('babolat-rpm-soft', { stiffnessByGauge: { '1.30': 154.9 } }), stringStiffnessAt, none), 'babolat-rpm-soft : jauge 1.30'],
+    ['une table sur un hybride', checkByGauge(mod('wilson-duo-control', { stiffnessByGauge: { '1.25/1.30': 160 } }), stringStiffnessAt, none), 'un hybride ne peut pas'],
+    ['une série non monotone non marquée', checkByGauge(mod('tecnifibre-black-code', { stiffnessByGaugeSuspect: undefined }), stringStiffnessAt, none), 'non monotone non marquée'],
+    ['une série monotone marquée suspecte', checkByGauge(mod('luxilon-savage', { stiffnessByGaugeSuspect: true }), stringStiffnessAt, none), 'monotone ou sans table marquée'],
+    ['une interpolation entre jauges mesurées', checkByGauge(stringsDatabase, interpolating, none), 'jamais interpolé'],
+    ["une valeur de calcul tirée d'une série suspecte", checkByGauge(stringsDatabase, (s, g) => stringStiffnessAt({ ...s, stiffnessByGaugeSuspect: undefined }, g), none), 'attendu'],
+    ['un libellé de repli modifié', checkByGauge(stringsDatabase, (s, g) => { const r = stringStiffnessAt(s, g); return r.basis === 'jauge-non-mesuree' ? { ...r, label: 'inconnue' } : r; }, none), '« inconnue »'],
+    ["l'étiquette exportée modifiée", checkByGauge(stringsDatabase, stringStiffnessAt, none, 'non mesurée'), 'étiquette de repli'],
+    ['règle C : rigidité de la fiche ≠ maximum de sa table', checkByGauge(mod('head-hawk', { stiffness: 215 }), stringStiffnessAt, none), 'règle C'],
+    ['une mesure de la provenance absente de la table', checkByGauge(mod('head-hawk', { stiffnessByGauge: { '1.20': 194.3, '1.25': 204.6 } }), stringStiffnessAt, none), 'provenance'],
+    ['une surface FR qui lit la table', checkByGauge(stringsDatabase, stringStiffnessAt, [{ path: 'src/app/x.tsx', src: 'stringStiffnessAt(s, g)' }]), 'src/app/x.tsx'],
+    ['un lecteur EN du catalogue', checkByGauge(stringsDatabase, stringStiffnessAt, [{ path: 'public/en/strings.html', src: 'row.stiffness_by_gauge' }]), 'public/en/strings.html'],
+  ];
+  for (const [name, found, needle] of negatives) {
+    if (!found.some((i) => i.includes(needle))) fail(`rigidité par jauge : garde-fou muet sur « ${name} » (${needle})`);
+  }
+  if (failures.length === before) {
+    const withTable = stringsDatabase.filter((s) => s.stiffnessByGauge);
+    const measured = withTable.reduce((n, s) => n + Object.keys(s.stiffnessByGauge!).length, 0);
+    const total = stringsDatabase.filter((s) => s.type !== 'Hybrid').reduce((n, s) => n + s.gauges.length, 0);
+    const c = [0, 0, 0]; // fiche = maximum de sa table, fiche supérieure (une baisse), fiche inférieure (une hausse)
+    for (const s of withTable) { const top = Math.max(...Object.values(s.stiffnessByGauge!)); c[top === s.stiffness ? 0 : top < s.stiffness ? 1 : 2]++; }
+    ok(`rigidité par jauge : ${withTable.length} fiches avec table (${measured}/${total} jauges mesurées, hors hybrides), ${withTable.filter((s) => s.stiffnessByGaugeSuspect).length} séries suspectes marquées (valeurs conservées, non utilisées), ` +
+      `chaque valeur retrouvée dans ${SP.STIFFNESS_SOURCE.fullSurvey.file} (modèle exact, jauge nominale, même matière, ligne unique), repli = rigidité de la fiche étiquetée « ${STIFFNESS_UNMEASURED_LABEL} » sur ${stringsDatabase.length} fiches, jamais interpolé ; ` +
+      `règle C : ${c[0]} fiches égales au maximum de leur table, ${c[1]} à valeur de fiche supérieure (baisse sans GO : non appliquée), ${c[2]} inférieure (hausse en attente) ; ` +
+      `aucune surface du site ne lit la table (${surfaces.length} fichiers lus, ${ALLOWED.length} autorisés), ${negatives.length} tests négatifs détectés`);
+  }
+}
+
+// ---------------------------------------------------------------------------
 // 14. RAQUETTES — AVIS DE TESTEURS (09/10/2026 ; affiché seul depuis le 10/10/2026)
 // ---------------------------------------------------------------------------
 // Garde trois choses : (a) aucun avis n'est appliqué à une fiche dont les specs
@@ -1487,7 +1607,7 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
 // au build. Échoue si : (a) un fichier servi sous public/ lit encore le
 // catalogue dans Supabase ; (b) le JSON servi diffère du TS ; (c) le JSON est
 // versionné (il serait éditable à la main) ou n'est plus généré au build ;
-// (d) il cite une chaîne de testeurs ; (e) une valeur absente y est comblée.
+// (d) il cite une chaîne de testeurs ; (e) une valeur absente y est comblée ; (f) sa rigidité par jauge (D1) diffère du TS.
 {
   const before = failures.length;
   const READ_PATTERNS: RegExp[] = [
@@ -1530,9 +1650,19 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
   const nullS = cat.strings.filter((s: { comfort: number | null }) => s.comfort === null).length;
   if (absentS !== nullS) fail(`source unique : ${absentS} notes confort absentes dans le TS, ${nullS} null dans le JSON`);
   if (cat.racquets.length !== racquetsDatabase.length || cat.strings.length !== stringsDatabase.length) fail('source unique : comptes JSON ≠ TS');
+  // (f) rigidité par jauge (D1) : table et drapeau « suspecte » du JSON = ceux du TS, `null` quand le TS n'en a pas (jamais comblée).
+  type ByGaugeRow = { id: string; stiffness_by_gauge: unknown; stiffness_by_gauge_suspect: unknown };
+  const jsonRows = new Map<string, ByGaugeRow>((cat.strings as ByGaugeRow[]).map((r) => [r.id, r]));
+  for (const s of stringsDatabase) {
+    const j = jsonRows.get(s.id);
+    if (JSON.stringify(j?.stiffness_by_gauge) !== JSON.stringify(s.stiffnessByGauge ?? null) || JSON.stringify(j?.stiffness_by_gauge_suspect) !== JSON.stringify(s.stiffnessByGaugeSuspect ?? null)) {
+      fail(`source unique : ${s.id} : rigidité par jauge du JSON ≠ TS (absente = null, jamais comblée)`);
+    }
+  }
+  const jsonTables = (cat.strings as ByGaugeRow[]).filter((r) => r.stiffness_by_gauge !== null).length;
   if (failures.length === before) {
     ok(`source unique : ${scanned} fichiers public/ sans lecture Supabase du catalogue, catalog.json ${state} ` +
-      `(${cat.racquets.length} raquettes / ${cat.strings.length} cordages, ${nullR} RA null, ${nullS} notes null), non versionné, généré en prebuild, aucune chaîne citée`);
+      `(${cat.racquets.length} raquettes / ${cat.strings.length} cordages, ${nullR} RA null, ${nullS} notes null, ${jsonTables} tables de rigidité par jauge), non versionné, généré en prebuild, aucune chaîne citée`);
   }
 }
 
