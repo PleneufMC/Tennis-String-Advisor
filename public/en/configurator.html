@@ -66,6 +66,7 @@
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script defer src="/js/rcs-calculator-en.js"></script>
   <script defer src="/js/catalog.js"></script>
+  <script defer src="/js/rating-labels.js"></script>
   <link rel="stylesheet" href="/css/dark-mode.css">
   <script src="/js/theme.js"></script>
   <style>
@@ -617,7 +618,9 @@
             </div>
             <span class="bg-purple-100 text-purple-800 text-sm font-medium px-3 py-1 rounded-full" id="rec-string-type">—</span>
           </div>
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+          <!-- Nature of the ratings (labelling principle decided on 10/10/2026): the label comes before the notes -->
+          <p class="mt-3 text-sm font-medium text-gray-700" id="rec-string-basis"></p>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-3">
             <div>
               <span class="text-sm text-gray-500">Spin</span>
               <p class="font-semibold" id="rec-string-spin">—</p>
@@ -635,6 +638,7 @@
               <p class="font-semibold text-green-600" id="rec-string-price">—</p>
             </div>
           </div>
+          <p class="hidden mt-3 text-sm text-gray-600" id="rec-string-note"></p>
           <p class="text-gray-600 mt-4" id="rec-string-reason"></p>
         </div>
       </div>
@@ -1247,6 +1251,10 @@
         spin: TSACatalog.display(s.spin, '/10'),
         control: TSACatalog.display(s.control, '/10'),
         comfort: TSACatalog.display(s.comfort, '/10'),
+        // Nature des notes (libellés de référence du 10/10/2026, /js/rating-labels.js) :
+        // « TSA editorial rating », « …, harmonised with tester reviews » ou « Not published ».
+        basis: TSARatingLabels.basis(s),
+        basisLabel: TSARatingLabels.label(s),
         price: TSACatalog.display(s.price_eur, '€'),
         stiffness: s.stiffness,
         reason: reason
@@ -1301,6 +1309,9 @@
         const catalog = await TSACatalog.load();
         racquetsDB = catalog.racquets;
         stringsDB = catalog.strings;
+        // Jamais de note sans libellé : la liste des cordages harmonisés se charge avec le
+        // catalogue (le chargement ne rejette jamais ; son repli est journalisé).
+        await TSARatingLabels.load();
       } catch (error) {
         console.error('Error loading catalog:', error);
         showGenerateError('The catalogue could not be loaded. Check your connection, then try again.');
@@ -1440,6 +1451,11 @@
       document.getElementById('rec-string-brand').textContent = string.brand;
       document.getElementById('rec-string-name').textContent = string.name;
       document.getElementById('rec-string-type').textContent = string.type;
+      document.getElementById('rec-string-basis').textContent = string.basisLabel;
+      // La mention « équipe, non mesuré en laboratoire » n'a d'objet que s'il y a des notes.
+      const stringNote = document.getElementById('rec-string-note');
+      stringNote.textContent = TSARatingLabels.NOTE;
+      stringNote.classList.toggle('hidden', string.basis === 'none');
       document.getElementById('rec-string-spin').textContent = string.spin;
       document.getElementById('rec-string-control').textContent = string.control;
       document.getElementById('rec-string-comfort').textContent = string.comfort;

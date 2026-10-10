@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { BuyButton } from '@/components/product/buy-button';
 import { ProductImage } from '@/components/product/product-image';
+import { StringRatingLabel } from '@/components/product/string-rating-label';
 import { cn } from '@/lib/utils';
 import { 
   Target, 
@@ -137,6 +138,8 @@ export function StringCard({
                   {formatRating(string.power)}
                 </span>
               </div>
+              {/* Nature des notes ci-dessus : appréciation de l'équipe, jamais une mesure. */}
+              <StringRatingLabel string={string} className="mt-1 text-xs leading-snug text-gray-600" />
             </div>
             {priceEur !== undefined && (
               <div className="text-right">
@@ -214,6 +217,9 @@ export function StringCard({
               {string.proUsage}
             </p>
           )}
+          {/* Nature de la note globale et des barres plus bas : appréciation de l'équipe,
+              jamais une mesure (principe décidé le 10/10/2026). */}
+          <StringRatingLabel string={string} className="mt-1 text-xs font-medium leading-snug text-gray-600" />
         </CardHeader>
 
         {/* Quick specs */}

@@ -8,6 +8,7 @@ import {
   type TennisString,
 } from '@/data/strings-database';
 import { StringCard } from '@/components/product/string-card';
+import { StringRatingsNotice } from '@/components/product/string-rating-label';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -327,6 +328,10 @@ export default function StringsPage() {
             </div>
           </div>
 
+          {/* Les notes /10 (tri « Note globale », filtres « Notes minimum », cartes) sont une
+              appréciation de l'équipe : chaque carte porte sa nature (principe décidé le 10/10/2026). */}
+          <StringRatingsNotice className="mt-3 text-xs leading-snug text-gray-600" />
+
           {/* Active filters pills */}
           {hasActiveFilters && (
             <div className="flex flex-wrap items-center gap-2 mt-4 pt-4 border-t border-gray-100">
@@ -464,6 +469,7 @@ export default function StringsPage() {
                 </button>
                 {expandedSections.ratings && (
                   <div className="space-y-4">
+                    <StringRatingsNotice className="text-xs leading-snug text-gray-600" />
                     {/* Control */}
                     <div>
                       <label className="text-sm text-gray-600 mb-2 block">

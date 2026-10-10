@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { ProductImage } from '@/components/product/product-image';
+import { StringRatingLabel, StringRatingsNotice } from '@/components/product/string-rating-label';
+import { STRING_RATING_LABELS, distinctRatedNatures, stringRatingLabel } from '@/lib/string-rating-nature';
 import { cn } from '@/lib/utils';
 import {
   racquetsForComparison,
@@ -186,6 +188,41 @@ function TesterAverageRow({ values, names, colors }: { values: (number | null)[]
           </span>
         ))}
       </div>
+    </div>
+  );
+}
+
+/**
+ * Nature des notes /10, UNE LIGNE PAR CORDAGE (principe décidé le 10/10/2026) : une
+ * vue qui compare des cordages ne mêle jamais deux natures de note sans le dire. Même
+ * pastille de couleur que la carte du cordage, pour relier la ligne à sa carte.
+ */
+function StringRatingsNatureBlock({ strings, colors }: { strings: TennisString[]; colors: string[] }) {
+  const mixed = distinctRatedNatures(strings).length > 1;
+  return (
+    <div className="space-y-2" data-testid="string-ratings-nature">
+      <p className="text-sm font-semibold text-gray-700">Nature des notes /10</p>
+      <ul className="space-y-1">
+        {strings.map((s, index) => (
+          <li key={s.id} className="flex items-start gap-2 text-xs text-gray-800">
+            <span
+              aria-hidden="true"
+              className={cn('mt-1 inline-block h-2 w-2 shrink-0 rounded-full', colors[index].replace('text-', 'bg-'))}
+            />
+            <span>
+              <span className="font-semibold">{s.brand} {s.model}</span>
+              {' : '}
+              {stringRatingLabel(s) === null ? STRING_RATING_LABELS.none : <StringRatingLabel string={s} as="span" />}
+            </span>
+          </li>
+        ))}
+      </ul>
+      <StringRatingsNotice className="text-xs text-gray-600" />
+      {mixed && (
+        <p className="text-xs text-amber-700" data-testid="string-ratings-mixed">
+          Ces cordages n&apos;ont pas la même nature de note : lisez l&apos;étiquette de chacun avant de comparer leurs barres.
+        </p>
+      )}
     </div>
   );
 }
@@ -482,6 +519,8 @@ export default function ComparePage() {
                           Spin: {stringItem.spin?.toFixed(1) ?? 'Non publié'}
                         </div>
                       </div>
+                      {/* Nature des trois notes ci-dessus (et des barres du tableau). */}
+                      <StringRatingLabel string={stringItem} className="mt-2 text-[11px] leading-snug text-gray-600" />
                     </>
                   )}
 
@@ -591,6 +630,11 @@ export default function ComparePage() {
                 </>
               ) : (
                 <>
+                  {/* Nature des notes AVANT les barres : une ligne par cordage. */}
+                  <StringRatingsNatureBlock
+                    strings={selectedItems.map(si => si.item as TennisString)}
+                    colors={colors.slice(0, selectedItems.length)}
+                  />
                   <ComparisonBar
                     label="Contrôle"
                     values={comparisonSpecs.control as (number | null)[]}
@@ -743,6 +787,10 @@ export default function ComparePage() {
                             </span>
                           )}
                         </div>
+                        {/* Nature des notes de cette ligne (la liste peut mêler plusieurs natures). */}
+                        {stringItem && (
+                          <StringRatingLabel string={stringItem} as="div" className="mt-0.5 text-xs text-gray-600" />
+                        )}
                       </div>
                       <div className="flex items-center gap-3">
                         {(isRacquet ? racquet?.price?.europe : stringItem?.price?.europe) !== undefined && (

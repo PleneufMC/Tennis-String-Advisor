@@ -7,6 +7,8 @@ import { racquetsDatabase, type TennisRacquet } from '@/data/racquets-database';
 import { STRING_TESTER_RATINGS } from '@/data/tester-ratings';
 import { RACQUET_TESTER_RATINGS } from '@/data/racquet-tester-ratings';
 import { rankRacquetsByTesterAverage } from '@/lib/racquet-scoring';
+import { StringRatingLabel, StringRatingsNotice } from '@/components/product/string-rating-label';
+import { STRING_RATING_LABELS, distinctRatedNatures } from '@/lib/string-rating-nature';
 import { ConfigurationStorage } from '@/lib/storage';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -56,6 +58,11 @@ function rankStringsByTesterAverage(strings: readonly TennisString[]) {
 }
 
 const rankedStrings = rankStringsByTesterAverage(stringsDatabase);
+// Nature des notes /10 (colonnes Contrôle et Confort) des cordages classés : les fiches de la synthèse
+// sont les 18 harmonisées, donc une seule nature. Si une autre entrait un jour dans ce classement,
+// chaque ligne porterait son étiquette (`stringsMixed`) plutôt que de les mêler en silence.
+const rankedStringNatures = distinctRatedNatures(rankedStrings.map((r) => r.item));
+const stringsMixed = rankedStringNatures.length > 1;
 const rankedRacquets = rankRacquetsByTesterAverage(racquetsDatabase).map((r) => ({
   item: r.racquet,
   average20: r.testerAverage20,
@@ -316,10 +323,18 @@ export default function StatisticsPage() {
             <span style={{ marginRight: '0.5rem' }}>🎯</span>
             {rankedStrings.length >= TOP_N ? `Top ${TOP_N} Cordages` : `Classement des cordages (${rankedStrings.length})`}
           </h2>
-          <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '-1rem', marginBottom: '1rem' }}>
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '-1rem', marginBottom: '0.25rem' }}>
             Classement établi sur les {rankedStrings.length} cordages couverts par la synthèse de tests
-            (sur {stringsDatabase.length} au catalogue). Contrôle et confort : notes /10 des fiches.
+            (sur {stringsDatabase.length} au catalogue). Colonnes « Contrôle » et « Confort » (notes /10
+            des fiches) :{' '}
+            <strong data-rating-nature={rankedStringNatures.join(' ')} style={{ color: 'var(--text-strong)' }}>
+              {rankedStringNatures.map((n) => STRING_RATING_LABELS[n]).join(' ; ')}
+            </strong>
+            .
           </p>
+          <StringRatingsNotice
+            style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: 0, marginBottom: '1rem' }}
+          />
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
@@ -344,6 +359,13 @@ export default function StatisticsPage() {
                       <Link href={`/tennis-strings/${string.id}`} style={{ color: 'inherit' }}>
                         {string.brand} {string.model}
                       </Link>
+                      {stringsMixed && (
+                        <StringRatingLabel
+                          string={string}
+                          as="div"
+                          style={{ fontSize: '0.7rem', fontWeight: 400, color: 'var(--text-muted)' }}
+                        />
+                      )}
                     </td>
                     <td style={{ ...tableCellStyle, fontWeight: 600 }}>{fmt20(average20)}/20</td>
                     <td style={tableCellStyle}><TierBadge tier={tier} /></td>
