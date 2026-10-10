@@ -2,13 +2,13 @@
 
 | Champ | Valeur |
 |---|---|
-| Slug FR / EN | `cordage-polyester-tennis-elbow`, `cordage-tennis-elbow` (+ `guide-materiel-tennis`, cartes des index) / `polyester-strings-tennis-elbow`, `best-tennis-strings-for-tennis-elbow` |
-| Circuit | court : passe numérique sur des articles existants, avec un visuel de corps ajouté à chacun (règle images) |
-| Branche | `agent/redaction/coherence-chiffres-regle-c`, créée depuis `origin/agent/tsa-core/c2-regle-jauge-c-lot2` (PR #110, non fusionnée) pour que `src/data/` porte déjà les nouvelles rigidités |
+| Slug FR / EN | `cordage-polyester-tennis-elbow`, `cordage-tennis-elbow`, `meilleur-cordage-polyester-2026`, `meilleures-raquettes-tennis-2026`, `materiel-next-gen-fonseca-mensik-cobolli-jodar` (+ `guide-materiel-tennis`, cartes des index) / `polyester-strings-tennis-elbow`, `best-tennis-strings-for-tennis-elbow`, `best-polyester-tennis-strings-2026`, `best-tennis-racquets-2026` |
+| Circuit | court : passe numérique sur des articles existants ; visuel de corps ajouté aux quatre articles santé (règle images) ; exceptions d'`audit:blog-images` renouvelées, datées et motivées, pour les cinq autres articles modifiés (§ 3, I3 à I5) |
+| Branche | `agent/redaction/coherence-chiffres-regle-c` ; tête `0001f9f` à la reprise du 10/10 : `main` (v2.3.12) + pile rigidités (#110 règle C et lot 2, #113 relevé TWU complet, #115 rigidité par jauge, #118 lot 3) + relecture SEO + fact-check du pigiste. À la fusion, #110, #113, #115 et #118 passent avec les articles, en une seule fois : aucune fenêtre d'incohérence |
 | Ouvert le | 2026-10-10, par l'orchestrateur |
 | Demande d'origine | « mettre en cohérence avec la base, après les rigidités de laboratoire, les 4 articles santé (FR + EN) qui reposent sur la rigidité des cordages » (corps de la PR #110, § 9 « Chiffres d'articles qui changent à cause de cette PR ») |
-| Statut | vérification : fact-check du pigiste à faire · PR #116 (à fusionner APRÈS #110) · GO de Pierre : en attente (aucune publication sans lui) |
-| Mise à jour planifiée | sans objet (aucune année dans les titres ni les slugs) ; à refaire quand la règle D (rigidité par jauge) ou le lot 3 changeront la base : `npx --yes tsx scripts/blog-covers/build-rigidite-figures.mts --check` signale les écarts |
+| Statut | reprise du 10/10 (passe n° 2) : C-1 à C-4, O-1 à O-4, S-1 à S-4 traités (§ 4 et § 6) ; chiffres recalculés sur la base finale ; `redaction:valeurs` exit 0 sur 288 valeurs ; fact-check du pigiste à refaire sur les seules valeurs et phrases touchées · PR #116 non fusionnée · D-1 : la base finale porte le lot 3 ; 53 baisses restent en attente du GO de Pierre · GO de Pierre pour publier : en attente |
+| Mise à jour planifiée | à refaire à la première décision de Pierre sur les 53 baisses restantes ou sur la règle D (rigidité par jauge) : `npx --yes tsx scripts/blog-covers/build-rigidite-figures.mts` puis `--check` signalent les écarts des quatre articles santé ; relire à la main les cinq autres articles (tableaux des 18, indices des raquettes, tableau 3 de l'article next gen) |
 
 > Règles : `docs/redaction/CHARTE.md`. Déroulé : `docs/redaction/README.md`.
 > Dossier rédigé par `tsa-redacteur` à la demande de l'orchestrateur ; les sections des autres agents sont renseignées « sans objet » ou laissées à leur auteur.
@@ -24,6 +24,7 @@ Dérogation de l'orchestrateur (10/10/2026) pour cette passe NUMÉRIQUE, à reli
 - `title`, `meta description`, Open Graph, Twitter et JSON-LD des quatre articles : modifiés pour les seuls chiffres (102 polyesters, 143 à 180 lb/in, `dateModified`, `article:modified_time` là où il existe) ;
 - cartes des index FR (l. 659) et EN (l. 254) : « 104 » devient « 102 » ;
 - seul écart au-delà des chiffres, voir Q-3 : la réponse n° 1 de la FAQ des deux articles « polyester » (visible et JSON-LD, identiques) lève un absolu.
+- passe n° 2 (reprise du 10/10) : `guide-materiel-tennis` : « 2025 » retiré de `og:title` et `twitter:title` (S-3, `<title>` et H1 n'ont pas d'année) ; FAQ n° 1 des deux articles « polyester » : phrase de prudence passée en 2e position, mêmes mots (S-1) ; FAQ n° 3 des deux articles « tennis elbow » : « en général » et comparatif (S-2 = C-2) ; source TWU rendue cliquable et nœud `citation` ajouté au JSON-LD de six articles (S-4, voir § 6) ; `dateModified` et date visible « mis à jour le 10 octobre 2026 » sur les cinq articles ajoutés à la passe (`article:modified_time` aussi pour l'article next gen). Aucun title, aucune meta description ni Open Graph des articles ajoutés n'est modifié (leurs chiffres n'y figurent pas).
 
 ---
 
@@ -39,18 +40,26 @@ Faits recalculés par le rédacteur à partir de la base de la branche (fonction
 | # | Énoncé | Valeur | Niveau | Source | Consulté le | Extrait verbatim (25 mots au plus) | Recoupement | Base TSA | Statut |
 |---|---|---|---|---|---|---|---|---|---|
 | F1 | Effectif du catalogue des cordages | 179 fiches : 102 polyesters, 45 multifilaments, 16 synthétiques, 9 hybrides, 7 boyaux | BASE | `src/data/strings-database.ts` (branche de la PR #110) | 2026-10-10 | — | CLAUDE.md §1 (179) | oui | confirmé (recalculé) |
-| F2 | Rigidité des polyesters | de 164,6 (Toroline O-Toro Snap) à 265 (Luxilon 4G) lb/in ; médiane 217,3 (valeurs centrales 216,6 et 218) | BASE | idem | 2026-10-10 | — | PR #110 § 9 A | oui | confirmé (recalculé) |
-| F3 | Polyesters à 200 lb/in ou moins ; à 240 lb/in ou plus ; entre les deux | 20 ; 19 ; 63 | BASE | idem | 2026-10-10 | — | PR #110 § 9 A (20 ; 19) | oui | confirmé (recalculé) |
-| F4 | Rigidité des multifilaments | de 143 (Ashaway Dynamite Natural) à 180 (Head RIP Control) lb/in ; médiane 162 | BASE | idem | 2026-10-10 | — | PR #110 § 9 B (143 à 180, médiane 162) | oui | confirmé (recalculé) |
-| F5 | Autres familles, inchangées | hybrides 158–192 (médiane 175) ; synthétiques 165–185 (180) ; boyaux 88–100 (95) | BASE | idem | 2026-10-10 | — | PR #110 § 9 B | oui | confirmé (recalculé) |
-| F6 | Multifilaments dont la rigidité est alignée sur une mesure TWU | 6 sur 45 : tecnifibre-nrg2, wilson-nxt, volkl-power-fiber-ii, babolat-xcel-power, babolat-origin, tecnifibre-xr3 | BASE | `src/data/string-stiffness-provenance.ts` (statut « appliquee ») | 2026-10-10 | — | PR #110 § 9 A (« 6 multifilaments sur 45 ») | oui | confirmé (recalculé) |
+| F2 | Rigidité des polyesters | de 164,6 (Toroline O-Toro Snap) à 286,9 (Luxilon 4G) lb/in ; médiane 220 (valeurs centrales 220 et 220) | BASE | idem (tête `0001f9f` : pile rigidités #110, #113, #115, #118) | 2026-10-10 | — | PR #118 § 6 (220 ; 286,9) | oui | confirmé (recalculé) |
+| F3 | Polyesters à 200 lb/in ou moins ; à 240 lb/in ou plus ; entre les deux | 15 ; 21 ; 66 | BASE | idem | 2026-10-10 | — | PR #118 § 6 (15 ; 21) | oui | confirmé (recalculé) |
+| F4 | Rigidité des multifilaments | de 143 (Ashaway Dynamite Natural) à 180 (Head RIP Control) lb/in ; médiane 162,3 | BASE | idem | 2026-10-10 | — | PR #118 § 6 (162,3) | oui | confirmé (recalculé) |
+| F5 | Autres familles | hybrides 158–192 (médiane 175) et boyaux 88–100 (95) inchangés ; synthétiques 165–185,2 (180) : le maximum passe de 185 à 185,2 (Wilson Synthetic Gut Extreme, alignée sur TWU) | BASE | idem | 2026-10-10 | — | PR #118 § 6 (185,2) | oui | confirmé (recalculé) |
+| F6 | Multifilaments dont la rigidité est alignée sur une mesure TWU | 11 sur 45 : tecnifibre-x-one-biphase, tecnifibre-tgv, tecnifibre-nrg2, wilson-nxt, babolat-xalt, solinco-vanquish, volkl-power-fiber-ii, babolat-xcel-power, babolat-origin, babolat-m7, tecnifibre-xr3 (6 avant le lot 3) | BASE | `src/data/string-stiffness-provenance.ts` (statut « appliquee ») | 2026-10-10 | — | — | oui | confirmé (recalculé) |
 | F7 | Règle de jauge de référence : pour une fiche alignée, la rigidité est la mesure TWU de la jauge la plus rigide mesurée parmi les jauges de la fiche ; sur-alerte assumée sur les jauges fines | décision de Pierre du 10/10/2026 | L1 + décision | `src/data/string-stiffness-provenance.ts` (en-tête) ; PR #110 § « Décisions de Pierre » ; TWU : https://twu.tennis-warehouse.com/learning_center/reporter2.php (51 lbs, balayage « Fast ») | 2026-10-10 | — | — | oui | confirmé (par la base ; le pigiste peut rouvrir la page TWU) |
 | F8 | Tecnifibre Black Code, mesures TWU par jauge | 1,18 = 202.9 ; 1,24 = 236 ; 1,28 = 249.7 ; 1,32 = 210.3 lb/in ; la fiche porte 249,7 (jauge 1.28). Écart maximal 46,8 lb/in, soit environ 5,1 points d'indice (0,109 point par lb/in) | L1 | `data/reference/twu-releve-complet.json` ; `string-stiffness-provenance.ts` | 2026-10-10 | — | PR #110 § 1 (46,8) | oui | confirmé (à rouvrir par le pigiste) |
 | F9 | Seuils d'alerte bras du configurateur | 32 (bras sensible), 35 (autres profils) | BASE | `src/lib/advanced-rcs.ts` (`armRisk`) | 2026-10-10 | `rcs >= 32 … rcs >= 35` | CHARTE F7 | oui | confirmé |
-| F10 | Montage d'exemple de l'article (RA 65, 22 kg) : rigidité où l'indice atteint 32 et 35 ; nombre de polyesters concernés | 231,1 et 258,6 lb/in ; 28 polyesters à 32 ou plus (dont 4 à 35 ou plus), 74 en dessous | BASE | `calculateRCS` sur la base | 2026-10-10 | — | — | oui | confirmé (recalculé) |
-| F11 | Part des multifilaments et des boyaux plus souples que le polyester le plus souple (164,6) | 28 multifilaments sur 45 ; 7 boyaux sur 7 | BASE | idem | 2026-10-10 | — | — | oui | confirmé (recalculé) |
-| F12 | Les 18 polyesters à avis de testeurs ne sont pas touchés : leurs rigidités et leurs rangs de souplesse (Yonex Poly Tour Pro 10e, Signum Pro X-Perience 3e, Solinco Confidential 15e, Solinco Mach-10 2e, Toroline O-Toro 1er) sont inchangés | — | BASE | `string-stiffness-provenance.ts` : aucun des 18 en statut « appliquee » | 2026-10-10 | — | PR #110 § 9 A | oui | confirmé (recalculé) |
+| F10 | Montage d'exemple de l'article (RA 65, 22 kg) : rigidité où l'indice atteint 32 et 35 ; nombre de polyesters concernés | 231,1 et 258,6 lb/in ; 32 polyesters à 32 ou plus (dont 6 à 35 ou plus), 70 en dessous (26 de 32 à 34) | BASE | `calculateRCS` sur la base | 2026-10-10 | — | — | oui | confirmé (recalculé) |
+| F11 | Part des multifilaments et des boyaux plus souples que le polyester le plus souple (164,6) | 25 multifilaments sur 45 ; 7 boyaux sur 7 (45 multifilaments sur 45 sous la médiane des polyesters, 220) | BASE | idem | 2026-10-10 | — | — | oui | confirmé (recalculé) |
+| F12 | Les 18 polyesters à avis de testeurs : 7 sont désormais alignés sur TWU (Lynx Tour 228,6 · Mach-10 222,3 · Hyper-G 218,3 · X-Perience 224,6 · RPM Team 280,6 · 4G 286,9 · O-Toro 165,7). Rangs de souplesse sur 18 (égalité de rigidité départagée par l'ordre alphabétique) : O-Toro 1er, Poly Tour Rev 2e, ReString Zero 3e, Head Hawk Touch 4e, Völkl Cyclone 5e, Hyper-G 6e, Poly Tour Pro 7e, Mach-10 8e, X-Perience 9e, Lynx Tour 10e, ALU Power 11e, RPM Rough 12e, RPM Blast 13e, Confidential 14e, Weiss Cannon Ultra Cable 15e, Tour Bite 16e, RPM Team 17e, 4G 18e ; rigidité moyenne 230,4 (230,39). Rangs de confort inchangés : Mach-10 1er, Poly Tour Pro 2e, O-Toro 3e, Poly Tour Rev 4e, quatre ex aequo au 5e (Hawk Touch, ReString Zero, Cyclone, Lynx Tour), Hyper-G 9e | — | BASE | `string-stiffness-provenance.ts` (7 des 18 en « appliquee ») ; `tester-ratings.ts` | 2026-10-10 | — | PR #118 § 6 (mêmes rangs et moyenne) | oui | confirmé (recalculé) |
 | F13 | La rigidité d'un hybride prémonté est propre au set, sans source, et n'est pas recalculée quand un composant est aligné sur une mesure | — | BASE | PR #110 § 7 (« Hybrides pré-montés ») | 2026-10-10 | — | — | oui | confirmé ; voir Q-1 |
+| F24 | Head Lynx Tour, cordage de l'exemple des articles « meilleures raquettes » et « next gen » | 228,6 lb/in : mesure TWU de la jauge 1.30 (1.25 = 217,7 ; 2 jauges sur 3 mesurées) ; 210 avant le lot 3 | L1 + BASE | `string-stiffness-provenance.ts` (« appliquee », règle plus-rigide) | 2026-10-10 | — | PR #118 § 6 | oui | confirmé (recalculé) |
+| F25 | Fiches dont la rigidité est alignée sur une mesure TWU (définition du † et des points cerclés) | 48 sur 179 : 36 polyesters sur 102 (28 « appliquee » + 8 Toroline signalées par un commentaire « Rigidité : TWU » de la base), 11 multifilaments sur 45, 1 synthétique sur 16 ; aucun boyau ni hybride | BASE | `string-stiffness-provenance.ts` ; commentaires de `strings-database.ts` | 2026-10-10 | — | PR #118 § 6 (19 polyesters avant le lot 3) | oui | confirmé (recalculé) |
+| F26 | Écart entre le polyester le plus rigide (4G, 286,9) et le plus souple (O-Toro Snap, 164,6) | 13,3 points avant arrondi ; 13 à RA 60, 14 à RA 65, 13 à RA 70 (donc « 13 à 14 points » quelle que soit la raquette) | BASE | `calculateRCS` | 2026-10-10 | — | PR #118 § 6 (14 points à RA 65) | oui | confirmé (recalculé) |
+| F27 | Leviers autour du Luxilon 4G (RA 65, 22 kg) | 4G = 38 ; O-Toro 24 (−14) ; cadre RA 60 : 36 ; cadre RA 70 : 39 ; 18 kg : 36 (−2) | BASE | `calculateRCS` | 2026-10-10 | — | PR #118 § 6 | oui | confirmé (recalculé) |
+| F28 | Plages des listes (RA 65 / RA 70, 22 kg) | 21 polyesters à 240 ou plus : 32 à 38 à RA 65 (groupes : 32 × 2, 33 × 7, 34 × 6, 35 × 3, 36, 37, 38), 34 à 39 à RA 70 (17 sur 21 à 35 ou plus) ; 15 polyesters à 200 ou moins : 23 à 26 (RA 60), 24 à 28 (RA 65), 26 à 30 (RA 70) | BASE | `calculateRCS` | 2026-10-10 | — | — | oui | confirmé (recalculé) |
+| F29 | Yonex Poly Tour Pro | 220 lb/in, exactement la médiane des 102 polyesters (51e et 52e valeurs à 220) ; 7e plus souple des 18 | BASE | idem | 2026-10-10 | — | — | oui | confirmé (recalculé) |
+| F30 | Raquettes : indice avec le Head Lynx Tour (228,6) à 22 kg | RA 59 : 29 · RA 61–62 : 30 · RA 63–65 : 31 · RA 66–68 : 32 · RA 69 : 33 ; chaque indice monte de 2 par rapport à l'exemple à 210 ; 9 raquettes sur 18 (RA 66 ou plus) atteignent 32 (seuil « bras sensible »), aucune n'atteint 35 | BASE | `calculateRCS` ; `src/lib/advanced-rcs.ts` (seuils 32 et 35) | 2026-10-10 | — | PR #118 § 6 (colonne RCS « environ +2 ») | oui | confirmé (recalculé) |
+| F31 | Article next gen, tableau 3 (22 / 24 / 26 kg ; seuil 35 en kg) | VCORE 98 + Poly Tour Strike (RA 64, 215) : 29 / 30 / 31, seuil 33 kg · Blade 98 18×20 V9 + ALU Power (RA 62, 230) : 30 / 31 / 32, seuil 31 kg · Speed MP + Lynx Tour (RA 61, 228,6) : 30 (29,85) / 31 (30,85) / 32 (31,85), seuil 32 kg (36 kg avec 210) ; plage des neuf cases : 29 à 32 | BASE | `calculateRCS` (valeurs avant arrondi : formule du site) | 2026-10-10 | — | — | oui | confirmé (recalculé) |
 
 ### Introuvable
 
@@ -73,8 +82,11 @@ Faits recalculés par le rédacteur à partir de la base de la branche (fonction
 
 | # | Emplacement | Voie | Page de l'image ou prompt | Auteur | Licence (lue le) | Obligations | Risques (marque, personne, texte incrusté) | Décision du rédacteur |
 |---|---|---|---|---|---|---|---|---|
-| I1 | corps, section 1 des deux articles « polyester » (FR et EN) | 2 : visuel généré par script | `scripts/blog-covers/build-rigidite-figures.mts` (graphique « polyesters », lu dans `src/data/`) | Tennis String Advisor | propriété TSA | légende de provenance : « Schéma Tennis String Advisor, d'après la base du site et les mesures TWU » | aucun produit ni marque en image ; noms de cordages en infobulle (`<title>`) seulement | retenu : un point par polyester, zones 200 et 240 lb/in, médiane, seuils d'alerte du montage d'exemple |
-| I2 | corps, section 2 des deux articles « tennis elbow » (FR et EN) | 2 : visuel généré par script | idem, graphique « familles » | Tennis String Advisor | propriété TSA | idem | aucun | retenu : minimum, médiane et maximum par famille, avec la bande d'indice RCS |
+| I1 | corps, section 1 des deux articles « polyester » (FR et EN) | 2 : visuel généré par script | `scripts/blog-covers/build-rigidite-figures.mts` (graphique « polyesters », lu dans `src/data/`) | Tennis String Advisor | propriété TSA | légende de provenance (C-4) : « Schéma Tennis String Advisor, d'après la base du site, état au 10 octobre 2026 », avec le nombre exact de fiches alignées sur TWU (36 sur 102) | aucun produit ni marque en image ; noms de cordages en infobulle (`<title>`) seulement | retenu : un point par polyester, cerclé si la rigidité est alignée sur une mesure TWU (36 sur 102), zones 200 et 240 lb/in, médiane, seuils d'alerte du montage d'exemple ; axe 160-290 (4G à 286,9) |
+| I2 | corps, section 2 des deux articles « tennis elbow » (FR et EN) | 2 : visuel généré par script | idem, graphique « familles » | Tennis String Advisor | propriété TSA | légende (C-4) : « Ces valeurs sont celles de nos fiches : 48 des 179 sont alignées sur une mesure du laboratoire TWU (36 polyesters, 11 multifilaments, 1 synthétique), les autres ne sont pas des mesures TWU » | aucun | retenu : minimum, médiane et maximum par famille, avec la bande d'indice RCS ; axe 80-300 |
+| I3 | corps des deux articles « meilleur cordage polyester 2026 » (FR et EN) | — | aucun visuel ajouté | — | — | — | — | exception de `audit:blog-images` renouvelée (empreinte, date 2026-10-10, motif : « corrigé le 10/10/2026 (PR #116 : rigidités, indices et rangs alignés sur la base après la règle C et le lot 3, urgence d'exactitude) — visuel de corps à créer »). Même motif que la PR #102. Un graphique dédié (rigidité des 18 contre moyenne des testeurs) serait une création éditoriale, hors d'une passe numérique : à confier à l'équipe éditoriale |
+| I4 | corps des deux articles « meilleures raquettes 2026 » (FR et EN) | — | aucun visuel ajouté | — | — | — | — | idem I3 (exceptions renouvelées) |
+| I5 | corps de l'article « matériel next gen » (FR) | — | aucun visuel ajouté | — | — | — | — | idem I3 (exception renouvelée) ; la version EN n'est pas modifiée : son exception reste inchangée (empreinte intacte) |
 
 ---
 
@@ -93,6 +105,25 @@ Faits recalculés par le rédacteur à partir de la base de la branche (fonction
     - (c) **trou de précision, qui touche cette PR** : `rigidite` n'a pas de `decimals`, donc la tolérance est de ±0,5 et « 250 » passe pour 249,7, « 243 » pour 242,9 (dossier factice d'une ligne, `cordage tecnifibre-black-code | rigidite | 250` : OK, exit 0, alors que la fiche affiche 249,7). Ajouter `const decimalsOf = (v: number | undefined) => (v === undefined ? 0 : (String(v).split('.')[1] ?? '').length);` et remplacer `case 'rigidite': return { value: s.stiffness };` par `case 'rigidite': return { value: s.stiffness, decimals: decimalsOf(s.stiffness) };` : « 250 » pour 249,7 échoue alors avec « écrire 1 décimale(s), comme la fiche ». Ce n'est qu'un durcissement. Je ne l'applique pas ici (le brief de cette passe limite mes écritures au dossier) ; les 542 contrôles stricts du § 5 ont tenu lieu de garde-fou pour ce lot.
     - Limite restante, antérieure au correctif : le vérificateur ne contrôle que les natures de profil ; il ne voit pas qu'on compare une note « éditoriale » à une note « harmonisée avec des avis de testeurs » (CLAUDE.md v2.3.8). Le tableau du § 4 des articles « polyester » ne cite que les 18 harmonisées, donc il n'y a pas d'écart ici. Et la panne a duré parce que le contrôle n'est pas dans `audit:all` : à proposer à `tsa-measure` (un `audit:redaction-valeurs` à cas négatifs et positif).
 
+### Réponses du rédacteur à la passe du pigiste (§ 5, § 6) — reprise du 10/10/2026, tête `0001f9f` et suivantes
+
+Méthode : toute valeur est recalculée par script sur la base finale (`build-rigidite-figures.mts`, générateurs de tableaux et de listes écrits pour l'occasion, puis un contrôle strict INDÉPENDANT qui relit les articles tels qu'écrits : 965 contrôles, 0 écart ; `--check` : 15 altérations volontaires, 15 détectées). Le pigiste désigne le fait ; la formulation est celle du rédacteur.
+
+| # | Avant | Après | Fait |
+|---|---|---|---|
+| C-1 | FR « L'essentiel » : « prenez le plus souple : le Toroline O-Toro (165,7 lb/in) se place au niveau d'un multifilament sur l'indice » · EN « pick the softest: Toroline O-Toro (165.7 lb/in) plays close to a multifilament on the index » | « prenez l'un des plus souples : le Toroline O-Toro Snap (164,6 lb/in) et le Toroline O-Toro (165,7) se placent au niveau d'un multifilament sur l'indice » · EN « pick one of the softest: Toroline O-Toro Snap (164.6 lb/in) and Toroline O-Toro (165.7) play close to a multifilament on the index » | F2, F3 : Snap 164,6 (1er), O-Toro 165,7 (2e), Spin 173,2 (3e) ; indices 24, 24, 25 |
+| C-1 | FR § 3 : « Sur l'indice, c'est la façon la plus douce pour le bras de continuer à jouer du polyester parmi les cordages que nous documentons. » · EN « it is the most arm-friendly way to keep playing poly among the strings we document » | « Le Toroline O-Toro Snap (164,6 lb/in), le polyester le plus souple du catalogue, fait de même ; sur l'indice, ce sont les deux polyesters les moins fermes que nous documentons. » · EN « So does Toroline O-Toro Snap (164.6 lb/in), the softest polyester in the catalogue; on the index, these are the two least firm polys we document. » | superlatif de santé retiré (F7) ; seuls deux polyesters ont l'indice 24 (assertion par script) |
+| C-2 = S-2 | FAQ « Peut-on garder un polyester… » (visible et JSON-LD) : « un multifilament ou un boyau reste le choix le plus prudent » · EN « remains the safer choice » | « un multifilament ou un boyau reste en général plus prudent qu'un polyester » · EN « generally remains a more prudent choice than a polyester » ; 265 → 286,9 et 35 → 38 dans la même phrase | F14 : vrai en général (45 sur 45 sous la médiane), pas pour tous (NXT 173,7 > O-Toro 165,7) ; même formule que la FAQ n° 1 des articles polyester, FR et EN |
+| C-3 | 8 occurrences : « Cela peut surestimer la rigidité d'une jauge plus fine » · « can overstate the stiffness of a finer gauge » | « Cela peut surestimer la rigidité d'une autre jauge de la fiche, mesurée plus souple (pas toujours la plus fine) » · EN « another gauge on the product page, one measured softer (not always the finest) » ; « pour une jauge fine » devient « pour cette jauge » / « pour ces jauges » | F17, F18 : la valeur † est la mesure de la jauge la plus rigide mesurée ; l'autre jauge est plus souple, pas toujours plus fine (NRG2, Black Code 1,32, Origin, Solstice Power) |
+| C-4 | 4 légendes : « d'après la base du site et les mesures TWU » · ligne type de `CREDITS.md` | graphique polyesters : « Les points cerclés sont les 36 polyesters dont la rigidité est alignée sur une mesure du laboratoire TWU ; pour les 66 autres, c'est la valeur de notre fiche, pas une mesure TWU. Schéma Tennis String Advisor, d'après la base du site, état au 10 octobre 2026. » · graphique familles : « Ces valeurs sont celles de nos fiches : 48 des 179 sont alignées sur une mesure du laboratoire TWU (36 polyesters, 11 multifilaments, 1 synthétique), les autres ne sont pas des mesures TWU. » · `CREDITS.md` : même règle, nombre calculé par le script | F25 : 36 / 102, 11 / 45, 1 / 16, soit 48 / 179 ; le nombre est calculé par le script (jamais saisi) ; points cerclés dans le graphique, légende et `<title>` SVG |
+| O-1 | Verdict express : « cet écart vaut 11 points d'indice RCS » | « cet écart vaut 13 à 14 points d'indice RCS » (EN « 13 to 14 RCS points ») | F26 : 13,3 avant arrondi ; 13, 14, 13 à RA 60, 65, 70 : vrai quelle que soit la raquette |
+| O-2 | puce « Les rigidités sont celles de nos fiches » : « le Tecnifibre Black Code mesure 202,9 lb/in en 1.18 et 249,7 lb/in en 1.28 » | « TWU mesure le Tecnifibre Black Code à 202,9 lb/in en 1.18 et à 249,7 lb/in en 1.28, soit environ 5 points d'indice RCS d'écart » (EN « TWU measures the Tecnifibre Black Code at … ») | F17 : TWU, 51 lbs, « Fast » ; 46,8 lb/in = 5,1 points |
+| O-3 | FR « cordage et tennis elbow » § 2 : « 92 lb/in, la valeur la plus basse des familles courantes du catalogue » | « 92 lb/in, l'une des valeurs les plus basses du catalogue » (corrigé au passage, hors liste de la reprise) | F23 : Touch Tonic 88, puis Touch VS et TGut à 92 |
+| O-4 | FR « C'est la direction sûre pour le bras » · EN « It is the safe direction for the arm » ; FR « la voie la plus prudente reste de quitter le polyester » · EN « the safest route is still to leave polyester » | « C'est le sens établi par TWU : tension plus basse, rigidité plus basse » · EN « It is the direction established by TWU: lower tension, lower stiffness » ; « quitter le polyester reste en général plus prudent » · EN « leaving polyester generally remains the more prudent choice » ; mêmes retouches (« en général plus prudent ») dans l'encadré et la FAQ de l'article « meilleur cordage » | F7 : plus d'absolu ni de superlatif de santé ; les faits soutiennent le sens (TWU), pas le mot « sûre » |
+| D-1 | « 20 plus souples », « 19 plus fermes », Verdict express « 35 », Mach-10 195, Lynx Tour 210, Poly Tour Pro 10e, « l'un des plus souples des 18 », « 11 points » | recalculés sur la base finale : 15 plus souples, 21 plus fermes (jusqu'à 286,9, indices 32 à 38), Mach-10 222,3, Lynx Tour 228,6, Poly Tour Pro 7e, 13 à 14 points | les hausses du lot 3 sont appliquées : les articles les suivent (F1). Il reste 53 baisses en attente du GO de Pierre : `--check` signalera les écarts à la première décision |
+| Phrases devenues fausses (lot 3) | « O-Toro et Mach-10 sont les deux polyesters les plus souples des 18 » · « Poly Tour Pro 10e en souplesse, plus rigide que le Lynx Tour » · « Signum Pro X-Perience, un des plus souples des 18 (3e) » · « Mach-10 et O-Toro ressortent sur les deux tableaux » · « 260 à 265 lb/in (35) » · « les plus rigides donnent 35 » | « O-Toro de loin le plus souple des 18 (4e au classement), devant le Poly Tour Rev (2e plus souple, 14e) » · « Poly Tour Pro 7e en souplesse, rigidité égale à la médiane (220) » ; « Mach-10 1er en confort, 8e en souplesse » ; « Hyper-G 6e en souplesse, 9e en confort » à la place de la X-Perience · « O-Toro et Poly Tour Rev dans les quatre premiers sur les deux critères » · 262 (35), 276 (36), 280,6 (37), 286,9 (38) · « les plus rigides donnent 36 à 38 » | F12, F27, F28, F29 ; le tableau du § 4 passe de 5 à 6 lignes (Poly Tour Rev ajouté, Hyper-G à la place de la X-Perience) |
+| Nouvelle phrase de santé | raquettes (FR et EN), § 4 | « avec ce même exemple : le configurateur avertit un profil « bras sensible » dès l'indice 32 (35 pour les autres profils). Neuf des 18 raquettes, celles dont le RA est de 66 ou plus, atteignent 32 avec ce cordage à 22 kg ; aucune n'atteint 35. » · next gen : « Pour un profil « bras sensible », le configurateur avertit dès 32 : à 26 kg, la Blade en ALU Power et la Speed MP en Lynx Tour y arrivent. » | F30, F31 : la colonne RCS monte de 2 points, et l'exemple atteint maintenant le seuil de 32 |
+
 ---
 
 ## 5. Fact-check final — `tsa-pigiste`
@@ -105,17 +136,15 @@ décimal). Champs : voir l'en-tête de `scripts/redaction/verifier-valeurs.mts`.
 Le bloc a été généré depuis la base puis relu ; la raquette citée par chaque ligne `rcs` n'est qu'un
 support de calcul (RA 60 : `head-gravity-team`, RA 65 : `head-extreme-standard`, RA 70 : `head-instinct-pwr-115`) : les articles parlent de « RA 60, 65, 70 », pas de ces raquettes.
 
+Passe n° 2 (reprise du 10/10/2026, base finale) : le bloc est regénéré en entier et couvre, en plus des quatre articles santé (sections A et B), « meilleur cordage polyester 2026 » (C), « meilleures raquettes 2026 » (D, avec les vrais identifiants de raquette) et le tableau 3 de l'article « matériel next gen » (E). Les rigidités sont écrites avec TOUTES leurs décimales : le vérificateur n'impose pas la précision de la fiche pour `rigidite` (§ 4, Q-6 c), un « 250 » passerait pour 249,7. Les agrégats (médiane, plages et effectifs par famille, nombre de fiches alignées sur TWU, seuils en kg du tableau 3, rangs de souplesse sur 18) ne se vérifient pas ligne à ligne : ils sont couverts par `build-rigidite-figures.mts --check` (qui relit le texte des quatre articles santé) et par le § 2 (F2 à F12, F24 à F31). Le contrôle des tableaux et des listes tels qu'écrits dans les articles est fait à part, par un script indépendant des générateurs (965 contrôles, 0 écart ; résultat au journal du § 7, script non versionné).
+
 ```valeurs-produit
 # sujet                                   | champ           | valeur citée | où
-# ===== Polyester et tennis elbow (FR + EN) : section 2, tableau des 20 polyesters à 200 lb/in ou moins (rigidité, puis indice RA 60 / 65 / 70 à 22 kg)
+# ===== A. Polyester et tennis elbow (FR + EN) — § 2 : tableau des 15 polyesters à 200 lb/in ou moins (rigidité, puis indice RA 60 / 65 / 70 à 22 kg)
 cordage toroline-o-toro-snap                 | rigidite | 164,6  | poly §2 tableau
 rcs head-gravity-team + toroline-o-toro-snap @ 22                      | rcs | 23     | poly §2 tableau RA 60
 rcs head-extreme-standard + toroline-o-toro-snap @ 22                  | rcs | 24     | poly §2 tableau RA 65
 rcs head-instinct-pwr-115 + toroline-o-toro-snap @ 22                  | rcs | 26     | poly §2 tableau RA 70
-cordage isospeed-cream                       | rigidite | 165    | poly §2 tableau
-rcs head-gravity-team + isospeed-cream @ 22                            | rcs | 23     | poly §2 tableau RA 60
-rcs head-extreme-standard + isospeed-cream @ 22                        | rcs | 24     | poly §2 tableau RA 65
-rcs head-instinct-pwr-115 + isospeed-cream @ 22                        | rcs | 26     | poly §2 tableau RA 70
 cordage toroline-o-toro                      | rigidite | 165,7  | poly §2 tableau
 rcs head-gravity-team + toroline-o-toro @ 22                           | rcs | 23     | poly §2 tableau RA 60
 rcs head-extreme-standard + toroline-o-toro @ 22                       | rcs | 24     | poly §2 tableau RA 65
@@ -128,6 +157,10 @@ cordage solinco-hyper-g-heaven               | rigidite | 175    | poly §2 tabl
 rcs head-gravity-team + solinco-hyper-g-heaven @ 22                    | rcs | 24     | poly §2 tableau RA 60
 rcs head-extreme-standard + solinco-hyper-g-heaven @ 22                | rcs | 25     | poly §2 tableau RA 65
 rcs head-instinct-pwr-115 + solinco-hyper-g-heaven @ 22                | rcs | 27     | poly §2 tableau RA 70
+cordage isospeed-cream                       | rigidite | 177,7  | poly §2 tableau
+rcs head-gravity-team + isospeed-cream @ 22                            | rcs | 24     | poly §2 tableau RA 60
+rcs head-extreme-standard + isospeed-cream @ 22                        | rcs | 26     | poly §2 tableau RA 65
+rcs head-instinct-pwr-115 + isospeed-cream @ 22                        | rcs | 27     | poly §2 tableau RA 70
 cordage toroline-absolute                    | rigidite | 180,6  | poly §2 tableau
 rcs head-gravity-team + toroline-absolute @ 22                         | rcs | 24     | poly §2 tableau RA 60
 rcs head-extreme-standard + toroline-absolute @ 22                     | rcs | 26     | poly §2 tableau RA 65
@@ -136,10 +169,6 @@ cordage toroline-cash                        | rigidite | 182,9  | poly §2 tabl
 rcs head-gravity-team + toroline-cash @ 22                             | rcs | 25     | poly §2 tableau RA 60
 rcs head-extreme-standard + toroline-cash @ 22                         | rcs | 26     | poly §2 tableau RA 65
 rcs head-instinct-pwr-115 + toroline-cash @ 22                         | rcs | 28     | poly §2 tableau RA 70
-cordage tecnifibre-razor-soft                | rigidite | 185    | poly §2 tableau
-rcs head-gravity-team + tecnifibre-razor-soft @ 22                     | rcs | 25     | poly §2 tableau RA 60
-rcs head-extreme-standard + tecnifibre-razor-soft @ 22                 | rcs | 26     | poly §2 tableau RA 65
-rcs head-instinct-pwr-115 + tecnifibre-razor-soft @ 22                 | rcs | 28     | poly §2 tableau RA 70
 cordage toroline-super-toro                  | rigidite | 189,7  | poly §2 tableau
 rcs head-gravity-team + toroline-super-toro @ 22                       | rcs | 25     | poly §2 tableau RA 60
 rcs head-extreme-standard + toroline-super-toro @ 22                   | rcs | 27     | poly §2 tableau RA 65
@@ -148,22 +177,10 @@ cordage luxilon-eco-rough                    | rigidite | 190    | poly §2 tabl
 rcs head-gravity-team + luxilon-eco-rough @ 22                         | rcs | 25     | poly §2 tableau RA 60
 rcs head-extreme-standard + luxilon-eco-rough @ 22                     | rcs | 27     | poly §2 tableau RA 65
 rcs head-instinct-pwr-115 + luxilon-eco-rough @ 22                     | rcs | 29     | poly §2 tableau RA 70
-cordage luxilon-element                      | rigidite | 190    | poly §2 tableau
-rcs head-gravity-team + luxilon-element @ 22                           | rcs | 25     | poly §2 tableau RA 60
-rcs head-extreme-standard + luxilon-element @ 22                       | rcs | 27     | poly §2 tableau RA 65
-rcs head-instinct-pwr-115 + luxilon-element @ 22                       | rcs | 29     | poly §2 tableau RA 70
 cordage toroline-snapper                     | rigidite | 190,9  | poly §2 tableau
 rcs head-gravity-team + toroline-snapper @ 22                          | rcs | 25     | poly §2 tableau RA 60
 rcs head-extreme-standard + toroline-snapper @ 22                      | rcs | 27     | poly §2 tableau RA 65
 rcs head-instinct-pwr-115 + toroline-snapper @ 22                      | rcs | 29     | poly §2 tableau RA 70
-cordage head-hawk-power                      | rigidite | 195    | poly §2 tableau
-rcs head-gravity-team + head-hawk-power @ 22                           | rcs | 26     | poly §2 tableau RA 60
-rcs head-extreme-standard + head-hawk-power @ 22                       | rcs | 28     | poly §2 tableau RA 65
-rcs head-instinct-pwr-115 + head-hawk-power @ 22                       | rcs | 29     | poly §2 tableau RA 70
-cordage solinco-mach-10                      | rigidite | 195    | poly §2 tableau
-rcs head-gravity-team + solinco-mach-10 @ 22                           | rcs | 26     | poly §2 tableau RA 60
-rcs head-extreme-standard + solinco-mach-10 @ 22                       | rcs | 28     | poly §2 tableau RA 65
-rcs head-instinct-pwr-115 + solinco-mach-10 @ 22                       | rcs | 29     | poly §2 tableau RA 70
 cordage yonex-poly-tour-air                  | rigidite | 195    | poly §2 tableau
 rcs head-gravity-team + yonex-poly-tour-air @ 22                       | rcs | 26     | poly §2 tableau RA 60
 rcs head-extreme-standard + yonex-poly-tour-air @ 22                   | rcs | 28     | poly §2 tableau RA 65
@@ -184,11 +201,7 @@ cordage yonex-poly-air-rush                  | rigidite | 200    | poly §2 tabl
 rcs head-gravity-team + yonex-poly-air-rush @ 22                       | rcs | 26     | poly §2 tableau RA 60
 rcs head-extreme-standard + yonex-poly-air-rush @ 22                   | rcs | 28     | poly §2 tableau RA 65
 rcs head-instinct-pwr-115 + yonex-poly-air-rush @ 22                   | rcs | 30     | poly §2 tableau RA 70
-cordage yonex-poly-tour-spin                 | rigidite | 200    | poly §2 tableau
-rcs head-gravity-team + yonex-poly-tour-spin @ 22                      | rcs | 26     | poly §2 tableau RA 60
-rcs head-extreme-standard + yonex-poly-tour-spin @ 22                  | rcs | 28     | poly §2 tableau RA 65
-rcs head-instinct-pwr-115 + yonex-poly-tour-spin @ 22                  | rcs | 30     | poly §2 tableau RA 70
-# ===== section 3, liste des 19 polyesters à 240 lb/in ou plus (rigidité ; indice RA 65 à 22 kg donné par groupe ; RA 70 : bornes 34 et 37)
+# ===== A. § 3 : liste des 21 polyesters à 240 lb/in ou plus (rigidité ; indice RA 65 à 22 kg donné par groupe) et bornes RA 70 (34 à 39)
 cordage babolat-rpm-blast                    | rigidite | 240    | poly §3 liste
 rcs head-extreme-standard + babolat-rpm-blast @ 22                     | rcs | 32     | poly §3 indice du groupe, RA 65
 cordage luxilon-original                     | rigidite | 240    | poly §3 liste
@@ -225,42 +238,46 @@ cordage solinco-tour-bite-diamond-rough      | rigidite | 260    | poly §3 list
 rcs head-extreme-standard + solinco-tour-bite-diamond-rough @ 22       | rcs | 35     | poly §3 indice du groupe, RA 65
 cordage luxilon-4g-rough                     | rigidite | 262    | poly §3 liste
 rcs head-extreme-standard + luxilon-4g-rough @ 22                      | rcs | 35     | poly §3 indice du groupe, RA 65
-cordage luxilon-4g                           | rigidite | 265    | poly §3 liste
-rcs head-extreme-standard + luxilon-4g @ 22                            | rcs | 35     | poly §3 indice du groupe, RA 65
+cordage babolat-revenge                      | rigidite | 276    | poly §3 liste
+rcs head-extreme-standard + babolat-revenge @ 22                       | rcs | 36     | poly §3 indice du groupe, RA 65
+cordage babolat-rpm-team                     | rigidite | 280,6  | poly §3 liste
+rcs head-extreme-standard + babolat-rpm-team @ 22                      | rcs | 37     | poly §3 indice du groupe, RA 65
+cordage luxilon-4g                           | rigidite | 286,9  | poly §3 liste
+rcs head-extreme-standard + luxilon-4g @ 22                            | rcs | 38     | poly §3 indice du groupe, RA 65
 rcs head-instinct-pwr-115 + babolat-rpm-blast @ 22                     | rcs | 34     | poly §3 borne basse RA 70
-rcs head-instinct-pwr-115 + luxilon-4g @ 22                            | rcs | 37     | poly §3 borne haute RA 70
-# ===== section 4, tableau confort ressenti / rigidité (rigidité et note de confort de la fiche, une décimale) et phrases voisines
+rcs head-instinct-pwr-115 + luxilon-4g @ 22                            | rcs | 39     | poly §3 borne haute RA 70
+# ===== A. § 4 : tableau confort ressenti / rigidité (rigidité et note de confort de la fiche, une décimale)
 cordage yonex-poly-tour-pro                  | rigidite | 220    | poly §4 tableau
 cordage yonex-poly-tour-pro                  | confort  | 8,6    | poly §4 tableau, note de confort
-cordage signum-pro-x-perience                | rigidite | 205    | poly §4 tableau
-cordage signum-pro-x-perience                | confort  | 7,3    | poly §4 tableau, note de confort
+cordage solinco-mach-10                      | rigidite | 222,3  | poly §4 tableau
+cordage solinco-mach-10                      | confort  | 8,8    | poly §4 tableau, note de confort
 cordage solinco-confidential                 | rigidite | 245    | poly §4 tableau
 cordage solinco-confidential                 | confort  | 7,3    | poly §4 tableau, note de confort
-cordage solinco-mach-10                      | rigidite | 195    | poly §4 tableau
-cordage solinco-mach-10                      | confort  | 8,8    | poly §4 tableau, note de confort
+cordage solinco-hyper-g                      | rigidite | 218,3  | poly §4 tableau
+cordage solinco-hyper-g                      | confort  | 7,6    | poly §4 tableau, note de confort
 cordage toroline-o-toro                      | rigidite | 165,7  | poly §4 tableau
 cordage toroline-o-toro                      | confort  | 8,1    | poly §4 tableau, note de confort
-cordage head-lynx-tour                       | rigidite | 210    | poly §4 phrase « plus rigide que le Head Lynx Tour »
-cordage yonex-poly-tour-rev                  | rigidite | 205    | poly §4 note sous le tableau (égalité à 205 avec le Signum Pro X-Perience)
-# ===== section 5, leviers (Luxilon 4G à 22 kg, RA 65 ; autre cadre ; autre tension ; autre cordage)
-rcs head-extreme-standard + luxilon-4g @ 22                            | rcs | 35     | poly §5 point de départ
+cordage yonex-poly-tour-rev                  | rigidite | 205    | poly §4 tableau
+cordage yonex-poly-tour-rev                  | confort  | 8,0    | poly §4 tableau, note de confort
+# ===== A. § 5 : leviers (Luxilon 4G à 22 kg, RA 65 ; autre cadre ; autre tension ; autre cordage)
+rcs head-extreme-standard + luxilon-4g @ 22                            | rcs | 38     | poly §5 point de départ
 rcs head-extreme-standard + toroline-o-toro @ 22                       | rcs | 24     | poly §5 changer de cordage
-rcs head-gravity-team + luxilon-4g @ 22                                | rcs | 33     | poly §5 changer de cadre, RA 60
-rcs head-instinct-pwr-115 + luxilon-4g @ 22                            | rcs | 37     | poly §5 cadre RA 70
-rcs head-extreme-standard + luxilon-4g @ 18                            | rcs | 33     | poly §5 baisser la tension de 4 kg
-# ===== Cordage et tennis elbow (FR + EN) : tableau des 17 cordages (RA 65, 22 kg) — rigidité et indice de chaque ligne
+rcs head-gravity-team + luxilon-4g @ 22                                | rcs | 36     | poly §5 changer de cadre, RA 60
+rcs head-instinct-pwr-115 + luxilon-4g @ 22                            | rcs | 39     | poly §5 cadre RA 70
+rcs head-extreme-standard + luxilon-4g @ 18                            | rcs | 36     | poly §5 baisser la tension de 4 kg
+# ===== B. Cordage et tennis elbow (FR + EN) — tableau des 17 cordages (RA 65, 22 kg) : rigidité et indice de chaque ligne
 cordage babolat-touch-vs                     | rigidite | 92     | tennis elbow tableau 17
 rcs head-extreme-standard + babolat-touch-vs @ 22                      | rcs | 16     | tennis elbow tableau 17
 cordage babolat-xcel                         | rigidite | 155    | tennis elbow tableau 17
 rcs head-extreme-standard + babolat-xcel @ 22                          | rcs | 23     | tennis elbow tableau 17
-cordage tecnifibre-x-one-biphase             | rigidite | 160    | tennis elbow tableau 17
-rcs head-extreme-standard + tecnifibre-x-one-biphase @ 22              | rcs | 24     | tennis elbow tableau 17
 cordage tecnifibre-nrg2                      | rigidite | 164    | tennis elbow tableau 17
 rcs head-extreme-standard + tecnifibre-nrg2 @ 22                       | rcs | 24     | tennis elbow tableau 17
 cordage head-velocity-mlt                    | rigidite | 165    | tennis elbow tableau 17
 rcs head-extreme-standard + head-velocity-mlt @ 22                     | rcs | 24     | tennis elbow tableau 17
 cordage toroline-o-toro                      | rigidite | 165,7  | tennis elbow tableau 17
 rcs head-extreme-standard + toroline-o-toro @ 22                       | rcs | 24     | tennis elbow tableau 17
+cordage tecnifibre-x-one-biphase             | rigidite | 166,9  | tennis elbow tableau 17
+rcs head-extreme-standard + tecnifibre-x-one-biphase @ 22              | rcs | 24     | tennis elbow tableau 17
 cordage babolat-hybrid-rpm-blast-vs-touch    | rigidite | 168    | tennis elbow tableau 17
 rcs head-extreme-standard + babolat-hybrid-rpm-blast-vs-touch @ 22     | rcs | 25     | tennis elbow tableau 17
 cordage wilson-nxt                           | rigidite | 173,7  | tennis elbow tableau 17
@@ -269,28 +286,164 @@ cordage tecnifibre-hybrid-razor-code-x-one   | rigidite | 180    | tennis elbow 
 rcs head-extreme-standard + tecnifibre-hybrid-razor-code-x-one @ 22    | rcs | 26     | tennis elbow tableau 17
 cordage prince-synthetic-gut                 | rigidite | 185    | tennis elbow tableau 17
 rcs head-extreme-standard + prince-synthetic-gut @ 22                  | rcs | 26     | tennis elbow tableau 17
-cordage luxilon-element                      | rigidite | 190    | tennis elbow tableau 17
-rcs head-extreme-standard + luxilon-element @ 22                       | rcs | 27     | tennis elbow tableau 17
 cordage babolat-hybrid-rpm-blast-xcel        | rigidite | 192    | tennis elbow tableau 17
 rcs head-extreme-standard + babolat-hybrid-rpm-blast-xcel @ 22         | rcs | 27     | tennis elbow tableau 17
 cordage yonex-poly-tour-air                  | rigidite | 195    | tennis elbow tableau 17
 rcs head-extreme-standard + yonex-poly-tour-air @ 22                   | rcs | 28     | tennis elbow tableau 17
 cordage babolat-rpm-soft                     | rigidite | 205    | tennis elbow tableau 17
 rcs head-extreme-standard + babolat-rpm-soft @ 22                      | rcs | 29     | tennis elbow tableau 17
+cordage luxilon-element                      | rigidite | 208    | tennis elbow tableau 17
+rcs head-extreme-standard + luxilon-element @ 22                       | rcs | 29     | tennis elbow tableau 17
 cordage luxilon-alu-power                    | rigidite | 230    | tennis elbow tableau 17
 rcs head-extreme-standard + luxilon-alu-power @ 22                     | rcs | 31     | tennis elbow tableau 17
 cordage babolat-rpm-blast                    | rigidite | 240    | tennis elbow tableau 17
 rcs head-extreme-standard + babolat-rpm-blast @ 22                     | rcs | 32     | tennis elbow tableau 17
-cordage luxilon-4g                           | rigidite | 265    | tennis elbow tableau 17
-rcs head-extreme-standard + luxilon-4g @ 22                            | rcs | 35     | tennis elbow tableau 17
-# ===== leviers (point de départ Luxilon ALU Power à 22 kg, RA 65) : cordage, tension, cadre
+cordage luxilon-4g                           | rigidite | 286,9  | tennis elbow tableau 17
+rcs head-extreme-standard + luxilon-4g @ 22                            | rcs | 38     | tennis elbow tableau 17
+# ===== B. leviers (point de départ Luxilon ALU Power à 22 kg, RA 65) : tension, cadre ; FAQ n° 3 et « L'essentiel » : O-Toro Snap, O-Toro, 4G
 rcs head-extreme-standard + luxilon-alu-power @ 18                     | rcs | 29     | tennis elbow leviers, tension 18 kg
 rcs head-gravity-team + luxilon-alu-power @ 22                         | rcs | 30     | tennis elbow leviers, RA 60
+cordage toroline-o-toro-snap                 | rigidite | 164,6  | tennis elbow « L'essentiel » et § 3 « une surprise »
+rcs head-extreme-standard + toroline-o-toro-snap @ 22                  | rcs | 24     | tennis elbow § 3 « une surprise » (même indice que l'O-Toro)
+cordage luxilon-4g                           | rigidite | 286,9  | tennis elbow FAQ n° 3
+rcs head-extreme-standard + luxilon-4g @ 22                            | rcs | 38     | tennis elbow FAQ n° 3
+# ===== C. Meilleur cordage polyester 2026 (FR + EN) — tableau des 18 : rigidité, indice (RA 65, 22 kg), avis testeurs /20 et niveau (ces deux colonnes ne sont pas touchées, contrôlées par prudence)
+cordage head-lynx-tour                       | rigidite | 228,6  | meilleur cordage tableau des 18
+rcs head-extreme-standard + head-lynx-tour @ 22                        | rcs | 31     | meilleur cordage tableau des 18
+cordage head-lynx-tour                       | testeurs20 | 16,3   | meilleur cordage tableau des 18
+cordage head-lynx-tour                       | palier   | S      | meilleur cordage tableau des 18
+cordage solinco-confidential                 | rigidite | 245    | meilleur cordage tableau des 18
+rcs head-extreme-standard + solinco-confidential @ 22                  | rcs | 33     | meilleur cordage tableau des 18
+cordage solinco-confidential                 | testeurs20 | 15,6   | meilleur cordage tableau des 18
+cordage solinco-confidential                 | palier   | A      | meilleur cordage tableau des 18
+cordage solinco-mach-10                      | rigidite | 222,3  | meilleur cordage tableau des 18
+rcs head-extreme-standard + solinco-mach-10 @ 22                       | rcs | 31     | meilleur cordage tableau des 18
+cordage solinco-mach-10                      | testeurs20 | 15,5   | meilleur cordage tableau des 18
+cordage solinco-mach-10                      | palier   | A      | meilleur cordage tableau des 18
+cordage toroline-o-toro                      | rigidite | 165,7  | meilleur cordage tableau des 18
+rcs head-extreme-standard + toroline-o-toro @ 22                       | rcs | 24     | meilleur cordage tableau des 18
+cordage toroline-o-toro                      | testeurs20 | 15,3   | meilleur cordage tableau des 18
+cordage toroline-o-toro                      | palier   | A      | meilleur cordage tableau des 18
+cordage head-hawk-touch                      | rigidite | 215    | meilleur cordage tableau des 18
+rcs head-extreme-standard + head-hawk-touch @ 22                       | rcs | 30     | meilleur cordage tableau des 18
+cordage head-hawk-touch                      | testeurs20 | 14,8   | meilleur cordage tableau des 18
+cordage head-hawk-touch                      | palier   | B      | meilleur cordage tableau des 18
+cordage restring-zero                        | rigidite | 210    | meilleur cordage tableau des 18
+rcs head-extreme-standard + restring-zero @ 22                         | rcs | 29     | meilleur cordage tableau des 18
+cordage restring-zero                        | testeurs20 | 14,8   | meilleur cordage tableau des 18
+cordage restring-zero                        | palier   | B      | meilleur cordage tableau des 18
+cordage solinco-hyper-g                      | rigidite | 218,3  | meilleur cordage tableau des 18
+rcs head-extreme-standard + solinco-hyper-g @ 22                       | rcs | 30     | meilleur cordage tableau des 18
+cordage solinco-hyper-g                      | testeurs20 | 14,6   | meilleur cordage tableau des 18
+cordage solinco-hyper-g                      | palier   | B      | meilleur cordage tableau des 18
+cordage luxilon-4g                           | rigidite | 286,9  | meilleur cordage tableau des 18
+rcs head-extreme-standard + luxilon-4g @ 22                            | rcs | 38     | meilleur cordage tableau des 18
+cordage luxilon-4g                           | testeurs20 | 14,5   | meilleur cordage tableau des 18
+cordage luxilon-4g                           | palier   | B      | meilleur cordage tableau des 18
+cordage solinco-tour-bite                    | rigidite | 255    | meilleur cordage tableau des 18
+rcs head-extreme-standard + solinco-tour-bite @ 22                     | rcs | 34     | meilleur cordage tableau des 18
+cordage solinco-tour-bite                    | testeurs20 | 14,4   | meilleur cordage tableau des 18
+cordage solinco-tour-bite                    | palier   | B      | meilleur cordage tableau des 18
+cordage signum-pro-x-perience                | rigidite | 224,6  | meilleur cordage tableau des 18
+rcs head-extreme-standard + signum-pro-x-perience @ 22                 | rcs | 31     | meilleur cordage tableau des 18
+cordage signum-pro-x-perience                | testeurs20 | 13,6   | meilleur cordage tableau des 18
+cordage signum-pro-x-perience                | palier   | C      | meilleur cordage tableau des 18
+cordage babolat-rpm-rough                    | rigidite | 235    | meilleur cordage tableau des 18
+rcs head-extreme-standard + babolat-rpm-rough @ 22                     | rcs | 32     | meilleur cordage tableau des 18
+cordage babolat-rpm-rough                    | testeurs20 | 13,3   | meilleur cordage tableau des 18
+cordage babolat-rpm-rough                    | palier   | C      | meilleur cordage tableau des 18
+cordage volkl-cyclone                        | rigidite | 215    | meilleur cordage tableau des 18
+rcs head-extreme-standard + volkl-cyclone @ 22                         | rcs | 30     | meilleur cordage tableau des 18
+cordage volkl-cyclone                        | testeurs20 | 13,3   | meilleur cordage tableau des 18
+cordage volkl-cyclone                        | palier   | C      | meilleur cordage tableau des 18
+cordage luxilon-alu-power                    | rigidite | 230    | meilleur cordage tableau des 18
+rcs head-extreme-standard + luxilon-alu-power @ 22                     | rcs | 31     | meilleur cordage tableau des 18
+cordage luxilon-alu-power                    | testeurs20 | 13,2   | meilleur cordage tableau des 18
+cordage luxilon-alu-power                    | palier   | C      | meilleur cordage tableau des 18
+cordage yonex-poly-tour-rev                  | rigidite | 205    | meilleur cordage tableau des 18
+rcs head-extreme-standard + yonex-poly-tour-rev @ 22                   | rcs | 29     | meilleur cordage tableau des 18
+cordage yonex-poly-tour-rev                  | testeurs20 | 13,0   | meilleur cordage tableau des 18
+cordage yonex-poly-tour-rev                  | palier   | C      | meilleur cordage tableau des 18
+cordage babolat-rpm-blast                    | rigidite | 240    | meilleur cordage tableau des 18
+rcs head-extreme-standard + babolat-rpm-blast @ 22                     | rcs | 32     | meilleur cordage tableau des 18
+cordage babolat-rpm-blast                    | testeurs20 | 12,4   | meilleur cordage tableau des 18
+cordage babolat-rpm-blast                    | palier   | D      | meilleur cordage tableau des 18
+cordage yonex-poly-tour-pro                  | rigidite | 220    | meilleur cordage tableau des 18
+rcs head-extreme-standard + yonex-poly-tour-pro @ 22                   | rcs | 30     | meilleur cordage tableau des 18
+cordage yonex-poly-tour-pro                  | testeurs20 | 12,3   | meilleur cordage tableau des 18
+cordage yonex-poly-tour-pro                  | palier   | D      | meilleur cordage tableau des 18
+cordage babolat-rpm-team                     | rigidite | 280,6  | meilleur cordage tableau des 18
+rcs head-extreme-standard + babolat-rpm-team @ 22                      | rcs | 37     | meilleur cordage tableau des 18
+cordage babolat-rpm-team                     | testeurs20 | 11,9   | meilleur cordage tableau des 18
+cordage babolat-rpm-team                     | palier   | D      | meilleur cordage tableau des 18
+cordage weiss-cannon-ultra-cable             | rigidite | 250    | meilleur cordage tableau des 18
+rcs head-extreme-standard + weiss-cannon-ultra-cable @ 22              | rcs | 34     | meilleur cordage tableau des 18
+cordage weiss-cannon-ultra-cable             | testeurs20 | 11,6   | meilleur cordage tableau des 18
+cordage weiss-cannon-ultra-cable             | palier   | D      | meilleur cordage tableau des 18
+# ===== C. phrases : § 4 (le 4G à 18 kg ; RA 70 pour le 4G et le Tour Bite), moyenne des 18 citée à 230,4 (agrégat : voir le § 2 du dossier), Poly Tour Rev (205) et Poly Tour Pro (220)
+rcs head-extreme-standard + luxilon-4g @ 18                            | rcs | 36     | meilleur cordage § 4, 4G à 18 kg
+rcs head-instinct-pwr-115 + luxilon-4g @ 22                            | rcs | 39     | meilleur cordage § 4, 4G en RA 70
+rcs head-instinct-pwr-115 + solinco-tour-bite @ 22                     | rcs | 36     | meilleur cordage § 4, Tour Bite en RA 70
+# ===== D. Meilleures raquettes 2026 (FR + EN) — tableau des 18 : RA et indice avec le Head Lynx Tour à 22 kg ; rigidité du Head Lynx Tour
+cordage head-lynx-tour                       | rigidite | 228,6  | raquettes § 2, cordage de l'exemple
+raquette babolat-pure-aero-standard     | ra | 66     | raquettes tableau des 18
+rcs babolat-pure-aero-standard + head-lynx-tour @ 22                   | rcs | 32     | raquettes tableau des 18, § 3 profils, § 4 par RA
+raquette babolat-pure-drive-standard    | ra | 69     | raquettes tableau des 18
+rcs babolat-pure-drive-standard + head-lynx-tour @ 22                  | rcs | 33     | raquettes tableau des 18, § 3 profils, § 4 par RA
+raquette tecnifibre-tfight-305s-id      | ra | 63     | raquettes tableau des 18
+rcs tecnifibre-tfight-305s-id + head-lynx-tour @ 22                    | rcs | 31     | raquettes tableau des 18, § 3 profils, § 4 par RA
+raquette yonex-ezone-100                | ra | 68     | raquettes tableau des 18
+rcs yonex-ezone-100 + head-lynx-tour @ 22                              | rcs | 32     | raquettes tableau des 18, § 3 profils, § 4 par RA
+raquette yonex-vcore-98                 | ra | 64     | raquettes tableau des 18
+rcs yonex-vcore-98 + head-lynx-tour @ 22                               | rcs | 31     | raquettes tableau des 18, § 3 profils, § 4 par RA
+raquette wilson-defyer-98-pro-v1        | ra | 64     | raquettes tableau des 18
+rcs wilson-defyer-98-pro-v1 + head-lynx-tour @ 22                      | rcs | 31     | raquettes tableau des 18, § 3 profils, § 4 par RA
+raquette yonex-percept-100d             | ra | 66     | raquettes tableau des 18
+rcs yonex-percept-100d + head-lynx-tour @ 22                           | rcs | 32     | raquettes tableau des 18, § 3 profils, § 4 par RA
+raquette dunlop-fx-500                  | ra | 69     | raquettes tableau des 18
+rcs dunlop-fx-500 + head-lynx-tour @ 22                                | rcs | 33     | raquettes tableau des 18, § 3 profils, § 4 par RA
+raquette yonex-vcore-100                | ra | 65     | raquettes tableau des 18
+rcs yonex-vcore-100 + head-lynx-tour @ 22                              | rcs | 31     | raquettes tableau des 18, § 3 profils, § 4 par RA
+raquette head-speed-mp                  | ra | 61     | raquettes tableau des 18
+rcs head-speed-mp + head-lynx-tour @ 22                                | rcs | 30     | raquettes tableau des 18, § 3 profils, § 4 par RA
+raquette yonex-percept-100              | ra | 66     | raquettes tableau des 18
+rcs yonex-percept-100 + head-lynx-tour @ 22                            | rcs | 32     | raquettes tableau des 18, § 3 profils, § 4 par RA
+raquette yonex-vcore-95                 | ra | 62     | raquettes tableau des 18
+rcs yonex-vcore-95 + head-lynx-tour @ 22                               | rcs | 30     | raquettes tableau des 18, § 3 profils, § 4 par RA
+raquette yonex-ezone-98                 | ra | 63     | raquettes tableau des 18
+rcs yonex-ezone-98 + head-lynx-tour @ 22                               | rcs | 31     | raquettes tableau des 18, § 3 profils, § 4 par RA
+raquette wilson-defyer-100-v1           | ra | 66     | raquettes tableau des 18
+rcs wilson-defyer-100-v1 + head-lynx-tour @ 22                         | rcs | 32     | raquettes tableau des 18, § 3 profils, § 4 par RA
+raquette babolat-pure-aero-98           | ra | 66     | raquettes tableau des 18
+rcs babolat-pure-aero-98 + head-lynx-tour @ 22                         | rcs | 32     | raquettes tableau des 18, § 3 profils, § 4 par RA
+raquette head-gravity-tour              | ra | 59     | raquettes tableau des 18
+rcs head-gravity-tour + head-lynx-tour @ 22                            | rcs | 29     | raquettes tableau des 18, § 3 profils, § 4 par RA
+raquette wilson-ultra-100-v5            | ra | 67     | raquettes tableau des 18
+rcs wilson-ultra-100-v5 + head-lynx-tour @ 22                          | rcs | 32     | raquettes tableau des 18, § 3 profils, § 4 par RA
+raquette head-boom-pro-2024             | ra | 64     | raquettes tableau des 18
+rcs head-boom-pro-2024 + head-lynx-tour @ 22                           | rcs | 31     | raquettes tableau des 18, § 3 profils, § 4 par RA
+# ===== E. Matériel next gen (FR) — tableau 2 (Lynx Tour) et tableau 3 : RA, raideur, indice à 22 / 24 / 26 kg des trois montages du commerce (seuils de kg : agrégat, voir le § 2 du dossier)
+cordage head-lynx-tour                       | rigidite | 228,6  | next gen tableau 2 et tableau 3, ligne Jódar
+cordage luxilon-alu-power                    | rigidite | 230    | next gen tableau 2 et tableau 3, ligne Mensík
+cordage yonex-poly-tour-strike               | rigidite | 215    | next gen tableau 3, ligne Fonseca
+raquette yonex-vcore-98                 | ra | 64     | next gen tableau 3
+rcs yonex-vcore-98 + yonex-poly-tour-strike @ 22                       | rcs | 29     | next gen tableau 3
+rcs yonex-vcore-98 + yonex-poly-tour-strike @ 24                       | rcs | 30     | next gen tableau 3
+rcs yonex-vcore-98 + yonex-poly-tour-strike @ 26                       | rcs | 31     | next gen tableau 3
+raquette wilson-blade-98-18x20-v9       | ra | 62     | next gen tableau 3
+rcs wilson-blade-98-18x20-v9 + luxilon-alu-power @ 22                  | rcs | 30     | next gen tableau 3
+rcs wilson-blade-98-18x20-v9 + luxilon-alu-power @ 24                  | rcs | 31     | next gen tableau 3
+rcs wilson-blade-98-18x20-v9 + luxilon-alu-power @ 26                  | rcs | 32     | next gen tableau 3
+raquette head-speed-mp                  | ra | 61     | next gen tableau 3
+rcs head-speed-mp + head-lynx-tour @ 22                                | rcs | 30     | next gen tableau 3
+rcs head-speed-mp + head-lynx-tour @ 24                                | rcs | 31     | next gen tableau 3
+rcs head-speed-mp + head-lynx-tour @ 26                                | rcs | 32     | next gen tableau 3
 ```
 
 Sortie de `npm run redaction:valeurs -- docs/redaction/coherence-chiffres-regle-c.md` :
 
 ```
+
 
 > tennis-string-advisor@2.10.0 redaction:valeurs
 > npx --yes tsx scripts/redaction/verifier-valeurs.mts docs/redaction/coherence-chiffres-regle-c.md
@@ -299,10 +452,6 @@ Sortie de `npm run redaction:valeurs -- docs/redaction/coherence-chiffres-regle-
   OK    rcs head-gravity-team + toroline-o-toro-snap @ 22 | rcs | 23
   OK    rcs head-extreme-standard + toroline-o-toro-snap @ 22 | rcs | 24
   OK    rcs head-instinct-pwr-115 + toroline-o-toro-snap @ 22 | rcs | 26
-  OK    cordage isospeed-cream | rigidite | 165
-  OK    rcs head-gravity-team + isospeed-cream @ 22 | rcs | 23
-  OK    rcs head-extreme-standard + isospeed-cream @ 22 | rcs | 24
-  OK    rcs head-instinct-pwr-115 + isospeed-cream @ 22 | rcs | 26
   OK    cordage toroline-o-toro | rigidite | 165,7
   OK    rcs head-gravity-team + toroline-o-toro @ 22 | rcs | 23
   OK    rcs head-extreme-standard + toroline-o-toro @ 22 | rcs | 24
@@ -315,6 +464,10 @@ Sortie de `npm run redaction:valeurs -- docs/redaction/coherence-chiffres-regle-
   OK    rcs head-gravity-team + solinco-hyper-g-heaven @ 22 | rcs | 24
   OK    rcs head-extreme-standard + solinco-hyper-g-heaven @ 22 | rcs | 25
   OK    rcs head-instinct-pwr-115 + solinco-hyper-g-heaven @ 22 | rcs | 27
+  OK    cordage isospeed-cream | rigidite | 177,7
+  OK    rcs head-gravity-team + isospeed-cream @ 22 | rcs | 24
+  OK    rcs head-extreme-standard + isospeed-cream @ 22 | rcs | 26
+  OK    rcs head-instinct-pwr-115 + isospeed-cream @ 22 | rcs | 27
   OK    cordage toroline-absolute | rigidite | 180,6
   OK    rcs head-gravity-team + toroline-absolute @ 22 | rcs | 24
   OK    rcs head-extreme-standard + toroline-absolute @ 22 | rcs | 26
@@ -323,10 +476,6 @@ Sortie de `npm run redaction:valeurs -- docs/redaction/coherence-chiffres-regle-
   OK    rcs head-gravity-team + toroline-cash @ 22 | rcs | 25
   OK    rcs head-extreme-standard + toroline-cash @ 22 | rcs | 26
   OK    rcs head-instinct-pwr-115 + toroline-cash @ 22 | rcs | 28
-  OK    cordage tecnifibre-razor-soft | rigidite | 185
-  OK    rcs head-gravity-team + tecnifibre-razor-soft @ 22 | rcs | 25
-  OK    rcs head-extreme-standard + tecnifibre-razor-soft @ 22 | rcs | 26
-  OK    rcs head-instinct-pwr-115 + tecnifibre-razor-soft @ 22 | rcs | 28
   OK    cordage toroline-super-toro | rigidite | 189,7
   OK    rcs head-gravity-team + toroline-super-toro @ 22 | rcs | 25
   OK    rcs head-extreme-standard + toroline-super-toro @ 22 | rcs | 27
@@ -335,22 +484,10 @@ Sortie de `npm run redaction:valeurs -- docs/redaction/coherence-chiffres-regle-
   OK    rcs head-gravity-team + luxilon-eco-rough @ 22 | rcs | 25
   OK    rcs head-extreme-standard + luxilon-eco-rough @ 22 | rcs | 27
   OK    rcs head-instinct-pwr-115 + luxilon-eco-rough @ 22 | rcs | 29
-  OK    cordage luxilon-element | rigidite | 190
-  OK    rcs head-gravity-team + luxilon-element @ 22 | rcs | 25
-  OK    rcs head-extreme-standard + luxilon-element @ 22 | rcs | 27
-  OK    rcs head-instinct-pwr-115 + luxilon-element @ 22 | rcs | 29
   OK    cordage toroline-snapper | rigidite | 190,9
   OK    rcs head-gravity-team + toroline-snapper @ 22 | rcs | 25
   OK    rcs head-extreme-standard + toroline-snapper @ 22 | rcs | 27
   OK    rcs head-instinct-pwr-115 + toroline-snapper @ 22 | rcs | 29
-  OK    cordage head-hawk-power | rigidite | 195
-  OK    rcs head-gravity-team + head-hawk-power @ 22 | rcs | 26
-  OK    rcs head-extreme-standard + head-hawk-power @ 22 | rcs | 28
-  OK    rcs head-instinct-pwr-115 + head-hawk-power @ 22 | rcs | 29
-  OK    cordage solinco-mach-10 | rigidite | 195
-  OK    rcs head-gravity-team + solinco-mach-10 @ 22 | rcs | 26
-  OK    rcs head-extreme-standard + solinco-mach-10 @ 22 | rcs | 28
-  OK    rcs head-instinct-pwr-115 + solinco-mach-10 @ 22 | rcs | 29
   OK    cordage yonex-poly-tour-air | rigidite | 195
   OK    rcs head-gravity-team + yonex-poly-tour-air @ 22 | rcs | 26
   OK    rcs head-extreme-standard + yonex-poly-tour-air @ 22 | rcs | 28
@@ -371,10 +508,6 @@ Sortie de `npm run redaction:valeurs -- docs/redaction/coherence-chiffres-regle-
   OK    rcs head-gravity-team + yonex-poly-air-rush @ 22 | rcs | 26
   OK    rcs head-extreme-standard + yonex-poly-air-rush @ 22 | rcs | 28
   OK    rcs head-instinct-pwr-115 + yonex-poly-air-rush @ 22 | rcs | 30
-  OK    cordage yonex-poly-tour-spin | rigidite | 200
-  OK    rcs head-gravity-team + yonex-poly-tour-spin @ 22 | rcs | 26
-  OK    rcs head-extreme-standard + yonex-poly-tour-spin @ 22 | rcs | 28
-  OK    rcs head-instinct-pwr-115 + yonex-poly-tour-spin @ 22 | rcs | 30
   OK    cordage babolat-rpm-blast | rigidite | 240
   OK    rcs head-extreme-standard + babolat-rpm-blast @ 22 | rcs | 32
   OK    cordage luxilon-original | rigidite | 240
@@ -411,39 +544,43 @@ Sortie de `npm run redaction:valeurs -- docs/redaction/coherence-chiffres-regle-
   OK    rcs head-extreme-standard + solinco-tour-bite-diamond-rough @ 22 | rcs | 35
   OK    cordage luxilon-4g-rough | rigidite | 262
   OK    rcs head-extreme-standard + luxilon-4g-rough @ 22 | rcs | 35
-  OK    cordage luxilon-4g | rigidite | 265
-  OK    rcs head-extreme-standard + luxilon-4g @ 22 | rcs | 35
+  OK    cordage babolat-revenge | rigidite | 276
+  OK    rcs head-extreme-standard + babolat-revenge @ 22 | rcs | 36
+  OK    cordage babolat-rpm-team | rigidite | 280,6
+  OK    rcs head-extreme-standard + babolat-rpm-team @ 22 | rcs | 37
+  OK    cordage luxilon-4g | rigidite | 286,9
+  OK    rcs head-extreme-standard + luxilon-4g @ 22 | rcs | 38
   OK    rcs head-instinct-pwr-115 + babolat-rpm-blast @ 22 | rcs | 34
-  OK    rcs head-instinct-pwr-115 + luxilon-4g @ 22 | rcs | 37
+  OK    rcs head-instinct-pwr-115 + luxilon-4g @ 22 | rcs | 39
   OK    cordage yonex-poly-tour-pro | rigidite | 220
   OK    cordage yonex-poly-tour-pro | confort | 8,6
-  OK    cordage signum-pro-x-perience | rigidite | 205
-  OK    cordage signum-pro-x-perience | confort | 7,3
+  OK    cordage solinco-mach-10 | rigidite | 222,3
+  OK    cordage solinco-mach-10 | confort | 8,8
   OK    cordage solinco-confidential | rigidite | 245
   OK    cordage solinco-confidential | confort | 7,3
-  OK    cordage solinco-mach-10 | rigidite | 195
-  OK    cordage solinco-mach-10 | confort | 8,8
+  OK    cordage solinco-hyper-g | rigidite | 218,3
+  OK    cordage solinco-hyper-g | confort | 7,6
   OK    cordage toroline-o-toro | rigidite | 165,7
   OK    cordage toroline-o-toro | confort | 8,1
-  OK    cordage head-lynx-tour | rigidite | 210
   OK    cordage yonex-poly-tour-rev | rigidite | 205
-  OK    rcs head-extreme-standard + luxilon-4g @ 22 | rcs | 35
+  OK    cordage yonex-poly-tour-rev | confort | 8,0
+  OK    rcs head-extreme-standard + luxilon-4g @ 22 | rcs | 38
   OK    rcs head-extreme-standard + toroline-o-toro @ 22 | rcs | 24
-  OK    rcs head-gravity-team + luxilon-4g @ 22 | rcs | 33
-  OK    rcs head-instinct-pwr-115 + luxilon-4g @ 22 | rcs | 37
-  OK    rcs head-extreme-standard + luxilon-4g @ 18 | rcs | 33
+  OK    rcs head-gravity-team + luxilon-4g @ 22 | rcs | 36
+  OK    rcs head-instinct-pwr-115 + luxilon-4g @ 22 | rcs | 39
+  OK    rcs head-extreme-standard + luxilon-4g @ 18 | rcs | 36
   OK    cordage babolat-touch-vs | rigidite | 92
   OK    rcs head-extreme-standard + babolat-touch-vs @ 22 | rcs | 16
   OK    cordage babolat-xcel | rigidite | 155
   OK    rcs head-extreme-standard + babolat-xcel @ 22 | rcs | 23
-  OK    cordage tecnifibre-x-one-biphase | rigidite | 160
-  OK    rcs head-extreme-standard + tecnifibre-x-one-biphase @ 22 | rcs | 24
   OK    cordage tecnifibre-nrg2 | rigidite | 164
   OK    rcs head-extreme-standard + tecnifibre-nrg2 @ 22 | rcs | 24
   OK    cordage head-velocity-mlt | rigidite | 165
   OK    rcs head-extreme-standard + head-velocity-mlt @ 22 | rcs | 24
   OK    cordage toroline-o-toro | rigidite | 165,7
   OK    rcs head-extreme-standard + toroline-o-toro @ 22 | rcs | 24
+  OK    cordage tecnifibre-x-one-biphase | rigidite | 166,9
+  OK    rcs head-extreme-standard + tecnifibre-x-one-biphase @ 22 | rcs | 24
   OK    cordage babolat-hybrid-rpm-blast-vs-touch | rigidite | 168
   OK    rcs head-extreme-standard + babolat-hybrid-rpm-blast-vs-touch @ 22 | rcs | 25
   OK    cordage wilson-nxt | rigidite | 173,7
@@ -452,24 +589,155 @@ Sortie de `npm run redaction:valeurs -- docs/redaction/coherence-chiffres-regle-
   OK    rcs head-extreme-standard + tecnifibre-hybrid-razor-code-x-one @ 22 | rcs | 26
   OK    cordage prince-synthetic-gut | rigidite | 185
   OK    rcs head-extreme-standard + prince-synthetic-gut @ 22 | rcs | 26
-  OK    cordage luxilon-element | rigidite | 190
-  OK    rcs head-extreme-standard + luxilon-element @ 22 | rcs | 27
   OK    cordage babolat-hybrid-rpm-blast-xcel | rigidite | 192
   OK    rcs head-extreme-standard + babolat-hybrid-rpm-blast-xcel @ 22 | rcs | 27
   OK    cordage yonex-poly-tour-air | rigidite | 195
   OK    rcs head-extreme-standard + yonex-poly-tour-air @ 22 | rcs | 28
   OK    cordage babolat-rpm-soft | rigidite | 205
   OK    rcs head-extreme-standard + babolat-rpm-soft @ 22 | rcs | 29
+  OK    cordage luxilon-element | rigidite | 208
+  OK    rcs head-extreme-standard + luxilon-element @ 22 | rcs | 29
   OK    cordage luxilon-alu-power | rigidite | 230
   OK    rcs head-extreme-standard + luxilon-alu-power @ 22 | rcs | 31
   OK    cordage babolat-rpm-blast | rigidite | 240
   OK    rcs head-extreme-standard + babolat-rpm-blast @ 22 | rcs | 32
-  OK    cordage luxilon-4g | rigidite | 265
-  OK    rcs head-extreme-standard + luxilon-4g @ 22 | rcs | 35
+  OK    cordage luxilon-4g | rigidite | 286,9
+  OK    rcs head-extreme-standard + luxilon-4g @ 22 | rcs | 38
   OK    rcs head-extreme-standard + luxilon-alu-power @ 18 | rcs | 29
   OK    rcs head-gravity-team + luxilon-alu-power @ 22 | rcs | 30
+  OK    cordage toroline-o-toro-snap | rigidite | 164,6
+  OK    rcs head-extreme-standard + toroline-o-toro-snap @ 22 | rcs | 24
+  OK    cordage luxilon-4g | rigidite | 286,9
+  OK    rcs head-extreme-standard + luxilon-4g @ 22 | rcs | 38
+  OK    cordage head-lynx-tour | rigidite | 228,6
+  OK    rcs head-extreme-standard + head-lynx-tour @ 22 | rcs | 31
+  OK    cordage head-lynx-tour | testeurs20 | 16,3
+  OK    cordage head-lynx-tour | palier | S
+  OK    cordage solinco-confidential | rigidite | 245
+  OK    rcs head-extreme-standard + solinco-confidential @ 22 | rcs | 33
+  OK    cordage solinco-confidential | testeurs20 | 15,6
+  OK    cordage solinco-confidential | palier | A
+  OK    cordage solinco-mach-10 | rigidite | 222,3
+  OK    rcs head-extreme-standard + solinco-mach-10 @ 22 | rcs | 31
+  OK    cordage solinco-mach-10 | testeurs20 | 15,5
+  OK    cordage solinco-mach-10 | palier | A
+  OK    cordage toroline-o-toro | rigidite | 165,7
+  OK    rcs head-extreme-standard + toroline-o-toro @ 22 | rcs | 24
+  OK    cordage toroline-o-toro | testeurs20 | 15,3
+  OK    cordage toroline-o-toro | palier | A
+  OK    cordage head-hawk-touch | rigidite | 215
+  OK    rcs head-extreme-standard + head-hawk-touch @ 22 | rcs | 30
+  OK    cordage head-hawk-touch | testeurs20 | 14,8
+  OK    cordage head-hawk-touch | palier | B
+  OK    cordage restring-zero | rigidite | 210
+  OK    rcs head-extreme-standard + restring-zero @ 22 | rcs | 29
+  OK    cordage restring-zero | testeurs20 | 14,8
+  OK    cordage restring-zero | palier | B
+  OK    cordage solinco-hyper-g | rigidite | 218,3
+  OK    rcs head-extreme-standard + solinco-hyper-g @ 22 | rcs | 30
+  OK    cordage solinco-hyper-g | testeurs20 | 14,6
+  OK    cordage solinco-hyper-g | palier | B
+  OK    cordage luxilon-4g | rigidite | 286,9
+  OK    rcs head-extreme-standard + luxilon-4g @ 22 | rcs | 38
+  OK    cordage luxilon-4g | testeurs20 | 14,5
+  OK    cordage luxilon-4g | palier | B
+  OK    cordage solinco-tour-bite | rigidite | 255
+  OK    rcs head-extreme-standard + solinco-tour-bite @ 22 | rcs | 34
+  OK    cordage solinco-tour-bite | testeurs20 | 14,4
+  OK    cordage solinco-tour-bite | palier | B
+  OK    cordage signum-pro-x-perience | rigidite | 224,6
+  OK    rcs head-extreme-standard + signum-pro-x-perience @ 22 | rcs | 31
+  OK    cordage signum-pro-x-perience | testeurs20 | 13,6
+  OK    cordage signum-pro-x-perience | palier | C
+  OK    cordage babolat-rpm-rough | rigidite | 235
+  OK    rcs head-extreme-standard + babolat-rpm-rough @ 22 | rcs | 32
+  OK    cordage babolat-rpm-rough | testeurs20 | 13,3
+  OK    cordage babolat-rpm-rough | palier | C
+  OK    cordage volkl-cyclone | rigidite | 215
+  OK    rcs head-extreme-standard + volkl-cyclone @ 22 | rcs | 30
+  OK    cordage volkl-cyclone | testeurs20 | 13,3
+  OK    cordage volkl-cyclone | palier | C
+  OK    cordage luxilon-alu-power | rigidite | 230
+  OK    rcs head-extreme-standard + luxilon-alu-power @ 22 | rcs | 31
+  OK    cordage luxilon-alu-power | testeurs20 | 13,2
+  OK    cordage luxilon-alu-power | palier | C
+  OK    cordage yonex-poly-tour-rev | rigidite | 205
+  OK    rcs head-extreme-standard + yonex-poly-tour-rev @ 22 | rcs | 29
+  OK    cordage yonex-poly-tour-rev | testeurs20 | 13,0
+  OK    cordage yonex-poly-tour-rev | palier | C
+  OK    cordage babolat-rpm-blast | rigidite | 240
+  OK    rcs head-extreme-standard + babolat-rpm-blast @ 22 | rcs | 32
+  OK    cordage babolat-rpm-blast | testeurs20 | 12,4
+  OK    cordage babolat-rpm-blast | palier | D
+  OK    cordage yonex-poly-tour-pro | rigidite | 220
+  OK    rcs head-extreme-standard + yonex-poly-tour-pro @ 22 | rcs | 30
+  OK    cordage yonex-poly-tour-pro | testeurs20 | 12,3
+  OK    cordage yonex-poly-tour-pro | palier | D
+  OK    cordage babolat-rpm-team | rigidite | 280,6
+  OK    rcs head-extreme-standard + babolat-rpm-team @ 22 | rcs | 37
+  OK    cordage babolat-rpm-team | testeurs20 | 11,9
+  OK    cordage babolat-rpm-team | palier | D
+  OK    cordage weiss-cannon-ultra-cable | rigidite | 250
+  OK    rcs head-extreme-standard + weiss-cannon-ultra-cable @ 22 | rcs | 34
+  OK    cordage weiss-cannon-ultra-cable | testeurs20 | 11,6
+  OK    cordage weiss-cannon-ultra-cable | palier | D
+  OK    rcs head-extreme-standard + luxilon-4g @ 18 | rcs | 36
+  OK    rcs head-instinct-pwr-115 + luxilon-4g @ 22 | rcs | 39
+  OK    rcs head-instinct-pwr-115 + solinco-tour-bite @ 22 | rcs | 36
+  OK    cordage head-lynx-tour | rigidite | 228,6
+  OK    raquette babolat-pure-aero-standard | ra | 66
+  OK    rcs babolat-pure-aero-standard + head-lynx-tour @ 22 | rcs | 32
+  OK    raquette babolat-pure-drive-standard | ra | 69
+  OK    rcs babolat-pure-drive-standard + head-lynx-tour @ 22 | rcs | 33
+  OK    raquette tecnifibre-tfight-305s-id | ra | 63
+  OK    rcs tecnifibre-tfight-305s-id + head-lynx-tour @ 22 | rcs | 31
+  OK    raquette yonex-ezone-100 | ra | 68
+  OK    rcs yonex-ezone-100 + head-lynx-tour @ 22 | rcs | 32
+  OK    raquette yonex-vcore-98 | ra | 64
+  OK    rcs yonex-vcore-98 + head-lynx-tour @ 22 | rcs | 31
+  OK    raquette wilson-defyer-98-pro-v1 | ra | 64
+  OK    rcs wilson-defyer-98-pro-v1 + head-lynx-tour @ 22 | rcs | 31
+  OK    raquette yonex-percept-100d | ra | 66
+  OK    rcs yonex-percept-100d + head-lynx-tour @ 22 | rcs | 32
+  OK    raquette dunlop-fx-500 | ra | 69
+  OK    rcs dunlop-fx-500 + head-lynx-tour @ 22 | rcs | 33
+  OK    raquette yonex-vcore-100 | ra | 65
+  OK    rcs yonex-vcore-100 + head-lynx-tour @ 22 | rcs | 31
+  OK    raquette head-speed-mp | ra | 61
+  OK    rcs head-speed-mp + head-lynx-tour @ 22 | rcs | 30
+  OK    raquette yonex-percept-100 | ra | 66
+  OK    rcs yonex-percept-100 + head-lynx-tour @ 22 | rcs | 32
+  OK    raquette yonex-vcore-95 | ra | 62
+  OK    rcs yonex-vcore-95 + head-lynx-tour @ 22 | rcs | 30
+  OK    raquette yonex-ezone-98 | ra | 63
+  OK    rcs yonex-ezone-98 + head-lynx-tour @ 22 | rcs | 31
+  OK    raquette wilson-defyer-100-v1 | ra | 66
+  OK    rcs wilson-defyer-100-v1 + head-lynx-tour @ 22 | rcs | 32
+  OK    raquette babolat-pure-aero-98 | ra | 66
+  OK    rcs babolat-pure-aero-98 + head-lynx-tour @ 22 | rcs | 32
+  OK    raquette head-gravity-tour | ra | 59
+  OK    rcs head-gravity-tour + head-lynx-tour @ 22 | rcs | 29
+  OK    raquette wilson-ultra-100-v5 | ra | 67
+  OK    rcs wilson-ultra-100-v5 + head-lynx-tour @ 22 | rcs | 32
+  OK    raquette head-boom-pro-2024 | ra | 64
+  OK    rcs head-boom-pro-2024 + head-lynx-tour @ 22 | rcs | 31
+  OK    cordage head-lynx-tour | rigidite | 228,6
+  OK    cordage luxilon-alu-power | rigidite | 230
+  OK    cordage yonex-poly-tour-strike | rigidite | 215
+  OK    raquette yonex-vcore-98 | ra | 64
+  OK    rcs yonex-vcore-98 + yonex-poly-tour-strike @ 22 | rcs | 29
+  OK    rcs yonex-vcore-98 + yonex-poly-tour-strike @ 24 | rcs | 30
+  OK    rcs yonex-vcore-98 + yonex-poly-tour-strike @ 26 | rcs | 31
+  OK    raquette wilson-blade-98-18x20-v9 | ra | 62
+  OK    rcs wilson-blade-98-18x20-v9 + luxilon-alu-power @ 22 | rcs | 30
+  OK    rcs wilson-blade-98-18x20-v9 + luxilon-alu-power @ 24 | rcs | 31
+  OK    rcs wilson-blade-98-18x20-v9 + luxilon-alu-power @ 26 | rcs | 32
+  OK    raquette head-speed-mp | ra | 61
+  OK    rcs head-speed-mp + head-lynx-tour @ 22 | rcs | 30
+  OK    rcs head-speed-mp + head-lynx-tour @ 24 | rcs | 31
+  OK    rcs head-speed-mp + head-lynx-tour @ 26 | rcs | 32
 
-173 valeur(s) contrôlée(s), 0 écart(s)
+288 valeur(s) contrôlée(s), 0 écart(s)
 ```
 
 ### Passe du pigiste — 2026-10-10
@@ -699,10 +967,10 @@ Jugé acceptable pour cette PR : le mot-clé principal ouvre chaque title et le 
 
 | # | Où | Proposition | Motif SEO | Réponse du rédacteur |
 |---|---|---|---|---|
-| S-1 | FAQ n° 1 des deux articles polyester (FR et EN), texte visible et JSON-LD | Faire passer la phrase de prudence en 2e position, sans ajouter ni retirer un mot (texte exact sous le tableau). Facultatif : la formulation actuelle est conforme (voir « Réponse à Q-3 »). | Un moteur de réponse reprend en pratique le début d'une réponse, rarement la fin (pratique courante, non mesurée ici). Aujourd'hui la prudence est la 4e phrase, qui commence après une soixantaine de mots, donc la première à tomber ; permutée, elle tombe dans les 22 premiers mots (FR) ou 25 (EN) et les deux premières phrases portent la réponse et sa réserve. Contrepartie : les noms des trois cordages passent de la 2e à la 3e phrase. Si acceptée : visible et JSON-LD changés ensemble (parité contrôlée au caractère près). | |
-| S-2 | FAQ n° 3 des deux articles « tennis elbow » (FR : « un multifilament ou un boyau reste le choix le plus prudent » ; EN : « remains the safer choice »), texte visible et JSON-LD | À faire examiner par le pigiste (test de glissance) puis par le rédacteur : même type de formule sans nuance que celle corrigée à Q-3, et la raison de Q-3 (Wilson NXT 173,7, indice 25, au-dessus du O-Toro, 24) vaut aussi ici. Je ne propose pas de texte : c'est un conseil de santé. | Cohérence entre les pages : un moteur qui lit les deux articles reprendrait une réserve nuancée dans l'un et un absolu dans l'autre. | |
-| S-3 | `guide-materiel-tennis.html`, `og:title` et `twitter:title` (l. 15 et 29) | Retirer « 2025 » : « … : Guide Expert 2025 » devient « … : Guide Expert », comme le title et le H1 de la page, qui n'ont pas d'année. Je ne l'ai pas fait moi-même : c'est un chiffre dans un titre. | La PR date le guide « mis à jour le 10 octobre 2026 » (texte visible et `dateModified`) ; l'aperçu de partage annonce 2025 ; charte § 1 : pas d'année dans un titre sauf nécessité. | |
-| S-4 | « Sources » des deux articles polyester | Facultatif : rendre cliquable la source TWU (aujourd'hui du texte : « twu.tennis-warehouse.com »), avec l'URL du dossier (F7) à reconfirmer par le pigiste (F10). Si acceptée, j'ajoute `citation` au JSON-LD, comme dans les deux articles « tennis elbow ». | Source primaire des valeurs † ; les deux articles « tennis elbow » la lient déjà. | |
+| S-1 | FAQ n° 1 des deux articles polyester (FR et EN), texte visible et JSON-LD | Faire passer la phrase de prudence en 2e position, sans ajouter ni retirer un mot (texte exact sous le tableau). Facultatif : la formulation actuelle est conforme (voir « Réponse à Q-3 »). | Un moteur de réponse reprend en pratique le début d'une réponse, rarement la fin (pratique courante, non mesurée ici). Aujourd'hui la prudence est la 4e phrase, qui commence après une soixantaine de mots, donc la première à tomber ; permutée, elle tombe dans les 22 premiers mots (FR) ou 25 (EN) et les deux premières phrases portent la réponse et sa réserve. Contrepartie : les noms des trois cordages passent de la 2e à la 3e phrase. Si acceptée : visible et JSON-LD changés ensemble (parité contrôlée au caractère près). | Accepté (10/10). Phrase de prudence en 2e position, mêmes mots, texte visible et JSON-LD identiques, FR et EN. Les trois noms sont ceux de la base finale : Isospeed Cream passe à 177,7 (lot 3) et sort du trio, qui devient Toroline O-Toro Snap (164,6), Toroline O-Toro (165,7) et Toroline O-Toro Spin (173,2) ; « un indice RCS de 24 à 25, contre 38 pour le plus rigide ». |
+| S-2 | FAQ n° 3 des deux articles « tennis elbow » (FR : « un multifilament ou un boyau reste le choix le plus prudent » ; EN : « remains the safer choice »), texte visible et JSON-LD | À faire examiner par le pigiste (test de glissance) puis par le rédacteur : même type de formule sans nuance que celle corrigée à Q-3, et la raison de Q-3 (Wilson NXT 173,7, indice 25, au-dessus du O-Toro, 24) vaut aussi ici. Je ne propose pas de texte : c'est un conseil de santé. | Cohérence entre les pages : un moteur qui lit les deux articles reprendrait une réserve nuancée dans l'un et un absolu dans l'autre. | Fait (10/10), c'est C-2 : « reste en général plus prudent qu'un polyester » (FR), « generally remains a more prudent choice than a polyester » (EN), texte visible et JSON-LD identiques, mêmes mots que la FAQ n° 1 des articles polyester. À re-tester par le pigiste (glissance). Le même « en général » est posé dans l'encadré et la FAQ de l'article « meilleur cordage » (FR et EN). |
+| S-3 | `guide-materiel-tennis.html`, `og:title` et `twitter:title` (l. 15 et 29) | Retirer « 2025 » : « … : Guide Expert 2025 » devient « … : Guide Expert », comme le title et le H1 de la page, qui n'ont pas d'année. Je ne l'ai pas fait moi-même : c'est un chiffre dans un titre. | La PR date le guide « mis à jour le 10 octobre 2026 » (texte visible et `dateModified`) ; l'aperçu de partage annonce 2025 ; charte § 1 : pas d'année dans un titre sauf nécessité. | Fait (10/10) : « 2025 » retiré de `og:title` et `twitter:title` (l. 15 et 29) ; le `<title>` et le H1 n'avaient pas d'année, aucun autre texte du guide n'est modifié. |
+| S-4 | « Sources » des deux articles polyester | Facultatif : rendre cliquable la source TWU (aujourd'hui du texte : « twu.tennis-warehouse.com »), avec l'URL du dossier (F7) à reconfirmer par le pigiste (F10). Si acceptée, j'ajoute `citation` au JSON-LD, comme dans les deux articles « tennis elbow ». | Source primaire des valeurs † ; les deux articles « tennis elbow » la lient déjà. | Accepté (10/10). La source TWU est un lien (`https://twu.tennis-warehouse.com/learning_center/reporter2.php`, tension de référence 51 lb, balayage « Fast ») dans « Sources » des articles polyester, « tennis elbow », « meilleur cordage » et « raquettes » (FR et EN) et de l'article next gen (FR) ; nœud `citation` ajouté au JSON-LD des articles polyester (nouveau), « tennis elbow » (3e entrée) et « meilleur cordage » (nouveau). URL à reconfirmer par le pigiste (F10) : c'est celle de `STIFFNESS_SOURCE` dans `string-stiffness-provenance.ts`. |
 
 Texte de S-1 (mêmes mots, autre ordre).
 
@@ -743,3 +1011,5 @@ Conforme, sans retouche nécessaire.
 
 - 2026-10-10 · `tsa-redacteur` — Passe numérique après la règle C (PR #110) : chiffres des quatre articles, du guide et des cartes d'index recalculés depuis la base de la branche ; phrases de santé relues (« en général » à la place d'absolus, hybrides, jauge fine) ; phrase de méthode et marqueur † adaptés (jauge la plus rigide mesurée) ; deux graphiques tirés de la base ajoutés (`scripts/blog-covers/build-rigidite-figures.mts`), exceptions de `audit:blog-images` retirées pour les quatre articles. Instrument : `scripts/redaction/verifier-valeurs.mts` réparé (import cassé sur `main`), commit isolé. RELAIS → `tsa-pigiste` : fact-check des seules valeurs touchées (§ 5, Q-2) et avis sur le correctif du vérificateur (Q-6). RELAIS → `tsa-acquisition` : relire la dérogation (§ 1, Q-3). QUESTIONS À `tsa-core` : Q-1, Q-5.
 - 2026-10-10 · `tsa-pigiste` — Fact-check final (étape 4a, circuit court) de la PR #116, tête `e67d64e`, sur la branche `agent/redaction/coherence-chiffres-regle-c-factcheck`. Chiffres de fiche, d'indice, d'effectif et de rang des quatre articles, du guide et des cartes d'index confirmés à la décimale en FR et en EN (173 valeurs au vérificateur, exit 0 ; 542 contrôles stricts ; 204 points de graphique ; 0 écart). Faits de laboratoire (Black Code 202,9 et 249,7 ; 46,8 lb/in ; environ 5 points) confirmés sur trois copies du relevé TWU. Réponses à Q-2 et Q-6 au § 4 : le correctif du vérificateur me convient, trois suites seront faites sur une branche dédiée de l'outil (PR à ouvrir par l'orchestrateur). Test de glissance : 22 affirmations, 4 sans défense (C-1 à C-4), 6 sous réserve (D-1, Q-1), 1 hors diff (O-4). Faits F14 à F23 ajoutés au § 5 (à reporter au § 2). RELAIS → `tsa-redacteur` : C-1 à C-4 (§ 5), puis relancer `redaction:valeurs` et `build-rigidite-figures.mts --check`. RELAIS → orchestrateur : D-1 à porter à Pierre avant la fusion (page HTML d'arbitrage) ; H-1 et H-2 à `tsa-acquisition`, H-3 à H-6 à `tsa-core` ; proposer à `tsa-measure` un `audit:redaction-valeurs` (Q-6). QUESTIONS À `tsa-core` : Q-1 (sans changement), H-4, H-5.
+
+- 2026-10-10 · `tsa-redacteur` — Reprise de la PR #116 (passe n° 2), tête `0001f9f` : base finale (pile rigidités #110, #113, #115, #118 incluse dans la branche). Tout recalculé par script : quatre articles santé (15 plus souples, 21 plus fermes, 164,6 à 286,9, médiane 220, indices 32 à 38, leviers autour du 4G, tableau des 17 : X-One Biphase 166,9, Element 208, 4G 286,9) ; trois articles et leurs jumeaux ajoutés : « meilleur cordage » ×2 (tableau des 18, phrases devenues fausses réécrites), « meilleures raquettes » ×2 (colonne RCS +2, repère « bras sensible » à 32), « matériel next gen » FR (Lynx Tour 228,6, tableau 3, seuil de la Speed MP à 32 kg). Corrections du pigiste : C-1 à C-4, O-1, O-2, O-4 (et O-3 au passage), S-1 à S-4 (§ 4, § 6). Graphiques : axes étendus (160-290 et 80-300), points cerclés pour les 36 polyesters alignés TWU, légendes à nombre exact (C-4). FAQ de la paire « meilleur cordage » : texte visible aligné sur le JSON-LD pour les réponses n° 2 et 3 réécrites (la n° 1, non touchée, garde son écart antérieur de formulation ; même écart, non touché, sur la réponse n° 1 de la paire « raquettes »). Contrôles : `redaction:valeurs` exit 0 (288 valeurs, rigidités à toutes leurs décimales) ; contrôle strict indépendant 965 / 0 écart ; `--check` exit 0 et 15 altérations volontaires détectées ; `audit:blog-funnel`, `audit:blog-images` (cinq exceptions renouvelées, datées, motivées : I3 à I5), `build` verts. RELAIS → `tsa-pigiste` : revérifier les seules valeurs et phrases touchées (§ 4, tableau « Réponses du rédacteur »). RELAIS → `tsa-acquisition` : relire S-1 à S-4 (§ 6) et la dérogation étendue (§ 1). RELAIS → orchestrateur : D-1 (53 baisses restantes) ; rien ne se fusionne avant le fact-check.

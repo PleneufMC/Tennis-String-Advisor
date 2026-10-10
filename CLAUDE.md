@@ -74,28 +74,41 @@ requête réseau vers TWU. **Aucune valeur, note, formule ni seuil modifié** : 
 fichier versionné (sans le brut local), schéma strict, champs dérivés, régénération identique si le brut local est présent ;
 7 tests négatifs ajoutés. Premier jalon du chantier D : la table de rigidité par jauge (D1) s'appuie sur ce fichier.
 
-**Changelog v2.3.13 → v2.3.14** — **Chiffres des articles santé alignés sur la base après
-la règle C, et graphiques de rigidité tirés de la base** (demande de l'orchestrateur du 10/10/2026 ; `tsa-redacteur` ;
-**à fusionner APRÈS la PR #110**, dont `src/data/` est le socle ; dossier `docs/redaction/coherence-chiffres-regle-c.md`).
-Quatre articles (« polyester et tennis elbow » et « cordage et tennis elbow », FR et EN), le guide du matériel et les
-cartes des deux index reprennent les chiffres de la base : 104 → **102 polyesters**, 181 → **179 fiches**, médiane des
-polyesters 215 → **217,3**, polyesters à 200 lb/in ou moins 23 → **20** (Black Code 4S, Solstice Power et ALU Power Vibe
-sortent ; Element Rough passe à 198,3, rang 16), à 240 lb/in ou plus 16 → **19** (Black Code 4S et Razor Code à 242,9,
-Black Code à 249,7 entrent), multifilaments « 140 à 180, médiane 158 » → **143 à 180, médiane 162**, NRG2 148 → **164**
-(indice 24) et NXT 152 → **173,7** (indice 25) dans le tableau des 17 cordages, leviers réordonnés (O-Toro −7, NXT −6) ;
-la médiane citée en section 4 des articles « polyester » (215), absente de la liste de la PR #110, est corrigée aussi.
-**Méthode dite au lecteur** : une rigidité alignée sur une mesure TWU (†) est celle de la jauge la plus rigide mesurée,
-ce qui peut surestimer une jauge plus fine ; le configurateur fait foi ; les valeurs non marquées † peuvent s'écarter de
-la mesure dans les deux sens ; seuls 6 des 45 multifilaments sont alignés. **Santé (F7)** : « safer than any polyester »
-(absolu devenu faux : le NXT est plus rigide que les polyesters les plus souples) et « plus ferme qu'un multifilament »
-deviennent « en général » ; « au-delà du seuil très ferme » à RA 70 corrigé (34 n'y est pas). **Graphiques** : un visuel
-de corps par article (règle images), SVG en ligne produits par `scripts/blog-covers/build-rigidite-figures.mts` depuis
-`src/data/` ; `--check` échoue si un graphique ou un chiffre clé du texte ne colle plus à la base (à relancer avec la
-règle D, le lot 3 ou toute rigidité modifiée) ; les 4 exceptions correspondantes de `audit:blog-images` sont retirées.
-**Instrument réparé** : sur `main`, `npm run redaction:valeurs` était inutilisable (import de `racquetProfile`, retiré de
-`racquet-scoring.ts` par « aucune note déduite ») ; correctif minimal à valider par `tsa-pigiste` (échec fermé sur
-`profil.*` ; cinq cas négatifs rejetés). ⚠️ Restent : le fact-check du pigiste ; les hybrides prémontés, dont la rigidité n'a
-pas suivi celle de leurs composants (Razor Code + X-One à 180 pour un Razor Code à 242,9 ; Q-1 du dossier, `tsa-core`).
+**Changelog v2.3.13 → v2.3.14** — **Chiffres des articles alignés sur la base après la règle C et le lot 3, et
+graphiques de rigidité tirés de la base** (demande de l'orchestrateur du 10/10/2026, reprise du même jour après le fact-check du
+pigiste ; `tsa-redacteur` ; **à fusionner AVEC la pile rigidités #110, #113, #115 et #118, que la branche de la PR #116
+contient** : aucune fenêtre d'incohérence ; dossier `docs/redaction/coherence-chiffres-regle-c.md`). **Périmètre** : quatre
+articles santé (« polyester et tennis elbow » et « cordage et tennis elbow », FR et EN), trois articles et leurs jumeaux ajoutés à
+la reprise (« meilleur cordage polyester 2026 » FR et EN, « meilleures raquettes 2026 » FR et EN, « matériel next gen » FR), le
+guide du matériel et les cartes des deux index. **Chiffres de la base finale** : 104 → **102 polyesters**, 181 → **179 fiches**,
+polyesters de **164,6 à 286,9 lb/in** (Luxilon 4G, ex-265 ; RPM Team 280,6 et Revenge 276 derrière), médiane 215 → **220**, à
+200 lb/in ou moins 23 → **15**, à 240 lb/in ou plus 16 → **21** (indices 32 à 38 à RA 65), multifilaments « 140 à 180, médiane
+158 » → **143 à 180, médiane 162,3**, synthétiques jusqu'à **185,2**, écart plus souple – plus rigide « 11 points » → **13 à 14**
+(13,3 avant arrondi), leviers autour du 4G (38 ; O-Toro 24, soit −14 ; cadre RA 60 : 36, RA 70 : 39 ; 18 kg : 36), tableau des 17
+(X-One Biphase 166,9, Element 208, 4G 286,9), rangs de souplesse des 18 polyesters testés (O-Toro 1er, Poly Tour Pro 7e, Mach-10
+8e, X-Perience 9e, Lynx Tour 10e, RPM Team 17e ; moyenne 230,4), tableau des 18 de « meilleur cordage » (rigidités, †, indices),
+colonne RCS des raquettes **+ 2 points** (Head Lynx Tour 210 → 228,6 ; neuf raquettes sur 18, de RA 66 ou plus, atteignent avec cet
+exemple le seuil « bras sensible » de 32, phrase ajoutée), tableau 3 de l'article next gen (Speed MP + Lynx Tour : 30, 31, 32 ;
+seuil de 35 à 32 kg au lieu de 36). **Corrections du fact-check** (C-1 à C-4, O-1 à O-4, S-1 à S-4 du dossier) : « prenez le plus
+souple : l'O-Toro » devient « l'un des plus souples » (O-Toro Snap et O-Toro) ; « peut surestimer une jauge plus fine » devient
+« une autre jauge de la fiche, mesurée plus souple (pas toujours la plus fine) » ; « reste le choix le plus prudent » devient
+« reste en général plus prudent qu'un polyester » (FAQ, visible et JSON-LD, FR et EN) ; les légendes des graphiques ne disent plus
+« les mesures TWU » en bloc mais le nombre exact de fiches alignées (36 polyesters sur 102 ; 48 fiches sur 179), les points du
+graphique des polyesters sont cerclés quand la fiche est alignée ; le Black Code est attribué à TWU dans la phrase ; les absolus de
+santé (« direction sûre », « voie la plus prudente », « safest route ») sont retirés ; « 2025 » est retiré des titres de partage du
+guide ; la source TWU est cliquable (nœud `citation` du JSON-LD de six articles) ; la FAQ n° 1 des articles polyester donne la
+réponse puis la réserve. **Méthode dite au lecteur** : une rigidité alignée sur une mesure TWU (†) est celle de la jauge la plus
+rigide mesurée ; seuls 11 des 45 multifilaments sont alignés ; les valeurs non marquées † peuvent s'écarter de la mesure dans les
+deux sens. **Graphiques** : axes étendus (160-290 et 80-300 lb/in, le script échoue si une rigidité en sort) ; `--check` vérifie en
+plus les indices des trois plus souples, l'écart, les leviers et le nombre de multifilaments alignés cités par le texte (15
+altérations volontaires, 15 détectées). **Images** : les cinq articles ajoutés étaient en exception d'`audit:blog-images` ; les
+exceptions sont renouvelées (empreinte, date, motif « corrigé le 10/10/2026 », comme en PR #102), sans visuel de corps ajouté :
+création éditoriale à confier à l'équipe éditoriale. **Instrument réparé** (inchangé) : sur `main`, `npm run redaction:valeurs`
+était inutilisable (import de `racquetProfile`) ; correctif accepté par `tsa-pigiste` (échec fermé sur `profil.*`) ; le dossier
+passe à 288 valeurs, rigidités à toutes leurs décimales (trou de précision du vérificateur : proposition du pigiste, branche
+dédiée). ⚠️ Restent : le fact-check du pigiste sur les seules valeurs et phrases touchées ; les **53 baisses** du lot 3, en attente
+du GO de Pierre (les articles les suivront : `--check` signalera les écarts) ; les hybrides prémontés, dont la rigidité n'a pas
+suivi celle de leurs composants (Razor Code + X-One à 180 pour un Razor Code à 242,9 ; Q-1 du dossier, `tsa-core`).
 
 **Changelog v2.3.12 → v2.3.13** — **Règle C de jauge de référence, lot 2 des rigidités de
 laboratoire (C2)** (décisions de Pierre du 10/10/2026 : règle C, « aucune correction qui baisse une alerte pour
