@@ -7,6 +7,29 @@
 > **Branche de référence** : `main` (seule branche longue ; la production Netlify en déploie)
 > **Repo** : https://github.com/PleneufMC/Tennis-String-Advisor.git
 
+**Changelog (numéro de version à fixer à la fusion)** — **Chiffres des articles santé alignés sur la base après
+la règle C, et graphiques de rigidité tirés de la base** (demande de l'orchestrateur du 10/10/2026 ; `tsa-redacteur` ;
+**à fusionner APRÈS la PR #110**, dont `src/data/` est le socle ; dossier `docs/redaction/coherence-chiffres-regle-c.md`).
+Quatre articles (« polyester et tennis elbow » et « cordage et tennis elbow », FR et EN), le guide du matériel et les
+cartes des deux index reprennent les chiffres de la base : 104 → **102 polyesters**, 181 → **179 fiches**, médiane des
+polyesters 215 → **217,3**, polyesters à 200 lb/in ou moins 23 → **20** (Black Code 4S, Solstice Power et ALU Power Vibe
+sortent ; Element Rough passe à 198,3, rang 16), à 240 lb/in ou plus 16 → **19** (Black Code 4S et Razor Code à 242,9,
+Black Code à 249,7 entrent), multifilaments « 140 à 180, médiane 158 » → **143 à 180, médiane 162**, NRG2 148 → **164**
+(indice 24) et NXT 152 → **173,7** (indice 25) dans le tableau des 17 cordages, leviers réordonnés (O-Toro −7, NXT −6) ;
+la médiane citée en section 4 des articles « polyester » (215), absente de la liste de la PR #110, est corrigée aussi.
+**Méthode dite au lecteur** : une rigidité alignée sur une mesure TWU (†) est celle de la jauge la plus rigide mesurée,
+ce qui peut surestimer une jauge plus fine ; le configurateur fait foi ; les valeurs non marquées † peuvent s'écarter de
+la mesure dans les deux sens ; seuls 6 des 45 multifilaments sont alignés. **Santé (F7)** : « safer than any polyester »
+(absolu devenu faux : le NXT est plus rigide que les polyesters les plus souples) et « plus ferme qu'un multifilament »
+deviennent « en général » ; « au-delà du seuil très ferme » à RA 70 corrigé (34 n'y est pas). **Graphiques** : un visuel
+de corps par article (règle images), SVG en ligne produits par `scripts/blog-covers/build-rigidite-figures.mts` depuis
+`src/data/` ; `--check` échoue si un graphique ou un chiffre clé du texte ne colle plus à la base (à relancer avec la
+règle D, le lot 3 ou toute rigidité modifiée) ; les 4 exceptions correspondantes de `audit:blog-images` sont retirées.
+**Instrument réparé** : sur `main`, `npm run redaction:valeurs` était inutilisable (import de `racquetProfile`, retiré de
+`racquet-scoring.ts` par « aucune note déduite ») ; correctif minimal à valider par `tsa-pigiste` (échec fermé sur
+`profil.*` ; cinq cas négatifs rejetés). ⚠️ Restent : le fact-check du pigiste ; les hybrides prémontés, dont la rigidité n'a
+pas suivi celle de leurs composants (Razor Code + X-One à 180 pour un Razor Code à 242,9 ; Q-1 du dossier, `tsa-core`).
+
 **Changelog (numéro de version à fixer à la fusion)** — **Règle C de jauge de référence, lot 2 des rigidités de
 laboratoire (C2)** (décisions de Pierre du 10/10/2026 : règle C, « aucune correction qui baisse une alerte pour
 l'instant », lot 2 approuvé ; `tsa-core`). **Règle C** : la rigidité d'une fiche = la mesure TWU de la jauge la plus
