@@ -7,6 +7,25 @@
 > **Branche de référence** : `main` (seule branche longue ; la production Netlify en déploie)
 > **Repo** : https://github.com/PleneufMC/Tennis-String-Advisor.git
 
+**Changelog (numéro de version à fixer à la fusion)** — **Rigidités de laboratoire, premier lot : les
+8 polyesters (C2)** (décision de Pierre du 10/10/2026 : « on aligne leur rigidité sur la mesure faite sur
+le bon modèle et la bonne jauge » ; `tsa-core`). TWU mesure chaque jauge séparément : l'écart entre jauges
+d'un même polyester atteint 47 lb/in (Black Code : 202,9 en 1.18, 249,7 en 1.28), soit 5 points d'indice
+RCS, alors qu'une fiche porte UNE rigidité. La jauge de référence est une **décision de produit, non
+tranchée** (posée comme telle dans `racquet-scoring.ts`). N'est appliqué que ce qui n'en demande aucune :
+**Savage** 220 → 234,3 (jauge unique) et **Black Code 4S** 200 → 209,2 (la plus basse des trois jauges
+mesurées, toutes plus rigides que 200). **Retenus** (valeur dépendante de la jauge, certaines baisseraient
+une alerte : règle 2, GO de Pierre) : Black Code, Pro Red Code, Hawk, Gamma Moto. **Quarantaine** (aucune
+ligne TWU à ce nom) : 4S, ATP Razor Code. **Effet** sur les 140 094 combinaisons du contrôle 5 : alerte
+bras avancée standard 5,12 → 5,20 %, sensible 19,56 → 19,78 % (+112 / +303). Aucune note /10, formule ni
+seuil modifié. Provenance : `src/data/string-stiffness-provenance.ts` (non affiché), contrôle 13 ter de
+`audit:ratings`, outil `scripts/scraper/c2-effet-alertes.mts` ; relevé TWU du 10/10 identique à celui du
+29/09. **Notes TW conservées** : les 12 notes /10 de Tecnifibre Triax et Wilson NXT, recopiées de Tennis
+Warehouse, sont conservées (décision de Pierre du 10/10/2026), en connaissance du risque (les conditions de
+TW interdisent la reproduction sans permission écrite), et seront ajoutées à la demande d'autorisation
+écrite ; non modifiées. ⚠️ L'article « polyester et tennis elbow » (FR, EN) cite le tableau des polyesters
+à 200 lb/in ou moins : Black Code 4S en sort (23 → 22), à corriger par `tsa-redacteur` à la fusion.
+
 **Changelog v2.3.3 → v2.3.4** — **Trois composants aux faux avis supprimés** (décision de Pierre du
 10/10/2026, repérés par `tsa-acquisition` pendant la PR #102). `src/components/sections/testimonials.tsx`
 (témoignages nominatifs inventés, « 4.9/5 », « 50,000+ Utilisateurs »), `featured-products.tsx` (4,8 sur
