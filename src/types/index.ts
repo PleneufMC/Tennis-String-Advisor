@@ -51,16 +51,17 @@ export interface Racquet {
    *    `data/racquets-database.ts`, PAS cette interface. Celle-ci n'est
    *    référencée que par d'autres types de ce même fichier (`RacquetBrand`,
    *    etc.), eux-mêmes non consommés par les pages.
-   *  - Pour obtenir un profil de jeu de raquette, utiliser
-   *    `deriveRacquetProfile()` de `lib/racquet-scoring.ts` : il CALCULE les
-   *    5 notes à partir des specs réelles (poids, tamis, RA, plan de cordage)
-   *    au lieu d'attendre des données que les fabricants ne publient pas.
+   *  - Aucune note de raquette déduite des caractéristiques n'est affichée
+   *    (décision de Pierre du 10/10/2026). Pour une raquette évaluée, l'avis
+   *    des testeurs vient de `racquetTesterSynthesis()` (`lib/racquet-scoring.ts`) ;
+   *    pour les autres, seules les caractéristiques sont montrées.
    *
    * Conservées en `@deprecated` plutôt que supprimées : la suppression sèche
    * romprait tout code externe typé sur cette interface, alors que le vrai
    * problème est qu'il ne faut pas s'y fier.
    *
-   * @deprecated Utiliser `deriveRacquetProfile()` de `lib/racquet-scoring.ts`.
+   * @deprecated Jamais renseigné ; ne pas afficher de note de raquette déduite.
+   * Avis de testeurs : `racquetTesterSynthesis()` de `lib/racquet-scoring.ts`.
    */
   power?: number;
   /** @deprecated Voir `power` ci-dessus : jamais renseigné. */

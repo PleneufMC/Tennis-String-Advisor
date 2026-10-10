@@ -1,11 +1,59 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.2.12
+> **Version** : 2.3.1
 > **Date** : 10 octobre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
 > **Branche de référence** : `main` (seule branche longue ; la production Netlify en déploie)
 > **Repo** : https://github.com/PleneufMC/Tennis-String-Advisor.git
+
+**Changelog v2.3.0 → v2.3.1** — **Plus aucune note de raquette déduite des
+caractéristiques** (décision de Pierre du 10/10/2026, après consultation de `tsa-revenue`,
+`tsa-acquisition` et `tsa-measure` ; `tsa-core`, suite au retrait de l'article Gravity MP
+vs Tour, #99). Constat : `/compare` mettait côte à côte le profil **combiné** (specs +
+testeurs) des 18 raquettes évaluées et le profil **dérivé** des autres, sans étiquette —
+Gravity MP (dérivée) 3,3/6,2/7,4/5,3/4,7 contre Gravity Tour (combinée)
+3,0/5,2/7,0/4,2/5,1 ; configurateur et PDF Premium affichaient l'un ou l'autre selon la
+raquette. Mesure : même corrigé, le profil dérivé ne départage pas deux raquettes proches
+(accord avec les testeurs ρ ≤ 0,31, négatif en maniabilité et stabilité : équilibre et
+swingweight absents de la plupart des fiches). **Règle unique, FR, EN et PDF** : raquette
+évaluée = « Avis de testeurs (synthèse) » **seul**, moyenne des 20 critères et cinq
+critères **sur 20, tels quels** (ni recalage ni moyenne 50/50 avec le profil déduit :
+invérifiable, la référence était dedans) ; raquette non évaluée = **caractéristiques
+seules**. Comparateur : tamis, poids, RA, prix, plan (équilibre et swingweight quand ils
+sont publiés), puis la moyenne /20 sur une ligne distincte, « non évaluée » sinon, sans
+barre ni couleur de classement. Même moyenne partout (`/statistics`, comparateur,
+configurateur, PDF). `deriveRacquetProfile` n'a plus d'appelant applicatif : formule
+corrigée conservée (contrôle sans RA, masse en échelle linéaire), conservation ou retrait
+à arbitrer. Contrôles : 16 (liste blanche des imports de `racquet-scoring`, libellés
+interdits dans `src/`, `public/` et les fiches EN, comparateur et PDF vérifiés en
+exécution, 7 tests négatifs), 17 (formule), 14 (avis affiché = synthèse telle quelle).
+RCS, alertes bras (5,12 % / 19,56 %) et Top 10 inchangés. Au passage : en thème sombre,
+les textes du bloc de comparaison (cartes restées blanches, texte éclairci) étaient
+illisibles — corrigé.
+
+**Changelog v2.2.12 → v2.3.0** — **Équipe éditoriale** (demande de Pierre du 10/10/2026 :
+« 1 pigiste qui recherche l'info brute, un rédacteur qui fait les articles/blog et enfin un
+spécialiste du SEO », avec « le réflexe de travailler ensemble », et des articles
+« systématiquement assortis d'images quitte à les générer »). Deux agents créés,
+`tsa-pigiste` et `tsa-redacteur` ; `tsa-acquisition` réorienté en spécialiste SEO et
+acquisition (nom conservé : hook de démarrage, carte de propriété, rapports A3). Une chaîne
+en huit étapes autour d'un dossier partagé par sujet (`docs/redaction/`), une charte
+commune écrite une seule fois (`docs/redaction/CHARTE.md` : onze règles de fait, dont les
+leçons du 10/10 — natures de données, pro stock, métadonnées internes, refus d'accès —,
+test de glissance, images), trois circuits proportionnés (complet, court, veille). Règle
+images outillée : `npm run audit:blog-images`, bloquant, dans `audit:all` ; 17 articles sur
+33 sans visuel de corps sont listés en exception datée, qui tombe dès que l'article change.
+Vérificateur des valeurs produit citées par un article : `npm run redaction:valeurs`. §2
+(actualisation 31/08), §5, §5 bis (`seo-content-strategist` : ne plus invoquer), §5 ter
+(nouveau), §6 et §9 mis à jour. Décisions de Pierre du même jour, intégrées à la charte
+(v1.1) et aux prompts :
+- images générées par **son outil MCP hébergé sur n8n** (voie ouverte dès qu'il est
+  connecté, coût assumé par lui ; prompt en anglais, sans texte incrusté, contrôle
+  visuel, légende « Illustration générée », prompt consigné dans `CREDITS.md`) ;
+- **un article par semaine, evergreen d'abord** ;
+- **aucune publication sans son consentement explicite**, son GO sur une PR ne valant
+  que pour le site.
 
 **Changelog v2.2.11 → v2.2.12** — **Filtres « Caractéristiques » inatteignables sur
 `/racquets`** (signalement de Pierre du 10/10/2026, `tsa-core`). Dès `lg`, la colonne de
@@ -291,6 +339,11 @@ corrigé dans la même PR.
   photographique à la place. Autorisation TW non obtenue, TWE non demandée :
   photos conservées par décision de Pierre du 10/10/2026, en connaissance du
   risque. Tennis-Point : collecte refusée (429), aucune photo.
+- Notes de raquette (décision de Pierre du 10/10/2026) : **aucune note déduite
+  des caractéristiques** n'est affichée, nulle part (comparateur, configurateur,
+  PDF Premium, FR et EN). Raquette évaluée : « Avis de testeurs (synthèse) »,
+  moyenne et cinq critères /20 tels quels ; sinon, caractéristiques seules.
+  Garde-fou : contrôle 16 de `audit:ratings`.
 
 ### Cassé ou incomplet
 
@@ -421,7 +474,8 @@ dans la PR `agent/tsa-measure/a3-blog-vers-configurateur`) :
   **8 articles + un index** (9 fichiers). Deux articles publiés les 27-28/08
   en FR et EN (« raquette : point fort ou point faible », « cordage &
   chaleur »). Toute mention antérieure de « 12 articles FR / 2 articles EN »
-  est périmée — il en reste une dans `.claude/agents/tsa-acquisition.md`.
+  est périmée (le prompt de `tsa-acquisition`, réécrit le 10/10/2026, n'en
+  porte plus ; au 10/10, le blog compte 19 articles FR et 14 EN).
 - **Toujours cassé, revérifié le 31/08** : `src/app/api/stripe/` absent
   (aucun webhook — point 1 inchangé) ; `NEXT_PUBLIC_AWIN_ID` et
   `NEXT_PUBLIC_AWIN_TENNISPOINT_MID` vides (point 2 inchangé).
@@ -487,13 +541,17 @@ coûtent un indicateur.
 
 ## 5. L'équipe et la carte de propriété des fichiers
 
-Quatre agents, périmètres **disjoints**. Deux agents ne modifient jamais le même
-fichier dans la même semaine.
+Six agents, périmètres **disjoints**. Deux agents ne modifient jamais le même
+fichier dans la même semaine — **sauf** dans la chaîne éditoriale (§5 ter), où
+pigiste, rédacteur et acquisition se relaient sur la même branche, chacun dans
+sa partie du fichier.
 
 | Agent | Mission | Priorités couvertes |
 |---|---|---|
 | `tsa-revenue` | Monétisation et parcours de conversion | 1 et 4 |
-| `tsa-acquisition` | SEO, contenu, distribution externe | 2 et 3 |
+| `tsa-acquisition` | Spécialiste SEO et acquisition : brief et passe on-page des articles, SEO technique, version anglaise, distribution externe | 2 et 3 |
+| `tsa-pigiste` | L'information brute, vérifiée : dossier de faits, iconographie, fact-check, veille | 2 (transverse au contenu) |
+| `tsa-redacteur` | Les articles FR et EN et leurs images | 2 |
 | `tsa-core` | Algorithme RCS et intégrité des données | transverse |
 | `tsa-measure` | Mesure, instrumentation, contrôle des affirmations | transverse, bloquant |
 
@@ -505,7 +563,12 @@ fichier dans la même semaine.
 | `src/components/product/buy-button.tsx` | `tsa-revenue` |
 | `src/app/pricing/`, `src/app/payment-*/`, `src/app/api/checkout*`, `src/app/api/stripe/` | `tsa-revenue` |
 | `src/app/auth/`, `src/app/api/auth/`, `src/lib/auth*` | `tsa-revenue` |
-| `public/blog/`, `public/en/` (dont `public/en/racquets/` et `public/en/strings/`, générés, non versionnés), `scripts/en-products/` | `tsa-acquisition` |
+| Articles `public/blog/*.html`, `public/en/blog/*.html` : **corps** (texte, tableaux, figures, liens, date visible, `dateModified` quand un chiffre change) | `tsa-redacteur` |
+| Articles : **`<head>`** (title, meta, canonical, hreflang, og, JSON-LD) ; index `public/blog/index.html` et `public/en/blog/index.html` | `tsa-acquisition` |
+| `public/blog/images/` (dont `CREDITS.md`), `public/blog/blog-figures.css`, `scripts/blog-covers/` | `tsa-redacteur` |
+| `public/en/` hors blog (dont `public/en/racquets/` et `public/en/strings/`, générés, non versionnés), `scripts/en-products/` | `tsa-acquisition` |
+| `docs/redaction/` : dossiers partagés, chaque section à son agent (§5 ter) ; `CHARTE.md`, `README.md`, `_modele.md` modifiés par PR validée par Pierre | chaîne éditoriale |
+| `scripts/redaction/` (vérificateur des valeurs citées) | `tsa-pigiste` |
 | `src/app/sitemap.ts`, `src/app/robots.ts`, `public/robots.txt` | `tsa-acquisition` |
 | blocs `export const metadata` et JSON-LD dans les `page.tsx` | `tsa-acquisition` |
 | `src/data/`, `src/lib/advanced-rcs.ts`, `src/lib/racquet-scoring.ts` | `tsa-core` |
@@ -543,7 +606,7 @@ implémentations RCS du dépôt (cf. §2 point 5). Répartition :
 |---|---|
 | `catalog-curator`, `algorithm-validator` | **Ne plus invoquer sur TSA.** Mandat absorbé par `tsa-core` ; leurs règles de fond (source URL vérifiable, champ sans source = `null`, jamais de coefficient inventé) sont reprises aux règles 3 et 4 du §4. |
 | `feature-builder` | **Ne plus invoquer sur TSA.** Reste l'agent de TennisMatchFinder. Sur TSA, chaque chantier a son propriétaire au §5. |
-| `seo-content-strategist` | Consultable par `tsa-acquisition` pour les clusters de mots-clés et briefs éditoriaux. La propriété des fichiers (`public/blog/`, métadonnées) reste à `tsa-acquisition`. |
+| `seo-content-strategist` | **Ne plus invoquer sur TSA** (10/10/2026). Mandat absorbé par la chaîne éditoriale (§5 ter) : brief SEO et clusters par `tsa-acquisition`, faits par `tsa-pigiste`, rédaction par `tsa-redacteur`. |
 | `db-guardian` | **Gate conservé.** Toute modification de schéma (Prisma/Supabase) ou de policy RLS passe par lui — concerne le chantier C3 de `tsa-core` (source de vérité TS vs Supabase) et l'option B du chantier R5 de `tsa-revenue` (webhook Stripe écrivant `isPremium`). |
 | `deploy-captain` | **Gate conservé.** Toute action irréversible ou de production — variables d'environnement Netlify (chantier R2, étape 4), migration prod, rollback — exige son passage et un « GO » explicite de Pierre. |
 | `security-auditor` | **Gate conservé.** Review obligatoire avant merge pour : webhook Stripe (vérification de signature), tout changement d'auth (chantier R4), toute route API nouvelle. Findings sourcés (CWE/OWASP), veto possible. |
@@ -567,9 +630,69 @@ description d'un agent global au sujet de TSA, ce fichier gagne.
 
 ---
 
+## 5 ter. La chaîne éditoriale
+
+Demande de Pierre du 10/10/2026 : un pigiste, un rédacteur et un spécialiste du
+SEO qui ont « le réflexe de travailler ensemble », et des articles
+« systématiquement assortis d'images quitte à les générer ». Le détail vit dans
+`docs/redaction/` :
+
+- `CHARTE.md` : les règles communes, écrites une seule fois ;
+- `README.md` : le déroulé ;
+- `_modele.md` : le dossier type.
+
+**En une ligne par étape** :
+
+| Étape | Qui | Ce qu'il fait |
+|---|---|---|
+| 0 | orchestrateur | ouvre le dossier `docs/redaction/<slug-fr>.md` et la branche `agent/redaction/<slug-fr>` |
+| 1 | `tsa-acquisition` | brief SEO |
+| 2 | `tsa-pigiste` | dossier de faits et iconographie |
+| 3 | `tsa-redacteur` | article FR, adaptation EN, visuels |
+| 4 | `tsa-pigiste` et `tsa-acquisition`, en parallèle | fact-check et test de glissance ; passe on-page |
+| 5 | `tsa-redacteur` | passe finale |
+| 6 | `tsa-redacteur` | contrôles |
+| 7 | `tsa-redacteur` | PR, puis GO de Pierre |
+| 8 | `tsa-acquisition` | vérification en production, relevé S+4 avec `tsa-measure` |
+
+**Circuits.** Complet pour un nouvel article ; court (rédacteur et fact-check
+ciblé) pour une correction ; veille (pigiste seul) sur demande.
+
+**Relais.** Chaque rapport finit par `RELAIS → <agent>` et
+`QUESTIONS À <agent>`. Les agents ne s'appellent pas entre eux : l'orchestrateur
+relance le destinataire. Un désaccord remonte à Pierre, il ne se tranche pas en
+silence. Faits : pigiste (et `tsa-core` pour la base). Mots : rédacteur.
+Découvrabilité : acquisition. Publication : Pierre.
+
+**Rythme.** Un article par semaine, **evergreen d'abord** (décision de Pierre du
+10/10/2026, charte §1) : l'actualité reste l'exception, et chaque brief justifie
+la durée de vie de son sujet.
+
+**Consentement.** Rien ne se publie sans le consentement explicite de Pierre :
+fusion sur `main`, forum, réseau social, newsletter, soumission externe
+(charte §6). Son GO sur une PR vaut pour la mise en ligne de cette PR sur le
+site, et pour rien d'autre.
+
+**Contrôles propres à la chaîne** :
+
+- `npm run audit:blog-images` vérifie la règle images. Il est bloquant et fait
+  partie de `audit:all`. Le script est à `tsa-measure`. Les lignes de
+  `scripts/qa-blog-images.exceptions.json` sont tenues par le rédacteur : retrait
+  quand un visuel est ajouté, renouvellement daté et motivé en cas d'urgence.
+- `npm run redaction:valeurs -- <dossier>` confronte chaque valeur produit
+  citée à la base et refuse les profils de natures mélangées.
+
+**Dérogation.** Un nouvel article FR et EN, avec son dossier et ses images, est
+une unité indivisible : la limite de 400 lignes par PR (§6) ne s'y applique
+pas. Les modifications d'articles existants y restent soumises.
+
+---
+
 ## 6. Conventions de travail
 
-- **Branche** : `agent/<nom-agent>/<slug-chantier>`, partant de `main`.
+- **Branche** : `agent/<nom-agent>/<slug-chantier>`, partant de `main`
+  (chaîne éditoriale : `agent/redaction/<slug-fr>`, une branche partagée par
+  sujet, §5 ter).
 - **PR** : toujours **vers `main`**. Décision de Pierre du 29/09/2026 : plus
   aucun passage par `genspark_ai_developer`, qui n'est plus une branche de
   travail. Un merge dans `main` met en ligne en ~2 min 30 (Netlify).
@@ -583,6 +706,8 @@ description d'un agent global au sujet de TSA, ce fichier gagne.
   npm run audit:ratings       # si src/data ou une formule est touchée
   npm run audit:rls           # si Supabase ou une route API est touchée
   npm run audit:contrast      # si un composant visuel est touché
+  npm run audit:blog-funnel   # si public/blog ou public/en/blog est touché
+  npm run audit:blog-images   # idem (règle images, §5 ter)
   ```
 - **Pas de suite de tests dans le dépôt.** Tout agent qui modifie une fonction de
   calcul ou une règle métier **ajoute un contrôle** dans le script `qa-*`
@@ -643,7 +768,7 @@ agent.
 # Depuis la racine du dépôt
 mkdir -p .claude/agents
 mv CLAUDE.md .                       # socle commun, chargé automatiquement
-mv tsa-*.md .claude/agents/          # les 4 définitions d'agents
+mv tsa-*.md .claude/agents/          # les 6 définitions d'agents
 ```
 
 Redémarrer la session Claude Code pour que le dossier `.claude/agents/` soit
@@ -662,4 +787,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.2.12 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.3.1 — Tennis String Advisor — « Mesurer avant d'affirmer. »*

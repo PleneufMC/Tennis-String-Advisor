@@ -86,3 +86,18 @@ image).
 | couverture-meilleur-cordage-polyester-2026-fr.webp / -en.webp | Générée | Tennis String Advisor | Propriété TSA | Coupe de principe d'un faisceau de monofilaments | meilleur-cordage-polyester-2026 (FR), best-polyester-tennis-strings-2026 (EN) | 09/10/2026 |
 | couverture-polyester-tennis-elbow-fr.webp / -en.webp | Générée | Tennis String Advisor | Propriété TSA | Jauge de fermeté en cinq zones, sans graduation chiffrée | cordage-polyester-tennis-elbow (FR), polyester-strings-tennis-elbow (EN) | 09/10/2026 |
 | couverture-blog-fr.webp / -en.webp | Générée | Tennis String Advisor | Propriété TSA | Tamis de cordage et balle | og:image de /blog/ et /en/blog/ | 09/10/2026 |
+
+## Illustrations générées
+
+Images produites par le générateur d'images de Pierre, un outil MCP hébergé sur
+n8n (voie 3 de la charte éditoriale, `docs/redaction/CHARTE.md` §4 ; décision de
+Pierre du 10/10/2026). Ne pas confondre avec les couvertures ci-dessus,
+dessinées par script. Une ligne par fichier, avec le prompt employé en entier.
+La légende de chaque image dit « Illustration générée » (EN : « Illustration
+(AI-generated) ») ; `npm run audit:blog-images` le vérifie pour tout fichier de
+ce tableau.
+
+| Fichier | Outil | Date | Prompt employé (anglais, intégral) | Retouches | Utilisée par |
+|---|---|---|---|---|---|
+
+Aucune au 10/10/2026 : l'outil n'est pas encore connecté.
