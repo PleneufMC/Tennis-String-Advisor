@@ -25,7 +25,28 @@
  *         (règle du lot 1, antérieure à C ; plus aucune fiche ne l'utilise).
  *   - `retenue-jauge` : mesure disponible mais rien n'est appliqué (`stiffness` = `before`) parce que la règle C
  *     BAISSERAIT la valeur (règle 2 : GO explicite de Pierre). Une fiche dont C ≥ `before` doit être appliquée.
- *   - `quarantaine` : appariement non établi (aucune ligne TWU à ce nom) ; la valeur reste, le motif est écrit.
+ *   - `retenue-serie-suspecte` (lot 3, 10/10/2026) : appariement strict établi et valeur C SUPÉRIEURE à l'actuelle (une hausse),
+ *     mais la série du modèle est non monotone et la garde ci-dessous échoue : la hausse ne repose que sur une mesure contredite.
+ *     `stiffness` = `before` ; la hausse attend l'arbitrage. Le contrôle 13 ter vérifie que la garde échoue bien.
+ *   - `quarantaine` : appariement strict non établi (aucune ligne TWU à ce nom, ou jauge nominale / matière qui ne tombe pas sur la
+ *     fiche) ; la valeur reste, le motif est écrit. Le contrôle 13 ter vérifie que l'appariement (strict ou manuel) n'établit réellement rien.
+ *
+ * GARDE DE SÉRIE SUSPECTE (lot 3, demande de l'orchestrateur du 10/10/2026). Une mesure est « contredite » si une jauge plus épaisse
+ * du même modèle et de la même matière, hors fiche comprise, a été mesurée plus souple (D1 : série non monotone). Une hausse (règle C)
+ * sur une fiche à série suspecte n'est appliquée que si
+ *   (B) la mesure retenue (la plus rigide) n'est contredite par aucune jauge plus épaisse, ou
+ *   (A) la plus rigide des mesures non contredites de la fiche reste ≥ la valeur actuelle (la hausse tient même sans la mesure contredite) ;
+ * sinon elle est retenue (`retenue-serie-suspecte`). La valeur écrite est toujours celle de la règle C. Le contrôle 13 ter recalcule la
+ * garde depuis le relevé versionné ; une hausse antérieure à la garde qui ne la satisfait pas porte `suspectGuardExemption` (motif daté).
+ *
+ * APPARIEMENT MANUEL (lot 3, décision de l'orchestrateur du 10/10/2026, Pierre ayant délégué) : SEULE exception au motif strict d'intitulé
+ * (`<modèle> <calibre>`, `<modèle> <calibre> (<jauge>)`, `<modèle> <calibre>/<jauge>`, `<modèle> <jauge>`). Une ligne TWU dont l'intitulé n'est
+ * écarté de ce motif que par un suffixe de coloris (« Babolat RPM Team 16 Black ») peut être appariée à la main si elle figure dans
+ * `MANUAL_PAIRINGS`, liste blanche DATÉE et MOTIVÉE limitée à UNE entrée ; la mesure porte alors `pairing: 'manuel'`. Le contrôle 13 ter
+ * vérifie la ligne dans le relevé versionné (intitulé = modèle + calibre + un mot, matière du type de la fiche, jauge nominale = celle déclarée
+ * et d'une jauge de la fiche, ligne unique à cette jauge, motif strict qui ne la reconnaît pas) et refuse toute entrée sans date, décideur ou
+ * motif, toute mesure manuelle hors liste blanche et toute entrée de la liste sans mesure. L'exception va dans le sens qui protège le bras
+ * (règle 2) : une erreur d'identité ne peut produire qu'une SUR-alerte.
  *
  * Conditions de mesure (identiques pour toutes les lignes) : tension de référence 51 lbs, vitesse de
  * balayage « Fast », unité lb/in. Une seule mesure par couple (modèle, jauge), sans incertitude publiée.
@@ -64,7 +85,42 @@ export const STIFFNESS_SOURCE = {
   ],
 } as const;
 
-export type StiffnessStatus = 'appliquee' | 'retenue-jauge' | 'quarantaine';
+/**
+ * Appariement manuel : voir l'en-tête. Liste blanche DATÉE et MOTIVÉE, UNE entrée au plus (le contrôle 13 ter refuse la seconde).
+ * Jamais lue par une surface du site ; le générateur des tables par jauge (`scripts/scraper/c2-par-jauge.mts`) et le contrôle 13 quater
+ * la relisent pour que la table de la fiche contienne cette mesure.
+ */
+export interface ManualPairing {
+  /** Identifiant de la fiche. */
+  id: string;
+  /** Intitulé TWU exact de la ligne appariée à la main. */
+  twu: string;
+  /** Jauge de la fiche (mm) à laquelle la ligne est appariée. */
+  gauge: string;
+  /** Date de la décision (AAAA-MM-JJ). */
+  date: string;
+  /** Qui a décidé. */
+  decidedBy: string;
+  /** Ce qui établit l'identité malgré l'intitulé non reconnu par le motif strict. */
+  reason: string;
+}
+
+export const MANUAL_PAIRINGS: readonly ManualPairing[] = [
+  {
+    id: 'babolat-rpm-team',
+    twu: 'Babolat RPM Team 16 Black',
+    gauge: '1.30',
+    date: '2026-10-10',
+    decidedBy: 'orchestrateur (Pierre ayant délégué les arbitrages le 10/10/2026)',
+    reason:
+      'Modèle RPM Team ; coloris Black (la fiche est noire depuis #114, sur main au 10/10/2026) ; jauge 1.30 de la fiche ; matière Polyester, celle du type de la fiche ; ligne unique à cette jauge ; ' +
+      'intitulé écarté du motif strict uniquement à cause du suffixe de coloris « Black » (« 16 Black » au lieu de « 16 » ou « 16 (1.30) »). ' +
+      'La ligne 1.25 « Babolat RPM Team 17 (1.25) » (matière TWU « Nylon/Polyester », 245,2) ne contredit pas : la règle C retient la plus rigide mesurée aux jauges de la fiche (1.25 et 1.30). ' +
+      'Seule exception au motif strict ; elle va dans le sens qui protège le bras (règle 2) : une erreur d\'identité ne peut produire qu\'une sur-alerte.',
+  },
+];
+
+export type StiffnessStatus = 'appliquee' | 'retenue-jauge' | 'retenue-serie-suspecte' | 'quarantaine';
 export type StiffnessRule = 'jauge-unique' | 'plancher' | 'plus-rigide';
 
 export interface TwuMeasure {
@@ -74,6 +130,8 @@ export interface TwuMeasure {
   gauge: string;
   /** Rigidité mesurée (lb/in), 51 lbs, Fast. */
   lbIn: number;
+  /** `'manuel'` : ligne appariée à la main (liste blanche `MANUAL_PAIRINGS`), seule exception au motif strict d'intitulé ; absent sinon. */
+  pairing?: 'manuel';
 }
 
 export interface StringStiffnessProvenance {
@@ -88,6 +146,8 @@ export interface StringStiffnessProvenance {
   appliedGauge?: string;
   /** Règle 2 : GO explicite de Pierre (qui, quand) pour une correction qui BAISSE la rigidité ; absent sinon. */
   loweringApprovedBy?: string;
+  /** Garde de série suspecte : motif daté d'une hausse appliquée AVANT la garde et qui ne la satisfait pas ; absent sinon (le contrôle refuse une exemption inutile). */
+  suspectGuardExemption?: string;
   /** Motif : pourquoi cette valeur, ou pourquoi rien n'est appliqué. */
   note: string;
 }
@@ -221,6 +281,7 @@ export const STRING_STIFFNESS_PROVENANCE: Readonly<Record<string, StringStiffnes
   },
   'wilson-nxt': {
     status: 'appliquee', before: 152, rule: 'plus-rigide', appliedGauge: '1.30',
+    suspectGuardExemption: 'Lot 2 approuvé par Pierre le 10/10/2026, avant la garde de série suspecte ; ses deux mesures (156 et 173,7) sont contredites par la 15L/1.35 (152, hors fiche, égale à l\'ancienne valeur), mesurée plus souple que la 16 (bruit d\'échantillon déjà consigné dans la note) : la hausse reste approuvée, non revue ici. Exemption confirmée par l\'orchestrateur le 10/10/2026 (Pierre ayant délégué).',
     measures: [{ twu: 'Wilson NXT 17', gauge: '1.24', lbIn: 156 }, { twu: 'Wilson NXT 16', gauge: '1.30', lbIn: 173.7 }],
     note: 'Règle C : 1.30 (173,7) ; 1.24 (156) est plus souple (sur-alerte assumée de 17,7). 15L/1.35 (152, hors fiche) est plus souple que 16 : bruit d\'échantillon. TW « NXT 17/1.24 » (copie locale du 29/09) : multifilament.',
   },
@@ -238,6 +299,195 @@ export const STRING_STIFFNESS_PROVENANCE: Readonly<Record<string, StringStiffnes
     status: 'appliquee', before: 158, rule: 'plus-rigide', appliedGauge: '1.30',
     measures: [{ twu: 'Tecnifibre XR3 17', gauge: '1.25', lbIn: 160.6 }, { twu: 'Tecnifibre XR3 16', gauge: '1.30', lbIn: 162.9 }],
     note: 'Règle C : 1.30 (162,9) ; 1.25 (160,6) est plus souple. Matière TWU « Nylon/Polyurethane », cohérente avec la fiche. Génération non vérifiable : ni fiche ni revue TW (absent du catalogue TW du 29/09) ; le produit figure au catalogue Tecnifibre (page « XR3 Natural Multifilament Reel », 10/10), description illisible.',
+  },
+
+  // ---- Lot 3 : hausses établies par la règle C (10/10/2026), garde de série suspecte appliquée (voir l'en-tête) ----------
+  'babolat-revenge': {
+    status: 'appliquee', before: 230, rule: 'plus-rigide', appliedGauge: '1.30',
+    measures: [{ twu: 'Babolat Revenge 17', gauge: '1.25', lbIn: 222.3 }, { twu: 'Babolat Revenge 16', gauge: '1.30', lbIn: 276 }],
+    note:
+      'Règle C : 1.30 (276) ; 1.25 (222,3) est plus souple (sur-alerte assumée de 53,7 lb/in sur la jauge fine). Avec Luxilon 4G (286,9), devient l\'une des deux rigidités les plus hautes du catalogue (le maximum était 265 avant ce lot).',
+  },
+  'solinco-mach-10': {
+    status: 'appliquee', before: 195, rule: 'plus-rigide', appliedGauge: '1.30',
+    measures: [{ twu: 'Solinco Mach 10 16 (1.30)', gauge: '1.30', lbIn: 222.3 }],
+    note:
+      'Règle C : 1.30 (222,3). Couverture partielle : 1.15, 1.20, 1.25 non mesurées ; valeur plancher (une jauge non mesurée peut être plus rigide), hausse établie dans son sens.',
+  },
+  'tecnifibre-razor-soft': {
+    status: 'appliquee', before: 185, rule: 'plus-rigide', appliedGauge: '1.25',
+    measures: [{ twu: 'Tecnifibre Razor Soft 17 (1.25)', gauge: '1.25', lbIn: 212 }],
+    note:
+      'Règle C : 1.25 (212). Couverture partielle : 1.20, 1.30 non mesurées ; valeur plancher (une jauge non mesurée peut être plus rigide), hausse établie dans son sens.',
+  },
+  'yonex-poly-tour-spin-g': {
+    status: 'appliquee', before: 215, rule: 'jauge-unique', appliedGauge: '1.25',
+    measures: [{ twu: 'Yonex Poly Tour Spin G 1.25', gauge: '1.25', lbIn: 237.2 }],
+    note:
+      'Jauge unique (1.25), c\'est la jauge mesurée : aucun choix de jauge. Hausse de 22,2 lb/in. Intitulé TWU sans calibre (« Yonex Poly Tour Spin G 1.25 »), jauge nominale 1.25 ; « Poly Tour Spin » est un autre produit (fiche distincte).',
+  },
+  'luxilon-4g': {
+    status: 'appliquee', before: 265, rule: 'plus-rigide', appliedGauge: '1.30',
+    measures: [{ twu: 'Luxilon 4G 16L (1.25)', gauge: '1.25', lbIn: 258.9 }, { twu: 'Luxilon 4G 16 (1.30)', gauge: '1.30', lbIn: 286.9 }],
+    note:
+      'Règle C : 1.30 (286,9) ; 1.25 (258,9) est plus souple (sur-alerte assumée de 28 lb/in sur la jauge fine). 265 → 286,9 : devient la rigidité la plus haute du catalogue. « 4G Rough » et « 4G Soft » sont d\'autres produits (fiches distinctes).',
+  },
+  'tecnifibre-tgv': {
+    status: 'appliquee', before: 145, rule: 'plus-rigide', appliedGauge: '1.25',
+    measures: [{ twu: 'Tecnifibre TGV 17/1.25', gauge: '1.25', lbIn: 165.2 }, { twu: 'Tecnifibre TGV 16', gauge: '1.30', lbIn: 157.2 }],
+    note:
+      'Règle C : 1.25 (165,2) ; 1.30 (157,2) est plus souple (sur-alerte assumée de 8 lb/in sur la jauge fine). Couverture partielle : 1.35 non mesurée ; valeur plancher (une jauge non mesurée peut être plus rigide), hausse établie dans son sens. Série suspecte (inversion 1.25 (165,2) > 1.30 (157,2)) ; garde (A) satisfaite : le maximum (165,2) est contredit par une jauge plus épaisse mesurée plus souple, mais la plus rigide des mesures non contredites (157,2) reste ≥ 145, valeur actuelle.',
+  },
+  'signum-pro-x-perience': {
+    status: 'appliquee', before: 205, rule: 'plus-rigide', appliedGauge: '1.24',
+    measures: [{ twu: 'Signum Pro X-Perience 17 (1.24)', gauge: '1.24', lbIn: 224.6 }],
+    note:
+      'Règle C : 1.24 (224,6). Couverture partielle : 1.18, 1.30 non mesurées ; valeur plancher (une jauge non mesurée peut être plus rigide), hausse établie dans son sens.',
+  },
+  'head-lynx-tour': {
+    status: 'appliquee', before: 210, rule: 'plus-rigide', appliedGauge: '1.30',
+    measures: [{ twu: 'Head Lynx Tour 17 (1.25)', gauge: '1.25', lbIn: 217.7 }, { twu: 'Head Lynx Tour 16 (1.30)', gauge: '1.30', lbIn: 228.6 }],
+    note:
+      'Règle C : 1.30 (228,6) ; 1.25 (217,7) est plus souple (sur-alerte assumée de 10,9 lb/in sur la jauge fine). Couverture partielle : 1.20 non mesurée ; valeur plancher (une jauge non mesurée peut être plus rigide), hausse établie dans son sens.',
+  },
+  'luxilon-element': {
+    status: 'appliquee', before: 190, rule: 'plus-rigide', appliedGauge: '1.25',
+    measures: [{ twu: 'Luxilon Element 16L (1.25)', gauge: '1.25', lbIn: 208 }, { twu: 'Luxilon Element 1.30', gauge: '1.30', lbIn: 191.5 }],
+    note:
+      'Règle C : 1.25 (208) ; 1.30 (191,5) est plus souple (sur-alerte assumée de 16,5 lb/in sur la jauge fine). Série suspecte (inversion 1.25 (208) > 1.30 (191,5)) ; garde (A) satisfaite : le maximum (208) est contredit par une jauge plus épaisse mesurée plus souple, mais la plus rigide des mesures non contredites (191,5) reste ≥ 190, valeur actuelle. Intitulé TWU sans calibre pour la 1.30 (« Luxilon Element 1.30 »). « Element Rough » et « Element Soft IR » sont d\'autres produits.',
+  },
+  'tecnifibre-pro-red-code-wax': {
+    status: 'appliquee', before: 220, rule: 'plus-rigide', appliedGauge: '1.25',
+    measures: [{ twu: 'Tecnifibre Pro Red Code Wax 17', gauge: '1.25', lbIn: 235.5 }],
+    note:
+      'Règle C : 1.25 (235,5). Couverture partielle : 1.20, 1.30 non mesurées ; valeur plancher (une jauge non mesurée peut être plus rigide), hausse établie dans son sens. « Pro Red Code » (fiche distincte) est un autre produit.',
+  },
+  'yonex-poly-tour-spin': {
+    status: 'appliquee', before: 200, rule: 'plus-rigide', appliedGauge: '1.25',
+    measures: [{ twu: 'Yonex Poly Tour Spin 16L (1.25)', gauge: '1.25', lbIn: 213.7 }],
+    note:
+      'Règle C : 1.25 (213,7). Couverture partielle : 1.20, 1.30 non mesurées ; valeur plancher (une jauge non mesurée peut être plus rigide), hausse établie dans son sens. « Poly Tour Spin G » (1.25 : 237,2) est un autre produit (fiche distincte).',
+  },
+  'isospeed-cream': {
+    status: 'appliquee', before: 165, rule: 'plus-rigide', appliedGauge: '1.28',
+    measures: [{ twu: 'IsoSpeed Cream 17 (1.28)', gauge: '1.28', lbIn: 177.7 }],
+    note:
+      'Règle C : 1.28 (177,7). Couverture partielle : 1.20 non mesurée ; valeur plancher (une jauge non mesurée peut être plus rigide), hausse établie dans son sens. TWU écrit « 17 (1.28) » alors que TW vend la 1.28 en 16L : la jauge en mm fait foi.',
+  },
+  'babolat-m7': {
+    status: 'appliquee', before: 150, rule: 'plus-rigide', appliedGauge: '1.30',
+    measures: [{ twu: 'Babolat M7 16 (1.30)', gauge: '1.30', lbIn: 160.6 }],
+    note:
+      'Règle C : 1.30 (160,6). Couverture partielle : 1.25, 1.35 non mesurées ; valeur plancher (une jauge non mesurée peut être plus rigide), hausse établie dans son sens.',
+  },
+  'wilson-synthetic-gut-extreme': {
+    status: 'appliquee', before: 175, rule: 'plus-rigide', appliedGauge: '1.25',
+    measures: [{ twu: 'Wilson Synthetic Gut Extreme 17', gauge: '1.25', lbIn: 185.2 }],
+    note:
+      'Règle C : 1.25 (185,2). Couverture partielle : 1.30 non mesurée ; valeur plancher (une jauge non mesurée peut être plus rigide), hausse établie dans son sens.',
+  },
+  'head-hawk-power': {
+    status: 'appliquee', before: 195, rule: 'plus-rigide', appliedGauge: '1.25',
+    measures: [{ twu: 'Head Hawk Power 17 (1.25)', gauge: '1.25', lbIn: 203.5 }],
+    note:
+      'Règle C : 1.25 (203,5). Couverture partielle : 1.30 non mesurée ; valeur plancher (une jauge non mesurée peut être plus rigide), hausse établie dans son sens.',
+  },
+  'luxilon-adrenaline': {
+    status: 'appliquee', before: 205, rule: 'plus-rigide', appliedGauge: '1.30',
+    measures: [{ twu: 'Luxilon Adrenaline 16L/1.25', gauge: '1.25', lbIn: 202.9 }, { twu: 'Luxilon Adrenaline 16', gauge: '1.30', lbIn: 212.6 }],
+    note:
+      'Règle C : 1.30 (212,6) ; 1.25 (202,9) est plus souple (sur-alerte assumée de 9,7 lb/in sur la jauge fine). Série suspecte (inversion 1.20 (208) > 1.25 (202,9)) ; garde (B) satisfaite : le maximum n\'est contredit par aucune jauge plus épaisse. Lecture hors fiche : « Luxilon Adrenaline 17/1.20 » = 208 (jauge 1.20 absente de la fiche). « Adrenaline Rough » est un autre produit.',
+  },
+  'babolat-xalt': {
+    status: 'appliquee', before: 158, rule: 'plus-rigide', appliedGauge: '1.30',
+    measures: [{ twu: 'Babolat Xalt 16 (1.30)', gauge: '1.30', lbIn: 165.2 }],
+    note:
+      'Règle C : 1.30 (165,2). Couverture partielle : 1.25 non mesurée ; valeur plancher (une jauge non mesurée peut être plus rigide), hausse établie dans son sens.',
+  },
+  'tecnifibre-x-one-biphase': {
+    status: 'appliquee', before: 160, rule: 'plus-rigide', appliedGauge: '1.24',
+    measures: [{ twu: 'Tecnifibre X-One Biphase 18', gauge: '1.18', lbIn: 145.7 }, { twu: 'Tecnifibre X-One Biphase 17', gauge: '1.24', lbIn: 166.9 }, { twu: 'Tecnifibre X-One Biphase 16', gauge: '1.30', lbIn: 162.9 }],
+    note:
+      'Règle C : 1.24 (166,9) ; 1.18 (145,7) et 1.30 (162,9) sont plus souples (sur-alerte assumée de 4 à 21,2 lb/in sur les jauges fines). Série suspecte (inversion 1.24 (166,9) > 1.30 (162,9)) ; garde (A) satisfaite : le maximum (166,9) est contredit par une jauge plus épaisse mesurée plus souple, mais la plus rigide des mesures non contredites (162,9) reste ≥ 160, valeur actuelle.',
+  },
+  'solinco-revolution': {
+    status: 'appliquee', before: 210, rule: 'plus-rigide', appliedGauge: '1.30',
+    measures: [{ twu: 'Solinco Revolution 17', gauge: '1.20', lbIn: 188.6 }, { twu: 'Solinco Revolution 16L (1.25)', gauge: '1.25', lbIn: 212.6 }, { twu: 'Solinco Revolution 16', gauge: '1.30', lbIn: 215.5 }],
+    note:
+      'Règle C : 1.30 (215,5) ; 1.20 (188,6) et 1.25 (212,6) sont plus souples (sur-alerte assumée de 2,9 à 26,9 lb/in sur les jauges fines). Série suspecte (inversion 1.16 (195,5) > 1.20 (188,6)) ; garde (B) satisfaite : le maximum n\'est contredit par aucune jauge plus épaisse. Lecture hors fiche : « Solinco Revolution 18 (1.16) » = 195,5 (jauge 1.16 absente de la fiche).',
+  },
+  'solinco-vanquish': {
+    status: 'appliquee', before: 155, rule: 'plus-rigide', appliedGauge: '1.30',
+    measures: [{ twu: 'Solinco Vanquish 16', gauge: '1.30', lbIn: 160 }],
+    note:
+      'Règle C : 1.30 (160). Couverture partielle : 1.25 non mesurée ; valeur plancher (une jauge non mesurée peut être plus rigide), hausse établie dans son sens. Lecture hors fiche : « Solinco Vanquish 17 (1.20) » = 145,7 (jauge 1.20 absente de la fiche).',
+  },
+  'solinco-hyper-g': {
+    status: 'appliquee', before: 218, rule: 'plus-rigide', appliedGauge: '1.25',
+    measures: [{ twu: 'Solinco Hyper-G 18 (1.15)', gauge: '1.15', lbIn: 180 }, { twu: 'Solinco Hyper-G 17 (1.20)', gauge: '1.20', lbIn: 194.9 }, { twu: 'Solinco Hyper-G 16L (1.25)', gauge: '1.25', lbIn: 218.3 }],
+    note:
+      'Règle C : 1.25 (218,3) ; 1.15 (180) et 1.20 (194,9) sont plus souples (sur-alerte assumée de 23,4 à 38,3 lb/in sur les jauges fines). Couverture partielle : 1.30 non mesurée ; valeur plancher (une jauge non mesurée peut être plus rigide), hausse établie dans son sens. Hors appariement : « Solinco Hyper-G 16 » (jauge nominale TWU 16 mm, faute de saisie probable pour 1.30 : 219,5, soit 1,2 lb/in de plus que la valeur appliquée) et « Hyper-G Round (1.30) » (226,3, produit distinct chez TW).',
+  },
+  'tecnifibre-ice-code': {
+    status: 'appliquee', before: 221, rule: 'plus-rigide', appliedGauge: '1.30',
+    measures: [{ twu: 'Tecnifibre Ice Code 16 (1.30)', gauge: '1.30', lbIn: 221.2 }],
+    note:
+      'Règle C : 1.30 (221,2). Couverture partielle : 1.25 non mesurée ; valeur plancher (une jauge non mesurée peut être plus rigide), hausse établie dans son sens. Hausse de 0,2 lb/in seulement.',
+  },
+  // Seule fiche du catalogue appariée à la main (MANUAL_PAIRINGS : décision de l'orchestrateur du 10/10/2026, Pierre ayant délégué).
+  'babolat-rpm-team': {
+    status: 'appliquee', before: 225, rule: 'plus-rigide', appliedGauge: '1.30',
+    measures: [{ twu: 'Babolat RPM Team 16 Black', gauge: '1.30', lbIn: 280.6, pairing: 'manuel' }],
+    note:
+      'APPARIEMENT MANUEL, seule exception au motif strict (liste blanche MANUAL_PAIRINGS, décision de l\'orchestrateur du 10/10/2026) : « Babolat RPM Team 16 Black » = 280,6 lb/in, matière Polyester, jauge nominale 1.30, ligne unique à cette jauge ; ' +
+      'l\'intitulé n\'est écarté du motif strict que par le suffixe de coloris « Black » (la fiche est noire depuis #114, sur main au 10/10/2026). Règle C : 1.30 (280,6). ' +
+      'La ligne 1.25 « Babolat RPM Team 17 (1.25) » (matière TWU « Nylon/Polyester », 245,2) n\'est pas enregistrée (matière différente de celle de la fiche) et ne contredit pas : la règle C retient la plus rigide mesurée aux jauges de la fiche. ' +
+      'Couverture partielle : seule la 1.30 est mesurée en polyester (1.25 : ligne « Nylon/Polyester » écartée ; 1.35, si la fiche la porte : non mesurée) ; valeur plancher, hausse établie dans son sens (+55,6 lb/in). Série non suspecte (une seule ligne polyester). ' +
+      'Recoupement indirect (copie locale du 29/09 de la fiche Tennis Warehouse « RPM Team 17/1.25 », non versionnée) : co-polyester monofilament octogonal, noir, « l\'un des plus fermes des cordages Babolat testés » ; l\'étiquette TWU « Nylon/Polyester » de la ligne 1.25 n\'est donc probablement pas fiable. ' +
+      'Une erreur d\'identité ne peut produire qu\'une sur-alerte (règle 2).',
+  },
+
+  // ---- Lot 3 : hausses établies mais NON appliquées -------------------------------------------------------------
+  // Garde de série suspecte : la hausse ne repose que sur une mesure contredite par une jauge plus épaisse (voir l'en-tête).
+  'solinco-x-natural': {
+    status: 'retenue-serie-suspecte', before: 147,
+    measures: [{ twu: 'Solinco X-Natural 17 (1.20)', gauge: '1.20', lbIn: 158.9 }, { twu: 'Solinco X-Natural 16 (1.30)', gauge: '1.30', lbIn: 144.6 }],
+    note:
+      'Hausse non appliquée (garde de série suspecte). La règle C donnerait 158,9 (1.20, +11,9 lb/in), mais cette mesure est contredite par la 1.30 (144,6), plus épaisse donc attendue plus rigide ; ' +
+      'la seule mesure non contredite (144,6) est sous la valeur actuelle (147) : la hausse ne tient pas sans la mesure contredite. Sans effet sur les alertes de la grille au 10/10/2026 (0 -> 0 sur les trois indicateurs). À rouvrir avec la règle D ou une seconde mesure.',
+  },
+  'wilson-sensation': {
+    status: 'retenue-serie-suspecte', before: 165,
+    measures: [{ twu: 'Wilson Sensation 17', gauge: '1.25', lbIn: 163.4 }, { twu: 'Wilson Sensation 16', gauge: '1.30', lbIn: 168.6 }],
+    note:
+      'Hausse non appliquée (garde de série suspecte). La règle C donnerait 168,6 (1.30, +3,6 lb/in), mais les deux mesures de la fiche (163,4 et 168,6) sont contredites par la « Wilson Sensation 15 (1.35) » (154,3, hors fiche, jauge plus épaisse mesurée plus souple) : ' +
+      'aucune mesure non contredite. Sans effet sur les alertes de la grille au 10/10/2026 (0 -> 0 sur les trois indicateurs). À rouvrir avec la règle D.',
+  },
+
+  // ---- Lot 3 : hausses candidates dont l'appariement strict n'est pas établi (quarantaine, aucune valeur écrite) ----
+  // Tolérance de jauge de ± 0,01 mm REFUSÉE par l'orchestrateur le 10/10/2026 (Pierre ayant délégué) : l'appariement strict est maintenu.
+  'gosen-og-sheep-micro': {
+    status: 'quarantaine', before: 175, measures: [],
+    note:
+      'Hausse non appliquée : aucune jauge nominale TWU ne tombe sur une jauge de la fiche (1.25, 1.30). « Gosen OG-Sheep Micro 16 » (1.29, 183,5) est à 0,01 mm de la 1.30 ; tolérance de jauge refusée (décision de l\'orchestrateur du 10/10/2026) : appariement strict maintenu. ' +
+      'Effet sur la grille au 10/10/2026 : 0 alerte standard, 3 sensibles, 2 de calculateCompatibility.',
+  },
+  'wilson-nxt-power': {
+    status: 'quarantaine', before: 145, measures: [],
+    note:
+      'Hausse non appliquée : aucune jauge nominale TWU ne tombe sur une jauge de la fiche (1.25, 1.30). « Wilson NXT Power 17 (1.26) » (157,7) est à 0,01 mm de la 1.25 ; tolérance de jauge refusée (décision de l\'orchestrateur du 10/10/2026) : appariement strict maintenu. Effet sur la grille au 10/10/2026 : aucune alerte.',
+  },
+  'head-fxp': {
+    status: 'quarantaine', before: 150, measures: [],
+    note:
+      'Hausse non appliquée : aucune jauge nominale TWU ne tombe sur une jauge de la fiche (1.25, 1.30). « Head FXP 17 » (1.24, 173,2) est à 0,01 mm de la 1.25 ; « Head FXP 16 » (1.32, 165,2, matière « Nylon/Polyester ») est à 0,02 mm de la 1.30 ; ' +
+      'tolérance de jauge refusée (décision de l\'orchestrateur du 10/10/2026) : appariement strict maintenu. « Head FXP Power » et « Head FXP Tour » sont d\'autres produits. Effet sur la grille au 10/10/2026 : aucune alerte.',
+  },
+  'wilson-nxt-control': {
+    status: 'quarantaine', before: 162, measures: [],
+    note:
+      'Hausse non appliquée : aucune jauge nominale TWU ne tombe sur une jauge de la fiche (1.24, 1.30). « Wilson NXT Control 16 (1.32) » (163,4, matière « Nylon/Polyester ») est à 0,02 mm de la 1.30 ; hausse de 1,4 lb/in seulement ; ' +
+      'tolérance de jauge refusée (décision de l\'orchestrateur du 10/10/2026) : appariement strict maintenu. Effet sur la grille au 10/10/2026 : aucune alerte.',
   },
 
   // ---- Anciens identifiants fusionnés (alias) : leur valeur d'avant la fusion sert de plancher (règle 2) ----

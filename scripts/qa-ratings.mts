@@ -1120,15 +1120,50 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
   const before = failures.length;
   const SP = await import('../src/data/string-stiffness-provenance');
   type SProv = Readonly<Record<string, (typeof SP.STRING_STIFFNESS_PROVENANCE)[string]>>;
-  type TwuRow = { name: string; refTensionLbs: number; swingSpeed: string; material: string | null; stiffnessLbIn: number; gaugeNominalMm?: number | null };
+  type TwuRow = { name: string; model?: string; suffix?: string | null; refTensionLbs: number; swingSpeed: string; material: string | null; stiffnessLbIn: number; gaugeNominalMm?: number | null };
   const load = (p: string) => new Map((JSON.parse(readFileSync(p, 'utf8')).records as TwuRow[]).map((r) => [r.name, r]));
   const SV = SP.STIFFNESS_SOURCE.fullSurvey;
+  const surveyRows = (JSON.parse(readFileSync(SV.file, 'utf8')).records as TwuRow[]);
   const twuRef = load(SP.STIFFNESS_SOURCE.versionedCopy); // 480 polyesters du 08/08, sans jauge nominale
   const surveyRef = load(SV.file); // le relevé COMPLET du 29/09 (788 enregistrements, toutes matières, jauge nominale) — D0
   // TWU range multifilaments et synthétiques sous « Nylon… » : la matière se vérifie par famille, pas par égalité.
   const MATERIALS: Record<string, RegExp> = { Polyester: /^Polyester$/, 'Natural Gut': /^Gut$/, Multifilament: /^(Nylon|Polyolefin)/, Synthetic: /^(Nylon|Polyolefin)/ };
   const fold = (x: string) => x.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/['’`]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
-  const TWU_SUFFIX = /\s+\d{2}L?(?:\s*\((\d\.\d+)\)|\s*\/\s*(\d\.\d+))?$/;
+  // Les quatre formats de suffixe du relevé : « 16 », « 16L (1.30) », « 17/1.24 » et (lot 3) la jauge seule, « 1.25 » (intitulé sans calibre).
+  const TWU_SUFFIX = /\s+(?:\d{2}L?(?:\s*\((\d\.\d+)\)|\s*\/\s*(\d\.\d+))?|(\d\.\d+))$/;
+  // Appariement STRICT, recalculé depuis le relevé versionné (jamais lu dans la provenance) : par jauge de la fiche, l'UNIQUE ligne du modèle
+  // exact (suffixe reconnu), de cette jauge nominale (± 0,005 mm) et de la même matière. Deux lignes ou aucune : jauge non établie.
+  // Seule exception (lot 3) : les lignes de la liste blanche MANUAL_PAIRINGS, appariées à la main (vérifiées par checkManualPairings).
+  type Pairable = { id?: string; brand: string; model: string; type: string; gauges: string[] };
+  const modelRows = (s: Pairable) => [
+    ...surveyRows.filter((r) => r.suffix != null && r.gaugeNominalMm != null
+      && MATERIALS[s.type]?.test(r.material ?? '') === true && fold(r.model ?? '') === fold(`${s.brand} ${s.model}`)),
+    ...surveyRows.filter((r) => r.gaugeNominalMm != null && MATERIALS[s.type]?.test(r.material ?? '') === true
+      && SP.MANUAL_PAIRINGS.some((p) => p.id === s.id && p.twu === r.name)),
+  ];
+  const strictTable = (s: Pairable): Map<string, number> => {
+    const rows = modelRows(s);
+    return new Map(s.gauges.flatMap((g): [string, number][] => {
+      const l = rows.filter((r) => Math.abs(r.gaugeNominalMm! - Number(g)) <= 0.005);
+      return l.length === 1 ? [[g, l[0].stiffnessLbIn]] : [];
+    }));
+  };
+  // GARDE DE SÉRIE SUSPECTE (lot 3) : une mesure est « contredite » si une jauge plus épaisse du même modèle (hors fiche comprise) a été
+  // mesurée plus souple. Série non monotone = au moins une inversion. Une hausse est défendable si (B) la mesure la plus rigide n'est contredite
+  // par aucune jauge plus épaisse, ou (A) la plus rigide des mesures non contredites de la fiche reste >= la valeur d'avant.
+  const suspectGuard = (s: Pairable, before: number) => {
+    const rows = modelRows(s), table = strictTable(s);
+    const gs = [...new Set(rows.map((r) => r.gaugeNominalMm!))].sort((a, b) => a - b);
+    const hi = (g: number) => Math.max(...rows.filter((r) => r.gaugeNominalMm === g).map((r) => r.stiffnessLbIn));
+    const lo = (g: number) => Math.min(...rows.filter((r) => r.gaugeNominalMm === g).map((r) => r.stiffnessLbIn));
+    const suspect = table.size > 0 && gs.some((g, i) => i > 0 && hi(gs[i - 1]) > lo(g));
+    const contradicted = (g: string) => rows.some((r) => r.gaugeNominalMm! > Number(g) + 0.005 && r.stiffnessLbIn < table.get(g)!);
+    const top = table.size > 0 ? Math.max(...table.values()) : NaN;
+    const maxHolds = [...table].some(([g, v]) => v === top && !contradicted(g)); // (B)
+    const free = [...table].filter(([g]) => !contradicted(g)).map(([, v]) => v);
+    const supportHolds = free.length > 0 && Math.max(...free) >= before; // (A)
+    return { suspect, top, holds: !suspect || maxHolds || supportHolds, maxHolds, supportHolds };
+  };
   const checkStiffness = (strings: readonly (typeof stringsDatabase)[number][], prov: SProv, ref: Map<string, TwuRow>,
     aliases: Readonly<Record<string, string>> = LEGACY_STRING_ALIASES, cited: Map<string, TwuRow> = surveyRef): string[] => {
     const issues: string[] = [];
@@ -1148,11 +1183,13 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
       const seen = new Set<string>();
       for (const m of e.measures) {
         // Modèle EXACT : « Black Code » ne prend pas « Black Code 4S 17 (1.25) », seul le calibre suit le nom ; casse,
-        // accents et tirets ne comptent pas (« Volkl Power-Fiber II » = « Völkl Power Fiber II »).
+        // accents et tirets ne comptent pas (« Volkl Power-Fiber II » = « Völkl Power Fiber II »). Seule exception au motif strict :
+        // une mesure marquée `pairing: 'manuel'`, dont l'identité est contrôlée par checkManualPairings (liste blanche datée et motivée).
         const sfx = TWU_SUFFIX.exec(m.twu);
-        if (!sfx || fold(m.twu.slice(0, sfx.index)) !== fold(`${s.brand} ${s.model}`)) issues.push(`${id} : ligne TWU « ${m.twu} » d'un autre modèle`);
-        else if ((sfx[1] ?? sfx[2]) !== undefined && Math.abs(Number(sfx[1] ?? sfx[2]) - Number(m.gauge)) > 0.005) {
-          issues.push(`${id} : « ${m.twu} » mesurée en ${sfx[1] ?? sfx[2]} mm, enregistrée en ${m.gauge}`);
+        if (m.pairing === 'manuel') { /* identité : checkManualPairings ; valeur, conditions et jauge : ci-dessous, comme toute mesure */ }
+        else if (!sfx || fold(m.twu.slice(0, sfx.index)) !== fold(`${s.brand} ${s.model}`)) issues.push(`${id} : ligne TWU « ${m.twu} » d'un autre modèle`);
+        else if ((sfx[1] ?? sfx[2] ?? sfx[3]) !== undefined && Math.abs(Number(sfx[1] ?? sfx[2] ?? sfx[3]) - Number(m.gauge)) > 0.005) {
+          issues.push(`${id} : « ${m.twu} » mesurée en ${sfx[1] ?? sfx[2] ?? sfx[3]} mm, enregistrée en ${m.gauge}`);
         }
         if (!s.gauges.includes(m.gauge)) issues.push(`${id} : jauge ${m.gauge} absente de la fiche (${s.gauges.join(', ')})`);
         if (seen.has(m.gauge)) issues.push(`${id} : jauge ${m.gauge} mesurée deux fois`);
@@ -1180,9 +1217,23 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
         }
         if (e.rule === 'plus-rigide' && used.lbIn !== top) issues.push(`${id} : règle « plus-rigide » non remplie (la mesure la plus rigide est ${top}, appliquée : ${used.lbIn})`);
         if (s.stiffness < e.before && !e.loweringApprovedBy) issues.push(`${id} : rigidité abaissée de ${e.before} à ${s.stiffness} sans GO de Pierre (règle 2)`);
+        // Garde de série suspecte (lot 3) : rejouée depuis le relevé. Une hausse qui ne la satisfait pas exige une exemption datée ; une exemption inutile échoue.
+        const guard = suspectGuard(s, e.before);
+        if (guard.suspect && !guard.holds && !e.suspectGuardExemption) {
+          issues.push(`${id} : série suspecte : la hausse repose sur une mesure contredite par une jauge plus épaisse et aucune mesure non contredite ne l'appuie (garde de série suspecte), sans exemption datée`);
+        }
+        if (e.suspectGuardExemption && (!guard.suspect || guard.holds)) issues.push(`${id} : exemption de la garde de série suspecte inutile (la garde est satisfaite)`);
       } else {
         if (s.stiffness !== e.before) issues.push(`${id} : « ${e.status} » mais la rigidité a bougé (${e.before} -> ${s.stiffness}) sans passer par « appliquee »`);
         if (e.status === 'quarantaine' && e.measures.length > 0) issues.push(`${id} : en quarantaine avec des mesures`);
+        if (e.status === 'quarantaine' && strictTable(s).size > 0) issues.push(`${id} : en quarantaine alors que l'appariement strict établit ${strictTable(s).size} mesure(s) (modèle exact, jauge nominale, matière)`);
+        if (e.suspectGuardExemption) issues.push(`${id} : exemption de la garde de série suspecte sur une fiche non appliquée`);
+        if (e.status === 'retenue-serie-suspecte') {
+          const guard = suspectGuard(s, e.before);
+          if (e.measures.length === 0) issues.push(`${id} : retenue sans mesure`);
+          if (!(guard.top > e.before)) issues.push(`${id} : retenue (série suspecte) sans hausse : la règle C ne dépasse pas ${e.before}`);
+          else if (guard.holds) issues.push(`${id} : hausse applicable (la garde de série suspecte est satisfaite : ${guard.top} > ${e.before}), mais non appliquée`);
+        }
         if (e.status === 'retenue-jauge' && e.measures.length === 0) issues.push(`${id} : retenue sans mesure`);
         if (e.status === 'retenue-jauge' && top !== undefined && top >= e.before) {
           issues.push(`${id} : hausse applicable sans choix de jauge (règle C : ${top} ≥ ${e.before}), mais non appliquée`);
@@ -1191,8 +1242,41 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
     }
     return issues;
   };
+  // APPARIEMENT MANUEL (lot 3) : la liste blanche MANUAL_PAIRINGS est la SEULE exception au motif strict d'intitulé. Échoue si : (a) elle compte plus
+  // d'UNE entrée ; (b) une entrée n'a pas de date (AAAA-MM-JJ), de décideur ou de motif (>= 60 caractères) ; (c) une mesure marquée `pairing: 'manuel'`
+  // n'y figure pas, ou une entrée n'est utilisée par aucune mesure ; (d) la ligne n'est pas dans le relevé versionné, ou le motif strict la reconnaît déjà
+  // (exception inutile), ou son intitulé n'est pas « <modèle> <calibre> <un mot> », ou sa matière n'est pas celle du type de la fiche, ou sa jauge
+  // nominale n'est pas la jauge déclarée, elle-même jauge de la fiche, ou elle n'est pas la seule ligne de même matière à cette jauge.
+  const checkManualPairings = (strings: readonly (typeof stringsDatabase)[number][], prov: SProv, pairings: readonly (typeof SP.MANUAL_PAIRINGS)[number][] = SP.MANUAL_PAIRINGS): string[] => {
+    const out: string[] = [];
+    if (pairings.length > 1) out.push(`appariement manuel : ${pairings.length} entrées, une seule exception au motif strict est admise`);
+    const flagged = Object.entries(prov).flatMap(([id, e]) => e.measures.filter((m) => m.pairing === 'manuel').map((m) => ({ id, m })));
+    for (const { id, m } of flagged) {
+      if (!pairings.some((p) => p.id === id && p.twu === m.twu && p.gauge === m.gauge)) out.push(`${id} : mesure « ${m.twu} » marquée appariement manuel, absente de la liste blanche`);
+    }
+    for (const p of pairings) {
+      const where = `appariement manuel ${p.id}`;
+      const s = strings.find((x) => x.id === p.id);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(p.date)) out.push(`${where} : date absente ou mal formée`);
+      if (!p.decidedBy.trim()) out.push(`${where} : décideur absent`);
+      if (p.reason.trim().length < 60) out.push(`${where} : motif absent ou trop court`);
+      if (!flagged.some((f) => f.id === p.id && f.m.twu === p.twu && f.m.gauge === p.gauge)) out.push(`${where} : aucune mesure de la provenance ne l'utilise`);
+      if (!s) { out.push(`${where} : fiche absente du catalogue`); continue; }
+      if (!s.gauges.includes(p.gauge)) out.push(`${where} : jauge ${p.gauge} absente de la fiche (${s.gauges.join(', ')})`);
+      const r = surveyRef.get(p.twu);
+      if (!r) { out.push(`${where} : ligne « ${p.twu} » absente du relevé versionné`); continue; }
+      if (r.suffix != null) out.push(`${where} : exception inutile, le motif strict reconnaît déjà « ${p.twu} »`);
+      if (!MATERIALS[s.type]?.test(r.material ?? '')) out.push(`${where} : matière TWU « ${r.material} » incompatible avec le type ${s.type}`);
+      if (r.gaugeNominalMm == null || Math.abs(r.gaugeNominalMm - Number(p.gauge)) > 0.005) out.push(`${where} : jauge nominale TWU ${r.gaugeNominalMm} mm ≠ jauge déclarée ${p.gauge}`);
+      const prefix = fold(`${s.brand} ${s.model}`), name = fold(r.name);
+      if (!name.startsWith(`${prefix} `) || !/^\d{2}l? [a-z]+$/.test(name.slice(prefix.length + 1))) out.push(`${where} : l'intitulé « ${p.twu} » n'est pas « <modèle> <calibre> <un mot> »`);
+      const same = surveyRows.filter((x) => fold(x.name).startsWith(`${prefix} `) && MATERIALS[s.type]?.test(x.material ?? '') && x.gaugeNominalMm != null && Math.abs(x.gaugeNominalMm - Number(p.gauge)) <= 0.005);
+      if (same.length !== 1) out.push(`${where} : ${same.length} lignes de même matière à la jauge ${p.gauge} (ligne unique exigée)`);
+    }
+    return out;
+  };
   // (d) aucune surface du site n'importe la provenance (les commentaires peuvent citer le fichier).
-  const IMPORTS = /from\s*['"][^'"]*string-stiffness-provenance['"]|import\(\s*['"][^'"]*string-stiffness-provenance['"]\s*\)|STRING_STIFFNESS_PROVENANCE|STIFFNESS_SOURCE/;
+  const IMPORTS = /from\s*['"][^'"]*string-stiffness-provenance['"]|import\(\s*['"][^'"]*string-stiffness-provenance['"]\s*\)|STRING_STIFFNESS_PROVENANCE|STIFFNESS_SOURCE|MANUAL_PAIRINGS/;
   const scanSurfaces = (files: { path: string; src: string }[]) =>
     files.filter((f) => f.path !== 'src/data/string-stiffness-provenance.ts' && IMPORTS.test(f.src)).map((f) => `${f.path} lit la provenance des rigidités`);
   const walkAll = (d: string): string[] =>
@@ -1200,7 +1284,7 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
   const surfaceFiles = [...walkAll('src'), ...walkAll('scripts/catalog'), ...walkAll('scripts/en-products'), ...walkAll('public/js')]
     .filter((f) => /\.(tsx?|m?js)$/.test(f)).map((p) => ({ path: p, src: readFileSync(p, 'utf8') }));
   const P0 = SP.STRING_STIFFNESS_PROVENANCE;
-  const issues = [...checkStiffness(stringsDatabase, P0, twuRef), ...scanSurfaces(surfaceFiles)];
+  const issues = [...checkStiffness(stringsDatabase, P0, twuRef), ...checkManualPairings(stringsDatabase, P0), ...scanSurfaces(surfaceFiles)];
   issues.forEach((i) => fail(`rigidités de laboratoire : ${i}`));
   // Tests négatifs : chaque altération doit être détectée.
   const withStiffness = (id: string, v: number) => stringsDatabase.map((s) => (s.id === id ? { ...s, stiffness: v } : s));
@@ -1224,6 +1308,58 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
   ];
   for (const [name, found, needle] of negatives) {
     if (!found.some((i) => i.includes(needle))) fail(`rigidités de laboratoire : garde-fou muet sur « ${name} » (${needle})`);
+  }
+  // Lot 3 (10/10/2026) : baisse sans GO, hausse partielle, fiche à série suspecte et garde, quarantaine, intitulé à jauge seule. Chaque essai part de
+  // l'entrée réelle (valeurs, mesures) mais FORCE le statut en jeu, pour ne dépendre ni du statut réel de la fiche ni de sa valeur ; s'il ne peut pas
+  // être construit (entrée de provenance retirée), il est signalé proprement au lieu de faire planter l'audit.
+  const withEntry = (id: string, over: Partial<SProv[string]>): SProv => ({ ...P0, [id]: { ...P0[id], ...over } });
+  const APPLIED = { status: 'appliquee' as const, rule: 'plus-rigide' as const };
+  const RETAINED = { status: 'retenue-serie-suspecte' as const };
+  const lot3Negatives: Array<[string, () => string[], string]> = [
+    ['baisse sans GO (règle 2)', () => checkStiffness(stringsDatabase, withEntry('luxilon-4g', { before: 300 }), twuRef), 'luxilon-4g : rigidité abaissée'],
+    ['hausse partielle, valeur intermédiaire entre l\'ancienne et la mesure', () => checkStiffness(withStiffness('tecnifibre-razor-soft', 200), P0, twuRef), 'tecnifibre-razor-soft : rigidité 200'],
+    ['hausse partielle, jauge la moins rigide retenue', () => checkStiffness(withStiffness('luxilon-4g', 258.9), withEntry('luxilon-4g', { ...APPLIED, appliedGauge: '1.25' }), twuRef), 'luxilon-4g : règle « plus-rigide » non remplie'],
+    ['hausse laissée de côté (fiche retenue sans série suspecte)', () => checkStiffness(withStiffness('babolat-revenge', 230), withEntry('babolat-revenge', { ...RETAINED, before: 230 }), twuRef), 'babolat-revenge : hausse applicable'],
+    ['fiche à série suspecte, hausse sans appui', () => checkStiffness(withStiffness('solinco-x-natural', 158.9), withEntry('solinco-x-natural', { ...APPLIED, appliedGauge: '1.20', before: 147 }), twuRef), 'solinco-x-natural : série suspecte'],
+    ['fiche retenue alors que la garde est satisfaite', () => checkStiffness(withStiffness('luxilon-element', 190), withEntry('luxilon-element', { ...RETAINED, before: 190 }), twuRef), 'luxilon-element : hausse applicable'],
+    ['fiche retenue sans hausse', () => checkStiffness(withStiffness('solinco-x-natural', 147), withEntry('solinco-x-natural', { ...RETAINED, before: 160 }), twuRef), 'retenue (série suspecte) sans hausse'],
+    ['exemption de garde inutile', () => checkStiffness(stringsDatabase, withEntry('babolat-revenge', { suspectGuardExemption: 'x' }), twuRef), 'babolat-revenge : exemption'],
+    ['exemption de garde retirée', () => checkStiffness(stringsDatabase, withEntry('wilson-nxt', { suspectGuardExemption: undefined }), twuRef), 'wilson-nxt : série suspecte'],
+    ['exemption de garde sur une fiche non appliquée', () => checkStiffness(withStiffness('solinco-x-natural', 147), withEntry('solinco-x-natural', { ...RETAINED, before: 147, suspectGuardExemption: 'x' }), twuRef), 'exemption de la garde de série suspecte sur une fiche non appliquée'],
+    ['quarantaine alors que l\'appariement strict établit des mesures', () => checkStiffness(withStiffness('luxilon-4g', 265), withEntry('luxilon-4g', { status: 'quarantaine' as const, before: 265, measures: [] }), twuRef), 'luxilon-4g : en quarantaine alors que'],
+    ['intitulé à jauge seule d\'un autre modèle', () => checkStiffness(stringsDatabase, withEntry('luxilon-element', { measures: [P0['luxilon-element'].measures[0], { twu: 'Luxilon Element Soft IR 1.27', gauge: '1.30', lbIn: 197.7 }] }), twuRef), 'd\'un autre modèle'],
+    ['intitulé à jauge seule, autre jauge enregistrée', () => checkStiffness(stringsDatabase, withEntry('luxilon-element', { measures: [P0['luxilon-element'].measures[0], { ...P0['luxilon-element'].measures[1], gauge: '1.20' }] }), twuRef), 'mesurée en 1.30 mm, enregistrée en 1.20'],
+  ];
+  for (const [name, run, needle] of lot3Negatives) {
+    try {
+      if (!run().some((i) => i.includes(needle))) fail(`rigidités de laboratoire : garde-fou muet sur « lot 3 : ${name} » (${needle})`);
+    } catch (e) {
+      fail(`rigidités de laboratoire : essai négatif « lot 3 : ${name} » impossible à construire (${(e as Error).message}) : l'entrée de provenance qu'il utilise a-t-elle été retirée ?`);
+    }
+  }
+  // Appariement manuel (lot 3) : liste blanche à UNE entrée, datée et motivée. Mêmes principes : fixtures explicites, essai non constructible signalé.
+  const MP0 = SP.MANUAL_PAIRINGS[0];
+  const RPM = () => P0['babolat-rpm-team'].measures[0];
+  const manualNegatives: Array<[string, () => string[], string]> = [
+    ['appariement manuel sans motif', () => checkManualPairings(stringsDatabase, P0, [{ ...MP0, reason: '' }]), 'motif absent ou trop court'],
+    ['appariement manuel sans date', () => checkManualPairings(stringsDatabase, P0, [{ ...MP0, date: '' }]), 'date absente ou mal formée'],
+    ['appariement manuel sans décideur', () => checkManualPairings(stringsDatabase, P0, [{ ...MP0, decidedBy: ' ' }]), 'décideur absent'],
+    ['deuxième appariement manuel (une seule exception admise)', () => checkManualPairings(stringsDatabase, P0, [MP0, { ...MP0, id: 'babolat-rpm-soft' }]), 'une seule exception au motif strict'],
+    ['mesure manuelle absente de la liste blanche', () => checkManualPairings(stringsDatabase, P0, []), 'absente de la liste blanche'],
+    ['entrée de la liste blanche sans mesure en provenance', () => checkManualPairings(stringsDatabase, withEntry('babolat-rpm-team', { measures: [{ ...RPM(), pairing: undefined }] }), [MP0]), 'aucune mesure de la provenance ne l\'utilise'],
+    ['ligne absente du relevé versionné', () => { const p = { ...MP0, twu: 'Babolat RPM Team 16 Red' }; return checkManualPairings(stringsDatabase, withEntry('babolat-rpm-team', { measures: [{ ...RPM(), twu: p.twu }] }), [p]); }, 'absente du relevé versionné'],
+    ['exception inutile : le motif strict reconnaît déjà la ligne', () => { const p = { ...MP0, twu: 'Babolat RPM Team 17 (1.25)', gauge: '1.25' }; return checkManualPairings(stringsDatabase, withEntry('babolat-rpm-team', { measures: [{ ...RPM(), twu: p.twu, gauge: '1.25' }] }), [p]); }, 'exception inutile'],
+    ['jauge nominale TWU différente de la jauge déclarée', () => checkManualPairings(stringsDatabase, withEntry('babolat-rpm-team', { measures: [{ ...RPM(), gauge: '1.25' }] }), [{ ...MP0, gauge: '1.25' }]), 'jauge nominale TWU'],
+    ['matière TWU incompatible avec le type de la fiche', () => checkManualPairings(stringsDatabase.map((s) => (s.id === 'babolat-rpm-team' ? { ...s, type: 'Natural Gut' as const } : s)), P0), 'matière TWU'],
+    ['mesure à intitulé non reconnu SANS drapeau manuel', () => checkStiffness(stringsDatabase, withEntry('babolat-rpm-team', { measures: [{ ...RPM(), pairing: undefined }] }), twuRef), 'd\'un autre modèle'],
+    ['valeur de la mesure manuelle différente du relevé', () => checkStiffness(stringsDatabase, withEntry('babolat-rpm-team', { measures: [{ ...RPM(), lbIn: 281 }] }), twuRef), 'absente de la copie versionnée'],
+  ];
+  for (const [name, run, needle] of manualNegatives) {
+    try {
+      if (!run().some((i) => i.includes(needle))) fail(`rigidités de laboratoire : garde-fou muet sur « appariement manuel : ${name} » (${needle})`);
+    } catch (e) {
+      fail(`rigidités de laboratoire : essai négatif « appariement manuel : ${name} » impossible à construire (${(e as Error).message}) : l'entrée de provenance ou de la liste blanche qu'il utilise a-t-elle été retirée ?`);
+    }
   }
   // Cas permis : fiche fusionnée depuis (alias) ; son entrée reste comme historique, sans alerte.
   const afterMerge = checkStiffness(stringsDatabase.filter((s) => s.id !== 'tecnifibre-4s'), P0, twuRef, { ...LEGACY_STRING_ALIASES, 'tecnifibre-4s': 'tecnifibre-black-code-4s' });
@@ -1288,11 +1424,15 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
     const measures = Object.values(P0).reduce((a, e) => a + e.measures.length, 0);
     const merged = Object.keys(P0).filter((id) => !stringsDatabase.some((s) => s.id === id)).length;
     const ruleC = Object.values(P0).filter((e) => e.rule === 'plus-rigide').length;
+    const onSuspect = Object.entries(P0).filter(([id, e]) => e.status === 'appliquee' && stringsDatabase.some((s) => s.id === id && suspectGuard(s, e.before).suspect));
+    const exempt = onSuspect.filter(([, e]) => e.suspectGuardExemption).length;
     ok(`rigidités de laboratoire : ${Object.keys(P0).length} fiches en provenance (${count('appliquee')} appliquées dont ${ruleC} par la règle C, ${count('retenue-jauge')} retenues car C baisserait, ` +
-      `${count('quarantaine')} en quarantaine${merged > 0 ? `, dont ${merged} ancien(s) identifiant(s) fusionné(s) servant de plancher` : ''}), ${measures} mesures TWU retrouvées dans ${SV.file} ` +
+      `${count('retenue-serie-suspecte')} retenues par la garde de série suspecte, ` +
+      `${count('quarantaine')} en quarantaine${merged > 0 ? `, dont ${merged} ancien(s) identifiant(s) fusionné(s) servant de plancher` : ''}), ` +
+      `garde de série suspecte rejouée sur ${onSuspect.length} fiches appliquées à série suspecte (${exempt} exemptée(s) par motif daté), appariement manuel : ${SP.MANUAL_PAIRINGS.length} exception au motif strict (${SP.MANUAL_PAIRINGS.map((p) => `${p.id} « ${p.twu} » en ${p.gauge}`).join(', ')}, liste blanche datée et motivée, ${manualNegatives.length} essais négatifs), ${measures} mesures TWU retrouvées dans ${SV.file} ` +
       `(${SV.records} enregistrements, sha256 du brut reconstruit ${SV.sha256.slice(0, 7)}…${SV.sha256.slice(-4)}${rawBytes ? ', = relevé brut local' : ''}) et ${SP.STIFFNESS_SOURCE.versionedCopy} ` +
       `(modèle exact, jauge nominale, matière, ${SP.STIFFNESS_SOURCE.referenceTensionLbs} lbs / ${SP.STIFFNESS_SOURCE.swingSpeed}), ` +
-      `aucune baisse sans GO, aucune surface ne lit la provenance, ${negatives.length + surveyNegatives.length} tests négatifs détectés`);
+      `aucune baisse sans GO, aucune surface ne lit la provenance, ${negatives.length + lot3Negatives.length + manualNegatives.length + surveyNegatives.length} tests négatifs détectés`);
   }
 }
 
@@ -1316,7 +1456,11 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
   const FAMILY: Record<string, RegExp> = { Polyester: /^Polyester$/, 'Natural Gut': /^Gut$/, Multifilament: /^(Nylon|Polyolefin)/, Synthetic: /^(Nylon|Polyolefin)/ };
   type Str = (typeof stringsDatabase)[number];
   const sameMaterial = (s: Str) => (r: Rec) => FAMILY[s.type]?.test(r.material ?? '') === true;
-  const modelLines = (s: Str) => records.filter((r) => r.suffix !== null && r.gaugeNominalMm !== null && r.f === fold(`${s.brand} ${s.model}`));
+  // Les lignes du modèle : appariement strict, plus la liste blanche MANUAL_PAIRINGS (lot 3 : seule exception, vérifiée par le contrôle 13 ter).
+  const modelLines = (s: Str) => [
+    ...records.filter((r) => r.suffix !== null && r.gaugeNominalMm !== null && r.f === fold(`${s.brand} ${s.model}`)),
+    ...records.filter((r) => r.gaugeNominalMm !== null && SP.MANUAL_PAIRINGS.some((p) => p.id === s.id && p.twu === r.name)),
+  ];
   // Table attendue : par jauge de la fiche, l'UNIQUE ligne de même matière (aucune ligne : non mesurée ; deux : ambiguë).
   const expectedTable = (s: Str): Record<string, number> => {
     const lines = modelLines(s);
@@ -1348,6 +1492,11 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
       }
       const suspect = Object.keys(have).length > 0 && nonMonotone(s);
       if (Boolean(s.stiffnessByGaugeSuspect) !== suspect) out.push(`${s.id} : série ${suspect ? 'non monotone non marquée suspecte' : 'monotone ou sans table marquée suspecte'}`);
+      // Lot 3 : une hausse établie (règle C, appariement strict) est appliquée ou explicitement retenue en provenance (garde de série suspecte).
+      const top = Object.keys(want).length > 0 ? Math.max(...Object.values(want)) : NaN;
+      if (top > s.stiffness && SP.STRING_STIFFNESS_PROVENANCE[s.id]?.status !== 'retenue-serie-suspecte') {
+        out.push(`${s.id} : hausse applicable (règle C : ${top} > ${s.stiffness}) ni appliquée ni retenue en provenance (série suspecte) : hausse laissée de côté`);
+      }
       for (const g of [...s.gauges, '1.275', 'abc']) {
         const r = at(s, g), m = have[g], measured = m !== undefined && !s.stiffnessByGaugeSuspect;
         const wantAt = measured ? { lbIn: m, basis: 'mesure-twu-jauge' } : { lbIn: s.stiffness, basis: m !== undefined ? 'serie-suspecte' : 'jauge-non-mesuree' };
@@ -1394,6 +1543,9 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
     ['un libellé de repli modifié', checkByGauge(stringsDatabase, (s, g) => { const r = stringStiffnessAt(s, g); return r.basis === 'jauge-non-mesuree' ? { ...r, label: 'inconnue' } : r; }, none), '« inconnue »'],
     ["l'étiquette exportée modifiée", checkByGauge(stringsDatabase, stringStiffnessAt, none, 'non mesurée'), 'étiquette de repli'],
     ['règle C : rigidité de la fiche ≠ maximum de sa table', checkByGauge(mod('head-hawk', { stiffness: 215 }), stringStiffnessAt, none), 'règle C'],
+    ['lot 3 : une hausse établie laissée de côté, sans motif en provenance', checkByGauge(mod('luxilon-4g', { stiffness: 265 }), stringStiffnessAt, none), 'ni appliquée ni retenue'],
+    ['lot 3 : la mesure appariée à la main omise de la table', checkByGauge(mod('babolat-rpm-team', { stiffnessByGauge: undefined }), stringStiffnessAt, none), 'omise de la table'],
+    ['lot 3 : la mesure appariée à la main écrite avec une autre valeur', checkByGauge(mod('babolat-rpm-team', { stiffnessByGauge: { '1.30': 281 } }), stringStiffnessAt, none), 'babolat-rpm-team : jauge 1.30'],
     ['une mesure de la provenance absente de la table', checkByGauge(mod('head-hawk', { stiffnessByGauge: { '1.20': 194.3, '1.25': 204.6 } }), stringStiffnessAt, none), 'provenance'],
     ['une surface FR qui lit la table', checkByGauge(stringsDatabase, stringStiffnessAt, [{ path: 'src/app/x.tsx', src: 'stringStiffnessAt(s, g)' }]), 'src/app/x.tsx'],
     ['un lecteur EN du catalogue', checkByGauge(stringsDatabase, stringStiffnessAt, [{ path: 'public/en/strings.html', src: 'row.stiffness_by_gauge' }]), 'public/en/strings.html'],
@@ -1409,7 +1561,7 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
     for (const s of withTable) { const top = Math.max(...Object.values(s.stiffnessByGauge!)); c[top === s.stiffness ? 0 : top < s.stiffness ? 1 : 2]++; }
     ok(`rigidité par jauge : ${withTable.length} fiches avec table (${measured}/${total} jauges mesurées, hors hybrides), ${withTable.filter((s) => s.stiffnessByGaugeSuspect).length} séries suspectes marquées (valeurs conservées, non utilisées), ` +
       `chaque valeur retrouvée dans ${SP.STIFFNESS_SOURCE.fullSurvey.file} (modèle exact, jauge nominale, même matière, ligne unique), repli = rigidité de la fiche étiquetée « ${STIFFNESS_UNMEASURED_LABEL} » sur ${stringsDatabase.length} fiches, jamais interpolé ; ` +
-      `règle C : ${c[0]} fiches égales au maximum de leur table, ${c[1]} à valeur de fiche supérieure (baisse sans GO : non appliquée), ${c[2]} inférieure (hausse en attente) ; ` +
+      `règle C : ${c[0]} fiches égales au maximum de leur table, ${c[1]} à valeur de fiche supérieure (baisse sans GO : non appliquée), ${c[2]} inférieure (hausse retenue en provenance par la garde de série suspecte) ; ` +
       `aucune surface du site ne lit la table (${surfaces.length} fichiers lus, ${ALLOWED.length} autorisés), ${negatives.length} tests négatifs détectés`);
   }
 }

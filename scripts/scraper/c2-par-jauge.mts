@@ -12,7 +12,8 @@
  * son modèle est EXACTEMENT celui de la fiche (marque comprise ; casse, accents et tirets sans effet), si son intitulé porte un suffixe
  * de calibre ou de jauge reconnu, si sa jauge nominale TWU (arrondie au centième) est cette jauge, et si sa matière est celle du type
  * de la fiche. Mis en quarantaine, jamais écrits : deux lignes pour la même jauge (ambiguë), matière différente. Aucune tolérance de
- * jauge, aucune interpolation : une jauge sans ligne n'a pas de valeur (champ absent).
+ * jauge, aucune interpolation : une jauge sans ligne n'a pas de valeur (champ absent). Seule exception (lot 3, 10/10/2026) : la liste blanche
+ * `MANUAL_PAIRINGS` de string-stiffness-provenance.ts (une entrée, datée et motivée, vérifiée par le contrôle 13 ter).
  *
  * SÉRIE SUSPECTE : une jauge plus épaisse mesurée plus souple (toute inversion, tolérance 0), sur TOUTES les lignes du modèle de même
  * matière, jauges hors fiche comprises (NXT 1.35 plus souple que 1.30). Les valeurs restent dans la table, marquées ; stringStiffnessAt
@@ -23,7 +24,7 @@ import { stringsDatabase, stringStiffnessAt, type TennisString } from '../../src
 import { racquetsDatabase } from '../../src/data/racquets-database';
 import { calculateAdvancedRcs, stringTypeToFamily } from '../../src/lib/advanced-rcs';
 import { effectiveRacquetRA } from '../../src/lib/racquet-scoring';
-import { STIFFNESS_SOURCE } from '../../src/data/string-stiffness-provenance';
+import { STIFFNESS_SOURCE, MANUAL_PAIRINGS } from '../../src/data/string-stiffness-provenance';
 
 const TS_FILE = 'src/data/strings-database.ts';
 interface Rec { name: string; model: string; suffix: string | null; material: string | null; gaugeNominalMm: number | null; stiffnessLbIn: number }
@@ -34,7 +35,10 @@ const FAMILY: Partial<Record<TennisString['type'], RegExp>> = { Polyester: /^Pol
 
 interface Analysis { table: Record<string, number>; suspect: boolean; inversions: string[]; quarantine: string[]; series: string }
 function analyse(s: TennisString): Analysis {
-  const lines = records.filter((r) => r.suffix !== null && r.gaugeNominalMm !== null && fold(r.model) === fold(`${s.brand} ${s.model}`));
+  // Appariement MANUEL (liste blanche datée de la provenance, UNE seule exception au motif strict, lot 3) : la ligne s'ajoute à celles du modèle ;
+  // comme toute ligne, elle n'entre dans la table que si sa jauge nominale est une jauge de la fiche, de même matière, et seule à cette jauge.
+  const manual = records.filter((r) => r.gaugeNominalMm !== null && MANUAL_PAIRINGS.some((p) => p.id === s.id && p.twu === r.name));
+  const lines = [...records.filter((r) => r.suffix !== null && r.gaugeNominalMm !== null && fold(r.model) === fold(`${s.brand} ${s.model}`)), ...manual];
   const sameMaterial = (r: Rec) => FAMILY[s.type]?.test(r.material ?? '') === true;
   const table: Record<string, number> = {};
   const quarantine: string[] = [];
@@ -82,6 +86,8 @@ function liste(): void {
   for (const [s, a] of sus) console.log(`  ${s.id.padEnd(30)} ${a.series}\n${' '.repeat(34)}inversions : ${a.inversions.join(' ; ')}`);
   console.log('\nQuarantaines (aucune valeur écrite) :');
   for (const [s, a] of rows) for (const q of a.quarantine) console.log(`  ${s.id} : ${q}`);
+  console.log('\nAppariements manuels (liste blanche de la provenance, seule exception au motif strict) :');
+  for (const p of MANUAL_PAIRINGS) console.log(`  ${p.id} : « ${p.twu} » -> jauge ${p.gauge} (${p.date}, ${p.decidedBy})`);
   const c = { egale: 0, ficheSupérieure: 0, ficheInférieure: 0 };
   for (const [s, a] of withTable) {
     const top = Math.max(...Object.values(a.table));
