@@ -1658,7 +1658,9 @@ export const stringsDatabase: TennisString[] = [
     model: 'RPM Team',
     type: 'Polyester',
     gauges: ['1.25', '1.30', '1.35'],
-    stiffness: 225,
+    // Rigidité (C2, lot 3, 10/10/2026) : TWU « Babolat RPM Team 16 Black » = 280,6 lb/in (jauge 1.30), règle C (jauge la plus rigide mesurée, 1 jauge sur 3 mesurée : valeur plancher) ; APPARIEMENT MANUEL, seule exception au motif strict (liste blanche des appariements manuels de la provenance, décision de l'orchestrateur du 10/10/2026) ; remplace 225. Provenance : src/data/string-stiffness-provenance.ts.
+    stiffness: 280.6,
+    stiffnessByGauge: { '1.30': 280.6 },
     performance: 8.5,
     control: 8.3,
     comfort: 6.8,

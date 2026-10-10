@@ -29,7 +29,7 @@
  *     mais la série du modèle est non monotone et la garde ci-dessous échoue : la hausse ne repose que sur une mesure contredite.
  *     `stiffness` = `before` ; la hausse attend l'arbitrage. Le contrôle 13 ter vérifie que la garde échoue bien.
  *   - `quarantaine` : appariement strict non établi (aucune ligne TWU à ce nom, ou jauge nominale / matière qui ne tombe pas sur la
- *     fiche) ; la valeur reste, le motif est écrit. Le contrôle 13 ter vérifie que l'appariement strict n'établit réellement rien.
+ *     fiche) ; la valeur reste, le motif est écrit. Le contrôle 13 ter vérifie que l'appariement (strict ou manuel) n'établit réellement rien.
  *
  * GARDE DE SÉRIE SUSPECTE (lot 3, demande de l'orchestrateur du 10/10/2026). Une mesure est « contredite » si une jauge plus épaisse
  * du même modèle et de la même matière, hors fiche comprise, a été mesurée plus souple (D1 : série non monotone). Une hausse (règle C)
@@ -38,6 +38,15 @@
  *   (A) la plus rigide des mesures non contredites de la fiche reste ≥ la valeur actuelle (la hausse tient même sans la mesure contredite) ;
  * sinon elle est retenue (`retenue-serie-suspecte`). La valeur écrite est toujours celle de la règle C. Le contrôle 13 ter recalcule la
  * garde depuis le relevé versionné ; une hausse antérieure à la garde qui ne la satisfait pas porte `suspectGuardExemption` (motif daté).
+ *
+ * APPARIEMENT MANUEL (lot 3, décision de l'orchestrateur du 10/10/2026, Pierre ayant délégué) : SEULE exception au motif strict d'intitulé
+ * (`<modèle> <calibre>`, `<modèle> <calibre> (<jauge>)`, `<modèle> <calibre>/<jauge>`, `<modèle> <jauge>`). Une ligne TWU dont l'intitulé n'est
+ * écarté de ce motif que par un suffixe de coloris (« Babolat RPM Team 16 Black ») peut être appariée à la main si elle figure dans
+ * `MANUAL_PAIRINGS`, liste blanche DATÉE et MOTIVÉE limitée à UNE entrée ; la mesure porte alors `pairing: 'manuel'`. Le contrôle 13 ter
+ * vérifie la ligne dans le relevé versionné (intitulé = modèle + calibre + un mot, matière du type de la fiche, jauge nominale = celle déclarée
+ * et d'une jauge de la fiche, ligne unique à cette jauge, motif strict qui ne la reconnaît pas) et refuse toute entrée sans date, décideur ou
+ * motif, toute mesure manuelle hors liste blanche et toute entrée de la liste sans mesure. L'exception va dans le sens qui protège le bras
+ * (règle 2) : une erreur d'identité ne peut produire qu'une SUR-alerte.
  *
  * Conditions de mesure (identiques pour toutes les lignes) : tension de référence 51 lbs, vitesse de
  * balayage « Fast », unité lb/in. Une seule mesure par couple (modèle, jauge), sans incertitude publiée.
@@ -76,6 +85,41 @@ export const STIFFNESS_SOURCE = {
   ],
 } as const;
 
+/**
+ * Appariement manuel : voir l'en-tête. Liste blanche DATÉE et MOTIVÉE, UNE entrée au plus (le contrôle 13 ter refuse la seconde).
+ * Jamais lue par une surface du site ; le générateur des tables par jauge (`scripts/scraper/c2-par-jauge.mts`) et le contrôle 13 quater
+ * la relisent pour que la table de la fiche contienne cette mesure.
+ */
+export interface ManualPairing {
+  /** Identifiant de la fiche. */
+  id: string;
+  /** Intitulé TWU exact de la ligne appariée à la main. */
+  twu: string;
+  /** Jauge de la fiche (mm) à laquelle la ligne est appariée. */
+  gauge: string;
+  /** Date de la décision (AAAA-MM-JJ). */
+  date: string;
+  /** Qui a décidé. */
+  decidedBy: string;
+  /** Ce qui établit l'identité malgré l'intitulé non reconnu par le motif strict. */
+  reason: string;
+}
+
+export const MANUAL_PAIRINGS: readonly ManualPairing[] = [
+  {
+    id: 'babolat-rpm-team',
+    twu: 'Babolat RPM Team 16 Black',
+    gauge: '1.30',
+    date: '2026-10-10',
+    decidedBy: 'orchestrateur (Pierre ayant délégué les arbitrages le 10/10/2026)',
+    reason:
+      'Modèle RPM Team ; coloris Black (la fiche est noire depuis #114, sur main au 10/10/2026) ; jauge 1.30 de la fiche ; matière Polyester, celle du type de la fiche ; ligne unique à cette jauge ; ' +
+      'intitulé écarté du motif strict uniquement à cause du suffixe de coloris « Black » (« 16 Black » au lieu de « 16 » ou « 16 (1.30) »). ' +
+      'La ligne 1.25 « Babolat RPM Team 17 (1.25) » (matière TWU « Nylon/Polyester », 245,2) ne contredit pas : la règle C retient la plus rigide mesurée aux jauges de la fiche (1.25 et 1.30). ' +
+      'Seule exception au motif strict ; elle va dans le sens qui protège le bras (règle 2) : une erreur d\'identité ne peut produire qu\'une sur-alerte.',
+  },
+];
+
 export type StiffnessStatus = 'appliquee' | 'retenue-jauge' | 'retenue-serie-suspecte' | 'quarantaine';
 export type StiffnessRule = 'jauge-unique' | 'plancher' | 'plus-rigide';
 
@@ -86,6 +130,8 @@ export interface TwuMeasure {
   gauge: string;
   /** Rigidité mesurée (lb/in), 51 lbs, Fast. */
   lbIn: number;
+  /** `'manuel'` : ligne appariée à la main (liste blanche `MANUAL_PAIRINGS`), seule exception au motif strict d'intitulé ; absent sinon. */
+  pairing?: 'manuel';
 }
 
 export interface StringStiffnessProvenance {
@@ -235,7 +281,7 @@ export const STRING_STIFFNESS_PROVENANCE: Readonly<Record<string, StringStiffnes
   },
   'wilson-nxt': {
     status: 'appliquee', before: 152, rule: 'plus-rigide', appliedGauge: '1.30',
-    suspectGuardExemption: 'Lot 2 approuvé par Pierre le 10/10/2026, avant la garde de série suspecte ; ses deux mesures (156 et 173,7) sont contredites par la 15L/1.35 (152, hors fiche, égale à l\'ancienne valeur), mesurée plus souple que la 16 (bruit d\'échantillon déjà consigné dans la note) : la hausse reste approuvée, non revue ici.',
+    suspectGuardExemption: 'Lot 2 approuvé par Pierre le 10/10/2026, avant la garde de série suspecte ; ses deux mesures (156 et 173,7) sont contredites par la 15L/1.35 (152, hors fiche, égale à l\'ancienne valeur), mesurée plus souple que la 16 (bruit d\'échantillon déjà consigné dans la note) : la hausse reste approuvée, non revue ici. Exemption confirmée par l\'orchestrateur le 10/10/2026 (Pierre ayant délégué).',
     measures: [{ twu: 'Wilson NXT 17', gauge: '1.24', lbIn: 156 }, { twu: 'Wilson NXT 16', gauge: '1.30', lbIn: 173.7 }],
     note: 'Règle C : 1.30 (173,7) ; 1.24 (156) est plus souple (sur-alerte assumée de 17,7). 15L/1.35 (152, hors fiche) est plus souple que 16 : bruit d\'échantillon. TW « NXT 17/1.24 » (copie locale du 29/09) : multifilament.',
   },
@@ -388,6 +434,16 @@ export const STRING_STIFFNESS_PROVENANCE: Readonly<Record<string, StringStiffnes
     note:
       'Règle C : 1.30 (221,2). Couverture partielle : 1.25 non mesurée ; valeur plancher (une jauge non mesurée peut être plus rigide), hausse établie dans son sens. Hausse de 0,2 lb/in seulement.',
   },
+  // Seule fiche du catalogue appariée à la main (MANUAL_PAIRINGS : décision de l'orchestrateur du 10/10/2026, Pierre ayant délégué).
+  'babolat-rpm-team': {
+    status: 'appliquee', before: 225, rule: 'plus-rigide', appliedGauge: '1.30',
+    measures: [{ twu: 'Babolat RPM Team 16 Black', gauge: '1.30', lbIn: 280.6, pairing: 'manuel' }],
+    note:
+      'APPARIEMENT MANUEL, seule exception au motif strict (liste blanche MANUAL_PAIRINGS, décision de l\'orchestrateur du 10/10/2026) : « Babolat RPM Team 16 Black » = 280,6 lb/in, matière Polyester, jauge nominale 1.30, ligne unique à cette jauge ; ' +
+      'l\'intitulé n\'est écarté du motif strict que par le suffixe de coloris « Black » (la fiche est noire depuis #114, sur main au 10/10/2026). Règle C : 1.30 (280,6). ' +
+      'La ligne 1.25 « Babolat RPM Team 17 (1.25) » (matière TWU « Nylon/Polyester », 245,2) n\'est pas enregistrée (matière différente de celle de la fiche) et ne contredit pas : la règle C retient la plus rigide mesurée aux jauges de la fiche. ' +
+      'Couverture partielle : 1.35 non mesurée ; valeur plancher, hausse établie dans son sens (+55,6 lb/in). Série non suspecte (une seule ligne polyester). Une erreur d\'identité ne peut produire qu\'une sur-alerte (règle 2).',
+  },
 
   // ---- Lot 3 : hausses établies mais NON appliquées -------------------------------------------------------------
   // Garde de série suspecte : la hausse ne repose que sur une mesure contredite par une jauge plus épaisse (voir l'en-tête).
@@ -407,35 +463,29 @@ export const STRING_STIFFNESS_PROVENANCE: Readonly<Record<string, StringStiffnes
   },
 
   // ---- Lot 3 : hausses candidates dont l'appariement strict n'est pas établi (quarantaine, aucune valeur écrite) ----
-  'babolat-rpm-team': {
-    status: 'quarantaine', before: 225, measures: [],
-    note:
-      'Hausse non appliquée : le désaccord de matière n\'est pas levé. Deux lignes TWU candidates, aucune appariée : « Babolat RPM Team 17 (1.25) » = 245,2 (jauge 1.25 de la fiche, mais matière TWU « Nylon/Polyester » alors que la fiche est un polyester : écartée par la contrainte de matière, D1) ' +
-      'et « Babolat RPM Team 16 Black » = 280,6 (matière « Polyester », jauge nominale 1.30, mais intitulé sans le suffixe de calibre reconnu par l\'appariement strict). La seconde semble désigner le cordage noir de la fiche (sur main depuis #114 : noir, jauges 1.25 et 1.30). ' +
-      'Effet sur la grille au 10/10/2026 : 245,2 ajouterait 208 alertes standard, 305 sensibles et 129 de calculateCompatibility ; 280,6 en ajouterait 686, 465 et 318 : c\'est la seule hausse écartée qui pèse sur les alertes. À lever avec l\'audit d\'existence (PR #115, question 8).',
-  },
+  // Tolérance de jauge de ± 0,01 mm REFUSÉE par l'orchestrateur le 10/10/2026 (Pierre ayant délégué) : l'appariement strict est maintenu.
   'gosen-og-sheep-micro': {
     status: 'quarantaine', before: 175, measures: [],
     note:
-      'Hausse non appliquée : aucune jauge nominale TWU ne tombe sur une jauge de la fiche (1.25, 1.30). « Gosen OG-Sheep Micro 16 » (1.29, 183,5) est à 0,01 mm de la 1.30 ; accepter une tolérance de ± 0,01 mm est une décision de produit non prise (PR #115, question 1). ' +
+      'Hausse non appliquée : aucune jauge nominale TWU ne tombe sur une jauge de la fiche (1.25, 1.30). « Gosen OG-Sheep Micro 16 » (1.29, 183,5) est à 0,01 mm de la 1.30 ; tolérance de jauge refusée (décision de l\'orchestrateur du 10/10/2026) : appariement strict maintenu. ' +
       'Effet sur la grille au 10/10/2026 : 0 alerte standard, 3 sensibles, 2 de calculateCompatibility.',
   },
   'wilson-nxt-power': {
     status: 'quarantaine', before: 145, measures: [],
     note:
-      'Hausse non appliquée : aucune jauge nominale TWU ne tombe sur une jauge de la fiche (1.25, 1.30). « Wilson NXT Power 17 (1.26) » (157,7) est à 0,01 mm de la 1.25 ; tolérance de jauge : décision de produit non prise (PR #115, question 1). Effet sur la grille au 10/10/2026 : aucune alerte.',
+      'Hausse non appliquée : aucune jauge nominale TWU ne tombe sur une jauge de la fiche (1.25, 1.30). « Wilson NXT Power 17 (1.26) » (157,7) est à 0,01 mm de la 1.25 ; tolérance de jauge refusée (décision de l\'orchestrateur du 10/10/2026) : appariement strict maintenu. Effet sur la grille au 10/10/2026 : aucune alerte.',
   },
   'head-fxp': {
     status: 'quarantaine', before: 150, measures: [],
     note:
       'Hausse non appliquée : aucune jauge nominale TWU ne tombe sur une jauge de la fiche (1.25, 1.30). « Head FXP 17 » (1.24, 173,2) est à 0,01 mm de la 1.25 ; « Head FXP 16 » (1.32, 165,2, matière « Nylon/Polyester ») est à 0,02 mm de la 1.30 ; ' +
-      'tolérance de jauge : décision de produit non prise (PR #115, question 1). « Head FXP Power » et « Head FXP Tour » sont d\'autres produits. Effet sur la grille au 10/10/2026 : aucune alerte.',
+      'tolérance de jauge refusée (décision de l\'orchestrateur du 10/10/2026) : appariement strict maintenu. « Head FXP Power » et « Head FXP Tour » sont d\'autres produits. Effet sur la grille au 10/10/2026 : aucune alerte.',
   },
   'wilson-nxt-control': {
     status: 'quarantaine', before: 162, measures: [],
     note:
       'Hausse non appliquée : aucune jauge nominale TWU ne tombe sur une jauge de la fiche (1.24, 1.30). « Wilson NXT Control 16 (1.32) » (163,4, matière « Nylon/Polyester ») est à 0,02 mm de la 1.30 ; hausse de 1,4 lb/in seulement ; ' +
-      'tolérance de jauge : décision de produit non prise (PR #115, question 1). Effet sur la grille au 10/10/2026 : aucune alerte.',
+      'tolérance de jauge refusée (décision de l\'orchestrateur du 10/10/2026) : appariement strict maintenu. Effet sur la grille au 10/10/2026 : aucune alerte.',
   },
 
   // ---- Anciens identifiants fusionnés (alias) : leur valeur d'avant la fusion sert de plancher (règle 2) ----
