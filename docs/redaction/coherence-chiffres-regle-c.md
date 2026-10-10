@@ -507,21 +507,75 @@ Les valeurs agrégées (effectifs, extrêmes, médianes, effectifs du graphique)
 
 ### Contrôle on-page
 
-- [ ] title, meta, H1 et slug FR et EN : seuls les chiffres ont changé (voir § 1)
-- [ ] canonical ; hreflang réciproques : non touchés
-- [ ] JSON-LD : `dateModified` à 2026-10-10 ; FAQ identique au texte visible ; aucun nœud ajouté
-- [ ] og:image et twitter:image : non touchés
-- [ ] index du blog FR et EN : « 104 » devient « 102 » ; sitemap : non touché
-- [ ] `npm run audit:blog-funnel` et `npm run audit:blog-images` verts (voir la PR)
+Passe du 2026-10-10 sur la tête de la PR #116 (`e67d64e`), branche `agent/redaction/coherence-chiffres-regle-c-onpage`. Contrôles faits par script (`jsdom` ; Chrome 155 via Playwright à 1280 px) et par lecture du diff du `<head>` ; les scripts ne sont pas versionnés.
+
+- [x] title, meta, H1 et slug FR et EN : seuls les chiffres ont changé (voir § 1) — `git diff origin/main...HEAD` limité au `<head>` : title, `og:title`, `twitter:title`, H1 et slugs inchangés ; `meta description`, `og:description`, `twitter:description` et `Article.description` : « 104 » devient « 102 », rien d'autre (même longueur) ; FAQ n° 1 des deux articles « tennis elbow » : « 140 à 180 » devient « 143 à 180 ». Seul écart au-delà des chiffres : la FAQ n° 1 des deux articles polyester (Q-3), jugée conforme (réponse plus bas).
+- [x] canonical ; hreflang réciproques : non touchés — canonical = URL du fichier = `og:url` ; pour les deux paires (polyester ; « tennis elbow »), `fr`, `en` et `x-default` (vers le FR) sont les mêmes dans les deux fichiers jumeaux et visent des fichiers qui existent ; les sept URL (quatre articles, guide, deux index) répondent 200 en production, dans la version actuellement en ligne, et figurent au sitemap de production.
+- [x] JSON-LD : `dateModified` à 2026-10-10 ; FAQ identique au texte visible ; aucun nœud ajouté — chaque bloc se parse (`JSON.parse`) ; `Article` (polyester) ou `BlogPosting` (« tennis elbow », sous-type d'`Article`) avec `image` (= `og:image`, fichier existant), `datePublished`, `dateModified`, auteur, `mainEntityOfPage` = canonical ; `BreadcrumbList` ; `FAQPage` ; aucun `aggregateRating`, `Review`, `ratingValue` ni `reviewCount`. `dateModified` = date visible (« mis à jour le 10 octobre 2026 », EN « updated October 10, 2026 ») sur les quatre articles et le guide ; `article:modified_time` (présent sur le seul article FR « tennis elbow ») = `dateModified`. **FAQ : texte visible et JSON-LD identiques au caractère près** sur les 21 réponses des cinq fichiers (3 + 3 + 5 + 4 + 6), après la retouche du guide ci-dessous.
+- [x] og:image et twitter:image : non touchés — fichiers existants, 1200 × 630 (en-tête WebP lu), `og:image:alt` présent, `og:image` = `twitter:image`.
+- [x] index du blog FR et EN : « 104 » devient « 102 » ; sitemap : non touché — cartes l. 659 (FR) et l. 254 (EN) à 102 ; plus aucun « 104 polyesters » dans `public/` ni `src/` ; `BLOG_SLUGS` et `EN_BLOG_SLUGS` contiennent les cinq slugs (`lastModified` y vaut la date du build, pour toutes les URL).
+- [x] `npm run audit:blog-funnel` et `npm run audit:blog-images` verts (voir la PR) — exit 0 l'un et l'autre, avant et après ma retouche ; lien vers le configurateur dans le corps de chacun des quatre articles (FR `/configurator`, EN `/en/configurator.html`), trois ou quatre occurrences dans le corps, aucun `rel` ni `referrerpolicy`.
+- [x] rendu — Chrome 155, 1280 px : les quatre articles répondent 200 ; titre et H1 visibles ; aucun débordement horizontal ; en-tête et graphique chargés ; JSON-LD relu par le navigateur ; aucune erreur console, aucune requête en 4xx ou 5xx (seule la mesure d'audience est neutralisée volontairement pendant le test).
+
+### Retouches faites par `tsa-acquisition`
+
+- `public/blog/guide-materiel-tennis.html` l. 111 et 114 (commit `8f049f2`) : dans le JSON-LD de la FAQ, `'pro stock'` et `'meilleures'` (apostrophes droites) deviennent « pro stock » et « meilleures », comme dans le texte visible (l. 827 et 830). Aucun mot ni chiffre modifié. Écart antérieur à la PR, présent sur `main`. Rien d'autre n'a été touché dans les sept fichiers.
+
+### Longueur des balises (relevé, rien de changé)
+
+Le brief vise 60 caractères au plus pour le title et 155 pour la meta description. La PR ne change la longueur d'aucun title ni d'aucune description (« 104 » devient « 102 »).
+
+| Page | title | meta description | `og:description` |
+|---|---|---|---|
+| FR polyester | 75 | 242 | 163 |
+| EN polyester | 68 | 222 | 142 |
+| FR « tennis elbow » | 96 | 209 | 157 |
+| EN « tennis elbow » | 78 | 192 | 144 |
+| guide | 106 | 198 | 122 |
+
+Jugé acceptable pour cette PR : le mot-clé principal ouvre chaque title et le chiffre tombe dans les 155 premiers caractères de la description (position 40 pour « 102 », 70 à 75 pour « 17 »), donc une troncature ne l'enlève pas. L'écart est général (32 pages du blog sur 35, index compris, dépassent 60 caractères de title ; 19 sur 35 dépassent 155 de description) : à traiter dans un chantier « balises » séparé, pas ici.
 
 ### Propositions au rédacteur
 
 | # | Où | Proposition | Motif SEO | Réponse du rédacteur |
 |---|---|---|---|---|
+| S-1 | FAQ n° 1 des deux articles polyester (FR et EN), texte visible et JSON-LD | Faire passer la phrase de prudence en 2e position, sans ajouter ni retirer un mot (texte exact sous le tableau). Facultatif : la formulation actuelle est conforme (voir « Réponse à Q-3 »). | Un moteur de réponse reprend en pratique le début d'une réponse, rarement la fin (pratique courante, non mesurée ici). Aujourd'hui la prudence est la 4e phrase, qui commence après une soixantaine de mots, donc la première à tomber ; permutée, elle tombe dans les 22 premiers mots (FR) ou 25 (EN) et les deux premières phrases portent la réponse et sa réserve. Contrepartie : les noms des trois cordages passent de la 2e à la 3e phrase. Si acceptée : visible et JSON-LD changés ensemble (parité contrôlée au caractère près). | |
+| S-2 | FAQ n° 3 des deux articles « tennis elbow » (FR : « un multifilament ou un boyau reste le choix le plus prudent » ; EN : « remains the safer choice »), texte visible et JSON-LD | À faire examiner par le pigiste (test de glissance) puis par le rédacteur : même type de formule sans nuance que celle corrigée à Q-3, et la raison de Q-3 (Wilson NXT 173,7, indice 25, au-dessus du O-Toro, 24) vaut aussi ici. Je ne propose pas de texte : c'est un conseil de santé. | Cohérence entre les pages : un moteur qui lit les deux articles reprendrait une réserve nuancée dans l'un et un absolu dans l'autre. | |
+| S-3 | `guide-materiel-tennis.html`, `og:title` et `twitter:title` (l. 15 et 29) | Retirer « 2025 » : « … : Guide Expert 2025 » devient « … : Guide Expert », comme le title et le H1 de la page, qui n'ont pas d'année. Je ne l'ai pas fait moi-même : c'est un chiffre dans un titre. | La PR date le guide « mis à jour le 10 octobre 2026 » (texte visible et `dateModified`) ; l'aperçu de partage annonce 2025 ; charte § 1 : pas d'année dans un titre sauf nécessité. | |
+| S-4 | « Sources » des deux articles polyester | Facultatif : rendre cliquable la source TWU (aujourd'hui du texte : « twu.tennis-warehouse.com »), avec l'URL du dossier (F7) à reconfirmer par le pigiste (F10). Si acceptée, j'ajoute `citation` au JSON-LD, comme dans les deux articles « tennis elbow ». | Source primaire des valeurs † ; les deux articles « tennis elbow » la lient déjà. | |
+
+Texte de S-1 (mêmes mots, autre ordre).
+
+FR :
+
+```
+Si vous gardez un polyester, prenez l'un des plus souples. En général, un multifilament ou un boyau reste plus prudent qu'un polyester. Dans notre catalogue de 102 polyesters, les trois moins rigides sont le Toroline O-Toro Snap (164,6 lb/in), l'Isospeed Cream (165) et le Toroline O-Toro (165,7). Sur une raquette de RA 65 montée à 22 kg, ils donnent un indice RCS de 24, contre 35 pour les plus rigides.
+```
+
+EN :
+
+```
+If you keep a polyester, pick one of the softest. In general, a multifilament or natural gut remains a more prudent choice than a polyester. In our catalogue of 102 polys, the three least stiff are Toroline O-Toro Snap (164.6 lb/in), Isospeed Cream (165) and Toroline O-Toro (165.7). In a racquet with an RA of 65 strung at 22 kg, they give an RCS index of 24, against 35 for the stiffest.
+```
+
+### Réponse à Q-3 (FAQ n° 1 des deux articles polyester)
+
+Conforme, sans retouche nécessaire.
+
+- Réponse d'abord : la 1re phrase répond (« prenez l'un des plus souples »), la 2e nomme les trois cordages avec leur rigidité ; les deux premières phrases donnent donc la réponse (charte § 1).
+- Prudence conservée : FR, « En général » est ajouté devant « un multifilament ou un boyau reste plus prudent qu'un polyester » ; EN, « In general » est ajouté et « safer than any polyester » devient « a more prudent choice than a polyester ». Aucun absolu du type « sans risque » ou « idéal pour le coude » (charte F7), et FR et EN disent la même chose.
+- Parité : texte visible et JSON-LD identiques au caractère près, FR et EN.
+- Réserve, non bloquante : la prudence arrive en 4e phrase (voir S-1).
+
+### Constats sur ces pages, hors périmètre de la PR (non modifiés)
+
+- Guide : `publisher.logo` (`https://tennisstringadvisor.org/logo.png`) répond 404 en production, le fichier n'existe pas dans `public/` ; même défaut sur dix autres pages du blog. À retirer ou à créer dans un chantier séparé (`tsa-acquisition`), pas dans cette PR.
+- `article:modified_time` n'existe que sur 7 pages du blog sur 35 (dont l'article FR « tennis elbow ») : facultatif, non ajouté sur les trois autres articles ; la date visible et `dateModified` restent les deux repères tenus à jour (charte F11).
 
 ### Vérification en production (après fusion)
 
 - À faire après la fusion de la PR #110 puis de celle-ci : ouvrir les quatre articles, le guide et les deux index en production, vérifier « 102 polyesters », le graphique (clair et sombre) et les dates.
+- Avant fusion (2026-10-10) : les sept URL répondent 200 et figurent au sitemap de production, dans leur version actuelle.
 
 ---
 
