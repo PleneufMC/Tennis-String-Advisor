@@ -23,11 +23,6 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 const FOLDER = { racquet: '/images/products/racquets/', string: '/images/products/strings/' };
-export const SOURCE_CREDIT = {
-  'tennis-warehouse': 'Tennis Warehouse',
-  'tennis-warehouse-europe': 'Tennis Warehouse Europe',
-  'tennis-point': 'Tennis-Point',
-};
 
 const esc = (v) =>
   String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -53,8 +48,13 @@ export async function loadProductImages(repoRoot) {
   const file = path.join(dir, `product-images-${process.pid}-${Date.now()}.mjs`);
   writeFileSync(file, js);
   try {
-    const { PRODUCT_IMAGES } = await import(pathToFileURL(file).href);
-    return { enabled, images: PRODUCT_IMAGES ?? {} };
+    const { PRODUCT_IMAGES, PRODUCT_IMAGE_CREDITS } = await import(pathToFileURL(file).href);
+    // Le crédit (« Photo : <source> ») vient de la table générée avec le manifeste : même libellé que le FR.
+    const credits = PRODUCT_IMAGE_CREDITS ?? {};
+    const images = Object.fromEntries(
+      Object.entries(PRODUCT_IMAGES ?? {}).map(([id, e]) => [id, { ...e, credit: credits[e.source] ?? '' }]),
+    );
+    return { enabled, images };
   } finally {
     rmSync(file, { force: true });
   }
@@ -77,11 +77,10 @@ export function productFigureHtml(images, kind, id, name) {
   const e = productImageFor(images, kind, id);
   const kindLabel = kind === 'racquet' ? 'Racquet' : 'String';
   if (e) {
-    const credit = SOURCE_CREDIT[e.source] ?? 'Tennis Warehouse';
     return `    <figure class="mt-6" data-product-image="photo">
       <div class="relative h-72 sm:h-80 overflow-hidden rounded-lg bg-white"><img src="${esc(e.file)}" alt="${esc(`${kindLabel} ${name}`)}" width="${e.width}" height="${e.height}" loading="eager" decoding="async" class="h-full w-full object-contain p-2"></div>
-      <figcaption class="mt-1.5 text-xs text-gray-600 dark:text-gray-400">Photo: ${esc(credit)}</figcaption>
-    </figure>
+${e.credit ? `      <figcaption class="mt-1.5 text-xs text-gray-600 dark:text-gray-400">Photo: ${esc(e.credit)}</figcaption>
+` : ''}    </figure>
 `;
   }
   return `    <div class="mt-6 flex h-72 sm:h-80 items-center gap-6 overflow-hidden rounded-lg border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 px-6 sm:px-10 text-gray-400 dark:text-gray-500" data-product-image="illustration" role="img" aria-label="${esc(`Illustration: ${name} (photo not available)`)}">

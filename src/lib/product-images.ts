@@ -1,4 +1,9 @@
-import { PRODUCT_IMAGES, type ProductImageEntry, type ProductImageSource } from '@/data/product-images';
+import {
+  PRODUCT_IMAGES,
+  PRODUCT_IMAGE_CREDITS,
+  type ProductImageEntry,
+  type ProductImageSource,
+} from '@/data/product-images';
 
 /**
  * Photos produit (raquettes, cordages) — décision de Pierre du 29/09/2026.
@@ -6,8 +11,10 @@ import { PRODUCT_IMAGES, type ProductImageEntry, type ProductImageSource } from 
  * Les photos viennent de Tennis Warehouse et Tennis Warehouse Europe (dont les
  * conditions interdisent la reproduction sans permission écrite ; demande en
  * cours, photos conservées par décision de Pierre du 10/10/2026, en connaissance
- * du risque) et, depuis le 10/10/2026, de Tennis-Point (aucune autorisation de
- * réutilisation publiée). Tout le
+ * du risque) et des sites officiels des fabricants (source `fabricant:<marque>`,
+ * décision de Pierre du 10/10/2026 : « aucune restriction à utiliser les images
+ * officielles », en connaissance du risque : leurs conditions interdisent aussi la
+ * reproduction sans autorisation écrite). Tout le
  * dispositif passe donc par CE drapeau : à `false`, chaque carte et chaque
  * fiche — FR, et EN statique via scripts/catalog/product-images.mjs — retombe
  * sur l'illustration, sans autre modification.
@@ -15,18 +22,20 @@ import { PRODUCT_IMAGES, type ProductImageEntry, type ProductImageSource } from 
  * Retrait complet : drapeau à `false`, puis
  *   python scripts/scraper/tw_product_images.py purge
  * (supprime public/images/products/ et vide src/data/product-images.ts).
- * Retrait d'une seule source : `… purge tennis-warehouse-europe`.
+ * Retrait d'une seule source : `… purge tennis-warehouse-europe`, `… purge fabricant:wilson`.
  */
 export const PRODUCT_IMAGES_ENABLED = true;
 
 export type ProductKind = 'racquet' | 'string';
 
-/** Légende « Photo : … » de la fiche détail, par source. */
-export const PRODUCT_IMAGE_CREDIT: Readonly<Record<ProductImageSource, string>> = {
-  'tennis-warehouse': 'Tennis Warehouse',
-  'tennis-warehouse-europe': 'Tennis Warehouse Europe',
-  'tennis-point': 'Tennis-Point',
-};
+/**
+ * Crédit « Photo : … » de la fiche détail, par source. La table est GÉNÉRÉE avec le manifeste
+ * (src/data/product-images.ts) : une source sans libellé n'affiche aucune légende, et
+ * `audit:ratings` (contrôle 12) échoue dans ce cas.
+ */
+export function productImageCredit(source: ProductImageSource): string {
+  return PRODUCT_IMAGE_CREDITS[source] ?? '';
+}
 
 const FOLDER: Record<ProductKind, string> = {
   racquet: '/images/products/racquets/',

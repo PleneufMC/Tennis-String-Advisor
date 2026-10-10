@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import { getProductImage, PRODUCT_IMAGE_CREDIT, type ProductKind } from '@/lib/product-images';
+import { getProductImage, productImageCredit, type ProductKind } from '@/lib/product-images';
 import { cn } from '@/lib/utils';
 
 /**
@@ -105,7 +105,7 @@ export function ProductImage({ kind, id, alt, name, size = 'card', eager = false
       </div>
       {credit && (
         <figcaption className="mt-1.5 text-xs text-slate-500 dark:text-slate-400">
-          Photo : {PRODUCT_IMAGE_CREDIT[image.source]}
+          Photo : {productImageCredit(image.source)}
         </figcaption>
       )}
     </figure>
