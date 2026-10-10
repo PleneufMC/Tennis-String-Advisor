@@ -14,6 +14,7 @@ import {
   trackPremiumCtaClick,
 } from '@/components/analytics/analytics';
 import { BuyButton } from '@/components/product/buy-button';
+import { StringRatingLabel, StringRatingsNotice } from '@/components/product/string-rating-label';
 import { isPremiumActive } from '@/lib/premium';
 import {
   calculateAdvancedRcs,
@@ -76,6 +77,13 @@ function SelectedStringSummary({
         {string.control !== undefined ? `${string.control}/10` : 'non publié'} | Confort:{' '}
         {string.comfort !== undefined ? `${string.comfort}/10` : 'non publié'}
       </div>
+      {/* Nature des deux notes ci-dessus (principe décidé le 10/10/2026) : appréciation
+          de l'équipe, jamais une mesure. Même composant pour le montant et le travers. */}
+      <StringRatingLabel
+        string={string}
+        as="div"
+        style={{ color: 'var(--tint-green-fg)', fontSize: '0.7rem', marginTop: '0.125rem' }}
+      />
       {children}
     </div>
   );
@@ -1382,6 +1390,42 @@ export default function ConfiguratorPage() {
                       ⚠️ {w}
                     </div>
                   ))}
+                </div>
+              )}
+
+              {/* Nature des notes sur lesquelles reposent les sous-scores et le score global
+                  (principe décidé le 10/10/2026). Hors du bloc flouté : c'est une précision
+                  sur la donnée, visible de tous, qui ne dévoile aucun résultat. Affichage
+                  seulement : aucun calcul de `advanced-rcs.ts` n'est touché. */}
+              {selectedMainString && Object.values(advancedRcs.subScores).some((v) => v !== null) && (
+                <div
+                  data-testid="advanced-ratings-nature"
+                  style={{ marginBottom: '0.9rem', fontSize: '0.75rem', color: 'var(--text-muted)' }}
+                >
+                  <div>
+                    Sous-scores et score global : calculés à partir des notes /10{' '}
+                    {selectedCrossString ? 'des deux cordages' : 'du cordage'}, ajustées par la tension, la
+                    jauge et la raquette.
+                  </div>
+                  <div style={{ marginTop: '0.25rem' }}>
+                    {selectedCrossString ? 'Cordage principal : ' : 'Notes : '}
+                    <StringRatingLabel
+                      string={selectedMainString}
+                      as="span"
+                      style={{ fontWeight: 600, color: 'var(--text-strong)' }}
+                    />
+                  </div>
+                  {selectedCrossString && (
+                    <div>
+                      Cordage travers :{' '}
+                      <StringRatingLabel
+                        string={selectedCrossString}
+                        as="span"
+                        style={{ fontWeight: 600, color: 'var(--text-strong)' }}
+                      />
+                    </div>
+                  )}
+                  <StringRatingsNotice as="div" style={{ marginTop: '0.25rem' }} />
                 </div>
               )}
 

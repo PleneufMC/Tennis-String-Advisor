@@ -10,7 +10,9 @@ import { stringsDatabase } from '@/data/strings-database';
 export const metadata: Metadata = buildRouteMetadata({
   path: '/tennis-strings',
   title: 'Catalogue des cordages de tennis',
-  description: `${stringsDatabase.length} cordages comparés : polyester, multifilament, boyau naturel, hybrides. La rigidité de chaque référence ; contrôle, confort, effet et durabilité quand la note existe.`,
+  // Des caractéristiques seulement, aucune promesse de note : les notes /10 sont une appréciation de l'équipe
+  // et se lisent dans le catalogue avec leur libellé, pas dans un extrait de recherche (10/10/2026).
+  description: `${stringsDatabase.length} cordages comparés : polyester, multifilament, boyau naturel, hybrides. Type, rigidité (lb/in) et jauges de chaque référence ; recherche et filtres.`,
 });
 
 export default function RouteLayout({ children }: { children: React.ReactNode }) {
