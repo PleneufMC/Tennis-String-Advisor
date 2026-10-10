@@ -1,11 +1,28 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.3.11
+> **Version** : 2.3.12
 > **Date** : 10 octobre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
 > **Branche de référence** : `main` (seule branche longue ; la production Netlify en déploie)
 > **Repo** : https://github.com/PleneufMC/Tennis-String-Advisor.git
+
+**Changelog v2.3.11 → v2.3.12** — **Deux garde-fous de `tsa-measure` corrigés** (contrôle
+indépendant du lot du 10/10/2026 ; aucune donnée, aucun RCS, aucune alerte touchés). **(1) `audit:style-contrast`** : sur
+Windows, `path.relative` rend des « \ » alors que les clés de `scripts/qa-style-contrast.baseline.json` sont en « / » :
+aucune entrée de la baseline ne correspondait, les défauts antérieurs ressortaient tous comme nouveaux (34 « paires
+illisibles », exit 1). Clé normalisée (`split(path.sep).join('/')`) : **31 des 34 constats sont reconnus par la baseline**.
+Seuils, baseline et `--strict` (34 toujours listés) inchangés. **Le diagnostic « séparateurs » n'explique pas les 34** : 3
+constats restent, **hors baseline sur tout système**, tous dans `src/app/pricing/page.tsx` (code introduit le 13/09 par
+`6452105`, après la baseline du 08/08) et dans l'état « souscription fermée », aujourd'hui inactif (`CHECKOUT_DISPONIBLE =
+true`) : le lien `mailto:` en `#047857` sur fond sombre (2,67:1, thème sombre : défaut réel dès que l'encart s'affiche) et le
+bouton `#9ca3af` sur `#4b5563` (2,98:1, deux thèmes : couple qui ne peut pas coexister, le plan gratuit n'ayant pas de
+`stripeLinks`, donc faux positif de l'analyse statique, qui n'évalue pas ces conditions). Non ajoutés à la baseline (« pas de
+nouvelle entrée sans arbitrage ») : le contrôle reste rouge, pour trois raisons connues et nommées ; à traiter par
+`tsa-revenue` (fichier) avec Pierre. **(2) `audit:database`** : borne basse de l'équilibre junior 260 → 220 mm. L'US Open Jr 21
+a un équilibre officiel de 258 mm (« Unstrung Balance Cm 25.8 », wilson.com, L0, fait V75 de la veille du 10/10), soit 0,484 de
+sa longueur ; 220 = 19 po × 0,459, le plus bas rapport équilibre/longueur du catalogue. Neutre sur `main` (56 problèmes
+avant et après), 57 → 56 avec la PR des fiches désynchronisées ; une valeur de 200 mm reste signalée.
 
 **Changelog v2.3.10 → v2.3.11** — **Comptages du catalogue : plus aucun
 total écrit à la main sur les pages EN, et un garde-fou** (`tsa-acquisition`, demande du 10/10/2026
@@ -1044,4 +1061,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.3.11 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.3.12 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
