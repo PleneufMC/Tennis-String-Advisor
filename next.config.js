@@ -114,6 +114,12 @@ const nextConfig = {
       { source: '/tennis-strings/luxilon-big-banger', destination: '/tennis-strings/luxilon-original', permanent: true },
       { source: '/tennis-strings/wilson-element', destination: '/tennis-strings/luxilon-element', permanent: true },
       { source: '/tennis-strings/wilson-savage', destination: '/tennis-strings/luxilon-savage', permanent: true },
+      // --- redirections permanentes : doublons fusionnés le 10/10/2026 (miroir de LEGACY_STRING_ALIASES). Les fiches EN
+      // `/en/strings/<id>.html` existent depuis le 09/10 : leur ancienne URL redirige aussi.
+      { source: '/tennis-strings/tecnifibre-4s', destination: '/tennis-strings/tecnifibre-black-code-4s', permanent: true },
+      { source: '/tennis-strings/tecnifibre-atp-razor-code', destination: '/tennis-strings/tecnifibre-razor-code', permanent: true },
+      { source: '/en/strings/tecnifibre-4s.html', destination: '/en/strings/tecnifibre-black-code-4s.html', permanent: true },
+      { source: '/en/strings/tecnifibre-atp-razor-code.html', destination: '/en/strings/tecnifibre-razor-code.html', permanent: true },
       { source: '/tennis-strings/:slug(yonex-aerobite|babolat-ifeel-66|babolat-ifeel-68|head-hawk-xtreme|head-triumphant|wilson-zone-pro|wilson-velocity|luxilon-wrz)', destination: '/tennis-strings', permanent: true },
       // --- 301 : article de blog retiré (décision de Pierre du 10/10/2026). Le
       // comparatif Gravity MP vs Tour opposait deux profils de natures
