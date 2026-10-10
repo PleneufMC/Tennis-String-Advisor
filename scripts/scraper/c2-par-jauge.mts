@@ -75,7 +75,8 @@ function liste(): void {
   const withTable = rows.filter(([, a]) => Object.keys(a.table).length > 0);
   const flat = stringsDatabase.filter((s) => s.type !== 'Hybrid');
   const measured = flat.reduce((n, s) => n + Object.keys(plan.get(s.id)!.table).length, 0);
-  console.log(`Fiches avec table : ${withTable.length}/${stringsDatabase.length} ; jauges mesurées : ${measured}/${flat.reduce((n, s) => n + s.gauges.length, 0)} (hors hybrides)`);
+  const complete = withTable.filter(([s, a]) => Object.keys(a.table).length === s.gauges.length).length;
+  console.log(`Fiches avec table : ${withTable.length}/${stringsDatabase.length} (${complete} complètes, ${withTable.length - complete} partielles) ; jauges mesurées : ${measured}/${flat.reduce((n, s) => n + s.gauges.length, 0)} (hors hybrides)`);
   const sus = withTable.filter(([, a]) => a.suspect);
   console.log(`\nSéries suspectes (${sus.length}) ; jauge* = hors des jauges de la fiche ; valeurs jauge=lb/in :`);
   for (const [s, a] of sus) console.log(`  ${s.id.padEnd(30)} ${a.series}\n${' '.repeat(34)}inversions : ${a.inversions.join(' ; ')}`);
@@ -87,6 +88,9 @@ function liste(): void {
     c[top === s.stiffness ? 'egale' : top < s.stiffness ? 'ficheSupérieure' : 'ficheInférieure']++;
   }
   console.log(`\nRègle C (maximum de la table) contre la rigidité de la fiche : égale ${c.egale} ; fiche supérieure (une baisse, GO de Pierre) ${c.ficheSupérieure} ; fiche inférieure (une hausse) ${c.ficheInférieure}`);
+  const pairs = { saines: [0, 0, 0], suspectes: [0, 0, 0] }; // couples (fiche, jauge) : [mesure = fiche, mesure < fiche (baisse), mesure > fiche (hausse)]
+  for (const [s, a] of withTable) for (const m of Object.values(a.table)) pairs[a.suspect ? 'suspectes' : 'saines'][m === s.stiffness ? 0 : m < s.stiffness ? 1 : 2]++;
+  console.log(`Couples (fiche, jauge) contre la rigidité de la fiche [égale / baisse / hausse] : séries saines ${pairs.saines.join(' / ')} ; séries suspectes ${pairs.suspectes.join(' / ')}`);
 }
 
 /**
