@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: 'Tennis String Advisor',
     short_name: 'TSA',
     description:
-      'Your expert for tennis strings and racquets. Find the perfect setup for your game.',
+      'Tennis string and tension configurator, comparator and catalog of racquets and strings, with the RCS firmness index and its arm-alert thresholds.',
     start_url: '/',
     display: 'standalone',
     background_color: '#ffffff',
