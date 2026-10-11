@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { racquetsDatabase } from '@/data/racquets-database';
-import { stringsDatabase } from '@/data/strings-database';
+import { stringsDatabase, calculateRCS } from '@/data/strings-database';
 import { useLanguage, type TranslationKey } from '@/lib/i18n';
 
 // ---- Icônes SVG (style line, cohérent avec le Header) ----
@@ -53,6 +53,22 @@ function IconCheck({ className }: { className?: string }) {
 
 const BRANDS = ['Babolat', 'Wilson', 'Head', 'Yonex', 'Dunlop', 'Tecnifibre', 'Prince', 'Völkl'];
 
+// Aperçu RCS de la carte d'accueil : l'indice est CALCULÉ avec la formule du site à partir du catalogue, jamais
+// écrit à la main. Un « 23 · Confortable » codé en dur affichait comme confortable un montage dont l'indice est
+// 32 (palier « Ferme », seuil d'alerte d'un bras sensible) — constat du 11/10/2026. Le couple montré est un
+// exemple : n'importe quel couple du catalogue convient, le nombre, le palier et la jauge suivent.
+const PREVIEW = { racquetId: 'wilson-blade-98-16x19-v9', stringId: 'luxilon-alu-power', tensionKg: 24 } as const;
+
+// Paliers de l'échelle publiée (« Échelle de lecture » plus bas) : < 20, 20-25, 25-30, 30-35, ≥ 35.
+// L'indice du catalogue va de 11 à 41 (cf. `calculateRCS`) : la jauge s'étale sur cette plage.
+const RCS_TIERS: { max: number; key: TranslationKey; badge: string; fill: string }[] = [
+  { max: 20, key: 'home.rcsSection.veryComfortable', badge: 'bg-tennis-green-50 text-tennis-green-700 dark:bg-tennis-green-500/15 dark:text-tennis-green-300', fill: 'bg-tennis-green-400' },
+  { max: 25, key: 'home.rcsSection.comfortable', badge: 'bg-tennis-green-50 text-tennis-green-700 dark:bg-tennis-green-500/15 dark:text-tennis-green-300', fill: 'bg-tennis-green-500' },
+  { max: 30, key: 'home.rcsSection.standard', badge: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200', fill: 'bg-tennis-court-400' },
+  { max: 35, key: 'home.rcsSection.firm', badge: 'bg-orange-50 text-orange-700 dark:bg-orange-500/15 dark:text-orange-300', fill: 'bg-orange-400' },
+  { max: Infinity, key: 'home.rcsSection.veryFirm', badge: 'bg-red-50 text-red-700 dark:bg-red-500/15 dark:text-red-300', fill: 'bg-red-500' },
+];
+
 const FEATURES: { icon: (p: { className?: string }) => JSX.Element; titleKey: TranslationKey; descKey: TranslationKey }[] = [
   { icon: IconSliders, titleKey: 'home.feature.config.title', descKey: 'home.feature.config.desc' },
   { icon: IconPulse, titleKey: 'home.feature.rcs.title', descKey: 'home.feature.rcs.desc' },
@@ -65,6 +81,14 @@ export default function HomePage() {
   const racquetCount = racquetsDatabase.length;
   const stringCount = stringsDatabase.length;
   const brandCount = new Set(racquetsDatabase.map((r) => r.brand)).size;
+
+  const previewRacquet = racquetsDatabase.find((r) => r.id === PREVIEW.racquetId);
+  const previewString = stringsDatabase.find((s) => s.id === PREVIEW.stringId);
+  const previewRcs =
+    previewRacquet && previewRacquet.stiffness !== null && previewString
+      ? calculateRCS(previewRacquet.stiffness, previewString.stiffness, PREVIEW.tensionKg)
+      : null;
+  const previewTier = previewRcs === null ? null : RCS_TIERS.find((tier) => previewRcs < tier.max) ?? RCS_TIERS[RCS_TIERS.length - 1];
 
   return (
     <div className="bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
@@ -138,29 +162,32 @@ export default function HomePage() {
             <div className="relative mx-auto max-w-sm rounded-3xl border border-slate-200 bg-white p-6 shadow-xl shadow-slate-200/60 dark:border-slate-800 dark:bg-slate-900 dark:shadow-black/40">
               <div className="flex items-center justify-between">
                 <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">{t('home.rcs.preview')}</p>
-                <span className="rounded-full bg-tennis-green-50 px-2.5 py-1 text-xs font-semibold text-tennis-green-700 dark:bg-tennis-green-500/15 dark:text-tennis-green-300">
-                  {t('home.rcs.comfortable')}
-                </span>
+                {previewTier && (
+                  <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${previewTier.badge}`}>
+                    {t(previewTier.key)}
+                  </span>
+                )}
               </div>
 
               <div className="mt-4 flex items-baseline gap-2">
-                <span className="text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white">23</span>
-                <span className="text-sm text-slate-400 dark:text-slate-500">/ 50</span>
+                <span className="text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white">{previewRcs ?? '—'}</span>
               </div>
 
               {/* jauge */}
               <div className="mt-4 h-2.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-tennis-green-400 to-tennis-green-600"
-                  style={{ width: '46%' }}
-                />
+                {previewRcs !== null && previewTier && (
+                  <div
+                    className={`h-full rounded-full ${previewTier.fill}`}
+                    style={{ width: `${Math.max(0, Math.min(100, ((previewRcs - 11) / 30) * 100))}%` }}
+                  />
+                )}
               </div>
 
               <div className="mt-6 space-y-3">
                 {[
-                  { k: t('home.rcs.racquet'), v: 'Wilson Blade 98 v9' },
-                  { k: t('home.rcs.string'), v: 'Luxilon ALU Power' },
-                  { k: t('home.rcs.tension'), v: '24 kg' },
+                  { k: t('home.rcs.racquet'), v: previewRacquet ? `${previewRacquet.brand} ${previewRacquet.model} ${previewRacquet.variant}` : '—' },
+                  { k: t('home.rcs.string'), v: previewString ? `${previewString.brand} ${previewString.model}` : '—' },
+                  { k: t('home.rcs.tension'), v: `${PREVIEW.tensionKg} kg` },
                 ].map((row) => (
                   <div
                     key={row.k}

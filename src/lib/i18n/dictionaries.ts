@@ -45,7 +45,7 @@ export const dictionaries = {
     'home.rcs.string': 'Cordage',
     'home.rcs.tension': 'Tension',
     'home.rcs.note':
-      'Configuration équilibrée : contrôle élevé avec un confort adapté à la majorité des joueurs.',
+      'Exemple calculé avec les données du catalogue. L’alerte bras se déclenche dès 32 pour un bras sensible, dès 35 sinon.',
     'home.brands.label': 'Toutes les grandes marques',
 
     // --- Home: Features ---
@@ -162,7 +162,7 @@ export const dictionaries = {
     'home.rcs.string': 'String',
     'home.rcs.tension': 'Tension',
     'home.rcs.note':
-      'Balanced setup: high control with comfort suited to the majority of players.',
+      'Example computed from the catalog data. The arm alert starts at 32 for a sensitive arm, and at 35 otherwise.',
     'home.brands.label': 'All the major brands',
 
     // --- Home: Features ---
