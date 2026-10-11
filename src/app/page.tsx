@@ -60,7 +60,9 @@ const BRANDS = ['Babolat', 'Wilson', 'Head', 'Yonex', 'Dunlop', 'Tecnifibre', 'P
 const PREVIEW = { racquetId: 'wilson-blade-98-16x19-v9', stringId: 'luxilon-alu-power', tensionKg: 24 } as const;
 
 // Paliers de l'échelle publiée (« Échelle de lecture » plus bas) : < 20, 20-25, 25-30, 30-35, ≥ 35.
-// L'indice du catalogue va de 11 à 41 (cf. `calculateRCS`) : la jauge s'étale sur cette plage.
+// Plage mesurée le 11/10/2026 sur le catalogue (raquettes à RA publiée × cordages, tensions de 18 à 30 kg) : indice de 11 à 44.
+// La jauge s'étale sur cette plage ; au-delà, elle reste pleine.
+const RCS_SCALE = { min: 11, max: 44 } as const;
 const RCS_TIERS: { max: number; key: TranslationKey; badge: string; fill: string }[] = [
   { max: 20, key: 'home.rcsSection.veryComfortable', badge: 'bg-tennis-green-50 text-tennis-green-700 dark:bg-tennis-green-500/15 dark:text-tennis-green-300', fill: 'bg-tennis-green-400' },
   { max: 25, key: 'home.rcsSection.comfortable', badge: 'bg-tennis-green-50 text-tennis-green-700 dark:bg-tennis-green-500/15 dark:text-tennis-green-300', fill: 'bg-tennis-green-500' },
@@ -178,7 +180,7 @@ export default function HomePage() {
                 {previewRcs !== null && previewTier && (
                   <div
                     className={`h-full rounded-full ${previewTier.fill}`}
-                    style={{ width: `${Math.max(0, Math.min(100, ((previewRcs - 11) / 30) * 100))}%` }}
+                    style={{ width: `${Math.max(0, Math.min(100, ((previewRcs - RCS_SCALE.min) / (RCS_SCALE.max - RCS_SCALE.min)) * 100))}%` }}
                   />
                 )}
               </div>
