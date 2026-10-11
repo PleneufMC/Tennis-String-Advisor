@@ -2226,7 +2226,9 @@ export function calculateCompatibility(
   //   < 54        rigide      · >= 54            très rigide
   if (rcs < 41) {
     score += 20;
-    recommendation = 'Configuration très confortable, excellent pour le bras.';
+    // Texte reformulé le 11/10/2026 (charte F7, pas d'absolu de santé) : un constat sur l'indice, pas une promesse.
+    // Il contient toujours « confortable », mot que le filtre de pdf-configuration-data.ts retire du PDF.
+    recommendation = 'Configuration très confortable, indice de fermeté bas.';
   } else if (rcs < 45) {
     score += 15;
     recommendation = 'Bon équilibre confort/contrôle.';

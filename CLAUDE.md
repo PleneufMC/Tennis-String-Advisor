@@ -1,11 +1,58 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.3.17
+> **Version** : 2.3.18
 > **Date** : 11 octobre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
 > **Branche de référence** : `main` (seule branche longue ; la production Netlify en déploie)
 > **Repo** : https://github.com/PleneufMC/Tennis-String-Advisor.git
+
+**Changelog v2.3.17 → v2.3.18** — **Descriptions des cordages et phrases de recommandation alignées sur la rigidité : plus de
+promesse de confort que le chiffre contredit, plus d'absolu de santé** (décision de l'orchestrateur du 11/10/2026, Pierre ayant
+délégué les arbitrages ; réserve R1 du contrôle indépendant de `tsa-measure` ; `tsa-core` ; **à fusionner après #116**).
+**Constat** : après la règle C et le lot 3 (#116), 39 cordages sont plus rigides qu'avant ; 21 d'entre eux gardaient une
+`description` (fiche FR, JSON-LD de la fiche, carte du catalogue) qui parlait de souplesse, de confort, de douceur ou de « bras
+sensible » juste à côté du chiffre : Isospeed Cream « le polyester le plus doux du marché » à 177,7 (5ᵉ sur 102), TGV « le plus
+confortable des multifilaments » à 165,2 (médiane 162,3), Razor Soft « version assouplie » à 212, RPM Team « bon équilibre avec
+confort » à 280,6 (2ᵉ polyester le plus rigide), NRG2 « valeur sûre pour bras sensibles ». **Textes seulement, aucune donnée, note,
+formule ni seuil touchés.** **43 descriptions** : les 21 de la liste et 4 formulations implicites (« sensation multifilament »,
+« toucher accessible », « excellent toucher », « meilleur toucher »), plus **18 autres fiches au même défaut** que le contrôle
+ci-dessous a fait apparaître (10 argumentaires de santé, « idéal pour bras sensibles », « pour bras fragile », « préserver son
+bras », « prévention des blessures » ; 9 promesses de confort sur des fiches plus rigides que la médiane de leur famille, dont
+Velocity MLT, dans les deux séries). Chaque description garde ce qui décrit le produit (matière, structure, usage, spin, contrôle,
+puissance, durabilité) ; seules Isospeed Cream et RPM Team reçoivent un fait de la base à la place de l'ancien superlatif
+(« cinquième polyester le moins rigide du catalogue », « deuxième polyester le plus rigide du catalogue »). **`getStringRecommendation`** :
+la `suggestion` des cinq paliers ne recommande plus une catégorie de joueurs (« Idéal pour les joueurs avec sensibilité du bras »,
+« réservé aux professionnels ») : elle situe l'indice par rapport aux seuils d'alerte de `advanced-rcs.ts` (dès 32 pour un bras
+sensible, dès 35 sinon) ; la `description` du palier < 20 ne dit plus « excellente pour le confort du bras » ; `calculateCompatibility`
+ne dit plus « excellent pour le bras » (phrase non affichée, filtrée du PDF). **Logique inchangée, vérifiée** : niveau identique sur
+1 201 valeurs de RCS, score et indice de `calculateCompatibility` identiques sur les 138 546 combinaisons, alertes bras avancées
+inchangées (7,12 % / 23,25 %). **Contrôle 19** de `audit:ratings` : aucune description ne parle du bras, du coude ni de blessure ;
+aucun mot de confort, de douceur ou de toucher sur une fiche plus rigide que la médiane de sa famille (`type`, médiane relue dans les
+données) dès que le montage médian (RA 64, 24 kg) sort du palier « Confortable », ni sur une fiche dont l'alerte standard se déclenche
+à ce montage ; tout rang de rigidité annoncé est exact ; les seuils cités par `getStringRecommendation` sont ceux que le moteur
+applique (sondés) et le palier « Très Ferme » commence au seuil du profil standard ; 17 tests négatifs, 3 témoins positifs. Sur le
+catalogue de #116 il relève 34 constats (31 sur 29 fiches, 3 sur la recommandation), sur cette branche aucun. **Limite connue de la règle** :
+elle laisse leurs mots aux fiches jusqu'à la médiane de leur famille, soit 220 lb/in pour un polyester (indice 31, palier « Ferme ») :
+9 polyesters de 208 à 220 lb/in gardent leurs mots de confort (Hawk Touch, ALU Power Soft, Smart, Pro Stacked, RPM Power, M2 Pro, Primal,
+Evolution Pro, Pro Players) ; l'abaisser à « indice ≥ 30 » est une constante, décision de l'orchestrateur. Des 25 fiches de la liste,
+14 sont sous la médiane de leur famille : réécrites parce que la liste le demandait, pas parce que la règle l'exige. **Listé, non modifié** (aucune décision prise) : la note de
+confort du Mach-10 (8,8, 1er des 18, pour 222,3 lb/in, 8ᵉ des 18 en souplesse) ; trois hybrides prémontés dont la rigidité n'a pas suivi
+celle de leurs composants (Razor Code + X-One 180, Ice Code + NRG2 172, Duo Control 188) ; quatre autres notes de confort au-dessus de
+la droite rigidité/confort de leur famille (RPM Team et Revenge, rigidité alignée sur TWU ; Poly Tour Pro et NEH Bio, rigidité de la
+fiche, non mesurée : l'écart peut venir de la rigidité) ; en ramenant ces cinq notes à la valeur que
+prédit la rigidité de leur famille, **aucune alerte ne bouge** (+0 sur 774 montages par cordage, deux profils : le second filet reste
+muet), l'effet porte sur les barres de confort, le comparateur, le tri par confort et le sous-score Premium.
+⚠️ **Hors périmètre, non modifié, à confier à leur propriétaire** : le moteur statique des pages EN
+(`public/js/rcs-calculator-en.js`, chargé par `configurator.html`, `rcs-calculator.html` et `setups.html` ; sa jumelle FR n'est
+chargée par aucune page) porte des allégations médicales, les plus graves trouvées : décile « Ultra Comfort+ — Post-injury
+rehabilitation », « Ultra Comfort — Chronic tennis elbow », quintile « Therapeutic Comfort Zone » / « Maximum arm protection » /
+« Absolute priority on joint health » / « Ideal for … prevent injuries », commentaires « without risk of aggravation » et « Therapeutic
+setup … significantly reduces stress transmitted to the arm » ; puis `src/lib/i18n/dictionaries.ts` (« préserver votre bras »,
+« montage idéal », « score de confort objectif ») et `configurator/page.tsx` (« RCS Optimal »). Les copies historiques des anciens
+textes (`migrations/2026-08-04__resync_ts_to_supabase.sql`, `scripts/insert-data.js`, `scripts/setup-supabase.js`, seed Supabase) ne sont
+pas lues par le site depuis C3. Affirmations de fabricant conservées telles quelles, non sourcées : « 20 % de puissance en plus »
+(X-One Biphase), « 400 % d'élasticité » (TGV), « 1600 fibres » (NXT).
 
 **Changelog v2.3.16 → v2.3.17** — **Lot 3 des rigidités de laboratoire : 23 hausses établies par la
 règle C, garde de série suspecte, un appariement manuel (C2)** (décision de l'orchestrateur du 10/10/2026, Pierre ayant
@@ -1183,4 +1230,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.3.17 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.3.18 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
