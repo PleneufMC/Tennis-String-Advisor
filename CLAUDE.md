@@ -1,11 +1,82 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.3.22
+> **Version** : 2.3.23
 > **Date** : 11 octobre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
 > **Branche de référence** : `main` (seule branche longue ; la production Netlify en déploie)
 > **Repo** : https://github.com/PleneufMC/Tennis-String-Advisor.git
+
+**Changelog v2.3.22 → v2.3.23** — **Configurateur FR : le bras sensible se déclare (case facultative), l'alerte dès l'indice 32
+devient atteignable ; rien n'est enregistré ni envoyé ; contrôle 21** (décision de l'orchestrateur du 11/10/2026, Pierre ayant
+délégué ; arbitrage n° 1 de la v2.3.21 ; `tsa-core` ; **`[verrou: configurator/page.tsx]`**, commits séparés, révocables un à un ;
+l'ajout d'un champ à l'interface dépasse le périmètre habituel de `tsa-core`, il est ici explicitement délégué). **Constat** :
+l'alerte bras « dès 32 pour un bras sensible, dès 35 sinon » (`advanced-rcs.ts`) était **inatteignable depuis le configurateur
+français** : `configurator/page.tsx` et `pdf-configuration-data.ts` appelaient `calculateAdvancedRcs` sans `profile`
+(`armSensitive` valait toujours `false`) et la page n'avait aucun champ pour déclarer une douleur. Un visiteur ayant déjà eu mal au
+coude n'avait donc aucune alerte entre les indices 32 et 34, alors que `getStringRecommendation`, la charte F7, les moteurs statiques
+EN et les articles disent « dès 32 » ; le configurateur EN, lui, pose le profil `tennis_elbow` à la déclaration d'une douleur.
+Reproduit en exécution avant correction (Chrome, Wilson Blade 98 16x19 v9 + Luxilon ALU Power, 24 / 22 kg) : indice 32,0, palier
+« Ferme », aucune alerte. **Changé** (`configurator/page.tsx`) : **(1) la case**, en tête de la carte de configuration, visible dès
+le premier affichage sans rien déplier : « Bras sensible ou douleur au coude / à l'épaule », aide factuelle « Active l'alerte bras
+dès l'indice 32 au lieu de 35. Cette information n'est ni enregistrée ni envoyée. Douleur persistante : consultez un professionnel
+de santé. » (constantes `ARM_SENSITIVE_LABEL` et `ARM_SENSITIVE_HELP`, relues par le contrôle 21) ; case native (Tab, Espace, clic sur
+le libellé, zone de 44 px, aide liée par `aria-describedby`, anneau de focus) ; **état en mémoire du composant** (`useState(false)`) :
+jamais dans `formData` (donc jamais dans la charge utile de `saveConfiguration`), ni en localStorage, ni dans le compte, l'URL ou un
+cookie ; elle alimente `profile: { armSensitive }` du calcul affiché et rien d'autre. **Elle n'abaisse que le seuil** (35 à 32) : le
+texte de l'alerte « sensible » et celui de l'alerte standard sont ceux du moteur, inchangés ; l'alerte reste hors du bloc flouté
+(visible de tous, premium ou non). **(2) GA4** : `arm_warning_shown` suit l'alerte du profil STANDARD (un second calcul,
+`armSensitive: false` en dur), pas l'alerte affichée : `arm_sensitive` vaut toujours `false` et, surtout, un événement émis à l'indice
+32-34 (seuil réservé au bras sensible) aurait révélé la déclaration par déduction (GA4 est chargé sans consentement, « bras sensible »
+est une donnée de santé potentielle). Contrepartie assumée : GA4 ne compte pas les alertes que la seule déclaration déclenche (les
+afficher reste vérifié par le contrôle 21 et en exécution). `analytics.tsx` (périmètre `tsa-measure`) n'est pas modifié. **(3) légende**
+« Tennis Elbow » de la colonne de droite : « Prudence au-delà de 32 » devient « Prudence dès 32 (alerte si bras sensible déclaré) »
+(l'alerte se déclenche À 32, pas après ; le seuil de 35 est inchangé ; hunk révocable à part). **`pdf-configuration-data.ts`** :
+`buildConfigurationPdfData(config, options)` avec `PdfAnalysisOptions.armSensitive` (défaut `false`), transmis au moteur ;
+`StoredConfiguration` ne gagne aucun champ. **Inchangé, vérifié** : `advanced-rcs.ts` (formule, seuils 32 et 35, second filet
+« confort » < 55 / < 45, textes des alertes), `analytics.tsx`, la sauvegarde ; sans case cochée, comportement identique à la v2.3.22.
+**Mesure** (grille du contrôle 5, 138 546 montages) : taux d'alerte du contrôle 5 **inchangés**, standard 7,12 %, sensible 23,25 %.
+Ce que la case rend atteignable : 23,25 % de la grille alertés pour un bras sensible déclaré, dont 15,73 % dans la bande 32-34
+(21 799 montages, dont 622 que le profil standard alerte aussi par le second filet), 0,85 % sous 32 par le seul second filet confort et
+6,67 % dès 35 ; **16,13 % de la grille (22 341 montages) ne reçoit une alerte que par la déclaration**. **Contrôle 21** de
+`audit:ratings` : (a) tout appel à `calculateAdvancedRcs` de la page et du PDF passe `profile.armSensitive`, la page le relie à un
+`useState(false)` modifié par une case nommée et décrite, le PDF le tire d'un paramètre de sa fonction ; (b) le vrai moteur, sur la
+grille réelle, alerte dès 32 pour `armSensitive: true`, avant 35 pour `false` seulement par le second filet confort (seuils 55 et 45
+inchangés), traite l'absence de profil comme `false`, ne laisse la déclaration changer que l'alerte, et garde le texte des deux
+alertes ; (c) `trackArmWarningShown` reçoit `false`, l'événement n'est piloté par aucun résultat qui dépend de la déclaration, la
+variable n'a que des usages autorisés (profil du moteur, case, dépendances), aucun champ « bras » dans la charge utile, `SavedConfiguration`
+ni `StoredConfiguration`, aucun localStorage, cookie ou URL dans la page ; (d) le texte d'aide cite les seuils sondés du moteur, renvoie
+vers un professionnel de santé, ne promet aucune protection et dit « ni enregistrée ni envoyée ». 36 tests négatifs (21 sur la page, 6 sur
+le PDF et l'enregistrement, 9 sur le moteur rechargé depuis son source) détectés, 5 témoins positifs acceptés ; **il échoue sur les
+fichiers d'`origin/main`** (33 constats, dont 5 de fond : appel sans profil à la ligne 206, aucun état relié, événement GA4 non piloté par
+le profil standard, PDF sans profil à la ligne 181, texte introuvable). Les fins de ligne sont normalisées à la lecture (Windows écrit des
+CRLF dans l'arbre de travail, `core.autocrlf`). **Vérifié en exécution** (Chrome, Playwright, `channel: 'chrome'`, GA4 neutralisé, 1280 et
+390 px, clair et sombre) : parcours complet FR sur sept montages (indices 31, 32, 33, 34, 38, un montage dont l'alerte standard vient du
+seul second filet, un dont l'alerte sensible vient du second filet sous 32), sans puis avec la case, puis décochée : alerte absente /
+présente / retirée comme attendu, texte exact du moteur, indice affiché inchangé ; alerte ni floutée ni `aria-hidden` pour un visiteur
+non premium (paywall présent) et pour un compte premium simulé ; flux GA4 (`dataLayer`) et requêtes réseau **identiques** avec et sans la
+case (jamais cochée, cochée avant, cochée puis décochée, cochée et laissée), aucun `arm_sensitive: true`, aucune requête non GET ;
+localStorage, sessionStorage, cookie, URL, IndexedDB inchangés par la case, rien dans la configuration enregistrée, case décochée après
+rechargement ; clavier (Tab atteint la case juste après « Retour à l'accueil », Espace coche et décoche, Maj+Tab revient, l'arrêt suivant est
+l'en-tête « Nom de la Configuration »), nom accessible, description, aucun débordement à 390 px, contrastes 14,7:1 (libellé) et 4,8:1 (aide)
+en clair, 13,4:1 et 8,1:1 en sombre. **Instrument validé** : la même suite contre une page fautive simulée côté navigateur (faux événement
+`arm_sensitive: true` et écriture en localStorage au changement de la case) échoue sur 13 contrôles, exactement ceux visés. `npm run build`
+exit 0 (`/configurator` 11,8 à 12,1 kB, First Load JS inchangé à 152 kB), `type-check` exit 0, `audit:claims` 0 échec, `audit:all` 10 contrôles
+verts sur 12 (restent `style-contrast`, les 3 constats connus de `pricing/page.tsx`, et `security`, un `npm audit` sur des dépendances :
+aucun lien avec cette PR). **Limites et à arbitrer** : (1) **le PDF** n'est exporté que depuis `account/configurations`, à partir d'une
+configuration enregistrée, donc sans l'état de la page : un PDF exporté de là applique le seuil standard même si la case était cochée (le
+paramètre existe, aucun appelant ne le renseigne) ; options : une case équivalente sur l'export du compte, ou une ligne de méthodologie du PDF
+qui cite les deux seuils (propriétaire : `pdf-export.ts`) ; (2) **GA4** : voir (2) ci-dessus, l'alternative (événement suivant l'alerte
+affichée) est une ligne mais révèle la déclaration par déduction ; (3) **le texte d'aide dit « dès l'indice 32 »**, exact pour le seuil
+d'indice ; le second filet confort (note < 55 pour le bras sensible, 0,85 % de la grille) peut déclencher l'alerte sous 32, comme il déclenche
+déjà celle du profil standard sous 35 (0,45 %) ; (4) **hybrides** (préexistant, non traité) : « RCS Moyen » affiché (moyenne des RCS du montant et du
+travers) et indice du moteur avancé (rigidité pondérée 60/40, tension moyenne), lu par les alertes et cité dans leur texte, diffèrent d'au
+moins 1 point dans 27,5 % des montages hybrides (écart maximal 2,5) et le verdict au seuil 32 diffère dans 2,5 % d'entre eux (0,1 % au seuil
+35) : un montage hybride peut donc afficher « RCS Moyen 31,5 » et une alerte « indice 32 » ; (5) les articles qui citent « dès 32 pour un bras
+sensible » pourraient mentionner la case (`tsa-redacteur`) ; (6) `← Retour à l\'accueil` s'affiche avec sa barre oblique inverse (JSX,
+préexistant, hors périmètre) ; (7) 1 erreur console préexistante à 1280 px, une 404 de préchargement `/blog?_rsc=` par la navigation du header,
+identique avant et après. Diff : 117 lignes ajoutées au code (page 101, PDF 16), 615 au contrôle, 78 à ce fichier (au-delà des 400
+lignes du §6 ; découpable en deux PR sur les commits séparés : la case et le PDF d'un côté, le contrôle de l'autre).
 
 **Changelog v2.3.21 → v2.3.22** — **Données structurées des articles : un logo d'éditeur qui existe, un
 FAQPage identique à la FAQ affichée, un sitemap qui dit la vraie date ; garde-fou `audit:jsonld`** (demande de l'orchestrateur du
@@ -946,6 +1017,11 @@ corrigé dans la même PR.
 - Paywall freemium appliqué côté serveur : `src/lib/premium.ts` est la source de
   vérité unique, `POST /api/configurations` renvoie 403 au-delà de 3 configs.
 - Échelle d'alerte bras remise en monotonie (43,9 % → 13,9 % d'alertes).
+- **Alerte bras « dès 32 pour un bras sensible, dès 35 sinon » atteignable depuis le configurateur FR** (11/10/2026, v2.3.23) : case
+  facultative « Bras sensible ou douleur au coude / à l'épaule » en tête de la page, état en mémoire du composant seulement (ni
+  enregistrée, ni envoyée, ni dans GA4 ; `arm_warning_shown` suit l'alerte du profil standard, `arm_sensitive` vaut toujours `false`).
+  Sans la case, l'alerte est à 35 pour tous, comme avant. Limite : le PDF exporté depuis le compte ne connaît pas la case et applique le
+  seuil standard. Garde-fou : contrôle 21 de `audit:ratings`.
 - Export PDF, thème sombre, i18n FR/EN livrés.
 - Photos produit Tennis Warehouse (29/09/2026), Tennis Warehouse Europe et
   sites officiels des fabricants (10/10/2026) : 65/129 raquettes, 60/179
@@ -1408,4 +1484,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.3.22 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.3.23 — Tennis String Advisor — « Mesurer avant d'affirmer. »*

@@ -20,6 +20,7 @@ import {
   calculateAdvancedRcs,
   stringTypeToFamily,
   parseGaugeMm,
+  type AdvancedRcsInput,
   type AdvancedRcsResult,
 } from '@/lib/advanced-rcs';
 import {
@@ -29,6 +30,21 @@ import {
   formatScore20,
 } from '@/lib/racquet-scoring';
 import type { TennisString } from '@/data/strings-database';
+
+/**
+ * DÉCLARATION FACULTATIVE DU VISITEUR : bras sensible, ou douleur au coude / à l'épaule (11/10/2026, règle 2).
+ *
+ * L'alerte bras du moteur (`calculateAdvancedRcs`) se déclenche dès l'indice 32 pour un bras sensible, dès 35 sinon. Jusqu'ici,
+ * aucune interface ne passait le profil au moteur : l'alerte « dès 32 » que ce site promet était inatteignable depuis le
+ * configurateur français (le configurateur anglais pose le profil `tennis_elbow` quand le visiteur déclare une douleur).
+ *
+ * La case ne fait qu'ABAISSER le seuil, de 35 à 32 : elle ne masque, n'adoucit et ne supprime jamais une alerte. Les chiffres du
+ * texte d'aide sont ceux du moteur ; le contrôle 21 de `audit:ratings` les relit. Texte d'aide : factuel, sans allégation
+ * médicale (charte F7), avec le conseil de consulter un professionnel de santé si la douleur persiste.
+ */
+const ARM_SENSITIVE_LABEL = "Bras sensible ou douleur au coude / à l'épaule";
+const ARM_SENSITIVE_HELP =
+  "Active l'alerte bras dès l'indice 32 au lieu de 35. Cette information n'est ni enregistrée ni envoyée. Douleur persistante : consultez un professionnel de santé.";
 
 /**
  * Récapitulatif d'un cordage sélectionné (emplacement principal OU travers).
@@ -125,6 +141,12 @@ export default function ConfiguratorPage() {
     crossString: false
   });
 
+  // Déclaration du visiteur (bras sensible). État EN MÉMOIRE de ce composant, et rien d'autre : jamais dans `formData` (donc jamais
+  // dans la charge utile de `saveConfiguration`), ni en localStorage, ni dans le compte, ni dans l'URL, ni dans un cookie, ni dans
+  // GA4 (donnée de santé potentielle, GA4 étant chargé sans consentement). Elle ne sert qu'au profil passé au moteur plus bas.
+  // Le contrôle 21 de `audit:ratings` interdit tout autre usage de cette variable.
+  const [armSensitive, setArmSensitive] = useState(false);
+
   const [savedConfigs, setSavedConfigs] = useState<SavedConfiguration[]>([]);
   const [saveMessage, setSaveMessage] = useState('');
   const [stats, setStats] = useState({
@@ -201,9 +223,10 @@ export default function ConfiguratorPage() {
   );
 
   // RCS Avancé : analyse multi-facteurs + sous-scores + recommandations.
-  const advancedRcs: AdvancedRcsResult | null = useMemo(() => {
+  // Entrées du moteur, communes aux deux calculs ci-dessous (avec et sans la déclaration du visiteur).
+  const advancedInput: AdvancedRcsInput | null = useMemo(() => {
     if (!selectedRacquet || !selectedMainString) return null;
-    return calculateAdvancedRcs({
+    return {
       racquetStiffness: effectiveRacquetRA(selectedRacquet),
       racquetWeight: selectedRacquet.weight,
       racquetHeadSize: selectedRacquet.headSize,
@@ -233,7 +256,7 @@ export default function ConfiguratorPage() {
       crossGaugeMm: selectedCrossString ? parseGaugeMm(formData.crossGauge) : undefined,
       mainTension: formData.mainTension,
       crossTension: formData.crossTension,
-    });
+    };
   }, [
     selectedRacquet,
     selectedMainString,
@@ -244,17 +267,36 @@ export default function ConfiguratorPage() {
     formData.crossTension,
   ]);
 
+  // Résultat AFFICHÉ, alertes comprises : c'est ici que la déclaration du visiteur entre dans le calcul (seuil d'alerte 32 au lieu
+  // de 35). Elle ne fait que baisser le seuil ; l'alerte « sensible » du moteur est affichée telle quelle.
+  const advancedRcs: AdvancedRcsResult | null = useMemo(
+    () => (advancedInput ? calculateAdvancedRcs({ ...advancedInput, profile: { armSensitive } }) : null),
+    [advancedInput, armSensitive]
+  );
+
+  // Même calcul pour le profil STANDARD, réservé à la mesure (événement GA4 ci-dessous) : il ne dépend jamais de la déclaration.
+  const standardAdvancedRcs: AdvancedRcsResult | null = useMemo(
+    () => (advancedInput ? calculateAdvancedRcs({ ...advancedInput, profile: { armSensitive: false } }) : null),
+    [advancedInput]
+  );
+
   // Un avertissement bras a été AFFICHÉ. Sans cet événement, le respect de la
   // règle 2 n'est vérifiable que par lecture du code — ce qui est exactement
   // ce qui a permis à l'alerte de rester invisible derrière un flou CSS.
+  //
+  // RGPD (11/10/2026) : l'événement suit l'alerte du profil STANDARD (`standardAdvancedRcs`), PAS l'alerte affichée. GA4 est chargé
+  // sans consentement et « bras sensible » est une donnée de santé potentielle : `arm_sensitive` vaut toujours false, et un
+  // événement émis à l'indice 32-34 (seuil réservé au bras sensible) révélerait la déclaration par déduction. Contrepartie
+  // assumée : GA4 ne compte pas les alertes que la seule déclaration déclenche. Les afficher reste l'affaire de ce fichier
+  // (`advancedRcs`, `role="alert"` plus bas), vérifiée par le contrôle 21 de `audit:ratings` et en exécution.
   const lastWarnedConfig = useRef<string | null>(null);
   useEffect(() => {
-    if (!advancedRcs || advancedRcs.warnings.length === 0) return;
+    if (!standardAdvancedRcs || standardAdvancedRcs.warnings.length === 0) return;
     const sig = [formData.racquet, formData.mainString, formData.crossString].join('|');
     if (lastWarnedConfig.current === sig) return;
     lastWarnedConfig.current = sig;
-    trackArmWarningShown(advancedRcs.rcs, false);
-  }, [advancedRcs, formData.racquet, formData.mainString, formData.crossString]);
+    trackArmWarningShown(standardAdvancedRcs.rcs, false);
+  }, [standardAdvancedRcs, formData.racquet, formData.mainString, formData.crossString]);
 
   // GA4 — DEUX événements distincts, cf. lib analytics :
   //   `configurator_result_view` : chaque affichage de résultat, tensions
@@ -592,6 +634,54 @@ export default function ConfiguratorPage() {
             <span style={{ marginRight: '0.5rem' }}>⚙️</span>
             Configuration et Analyse de Confort
           </h2>
+
+          {/* Déclaration facultative : bras sensible (cf. ARM_SENSITIVE_LABEL). Case native : Tab pour l'atteindre, Espace pour
+              la cocher ; l'aide est lue avec elle (aria-describedby). Aucune étape bloquante : le parcours est identique sans
+              l'avoir cochée, et l'état n'existe que dans ce composant. */}
+          <div
+            data-testid="arm-sensitive-field"
+            style={{
+              marginBottom: '1.5rem',
+              padding: '0.25rem 0.75rem 0.5rem',
+              border: '1px solid var(--surface-border)',
+              borderRadius: '8px',
+            }}
+          >
+            <label
+              htmlFor="arm-sensitive"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                minHeight: '44px',
+                cursor: 'pointer',
+                fontWeight: 500,
+                color: 'var(--text-strong)',
+              }}
+            >
+              <input
+                id="arm-sensitive"
+                type="checkbox"
+                checked={armSensitive}
+                onChange={(e) => setArmSensitive(e.target.checked)}
+                aria-describedby="arm-sensitive-help"
+                style={{
+                  width: '1.25rem',
+                  height: '1.25rem',
+                  flexShrink: 0,
+                  accentColor: 'var(--state-good)',
+                  cursor: 'pointer',
+                }}
+              />
+              <span>{ARM_SENSITIVE_LABEL}</span>
+            </label>
+            <p
+              id="arm-sensitive-help"
+              style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: '0 0 0 1.75rem' }}
+            >
+              {ARM_SENSITIVE_HELP}
+            </p>
+          </div>
 
           {/* Nom de la Configuration */}
           <div style={{ marginBottom: '1.5rem' }}>
@@ -1835,8 +1925,11 @@ export default function ConfiguratorPage() {
                     seuil d'alerte du moteur. Il annonçait « > 30 », en
                     contradiction avec le tableau du site (35) et avec
                     advanced-rcs (32 sensible / 35 standard) : trois chiffres
-                    différents pour un même avertissement de santé. */}
-                <span style={{ fontWeight: '500', color: 'var(--state-bad)' }}>Prudence au-delà de 32, risque à partir de 35</span>
+                    différents pour un même avertissement de santé.
+                    11/10/2026 : « au-delà de 32 » devient « dès 32 » (l'alerte du
+                    bras sensible se déclenche À 32, pas après) et la ligne renvoie
+                    à la case de déclaration ; le seuil de 35 est inchangé. */}
+                <span style={{ fontWeight: '500', color: 'var(--state-bad)' }}>Prudence dès 32 (alerte si bras sensible déclaré), risque à partir de 35</span>
               </div>
             </div>
           </div>

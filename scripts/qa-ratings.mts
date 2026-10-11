@@ -3037,6 +3037,621 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
 }
 
 // ---------------------------------------------------------------------------
+// 21. CONFIGURATEUR FR — le bras sensible se DÉCLARE (case facultative), sans rien enregistrer ni envoyer
+//     (décision de l'orchestrateur du 11/10/2026, règle 2 ; suite de la PR #122)
+// ---------------------------------------------------------------------------
+// Constat : l'alerte bras « dès 32 pour un bras sensible, dès 35 sinon » (`advanced-rcs.ts`) était INATTEIGNABLE depuis le
+// configurateur français : ni `configurator/page.tsx` ni `pdf-configuration-data.ts` ne passaient `profile` à `calculateAdvancedRcs`
+// (`armSensitive` valait toujours false) et la page n'avait aucun champ pour le déclarer. Un visiteur ayant déjà eu mal au coude
+// n'avait donc aucune alerte entre 32 et 34, alors que ce site la promet ; le configurateur anglais, lui, pose le profil
+// `tennis_elbow` quand le visiteur déclare une douleur (contrôle 9). Ce bloc échoue si :
+//   (a) un appel à `calculateAdvancedRcs` de la page ou du PDF ne passe pas `profile.armSensitive` ; si, dans la page, aucun appel ne
+//       le relie à un état `useState(false)` que modifie une case à cocher nommée et décrite (un `armSensitive: false` en dur
+//       passerait le premier test et laisserait l'alerte inatteignable) ; si le PDF ne le tire pas d'un paramètre de sa fonction ;
+//   (b) le VRAI moteur, sur la grille du contrôle 5, n'alerte pas dès l'indice 32 pour `armSensitive: true`, alerte avant 35 pour
+//       `false` autrement que par le second filet « confort » (seuils 55 et 45, inchangés), ne traite plus l'absence de profil comme
+//       `false`, laisse la déclaration modifier autre chose que l'alerte, ou change le texte des alertes ;
+//   (c) la déclaration atteint la mesure ou un stockage : second argument de `trackArmWarningShown` différent de false ; événement GA4
+//       piloté par un résultat qui dépend de la déclaration (un indice de 32 à 34 la révélerait par déduction) ; variable lue hors de
+//       ses usages autorisés (profil du moteur, case à cocher, tableaux de dépendances) ; champ « bras » dans la charge utile ou dans
+//       une configuration enregistrée ; localStorage, sessionStorage, cookie ou URL dans la page ;
+//   (d) le texte d'aide cite d'autres seuils que ceux du moteur (sondés), ne renvoie plus vers un professionnel de santé, promet une
+//       protection, ou ne dit plus que l'information n'est ni enregistrée ni envoyée.
+// Chaque garde est rejouée sur des copies altérées de la page, du PDF, de l'enregistrement et du moteur ; des témoins positifs
+// prouvent que les reformulations inoffensives passent. Le comportement réel (case, alerte, GA4, réseau, clavier) se vérifie en
+// exécution, hors de ce script (Playwright, PR du 11/10/2026).
+{
+  const before21 = failures.length;
+  const S21 = ARM_ALERT_SENSITIVE;
+  const N21 = ARM_ALERT_STANDARD;
+  const PAGE21 = 'src/app/configurator/page.tsx';
+  const PDF21 = 'src/lib/pdf-configuration-data.ts';
+  const STORAGE21 = 'src/lib/storage.ts';
+  const ENGINE21 = 'src/lib/advanced-rcs.ts';
+  // Fins de ligne normalisées : Windows (core.autocrlf) écrit des CRLF dans l'arbre de travail, le dépôt et Netlify des LF ; les
+  // motifs multilignes des tests négatifs ci-dessous doivent valoir pour les deux.
+  const readOr = (f: string): string => {
+    try {
+      return readFileSync(f, 'utf8').replace(/\r\n/g, '\n');
+    } catch {
+      fail(`configurateur FR : ${f} introuvable`);
+      return '';
+    }
+  };
+
+  if (S21 === null || N21 === null) {
+    fail("configurateur FR : seuils d'alerte bras introuvables dans calculateAdvancedRcs (sonde muette)");
+  } else {
+    const S = S21;
+    const N = N21;
+    const pageSrc = readOr(PAGE21);
+    const pdfSrc = readOr(PDF21);
+    const storageSrc = readOr(STORAGE21);
+    const engineSrc = readOr(ENGINE21);
+
+    // --- Outils d'analyse syntaxique ---------------------------------------------------------------------------------
+    const parse = (file: string, src: string): ts.SourceFile =>
+      ts.createSourceFile(file, src, ts.ScriptTarget.Latest, true, file.endsWith('x') ? ts.ScriptKind.TSX : ts.ScriptKind.TS);
+    const nameOf = (p: ts.ObjectLiteralElementLike): string | null =>
+      p.name !== undefined && (ts.isIdentifier(p.name) || ts.isStringLiteral(p.name)) ? p.name.text : null;
+    const valueOf = (p: ts.ObjectLiteralElementLike): ts.Expression | null =>
+      ts.isPropertyAssignment(p) ? p.initializer : ts.isShorthandPropertyAssignment(p) ? p.name : null;
+    const idsIn = (node: ts.Node): Set<string> => {
+      const out = new Set<string>();
+      const walk = (n: ts.Node): void => {
+        if (ts.isIdentifier(n)) out.add(n.text);
+        ts.forEachChild(n, walk);
+      };
+      walk(node);
+      return out;
+    };
+    const lineOf = (sf: ts.SourceFile, n: ts.Node): number => sf.getLineAndCharacterOfPosition(n.getStart(sf)).line + 1;
+    const nums21 = (t: string): string[] => [...t.matchAll(/\d+(?:[.,]\d+)?/g)].map((m) => m[0].replace(',', '.'));
+    const strValue = (e: ts.Expression | undefined): string | null => {
+      if (!e) return null;
+      if (ts.isStringLiteral(e) || ts.isNoSubstitutionTemplateLiteral(e)) return e.text;
+      if (ts.isParenthesizedExpression(e)) return strValue(e.expression);
+      if (ts.isBinaryExpression(e) && e.operatorToken.kind === ts.SyntaxKind.PlusToken) {
+        const l = strValue(e.left);
+        const r = strValue(e.right);
+        return l !== null && r !== null ? l + r : null;
+      }
+      return null;
+    };
+    const constText = (sf: ts.SourceFile, name: string): string | null => {
+      let found: string | null = null;
+      const walk = (n: ts.Node): void => {
+        if (ts.isVariableDeclaration(n) && ts.isIdentifier(n.name) && n.name.text === name) found = strValue(n.initializer);
+        ts.forEachChild(n, walk);
+      };
+      walk(sf);
+      return found;
+    };
+    const interfaceMembers = (sf: ts.SourceFile, name: string): string[] => {
+      const out: string[] = [];
+      const walk = (n: ts.Node): void => {
+        if (ts.isInterfaceDeclaration(n) && n.name.text === name) n.members.forEach((m) => m.name && out.push(m.name.getText(sf)));
+        ts.forEachChild(n, walk);
+      };
+      walk(sf);
+      return out;
+    };
+
+    type Call = {
+      kind: 'absent' | 'sans-armSensitive' | 'false' | 'true' | 'dynamique';
+      value: ts.Expression | null;
+      text: string;
+      owner: string | null;
+      fn: ts.FunctionDeclaration | null;
+      line: number;
+    };
+    // Les appels à `calculateAdvancedRcs` : ce que `profile.armSensitive` y vaut (absent, false, true, ou une expression).
+    const advancedCalls = (sf: ts.SourceFile): Call[] => {
+      const out: Call[] = [];
+      const walk = (n: ts.Node, owner: string | null, fn: ts.FunctionDeclaration | null): void => {
+        const o = ts.isVariableDeclaration(n) && ts.isIdentifier(n.name) ? n.name.text : owner;
+        const f = ts.isFunctionDeclaration(n) ? n : fn;
+        if (ts.isCallExpression(n) && ts.isIdentifier(n.expression) && n.expression.text === 'calculateAdvancedRcs') {
+          let kind: Call['kind'] = 'absent';
+          let value: ts.Expression | null = null;
+          const arg = n.arguments[0];
+          if (arg && ts.isObjectLiteralExpression(arg)) {
+            const prof = arg.properties.find((p) => nameOf(p) === 'profile');
+            if (prof) {
+              kind = 'sans-armSensitive';
+              const pv = valueOf(prof);
+              if (pv && ts.isObjectLiteralExpression(pv)) {
+                const flag = pv.properties.find((p) => nameOf(p) === 'armSensitive');
+                value = flag ? valueOf(flag) : null;
+                if (value) kind = value.kind === ts.SyntaxKind.FalseKeyword ? 'false' : value.kind === ts.SyntaxKind.TrueKeyword ? 'true' : 'dynamique';
+              }
+            }
+          }
+          out.push({ kind, value, text: value ? value.getText(sf) : '', owner: o, fn: f, line: lineOf(sf, n) });
+        }
+        ts.forEachChild(n, (c) => walk(c, o, f));
+      };
+      walk(sf, null, null);
+      return out;
+    };
+    const stateVars = (sf: ts.SourceFile): Map<string, { setter: string; init: string }> => {
+      const out = new Map<string, { setter: string; init: string }>();
+      const walk = (n: ts.Node): void => {
+        if (
+          ts.isVariableDeclaration(n) &&
+          ts.isArrayBindingPattern(n.name) &&
+          n.initializer &&
+          ts.isCallExpression(n.initializer) &&
+          ts.isIdentifier(n.initializer.expression) &&
+          n.initializer.expression.text === 'useState'
+        ) {
+          const [a, b] = n.name.elements;
+          if (a && ts.isBindingElement(a) && ts.isIdentifier(a.name) && b && ts.isBindingElement(b) && ts.isIdentifier(b.name)) {
+            out.set(a.name.text, { setter: b.name.text, init: n.initializer.arguments[0]?.getText(sf) ?? '' });
+          }
+        }
+        ts.forEachChild(n, walk);
+      };
+      walk(sf);
+      return out;
+    };
+    const openings = (sf: ts.SourceFile): ts.JsxOpeningLikeElement[] => {
+      const out: ts.JsxOpeningLikeElement[] = [];
+      const walk = (n: ts.Node): void => {
+        if (ts.isJsxOpeningElement(n) || ts.isJsxSelfClosingElement(n)) out.push(n);
+        ts.forEachChild(n, walk);
+      };
+      walk(sf);
+      return out;
+    };
+    const jsxAttr = (el: ts.JsxOpeningLikeElement, sf: ts.SourceFile, name: string): string | null => {
+      for (const p of el.attributes.properties) {
+        if (ts.isJsxAttribute(p) && p.name.getText(sf) === name) {
+          const init = p.initializer;
+          return !init ? '' : ts.isStringLiteral(init) ? init.text : ts.isJsxExpression(init) ? (init.expression?.getText(sf) ?? '') : '';
+        }
+      }
+      return null;
+    };
+    // Le texte entier de l'élément JSX dont l'ouverture porte `attr="value"` (tout nom de balise).
+    const elementTextWith = (sf: ts.SourceFile, tag: string | null, attr: string, value: string): string | null => {
+      if (!value) return null;
+      let found: string | null = null;
+      const walk = (n: ts.Node): void => {
+        if (ts.isJsxElement(n) && (tag === null || n.openingElement.tagName.getText(sf) === tag) && jsxAttr(n.openingElement, sf, attr) === value) found = n.getText(sf);
+        ts.forEachChild(n, walk);
+      };
+      walk(sf);
+      return found;
+    };
+
+    const CLAIM = /prot[eéè]g|pr[eé]ven|soulag|gu[eé]ri|therap|thérap|m[eé]dical|traitement|sans (?:aucun )?(?:danger|risque)|\bid[eé]al|parfait|optimal|\bsûr\b|garanti/i;
+    const STORE_IDS = new Set(['localStorage', 'sessionStorage', 'indexedDB', 'sendBeacon', 'URLSearchParams', 'cookie', 'pushState', 'replaceState']);
+    const BAD_MEMBER = /^(?:arm|bras|sensib|physical|douleur|pain|health)/i;
+
+    // --- L'analyse : la page, le PDF, l'enregistrement --------------------------------------------------------------
+    const analyse = (page: string, pdf: string, storage: string): string[] => {
+      const issues: string[] = [];
+      const sf = parse(PAGE21, page);
+      const states = stateVars(sf);
+      const calls = advancedCalls(sf);
+
+      // (a) la page passe le profil, relié à une case à cocher
+      if (calls.length === 0) issues.push('profil : aucun appel à calculateAdvancedRcs dans la page');
+      for (const c of calls) {
+        if (c.kind === 'absent' || c.kind === 'sans-armSensitive') {
+          issues.push(`profil : l'appel de calculateAdvancedRcs de la page (${c.owner ?? '?'}, ligne ${c.line}) ne passe pas profile.armSensitive : l'alerte dès l'indice ${S} reste inatteignable depuis le configurateur`);
+        }
+      }
+      const bound = calls.filter((c) => c.kind === 'dynamique' && states.has(c.text));
+      if (bound.length === 0) issues.push("profil : aucun appel de calculateAdvancedRcs ne relie profile.armSensitive à un état de la page (useState) : aucun appel relié à la case, la déclaration ne changerait rien");
+      const X = bound[0]?.text ?? '';
+      const st = states.get(X);
+      if (st && st.init !== 'false') issues.push(`profil : l'état « ${X} » démarre à ${st.init} au lieu de false : l'alerte « bras sensible » ne s'impose pas sans que le visiteur la déclare`);
+      const shown = new Set(bound.map((c) => c.owner).filter((o): o is string => o !== null));
+      const standardOwners = new Set(calls.filter((c) => c.kind === 'false').map((c) => c.owner).filter((o): o is string => o !== null));
+
+      const boxes = openings(sf).filter((el) => el.tagName.getText(sf) === 'input' && jsxAttr(el, sf, 'type') === 'checkbox');
+      const box = st ? boxes.find((el) => jsxAttr(el, sf, 'checked') === X && (jsxAttr(el, sf, 'onChange') ?? '').includes(`${st.setter}(`)) : undefined;
+      if (X && !box) issues.push(`case : aucune case à cocher (input type="checkbox" checked={${X}} dont onChange appelle ${st?.setter ?? '…'}) : le visiteur ne peut pas déclarer le bras sensible`);
+      if (box) {
+        const id = jsxAttr(box, sf, 'id') ?? '';
+        const by = jsxAttr(box, sf, 'aria-describedby') ?? '';
+        if (!(elementTextWith(sf, 'label', 'htmlFor', id) ?? '').includes('ARM_SENSITIVE_LABEL')) issues.push(`accessibilité : la case n'a pas de libellé accessible (label htmlFor="${id}" affichant ARM_SENSITIVE_LABEL)`);
+        if (!(elementTextWith(sf, null, 'id', by) ?? '').includes('ARM_SENSITIVE_HELP')) issues.push(`accessibilité : l'aide n'est pas liée à la case (aria-describedby="${by}" vers un élément affichant ARM_SENSITIVE_HELP)`);
+      }
+
+      // (c) la mesure : GA4 ne reçoit jamais la déclaration, ni directement ni par déduction
+      let gaCalls = 0;
+      const walkGa = (n: ts.Node): void => {
+        if (ts.isCallExpression(n) && ts.isIdentifier(n.expression) && n.expression.text === 'trackArmWarningShown') {
+          gaCalls++;
+          const second = n.arguments[1];
+          if (!second || second.kind !== ts.SyntaxKind.FalseKeyword) issues.push(`GA4 : trackArmWarningShown reçoit « ${second ? second.getText(sf) : 'rien'} » comme second argument (ligne ${lineOf(sf, n)}) : attendu false, la déclaration ne part jamais à GA4`);
+          let fnNode: ts.Node | undefined = n.parent;
+          while (fnNode && !(ts.isArrowFunction(fnNode) || ts.isFunctionExpression(fnNode) || ts.isFunctionDeclaration(fnNode))) fnNode = fnNode.parent;
+          if (fnNode) {
+            const ids = idsIn(fnNode);
+            const hook = fnNode.parent;
+            if (hook && ts.isCallExpression(hook) && hook.arguments[0] === fnNode && hook.arguments[1]) idsIn(hook.arguments[1]).forEach((i) => ids.add(i));
+            const tainted = [...ids].filter((i) => shown.has(i) || (X !== '' && i === X) || i === st?.setter);
+            if (tainted.length > 0) issues.push(`GA4 : l'événement arm_warning_shown (ligne ${lineOf(sf, n)}) suit « ${tainted.join(', ')} », qui dépend de la déclaration : un indice de ${S} à ${N - 1} la révélerait par déduction (suivre le résultat du profil standard)`);
+            else if (![...ids].some((i) => standardOwners.has(i))) issues.push(`GA4 : l'événement arm_warning_shown (ligne ${lineOf(sf, n)}) n'est piloté par aucun résultat calculé sans la déclaration (profile.armSensitive: false en dur)`);
+          }
+        }
+        ts.forEachChild(n, walkGa);
+      };
+      walkGa(sf);
+      if (gaCalls === 0) issues.push("GA4 : la page n'appelle plus trackArmWarningShown (la mesure des alertes affichées serait muette)");
+
+      // (c) usages autorisés de la variable d'état et de son setter
+      if (X && st) {
+        const setter = st.setter;
+        const allowed = (id: ts.Identifier): boolean => {
+          const p = id.parent;
+          if (ts.isArrayLiteralExpression(p) && ts.isCallExpression(p.parent) && ts.isIdentifier(p.parent.expression) && /^use(?:Memo|Effect|Callback)$/.test(p.parent.expression.text) && p.parent.arguments[1] === p) return true;
+          if ((ts.isShorthandPropertyAssignment(p) || (ts.isPropertyAssignment(p) && p.initializer === id)) && nameOf(p) === 'armSensitive') {
+            const obj = p.parent;
+            const prof = obj.parent;
+            if (ts.isObjectLiteralExpression(obj) && prof && ts.isPropertyAssignment(prof) && nameOf(prof) === 'profile') {
+              const arg = prof.parent;
+              const call = arg?.parent;
+              if (arg && ts.isObjectLiteralExpression(arg) && call && ts.isCallExpression(call) && ts.isIdentifier(call.expression) && call.expression.text === 'calculateAdvancedRcs') return true;
+            }
+          }
+          let n: ts.Node | undefined = id;
+          while (n && !ts.isJsxAttribute(n) && !ts.isSourceFile(n)) n = n.parent;
+          if (n && ts.isJsxAttribute(n)) {
+            const el = n.parent.parent;
+            if ((ts.isJsxSelfClosingElement(el) || ts.isJsxOpeningElement(el)) && el.tagName.getText(sf) === 'input' && jsxAttr(el, sf, 'type') === 'checkbox') {
+              const attr = n.name.getText(sf);
+              if (attr === 'checked' && id.text === X) return true;
+              if (attr === 'onChange' && id.text === setter) return true;
+            }
+          }
+          return false;
+        };
+        // Un nom de propriété ou d'attribut (`armSensitive:` dans un profil, `x.armSensitive`) n'est pas une lecture de la variable.
+        const isNameOnly = (id: ts.Identifier): boolean =>
+          (ts.isBindingElement(id.parent) && id.parent.name === id) ||
+          (ts.isPropertyAssignment(id.parent) && id.parent.name === id) ||
+          (ts.isPropertyAccessExpression(id.parent) && id.parent.name === id) ||
+          (ts.isJsxAttribute(id.parent) && id.parent.name === id);
+        const walkUse = (n: ts.Node): void => {
+          if (ts.isIdentifier(n) && (n.text === X || n.text === setter) && !isNameOnly(n) && !allowed(n)) {
+            issues.push(`déclaration : « ${n.text} » utilisé hors de ses usages autorisés (ligne ${lineOf(sf, n)} : ${n.parent.getText(sf).replace(/\s+/g, ' ').slice(0, 70)}) : seuls le profil du moteur, la case à cocher et les tableaux de dépendances peuvent le lire`);
+          }
+          ts.forEachChild(n, walkUse);
+        };
+        walkUse(sf);
+      }
+      const walkStore = (n: ts.Node): void => {
+        if (ts.isIdentifier(n) && STORE_IDS.has(n.text)) issues.push(`stockage : « ${n.text} » dans la page (ligne ${lineOf(sf, n)}) : la déclaration ne doit être ni stockée, ni passée dans l'URL ou un cookie`);
+        if (ts.isVariableDeclaration(n) && ts.isIdentifier(n.name) && n.name.text === 'payload' && n.initializer && ts.isObjectLiteralExpression(n.initializer)) {
+          for (const p of n.initializer.properties) {
+            const key = nameOf(p) ?? '';
+            if (BAD_MEMBER.test(key)) issues.push(`enregistrement : la charge utile enregistrée porte « ${key} » (ligne ${lineOf(sf, p)}) : la déclaration ne s'enregistre pas`);
+          }
+        }
+        ts.forEachChild(n, walkStore);
+      };
+      walkStore(sf);
+      for (const [file, src, name] of [[STORAGE21, storage, 'SavedConfiguration'], [PDF21, pdf, 'StoredConfiguration']] as const) {
+        for (const m of interfaceMembers(parse(file, src), name)) if (BAD_MEMBER.test(m)) issues.push(`enregistrement : ${name} (${file}) gagne le champ « ${m} » : la déclaration ne s'enregistre pas`);
+      }
+
+      // (a) le PDF tire le profil d'un paramètre de sa fonction
+      const pf = parse(PDF21, pdf);
+      const pcalls = advancedCalls(pf);
+      if (pcalls.length === 0) issues.push('profil : aucun appel à calculateAdvancedRcs dans le PDF');
+      for (const c of pcalls) {
+        if (c.kind === 'absent' || c.kind === 'sans-armSensitive') {
+          issues.push(`profil : l'appel de calculateAdvancedRcs du PDF (ligne ${c.line}) ne passe pas profile.armSensitive : le PDF ne peut pas refléter la déclaration`);
+        } else if (c.kind !== 'dynamique') {
+          issues.push(`profil : le PDF passe armSensitive : ${c.text} en dur (ligne ${c.line}) : il doit le tirer d'un paramètre de sa fonction pour refléter la déclaration de l'appelant`);
+        } else {
+          const params = new Set<string>();
+          c.fn?.parameters.forEach((p) => idsIn(p.name).forEach((i) => params.add(i)));
+          if (!c.value || ![...idsIn(c.value)].some((i) => params.has(i))) issues.push(`profil : profile.armSensitive du PDF (« ${c.text} ») ne vient d'aucun paramètre de ${c.fn?.name?.text ?? 'sa fonction'}`);
+        }
+      }
+
+      // (d) le texte d'aide
+      const label = constText(sf, 'ARM_SENSITIVE_LABEL');
+      const help = constText(sf, 'ARM_SENSITIVE_HELP');
+      if (label === null || help === null) issues.push('texte : ARM_SENSITIVE_LABEL ou ARM_SENSITIVE_HELP introuvable dans la page');
+      else {
+        const got = nums21(help);
+        const want = [String(S), String(N)];
+        if (got.length !== want.length || got.some((x, i) => x !== want[i])) issues.push(`seuil : le texte d'aide cite ${got.join(', ') || 'aucun chiffre'} au lieu de ${want.join(', ')} (seuils du moteur, sondés dans calculateAdvancedRcs)`);
+        if (!/professionnel de santé/i.test(help)) issues.push("texte : l'aide ne renvoie plus vers un professionnel de santé si la douleur persiste (charte F7)");
+        if (!/ni enregistrée ni envoyée/i.test(help)) issues.push("texte : l'aide ne dit plus que l'information n'est ni enregistrée ni envoyée (promesse tenue par les contrôles (c) et en exécution)");
+        for (const t of [label, help]) {
+          const m = CLAIM.exec(t);
+          if (m) issues.push(`allégation : « ${m[0]} » dans « ${t.slice(0, 70)} » (charte F7 : aucun absolu, aucune allégation médicale ou protectrice)`);
+        }
+        if (!/bras/i.test(label) || !/coude/i.test(label) || !/épaule/i.test(label)) issues.push("libellé : le libellé ne nomme plus le bras, le coude et l'épaule");
+      }
+      return [...new Set(issues)];
+    };
+
+    const realIssues = analyse(pageSrc, pdfSrc, storageSrc);
+    realIssues.forEach((i) => fail(`configurateur FR : ${i}`));
+
+    // Aucun autre appelant de `trackArmWarningShown` dans src/ ne peut lui passer autre chose que false.
+    const srcFiles: string[] = [];
+    const listSrc = (d: string): void => {
+      for (const e of readdirSync(d, { withFileTypes: true })) {
+        const p = path.join(d, e.name);
+        if (e.isDirectory()) listSrc(p);
+        else if (/\.(?:ts|tsx)$/.test(e.name)) srcFiles.push(p);
+      }
+    };
+    listSrc('src');
+    let gaCallers = 0;
+    for (const f of srcFiles) {
+      const text = readFileSync(f, 'utf8');
+      if (!text.includes('trackArmWarningShown(')) continue;
+      const sf = parse(f, text);
+      const walk = (n: ts.Node): void => {
+        if (ts.isCallExpression(n) && ts.isIdentifier(n.expression) && n.expression.text === 'trackArmWarningShown') {
+          gaCallers++;
+          if (n.arguments[1]?.kind !== ts.SyntaxKind.FalseKeyword) fail(`configurateur FR : GA4 : ${f}:${lineOf(sf, n)} appelle trackArmWarningShown sans false en second argument`);
+        }
+        ts.forEachChild(n, walk);
+      };
+      walk(sf);
+    }
+
+    // --- (b) le VRAI moteur, sur la grille réelle -------------------------------------------------------------------
+    type Calc = typeof calculateAdvancedRcs;
+    const COMFORT_NET = { sensitive: 55, standard: 45 }; // second filet « confort » de calculateAdvancedRcs (advanced-rcs.ts, 11/10/2026)
+    const SENSITIVE_TEXT = /^Setup rigide \(indice (\d+)\) alors que votre profil est sensible du bras : baissez la tension de 1 à 2 kg(?: ou passez à un multifilament\/boyau sur le montant)? pour limiter le risque de tennis elbow\.$/;
+    const STANDARD_TEXT = /^Setup rigide \(indice (\d+)\) : surveillez votre bras, surtout en cas de jeu intensif\.$/;
+    // La note de confort du résultat est arrondie : exactement à la limite, on ne tranche pas.
+    const net = (c: number | null, limit: number): 'oui' | 'non' | 'incertain' => (c === null || c > limit ? 'non' : c < limit ? 'oui' : 'incertain');
+    const checkEngine = (calc: Calc, stride: number, withBand: boolean) => {
+      const issues = new Set<string>();
+      const band = new Map<number, { n: number; std: number; sen: number; only: number }>();
+      for (let k = S; k < N; k++) band.set(k, { n: 0, std: 0, sen: 0, only: 0 });
+      let n = 0;
+      let stdAlerts = 0;
+      let senAlerts = 0;
+      let seen = 0;
+      const arm = (w: string[]) => w.filter((x) => /bras|elbow/i.test(x));
+      for (const r of racquetsDatabase) {
+        const ra = effectiveRacquetRA(r);
+        for (const s of stringsDatabase) {
+          const fam = stringTypeToFamily(s.type);
+          for (const t of TENSIONS) {
+            if (seen++ % stride !== 0) continue;
+            const base = {
+              racquetStiffness: ra,
+              racquetWeight: r.weight,
+              racquetHeadSize: r.headSize,
+              mainStringStiffness: s.stiffness,
+              mainStringFamily: fam,
+              mainRatings: { control: s.control, comfort: s.comfort, spin: s.spin, power: s.power, durability: s.durability },
+              mainTension: t,
+            };
+            const none = calc(base);
+            const std = calc({ ...base, profile: { armSensitive: false } });
+            const sen = calc({ ...base, profile: { armSensitive: true } });
+            const [aNone, aStd, aSen] = [arm(none.warnings), arm(std.warnings), arm(sen.warnings)];
+            n++;
+            if (aStd.length > 0) stdAlerts++;
+            if (aSen.length > 0) senAlerts++;
+            if (none.rcs !== std.rcs || JSON.stringify(aNone) !== JSON.stringify(aStd)) issues.add("défaut : sans profil, le moteur ne se comporte plus comme armSensitive: false");
+            if (sen.rcs !== std.rcs || sen.overall !== std.overall || JSON.stringify(sen.subScores) !== JSON.stringify(std.subScores)) issues.add("profil : la déclaration change l'indice ou les sous-scores (elle ne doit changer que l'alerte)");
+            const c = std.subScores.comfort;
+            const where = `indice ${std.rcs}, confort ${c ?? '—'}, ${r.id} + ${s.id} à ${t} kg`;
+            const expSen = std.rcs >= S ? 'oui' : net(c, COMFORT_NET.sensitive);
+            const expStd = std.rcs >= N ? 'oui' : net(c, COMFORT_NET.standard);
+            if (expSen !== 'incertain' && aSen.length > 0 !== (expSen === 'oui')) issues.add(`sensible : ${aSen.length > 0 ? 'alerte à tort' : 'alerte manquante'} (${where} ; attendu dès l'indice ${S}, second filet confort < ${COMFORT_NET.sensitive})`);
+            if (expStd !== 'incertain' && aStd.length > 0 !== (expStd === 'oui')) issues.add(`standard : ${aStd.length > 0 ? 'alerte à tort' : 'alerte manquante'} (${where} ; attendu dès l'indice ${N}, second filet confort < ${COMFORT_NET.standard})`);
+            if (aSen.length > 1 || aStd.length > 1) issues.add("texte : plus d'une alerte bras pour un même montage");
+            for (const w of aSen) {
+              const m = SENSITIVE_TEXT.exec(w);
+              if (!m || Number(m[1]) !== sen.rcs) issues.add(`texte : l'alerte « bras sensible » a changé : « ${w.slice(0, 90)} »`);
+            }
+            for (const w of aStd) {
+              const m = STANDARD_TEXT.exec(w);
+              if (!m || Number(m[1]) !== std.rcs) issues.add(`texte : l'alerte standard a changé : « ${w.slice(0, 90)} »`);
+            }
+            const b = band.get(std.rcs);
+            if (b) {
+              b.n++;
+              if (aStd.length > 0) b.std++;
+              if (aSen.length > 0) b.sen++;
+              if (aSen.length > 0 && aStd.length === 0) b.only++;
+            }
+          }
+        }
+      }
+      if (withBand) {
+        for (const [idx, b] of band) {
+          if (b.n === 0) issues.add(`bande : aucun montage de la grille n'atteint l'indice ${idx}`);
+          else if (b.only === 0) issues.add(`bande : à l'indice ${idx}, la déclaration ne déclenche aucune alerte que le profil standard n'émet pas`);
+        }
+      }
+      return { issues: [...issues], n, stdAlerts, senAlerts, band };
+    };
+
+    const real = checkEngine(calculateAdvancedRcs, 1, true);
+    real.issues.forEach((i) => fail(`configurateur FR : moteur : ${i}`));
+
+    // Le moteur est rechargé depuis son source pour les tests négatifs : la copie fidèle doit d'abord passer.
+    const stringsModule = await import('../src/data/strings-database');
+    const loadEngine = (src: string): Calc => {
+      const js = ts.transpileModule(src, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 } }).outputText;
+      const mod: { exports: Record<string, unknown> } = { exports: {} };
+      new Function('exports', 'require', 'module', js)(
+        mod.exports,
+        (id: string) => {
+          if (id === '@/data/strings-database') return stringsModule;
+          throw new Error(`require inattendu : ${id}`);
+        },
+        mod
+      );
+      return mod.exports.calculateAdvancedRcs as Calc;
+    };
+    const STRIDE = 5;
+    let engineOk = true;
+    try {
+      const copy = checkEngine(loadEngine(engineSrc), STRIDE, true);
+      if (copy.issues.length > 0) {
+        engineOk = false;
+        fail(`configurateur FR : le moteur rechargé depuis son source (instrument des tests négatifs) ne passe pas son propre contrôle : ${copy.issues.join(' ; ')}`);
+      }
+    } catch (e) {
+      engineOk = false;
+      fail(`configurateur FR : moteur illisible pour les tests négatifs (${(e as Error).message})`);
+    }
+
+    // --- Tests négatifs et témoins positifs --------------------------------------------------------------------------
+    const replaceFirst = (s: string, find: string, replace: string): string | null => {
+      const i = s.indexOf(find);
+      return i < 0 ? null : s.slice(0, i) + replace + s.slice(i + find.length);
+    };
+    const replaceAll = (s: string, find: string, replace: string): string | null => (s.includes(find) ? s.split(find).join(replace) : null);
+    let detected = 0;
+    let accepted = 0;
+    type Mut = { name: string; needle: string; apply: (s: string) => string | null };
+    const edit = (name: string, needle: string, find: string, replace: string): Mut => ({ name, needle, apply: (s) => replaceFirst(s, find, replace) });
+
+    const HELP_32_35 = "Active l'alerte bras dès l'indice 32 au lieu de 35.";
+    const STATE = 'const [armSensitive, setArmSensitive] = useState(false);';
+    const CALL_SHOWN = 'calculateAdvancedRcs({ ...advancedInput, profile: { armSensitive } })';
+    const GA_CALL = 'trackArmWarningShown(standardAdvancedRcs.rcs, false)';
+    const PAGE_NEGATIVES: Mut[] = [
+      edit('profil retiré de l\'appel affiché', 'profil : l\'appel de calculateAdvancedRcs de la page', CALL_SHOWN, 'calculateAdvancedRcs({ ...advancedInput })'),
+      edit('armSensitive: false en dur dans l\'appel affiché', 'aucun appel relié à la case', CALL_SHOWN, 'calculateAdvancedRcs({ ...advancedInput, profile: { armSensitive: false } })'),
+      edit('case à cocher retirée (type="text")', 'case : aucune case à cocher', 'type="checkbox"', 'type="text"'),
+      edit('la case ne modifie plus l\'état', 'case : aucune case à cocher', 'onChange={(e) => setArmSensitive(e.target.checked)}', 'onChange={() => undefined}'),
+      edit('état initial vrai', 'démarre à true', STATE, 'const [armSensitive, setArmSensitive] = useState(true);'),
+      edit('libellé non lié à la case', 'pas de libellé accessible', 'htmlFor="arm-sensitive"', 'htmlFor="autre-champ"'),
+      edit('aide non liée à la case', 'l\'aide n\'est pas liée', 'aria-describedby="arm-sensitive-help"', 'aria-describedby="autre-aide"'),
+      edit('drapeau envoyé à GA4 (variable d\'état)', 'GA4 : trackArmWarningShown reçoit', GA_CALL, 'trackArmWarningShown(standardAdvancedRcs.rcs, armSensitive)'),
+      edit('drapeau true en dur envoyé à GA4', 'GA4 : trackArmWarningShown reçoit', GA_CALL, 'trackArmWarningShown(standardAdvancedRcs.rcs, true)'),
+      {
+        name: "événement GA4 piloté par l'alerte affichée (retour à l'ancien code)",
+        needle: 'qui dépend de la déclaration',
+        apply: (s) => {
+          let out = replaceFirst(s, 'if (!standardAdvancedRcs || standardAdvancedRcs.warnings.length === 0) return;', 'if (!advancedRcs || advancedRcs.warnings.length === 0) return;');
+          out = out && replaceFirst(out, GA_CALL, 'trackArmWarningShown(advancedRcs.rcs, false)');
+          return out && replaceFirst(out, '[standardAdvancedRcs, formData.racquet', '[advancedRcs, formData.racquet');
+        },
+      },
+      edit('événement GA4 supprimé', 'la page n\'appelle plus trackArmWarningShown', GA_CALL, 'void 0'),
+      edit('drapeau ajouté à la charge utile enregistrée', 'enregistrement : la charge utile enregistrée porte', 'rcsScore: rcsData.avgRCS,', 'rcsScore: rcsData.avgRCS,\n      armSensitive,'),
+      edit('drapeau écrit dans localStorage', 'stockage : « localStorage »', STATE, `${STATE}\n  useEffect(() => { window.localStorage.setItem('arm', String(armSensitive)); }, [armSensitive]);`),
+      edit('drapeau dans l\'URL', 'stockage : « replaceState »', STATE, `${STATE}\n  useEffect(() => { window.history.replaceState(null, '', '?arm=' + String(armSensitive)); }, [armSensitive]);`),
+      edit('drapeau lu hors des usages autorisés', 'utilisé hors de ses usages autorisés', STATE, `${STATE}\n  const leak = armSensitive ? 'oui' : 'non';\n  void leak;`),
+      edit('texte d\'aide : seuil faux (30)', 'seuil : le texte d\'aide cite', HELP_32_35, "Active l'alerte bras dès l'indice 30 au lieu de 35."),
+      edit('texte d\'aide : seuil standard faux (36)', 'seuil : le texte d\'aide cite', HELP_32_35, "Active l'alerte bras dès l'indice 32 au lieu de 36."),
+      edit('texte d\'aide : conseil de santé retiré', 'professionnel de santé', ' Douleur persistante : consultez un professionnel de santé.', ''),
+      edit('texte d\'aide : promesse de protection', 'allégation', "Active l'alerte bras", "Protège votre bras : active l'alerte bras"),
+      edit('texte d\'aide : « ni enregistrée ni envoyée » retiré', 'ni enregistrée ni envoyée', " Cette information n'est ni enregistrée ni envoyée.", ''),
+      edit('libellé : le coude n\'est plus nommé', 'libellé : le libellé ne nomme plus', 'ARM_SENSITIVE_LABEL = "Bras sensible ou douleur au coude / à l\'épaule";', 'ARM_SENSITIVE_LABEL = "Bras sensible ou douleur à l\'épaule";'),
+    ];
+    const PAGE_POSITIVES: Mut[] = [
+      edit('libellé reformulé', '', 'ARM_SENSITIVE_LABEL = "Bras sensible ou douleur au coude / à l\'épaule";', 'ARM_SENSITIVE_LABEL = "Bras sensible, douleur au coude ou à l\'épaule";'),
+      edit('aide reformulée, mêmes chiffres et mêmes engagements', '', HELP_32_35, "Alerte bras dès l'indice 32 pour vous, au lieu de 35 sinon."),
+      edit('commentaire qui nomme localStorage et GA4', '', '// Déclaration du visiteur (bras sensible).', '// Déclaration du visiteur (bras sensible) : jamais de localStorage, de cookie ni de GA4.'),
+      edit('état renommé dans le commentaire seulement', '', 'Elle ne sert qu\'au profil passé au moteur plus bas.', 'Elle ne sert qu\'au profil passé au moteur (armSensitive).'),
+    ];
+    for (const m of PAGE_NEGATIVES) {
+      const mutated = m.apply(pageSrc);
+      if (mutated === null) {
+        fail(`configurateur FR : prémisse du test négatif « ${m.name} » fausse (motif absent de ${PAGE21})`);
+        continue;
+      }
+      if (analyse(mutated, pdfSrc, storageSrc).some((i) => i.includes(m.needle))) detected++;
+      else fail(`configurateur FR : garde-fou muet sur « ${m.name} » (motif attendu « ${m.needle} »)`);
+    }
+    for (const m of PAGE_POSITIVES) {
+      const mutated = m.apply(pageSrc);
+      if (mutated === null) {
+        fail(`configurateur FR : prémisse du témoin positif « ${m.name} » fausse (motif absent de ${PAGE21})`);
+        continue;
+      }
+      const found = analyse(mutated, pdfSrc, storageSrc);
+      if (found.length > 0) fail(`configurateur FR : témoin positif « ${m.name} » rejeté à tort : ${found.join(' ; ')}`);
+      else accepted++;
+    }
+    const PDF_NEGATIVES: Mut[] = [
+      edit('profil retiré de l\'appel du PDF', 'profil : l\'appel de calculateAdvancedRcs du PDF', '      profile: { armSensitive: options.armSensitive === true },\n', ''),
+      edit('armSensitive: false en dur dans le PDF', 'en dur', 'profile: { armSensitive: options.armSensitive === true }', 'profile: { armSensitive: false }'),
+      edit('armSensitive: true en dur dans le PDF', 'en dur', 'profile: { armSensitive: options.armSensitive === true }', 'profile: { armSensitive: true }'),
+      edit('paramètre du PDF retiré', 'ne vient d\'aucun paramètre', ',\n  options: PdfAnalysisOptions = {},\n', ',\n'),
+      edit('déclaration persistée dans la configuration enregistrée', 'StoredConfiguration', '  rcsScore: number;\n  compatibility: number;\n  createdAt: string;\n}', '  rcsScore: number;\n  compatibility: number;\n  armSensitive?: boolean;\n  createdAt: string;\n}'),
+    ];
+    for (const m of PDF_NEGATIVES) {
+      const mutated = m.apply(pdfSrc);
+      if (mutated === null) {
+        fail(`configurateur FR : prémisse du test négatif « ${m.name} » fausse (motif absent de ${PDF21})`);
+        continue;
+      }
+      if (analyse(pageSrc, mutated, storageSrc).some((i) => i.includes(m.needle))) detected++;
+      else fail(`configurateur FR : garde-fou muet sur « ${m.name} » (motif attendu « ${m.needle} »)`);
+    }
+    const mutatedStorage = replaceFirst(storageSrc, '  rcsScore: number;\n', '  rcsScore: number;\n  armSensitive?: boolean;\n');
+    if (mutatedStorage === null) fail(`configurateur FR : prémisse du test négatif « déclaration persistée dans SavedConfiguration » fausse (motif absent de ${STORAGE21})`);
+    else if (analyse(pageSrc, pdfSrc, mutatedStorage).some((i) => i.includes('SavedConfiguration'))) detected++;
+    else fail('configurateur FR : garde-fou muet sur « déclaration persistée dans SavedConfiguration »');
+
+    if (engineOk) {
+      const ENGINE_NEGATIVES: Array<[string, string, string, string]> = [
+        ['seuil « bras sensible » remis à 35', '? rcs >= 32 ||', '? rcs >= 35 ||', 'sensible :'],
+        ['seuil « bras sensible » décalé à 33', '? rcs >= 32 ||', '? rcs >= 33 ||', 'sensible :'],
+        ['seuil standard avancé à 32', ': rcs >= 35 ||', ': rcs >= 32 ||', 'standard :'],
+        ['second filet « confort » du profil sensible abaissé (55 → 45)', 'comfort < 55', 'comfort < 45', 'sensible :'],
+        ['second filet « confort » du profil standard relevé (45 → 55)', 'comfort < 45', 'comfort < 55', 'standard :'],
+        ['absence de profil traitée comme un bras sensible', 'profile?.armSensitive ?? false', 'profile?.armSensitive ?? true', 'défaut :'],
+        ['alerte « bras sensible » supprimée', 'if (armRisk) {', 'if (armRisk && !armSensitive) {', 'sensible :'],
+        ['texte « bras sensible » adouci', 'baissez la tension de 1 à 2 kg', 'pensez à votre tension', 'texte :'],
+        ['la déclaration change l\'indice', 'const rcs = rcsIndex(racquetStiffness, effStringStiffness, avgTension);', 'const rcs = rcsIndex(racquetStiffness, effStringStiffness, avgTension) - (profile?.armSensitive ? 2 : 0);', 'profil :'],
+      ];
+      for (const [name, find, replace, needle] of ENGINE_NEGATIVES) {
+        const mutated = replaceFirst(engineSrc, find, replace);
+        if (mutated === null) {
+          fail(`configurateur FR : prémisse du test négatif « ${name} » fausse (motif absent de ${ENGINE21})`);
+          continue;
+        }
+        let issues: string[] = [];
+        try {
+          issues = checkEngine(loadEngine(mutated), STRIDE, true).issues;
+        } catch (e) {
+          fail(`configurateur FR : moteur altéré « ${name} » illisible (${(e as Error).message}) : le test doit échouer bruyamment`);
+          continue;
+        }
+        if (issues.some((i) => i.startsWith(needle))) detected++;
+        else fail(`configurateur FR : garde-fou muet sur « ${name} » (le moteur altéré passe le contrôle ; motif attendu « ${needle} »)`);
+      }
+      const harmless = replaceFirst(engineSrc, 'const round = (v: number) => Math.round(v);', 'const round = (v: number) => Math.round(v + 0);');
+      if (harmless === null) fail(`configurateur FR : prémisse du témoin positif « moteur reformulé, même comportement » fausse (motif absent de ${ENGINE21})`);
+      else {
+        const found = checkEngine(loadEngine(harmless), STRIDE, true).issues;
+        if (found.length > 0) fail(`configurateur FR : témoin positif « moteur reformulé, même comportement » rejeté à tort : ${found.join(' ; ')}`);
+        else accepted++;
+      }
+    }
+
+    if (failures.length === before21) {
+      const rate = (k: number) => ((k / real.n) * 100).toFixed(2);
+      const bandText = [...real.band].map(([idx, b]) => `${idx} : ${b.n} montages, ${b.sen} alertés (profil sensible), ${b.std} par le seul second filet (profil standard)`).join(' ; ');
+      ok(
+        `configurateur FR : le bras sensible se déclare (case à cocher reliée à profile.armSensitive, état initial false, en mémoire seulement ; PDF : paramètre de sa fonction) ; ` +
+          `moteur réel sur ${real.n} montages : alerte dès l'indice ${S} pour armSensitive: true, dès ${N} sinon, second filet confort inchangé (< ${COMFORT_NET.sensitive} / < ${COMFORT_NET.standard}), absence de profil = false, texte des alertes inchangé ; ` +
+          `taux d'alerte standard ${rate(real.stdAlerts)} % -> sensible ${rate(real.senAlerts)} % ; bande ${bandText} ; ` +
+          `GA4 : ${gaCallers} appel(s) de trackArmWarningShown, second argument false, événement piloté par le résultat du profil standard ; aucun stockage, URL ni cookie ; ` +
+          `texte d'aide : seuils ${S} et ${N} (sondés), professionnel de santé, « ni enregistrée ni envoyée » ; ${detected} tests négatifs détectés, ${accepted} témoins positifs acceptés`
+      );
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
 console.log('--- audit notation raquettes/cordages ---');
 notes.forEach((n) => console.log(n));
 if (failures.length > 0) {
