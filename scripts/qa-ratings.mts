@@ -3652,6 +3652,321 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
 }
 
 // ---------------------------------------------------------------------------
+// 21 bis. PDF : la méthodologie imprimée cite les deux seuils d'alerte bras, lus dans le moteur
+//         (option C de l'arbitrage de la PR #124, décision de l'orchestrateur du 11/10/2026)
+// ---------------------------------------------------------------------------
+// Constat : le PDF est recalculé à l'export depuis une configuration ENREGISTRÉE, qui ne porte pas la déclaration « bras sensible »
+// (rien n'est enregistré, contrôle 21) : un PDF exporté du compte applique donc le seuil standard et n'a aucune alerte aux indices 32 à 34,
+// alors que la page en aurait une pour un bras sensible. La méthodologie imprimée cite maintenant les deux seuils et dit lequel ce
+// document a appliqué, sans rien enregistrer. Ce bloc échoue si :
+//   (a) la paire exportée `ARM_ALERT_RCS` (que le PDF cite) n'est pas ce que le moteur applique, sondé dans `calculateAdvancedRcs` ;
+//   (b) le constructeur de données du PDF recopie un seuil à la main au lieu de lire `ARM_ALERT_RCS`, ou n'indique pas le profil appliqué
+//       d'après la même condition que celle passée au moteur ;
+//   (c) la ligne manque dans le texte imprimé d'un PDF, y figure deux fois, sort de la méthodologie, cite d'autres seuils que ceux du
+//       moteur, annonce le mauvais profil, ne renvoie plus vers un professionnel de santé ou porte une allégation de protection ou un
+//       absolu (charte F7). Quatre PDF sont imprimés : export du compte, hybride, bras sensible déclaré, sans analyse avancée (la ligne
+//       est imprimée dans tous : les seuils sont un fait général, pas un résultat d'analyse).
+// Chaque garde est rejouée sur des copies altérées (constantes, moteur, données, source d'impression, constructeur) ; des témoins positifs
+// prouvent qu'une reformulation inoffensive passe.
+{
+  const before21b = failures.length;
+  const S = ARM_ALERT_SENSITIVE;
+  const N = ARM_ALERT_STANDARD;
+  if (S === null || N === null) {
+    fail("PDF : seuils d'alerte bras introuvables dans calculateAdvancedRcs (sonde muette)");
+  } else {
+    const read = (f: string): string => readFileSync(f, 'utf8').replace(/\r\n/g, '\n');
+    const engineSrc = read('src/lib/advanced-rcs.ts');
+    const exportSrc = read('src/lib/pdf-export.ts');
+    const dataSrc = read('src/lib/pdf-configuration-data.ts');
+    const replaceFirst = (s: string, find: string, replace: string): string | null => {
+      const i = s.indexOf(find);
+      return i < 0 ? null : s.slice(0, i) + replace + s.slice(i + find.length);
+    };
+
+    // --- Chargement de modules (copies altérées) et sonde générique -------------------------------------------------
+    const stringsModule = await import('../src/data/strings-database');
+    const loadModule = (src: string, deps: Record<string, unknown> = {}): Record<string, any> => {
+      const js = ts.transpileModule(src, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 } }).outputText;
+      const mod: { exports: Record<string, unknown> } = { exports: {} };
+      new Function('exports', 'require', 'module', js)(
+        mod.exports,
+        (id: string) => {
+          if (id in deps) return deps[id];
+          throw new Error(`require inattendu : ${id}`);
+        },
+        mod
+      );
+      return mod.exports;
+    };
+    type Calc = typeof calculateAdvancedRcs;
+    const probeWith = (calc: Calc, armSensitive: boolean): number | null => {
+      for (let st = 60; st <= 400; st++) {
+        const adv = calc({ racquetStiffness: DEFAULT_RACQUET_RA, mainStringStiffness: st, mainStringFamily: 'polyester', mainRatings: {}, mainTension: 24, profile: { armSensitive } });
+        if (adv.warnings.length > 0) return adv.rcs;
+      }
+      return null;
+    };
+
+    // --- (a) la paire exportée = ce que le moteur applique -----------------------------------------------------------
+    const constantsIssues = (calc: Calc, consts: { sensitive?: number; standard?: number } | undefined): string[] => {
+      if (!consts || typeof consts.sensitive !== 'number' || typeof consts.standard !== 'number') return ['constantes : ARM_ALERT_RCS (seuils exportés par advanced-rcs.ts) introuvable'];
+      const s = probeWith(calc, true);
+      const n = probeWith(calc, false);
+      if (s === null || n === null) return ['constantes : seuils du moteur introuvables (sonde muette)'];
+      const issues: string[] = [];
+      if (consts.sensitive !== s) issues.push(`constantes : ARM_ALERT_RCS.sensitive = ${consts.sensitive} alors que le moteur alerte un bras sensible dès ${s}`);
+      if (consts.standard !== n) issues.push(`constantes : ARM_ALERT_RCS.standard = ${consts.standard} alors que le moteur alerte dès ${n}`);
+      return issues;
+    };
+    const engineModule = (await import('../src/lib/advanced-rcs')) as Record<string, any>;
+    constantsIssues(calculateAdvancedRcs, engineModule.ARM_ALERT_RCS).forEach((i) => fail(`PDF : ${i}`));
+
+    // --- (b) le constructeur de données lit la paire, il ne recopie rien -----------------------------------------------
+    const builderFindings = (src: string): string[] => {
+      const issues: string[] = [];
+      const sf = ts.createSourceFile('pdf-configuration-data.ts', src, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+      const propName = (p: ts.ObjectLiteralElementLike): string | null => (p.name !== undefined && (ts.isIdentifier(p.name) || ts.isStringLiteral(p.name)) ? p.name.text : null);
+      const propValue = (p: ts.ObjectLiteralElementLike): ts.Expression | null => (ts.isPropertyAssignment(p) ? p.initializer : ts.isShorthandPropertyAssignment(p) ? p.name : null);
+      let imported = false;
+      let armAlert: ts.ObjectLiteralExpression | null = null;
+      let engineFlag = '';
+      const walk = (n: ts.Node): void => {
+        if (ts.isImportDeclaration(n) && ts.isStringLiteral(n.moduleSpecifier) && n.moduleSpecifier.text === '@/lib/advanced-rcs') {
+          const nb = n.importClause?.namedBindings;
+          if (nb && ts.isNamedImports(nb) && nb.elements.some((e) => e.name.text === 'ARM_ALERT_RCS')) imported = true;
+        }
+        if (ts.isObjectLiteralExpression(n)) {
+          const aa = n.properties.find((p) => propName(p) === 'armAlert');
+          const v = aa ? propValue(aa) : null;
+          if (v && ts.isObjectLiteralExpression(v)) armAlert = v;
+        }
+        if (ts.isCallExpression(n) && ts.isIdentifier(n.expression) && n.expression.text === 'calculateAdvancedRcs') {
+          const arg = n.arguments[0];
+          const prof = arg && ts.isObjectLiteralExpression(arg) ? arg.properties.find((p) => propName(p) === 'profile') : undefined;
+          const pv = prof ? propValue(prof) : null;
+          const flag = pv && ts.isObjectLiteralExpression(pv) ? pv.properties.find((p) => propName(p) === 'armSensitive') : undefined;
+          const fv = flag ? propValue(flag) : null;
+          if (fv) engineFlag = fv.getText(sf);
+        }
+        ts.forEachChild(n, walk);
+      };
+      walk(sf);
+      if (!imported) issues.push("constructeur : ARM_ALERT_RCS n'est pas importé de @/lib/advanced-rcs (les seuils du PDF doivent être lus dans le moteur)");
+      if (!armAlert) return [...issues, "constructeur : armAlert absent des données du PDF (la méthodologie n'aurait plus de seuils à citer)"];
+      const at = (name: string): string => {
+        const p = (armAlert as ts.ObjectLiteralExpression).properties.find((q) => propName(q) === name);
+        const v = p ? propValue(p) : null;
+        return v ? v.getText(sf) : '';
+      };
+      if (at('standardAt') !== 'ARM_ALERT_RCS.standard') issues.push(`constructeur : standardAt vaut « ${at('standardAt') || 'absent'} » au lieu de ARM_ALERT_RCS.standard : seuil recopié à la main`);
+      if (at('sensitiveAt') !== 'ARM_ALERT_RCS.sensitive') issues.push(`constructeur : sensitiveAt vaut « ${at('sensitiveAt') || 'absent'} » au lieu de ARM_ALERT_RCS.sensitive : seuil recopié à la main`);
+      if (engineFlag === '' || at('sensitiveApplied') !== engineFlag) issues.push(`constructeur : sensitiveApplied vaut « ${at('sensitiveApplied') || 'absent'} » alors que le profil passé au moteur est « ${engineFlag || 'absent'} » : le PDF doit annoncer le profil réellement appliqué (même condition)`);
+      return issues;
+    };
+    builderFindings(dataSrc).forEach((i) => fail(`PDF : ${i}`));
+
+    // --- (c) la ligne dans le texte imprimé de chaque PDF ----------------------------------------------------------------
+    const printed: string[] = [];
+    class FakePdf {
+      setFont() {} setFontSize() {} setTextColor() {} setFillColor() {} setDrawColor() {} rect() {} roundedRect() {} line() {} setLineWidth() {}
+      addPage() {} setPage() {} save() {}
+      getNumberOfPages() { return 1; }
+      splitTextToSize(t: string) { return [t]; }
+      text(t: string | string[]) { printed.push(...(Array.isArray(t) ? t : [t])); }
+    }
+    const printPdf = async (exportFn: (d: unknown) => Promise<void>, data: unknown): Promise<string[]> => {
+      printed.length = 0;
+      (globalThis as { window?: unknown }).window = { jspdf: { jsPDF: FakePdf } };
+      try {
+        await exportFn(data);
+      } finally {
+        delete (globalThis as { window?: unknown }).window;
+      }
+      return [...printed];
+    };
+    const { buildConfigurationPdfData } = await import('../src/lib/pdf-configuration-data');
+    const { exportConfigurationPdf } = await import('../src/lib/pdf-export');
+    const BASE_CFG = { name: 'audit 21 bis', crossStringId: null, mainGauge: '1.25', crossGauge: '1.25', mainTension: 24, crossTension: 22, rating: 0, notes: null, rcsScore: 32, compatibility: 90, createdAt: '2026-10-11T00:00:00.000Z' };
+    type PdfCase = { name: string; cfg: Record<string, unknown>; opt?: { armSensitive?: boolean } };
+    const CASES: PdfCase[] = [
+      { name: 'PDF exporté du compte (sans option)', cfg: { racquetId: 'wilson-blade-98-16x19-v9', mainStringId: 'luxilon-alu-power' } },
+      { name: 'PDF hybride', cfg: { racquetId: 'wilson-blade-98-16x19-v9', mainStringId: 'luxilon-alu-power', crossStringId: 'babolat-rpm-blast' } },
+      { name: 'PDF bras sensible déclaré', cfg: { racquetId: 'wilson-blade-98-16x19-v9', mainStringId: 'luxilon-alu-power' }, opt: { armSensitive: true } },
+      { name: 'PDF sans analyse avancée (raquette et cordage introuvables)', cfg: { racquetId: 'raquette-inconnue', mainStringId: 'cordage-inconnu' } },
+    ];
+    const digits = (t: string): number[] => [...t.matchAll(/\d+/g)].map((m) => Number(m[0]));
+    const CLAIM21B = /prot[eéè]g|pr[eé]ven|soulag|gu[eé]ri|therap|thérap|m[eé]dical|traitement|sans (?:aucun )?(?:danger|risque)|\bid[eé]al|parfait|optimal|\bsûr\b|garanti/i;
+    const lineFindings = (name: string, lines: string[], declared: boolean): string[] => {
+      const hits = lines.map((l, i) => [l, i] as const).filter(([l]) => typeof l === 'string' && l.startsWith('- Alerte bras :'));
+      if (hits.length === 0) return [`${name} : la ligne sur les seuils d'alerte bras est absente du texte imprimé`];
+      const found: string[] = [];
+      if (hits.length > 1) found.push(`${name} : la ligne sur les seuils d'alerte bras est imprimée ${hits.length} fois`);
+      const [line, at] = hits[0];
+      const title = lines.indexOf('METHODOLOGIE');
+      const foot = lines.findIndex((l) => l.startsWith('Genere par Tennis String Advisor'));
+      if (title < 0 || foot < 0 || !(title < at && at < foot)) found.push(`${name} : la ligne sort de la méthodologie (titre ${title}, ligne ${at}, pied de page ${foot})`);
+      const want = declared ? [N, S, S] : [N, S, N, S];
+      const got = digits(line);
+      if (got.length !== want.length || got.some((v, i) => v !== want[i])) found.push(`${name} : seuils cités ${got.join(', ') || 'aucun'} au lieu de ${want.join(', ')} (le moteur alerte dès ${N} en standard, dès ${S} pour un bras sensible)`);
+      const profile = declared ? new RegExp(`bras sensible déclaré : seuil ${S} appliqué`) : new RegExp(`applique le seuil ${N}\\b`);
+      if (!profile.test(line)) found.push(`${name} : la ligne annonce un autre profil que celui appliqué (${declared ? 'bras sensible déclaré' : 'standard'})`);
+      if (!/professionnel de santé/i.test(line)) found.push(`${name} : la ligne ne renvoie plus vers un professionnel de santé si la douleur persiste`);
+      const claim = CLAIM21B.exec(line);
+      if (claim) found.push(`${name} : allégation « ${claim[0]} » dans la ligne (charte F7 : aucun absolu, aucune promesse de protection)`);
+      return found;
+    };
+    type Run = { c: PdfCase; data: any; lines: string[] };
+    const runAll = async (exportFn: (d: unknown) => Promise<void>, mutateData?: (c: PdfCase, d: any) => void): Promise<Run[]> => {
+      const out: Run[] = [];
+      for (const c of CASES) {
+        const data: any = buildConfigurationPdfData({ ...BASE_CFG, ...c.cfg } as never, c.opt);
+        mutateData?.(c, data);
+        out.push({ c, data, lines: await printPdf(exportFn, data) });
+      }
+      return out;
+    };
+    const runFindings = (runs: Run[]): string[] => runs.flatMap((r) => lineFindings(r.c.name, r.lines, r.c.opt?.armSensitive === true));
+
+    const real = await runAll(exportConfigurationPdf as (d: unknown) => Promise<void>);
+    for (const r of real) {
+      const want = { standardAt: N, sensitiveAt: S, sensitiveApplied: r.c.opt?.armSensitive === true };
+      if (JSON.stringify(r.data.armAlert) !== JSON.stringify(want)) fail(`PDF : ${r.c.name} : armAlert = ${JSON.stringify(r.data.armAlert)} au lieu de ${JSON.stringify(want)}`);
+    }
+    runFindings(real).forEach((i) => fail(`PDF : ${i}`));
+    const analysed = real.filter((r) => r.data.advanced !== undefined).length;
+    if (analysed !== 3 || real.length !== 4) fail(`PDF : ${analysed} PDF avec analyse avancée sur ${real.length} (attendu 3 sur 4) : le cas « sans analyse » ne l'est plus, relire le contrôle`);
+
+    // --- Tests négatifs et témoins positifs -----------------------------------------------------------------------------
+    let detected = 0;
+    let accepted = 0;
+    const expectDetected = (name: string, issues: string[], needle: string): void => {
+      if (issues.some((i) => i.includes(needle))) detected++;
+      else fail(`PDF : garde-fou muet sur « ${name} » (motif attendu « ${needle} »${issues.length ? `, trouvé : ${issues[0].slice(0, 90)}` : ''})`);
+    };
+    // 1. texte imprimé altéré (défauts de l'exporteur simulés sur le texte)
+    const std = real[0];
+    const printedMuts: Array<[string, (l: string[]) => string[], string]> = [
+      ['ligne retirée du texte imprimé', (l) => l.filter((x) => !x.startsWith('- Alerte bras :')), 'absente'],
+      ['ligne imprimée deux fois', (l) => l.flatMap((x) => (x.startsWith('- Alerte bras :') ? [x, x] : [x])), '2 fois'],
+      ['ligne placée avant la méthodologie', (l) => { const i = l.findIndex((x) => x.startsWith('- Alerte bras :')); const rest = l.filter((_, k) => k !== i); rest.splice(rest.indexOf('METHODOLOGIE'), 0, l[i]); return rest; }, 'sort de la méthodologie'],
+      ['seuil standard faux dans le texte (36)', (l) => l.map((x) => (x.startsWith('- Alerte bras :') ? x.replace(`dès l'indice ${N}`, `dès l'indice ${N + 1}`) : x)), 'seuils cités'],
+      ['seuil bras sensible faux dans le texte (30)', (l) => l.map((x) => (x.startsWith('- Alerte bras :') ? x.replace(`dès ${S} si`, `dès ${S - 2} si`) : x)), 'seuils cités'],
+      ['renvoi vers un professionnel de santé retiré', (l) => l.map((x) => (x.startsWith('- Alerte bras :') ? x.split('professionnel de santé').join('spécialiste') : x)), 'professionnel de santé'],
+      ['promesse de protection ajoutée', (l) => l.map((x) => (x.startsWith('- Alerte bras :') ? x.replace('reportez-vous', 'protégez votre bras en vous reportant') : x)), 'allégation'],
+    ];
+    if (!std.lines.some((x) => x.startsWith('- Alerte bras :'))) fail(`PDF : prémisse des tests négatifs sur le texte imprimé fausse (la ligne est absente du PDF de référence « ${std.c.name} »)`);
+    else for (const [name, mut, needle] of printedMuts) expectDetected(name, lineFindings(std.c.name, mut(std.lines), false), needle);
+    // 2. données altérées passées à l'exporteur réel (défauts du constructeur simulés)
+    const dataMuts: Array<[string, (c: PdfCase, d: any) => void, string]> = [
+      ['seuil standard faux dans les données', (_c, d) => { d.armAlert.standardAt = N + 1; }, 'seuils cités'],
+      ['seuil bras sensible faux dans les données', (_c, d) => { d.armAlert.sensitiveAt = S - 2; }, 'seuils cités'],
+      ['profil appliqué faux dans les données (déclaré annoncé, standard appliqué)', (c, d) => { if (c.opt?.armSensitive !== true) d.armAlert.sensitiveApplied = true; }, 'autre profil'],
+      ['profil appliqué faux dans les données (standard annoncé, déclaré appliqué)', (c, d) => { if (c.opt?.armSensitive === true) d.armAlert.sensitiveApplied = false; }, 'autre profil'],
+    ];
+    if (real.some((r) => !r.data.armAlert)) fail('PDF : prémisse des tests négatifs sur les données fausse (armAlert absent des données du constructeur)');
+    else for (const [name, mut, needle] of dataMuts) expectDetected(name, runFindings(await runAll(exportConfigurationPdf as (d: unknown) => Promise<void>, mut)), needle);
+    // 3. source d'impression altérée (module rechargé depuis le texte)
+    const exportMuts: Array<[string, string, string, string]> = [
+      ['ligne retirée de la méthodologie (source)', '    armAlertLine(data.armAlert),\n', '', 'absente'],
+      ['seuil recopié à la main dans l\'exporteur', 'dès l\'indice ${a.standardAt}', 'dès l\'indice 36', 'seuils cités'],
+      ['renvoi vers un professionnel de santé retiré (source)', ' et consultez un professionnel de santé si la douleur persiste.', '.', 'professionnel de santé'],
+      ['promesse de protection (source)', 'reportez-vous au seuil', 'protégez votre bras au seuil', 'allégation'],
+      ['profil annoncé inversé (source)', 'return a.sensitiveApplied\n    ?', 'return !a.sensitiveApplied\n    ?', 'autre profil'],
+    ];
+    for (const [name, find, replace, needle] of exportMuts) {
+      const mutated = replaceFirst(exportSrc, find, replace);
+      if (mutated === null) {
+        fail(`PDF : prémisse du test négatif « ${name} » fausse (motif absent de src/lib/pdf-export.ts)`);
+        continue;
+      }
+      let issues: string[] = [];
+      try {
+        issues = runFindings(await runAll(loadModule(mutated).exportConfigurationPdf as (d: unknown) => Promise<void>));
+      } catch (e) {
+        fail(`PDF : exporteur altéré « ${name} » illisible (${(e as Error).message}) : le test doit échouer bruyamment`);
+        continue;
+      }
+      expectDetected(name, issues, needle);
+    }
+    const harmless = replaceFirst(exportSrc, 'reportez-vous au seuil', 'référez-vous au seuil');
+    if (harmless === null) fail('PDF : prémisse du témoin positif « exporteur reformulé » fausse (motif absent de src/lib/pdf-export.ts)');
+    else {
+      const found = runFindings(await runAll(loadModule(harmless).exportConfigurationPdf as (d: unknown) => Promise<void>));
+      if (found.length > 0) fail(`PDF : témoin positif « exporteur reformulé » rejeté à tort : ${found.join(' ; ')}`);
+      else accepted++;
+    }
+    // 4. constructeur de données altéré (analyse syntaxique)
+    const builderMuts: Array<[string, string, string, string]> = [
+      ['seuil standard recopié à la main', 'standardAt: ARM_ALERT_RCS.standard,', `standardAt: ${N},`, 'recopié à la main'],
+      ['seuil bras sensible recopié à la main', 'sensitiveAt: ARM_ALERT_RCS.sensitive,', `sensitiveAt: ${S},`, 'recopié à la main'],
+      ['profil annoncé indépendant du profil du moteur', 'sensitiveApplied: options.armSensitive === true,', 'sensitiveApplied: false,', 'même condition'],
+      ['import de la paire retiré', '  ARM_ALERT_RCS,\n  calculateAdvancedRcs,', '  calculateAdvancedRcs,', 'pas importé'],
+    ];
+    for (const [name, find, replace, needle] of builderMuts) {
+      const mutated = replaceFirst(dataSrc, find, replace);
+      if (mutated === null) fail(`PDF : prémisse du test négatif « ${name} » fausse (motif absent de src/lib/pdf-configuration-data.ts)`);
+      else expectDetected(name, builderFindings(mutated), needle);
+    }
+    const noArmAlert = dataSrc.replace(/\n {4}armAlert: \{[\s\S]*?\n {4}\},\n/, '\n');
+    if (noArmAlert === dataSrc) fail('PDF : prémisse du test négatif « armAlert retiré des données » fausse (bloc introuvable)');
+    else expectDetected('armAlert retiré des données', builderFindings(noArmAlert), 'armAlert absent');
+    const reformatted = dataSrc.replace('sensitiveApplied: options.armSensitive === true,', 'sensitiveApplied: options.armSensitive === true, // profil réellement appliqué');
+    if (builderFindings(reformatted).length > 0) fail(`PDF : témoin positif « commentaire ajouté dans le constructeur » rejeté à tort : ${builderFindings(reformatted).join(' ; ')}`);
+    else accepted++;
+    // 5. constantes et moteur (modules rechargés depuis le texte)
+    const engineDeps = { '@/data/strings-database': stringsModule };
+    const loadEngine = (src: string): { calc: Calc; consts: { sensitive?: number; standard?: number } | undefined } => {
+      const m = loadModule(src, engineDeps);
+      return { calc: m.calculateAdvancedRcs as Calc, consts: m.ARM_ALERT_RCS };
+    };
+    try {
+      const copy = loadEngine(engineSrc);
+      const issues = constantsIssues(copy.calc, copy.consts);
+      if (issues.length > 0) fail(`PDF : le moteur rechargé depuis son source (instrument des tests négatifs) ne passe pas son propre contrôle : ${issues.join(' ; ')}`);
+    } catch (e) {
+      fail(`PDF : moteur illisible pour les tests négatifs (${(e as Error).message})`);
+    }
+    const CONSTS = 'export const ARM_ALERT_RCS = { sensitive: 32, standard: 35 } as const;';
+    const engineMuts: Array<[string, string, string]> = [
+      ['constante « bras sensible » changée (31) sans toucher au moteur', CONSTS, 'export const ARM_ALERT_RCS = { sensitive: 31, standard: 35 } as const;'],
+      ['constante « standard » changée (36) sans toucher au moteur', CONSTS, 'export const ARM_ALERT_RCS = { sensitive: 32, standard: 36 } as const;'],
+      ['seuil du moteur « bras sensible » décalé (33) sans toucher à la constante', '? rcs >= 32 ||', '? rcs >= 33 ||'],
+      ['seuil du moteur standard décalé (34) sans toucher à la constante', ': rcs >= 35 ||', ': rcs >= 34 ||'],
+    ];
+    for (const [name, find, replace] of engineMuts) {
+      const mutated = replaceFirst(engineSrc, find, replace);
+      if (mutated === null) {
+        fail(`PDF : prémisse du test négatif « ${name} » fausse (motif absent de src/lib/advanced-rcs.ts)`);
+        continue;
+      }
+      try {
+        const m = loadEngine(mutated);
+        expectDetected(name, constantsIssues(m.calc, m.consts), 'constantes : ARM_ALERT_RCS');
+      } catch (e) {
+        fail(`PDF : moteur altéré « ${name} » illisible (${(e as Error).message}) : le test doit échouer bruyamment`);
+      }
+    }
+    const engineWitness = replaceFirst(engineSrc, 'MIROIR EXPORTÉ, pas la source', 'MIROIR EXPORTÉ (relu), pas la source');
+    if (engineWitness === null) fail('PDF : prémisse du témoin positif « commentaire du moteur reformulé » fausse (motif absent de src/lib/advanced-rcs.ts)');
+    else {
+      const m = loadEngine(engineWitness);
+      const found = constantsIssues(m.calc, m.consts);
+      if (found.length > 0) fail(`PDF : témoin positif « commentaire du moteur reformulé » rejeté à tort : ${found.join(' ; ')}`);
+      else accepted++;
+    }
+
+    if (failures.length === before21b) {
+      ok(
+        `PDF : la méthodologie imprimée cite les deux seuils d'alerte bras (${N} en standard, ${S} pour un bras sensible), lus dans le moteur : ARM_ALERT_RCS = seuils sondés dans calculateAdvancedRcs, ` +
+          `lus par le constructeur de données sans aucun littéral ; ligne imprimée une fois, dans la méthodologie, dans les ${real.length} PDF vérifiés ` +
+          `(${real.map((r) => r.c.name).join(', ')}), avec le profil réellement appliqué et le renvoi vers un professionnel de santé ; ${detected} tests négatifs détectés, ${accepted} témoins positifs acceptés`
+      );
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
 console.log('--- audit notation raquettes/cordages ---');
 notes.forEach((n) => console.log(n));
 if (failures.length > 0) {

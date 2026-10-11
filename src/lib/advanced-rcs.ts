@@ -109,6 +109,21 @@ export interface AdvancedRcsResult {
 }
 
 // =====================
+// Seuils d'alerte bras
+// =====================
+
+/**
+ * Seuils d'alerte bras sur l'indice de fermeté (RCS), tels que `armRisk` les applique plus bas dans `calculateAdvancedRcs` : dès 32
+ * pour un bras sensible déclaré, dès 35 sinon. Le second filet « confort » est un autre critère, non repris ici.
+ *
+ * MIROIR EXPORTÉ, pas la source : les littéraux de `armRisk` restent écrits en clair parce que
+ * `scripts/blog-covers/build-rigidite-figures.mts` les relit dans ce fichier par expression régulière. Cette paire sert aux textes
+ * qui doivent citer les seuils sans les recopier à la main (la méthodologie du PDF, via `lib/pdf-configuration-data`). Le contrôle
+ * 21 bis de `audit:ratings` la compare au comportement du moteur (sondage de `calculateAdvancedRcs`) : changer l'un sans l'autre échoue.
+ */
+export const ARM_ALERT_RCS = { sensitive: 32, standard: 35 } as const;
+
+// =====================
 // Helpers internes
 // =====================
 

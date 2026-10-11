@@ -29,6 +29,7 @@
 import { racquetsDatabase, calculateCompatibility } from '@/data/racquets-database';
 import { getStringById, calculateRCS } from '@/data/strings-database';
 import {
+  ARM_ALERT_RCS,
   calculateAdvancedRcs,
   stringTypeToFamily,
   parseGaugeMm,
@@ -80,7 +81,8 @@ export interface PdfAnalysisOptions {
    * Jamais lu dans la configuration enregistrée : la déclaration n'est PAS persistée (elle ne vit que dans l'état de la page du
    * configurateur, qui ne l'enregistre, ne l'envoie ni ne la stocke nulle part). C'est donc à l'appelant de la fournir. Absent =
    * `false` (alerte dès 35). ⚠️ L'export du compte (`account/configurations`) ne la connaît pas : un PDF exporté de là applique
-   * le seuil standard, même si le visiteur l'avait cochée dans le configurateur.
+   * le seuil standard, même si le visiteur l'avait cochée dans le configurateur. Limite atténuée : la méthodologie imprimée cite les
+   * deux seuils et dit lequel ce PDF a appliqué (`armAlert`).
    */
   armSensitive?: boolean;
 }
@@ -289,6 +291,13 @@ export function buildConfigurationPdfData(
     rcsScore: config.rcsScore,
     compatibility: config.compatibility,
     createdAt: config.createdAt,
+    // Seuils d'alerte bras de la méthodologie, LUS dans le moteur (aucun littéral ici) ; imprimés dans tout PDF, avec ou sans analyse
+    // avancée. `sensitiveApplied` dit quel profil CE document a appliqué : même condition que le profil passé plus haut au moteur.
+    armAlert: {
+      standardAt: ARM_ALERT_RCS.standard,
+      sensitiveAt: ARM_ALERT_RCS.sensitive,
+      sensitiveApplied: options.armSensitive === true,
+    },
     racquet: racquetSpecs,
     mainString: mainDetail,
     crossString: crossDetail,
