@@ -3781,7 +3781,13 @@ export function calculateRCS(racquetStiffness: number, stringStiffness: number, 
 export const RCS_SCALE_GAIN = 2;
 export const RCS_SCALE_OFFSET = -27;
 
-// Fonction simple pour obtenir une recommandation basée sur le RCS
+// Fonction simple pour obtenir une recommandation basée sur le RCS.
+//
+// Textes (11/10/2026, charte F7 : « jamais "idéal pour le coude", ni aucun absolu ») : la `suggestion` ne
+// recommande plus une catégorie de joueurs ; elle situe l'INDICE par rapport aux seuils d'alerte bras du
+// configurateur (src/lib/advanced-rcs.ts : alerte dès 32 pour un bras sensible, dès 35 sinon). Niveaux, bornes
+// de palier et logique sont inchangés. Le contrôle 19 de `audit:ratings` sonde les seuils réels du moteur et
+// échoue si ces phrases n'en citent pas les valeurs exactes, ou si un absolu de santé y revient.
 export function getStringRecommendation(rcs: number): {
   level: string;
   description: string;
@@ -3790,32 +3796,32 @@ export function getStringRecommendation(rcs: number): {
   if (rcs < 20) {
     return {
       level: 'Très Confortable',
-      description: 'Configuration très souple, excellente pour le confort du bras',
-      suggestion: 'Idéal pour les joueurs avec sensibilité du bras ou recherchant le maximum de confort'
+      description: 'Configuration très souple, indice de fermeté très bas',
+      suggestion: 'Indice très éloigné des seuils d\'alerte bras du configurateur (dès 32 pour un bras sensible, dès 35 sinon)'
     };
   } else if (rcs < 25) {
     return {
       level: 'Confortable',
       description: 'Bon équilibre entre confort et performance',
-      suggestion: 'Convient à la majorité des joueurs récréatifs et intermédiaires'
+      suggestion: 'Indice sous 25, loin des seuils d\'alerte bras du configurateur (dès 32 pour un bras sensible, dès 35 sinon)'
     };
   } else if (rcs < 30) {
     return {
       level: 'Standard',
       description: 'Configuration équilibrée avec bon contrôle',
-      suggestion: 'Approprié pour les joueurs avancés sans problème de bras'
+      suggestion: 'Indice entre 25 et 30, sous les seuils d\'alerte bras du configurateur (dès 32 pour un bras sensible, dès 35 sinon)'
     };
   } else if (rcs < 35) {
     return {
       level: 'Ferme',
       description: 'Configuration rigide favorisant le contrôle',
-      suggestion: 'Pour les joueurs expérimentés avec une technique solide'
+      suggestion: 'Indice entre 30 et 35 : l\'alerte bras du configurateur se déclenche dès 32 pour un bras sensible, dès 35 sinon'
     };
   } else {
     return {
       level: 'Très Ferme',
       description: 'Configuration très rigide, contrôle maximal',
-      suggestion: 'Attention: risque élevé de tennis elbow, réservé aux professionnels'
+      suggestion: 'Attention : indice de 35 ou plus, seuil d\'alerte bras du configurateur pour tous les profils (risque de tennis elbow)'
     };
   }
 }
