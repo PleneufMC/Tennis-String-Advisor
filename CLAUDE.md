@@ -1,11 +1,39 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.3.19
+> **Version** : 2.3.20
 > **Date** : 11 octobre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
 > **Branche de référence** : `main` (seule branche longue ; la production Netlify en déploie)
 > **Repo** : https://github.com/PleneufMC/Tennis-String-Advisor.git
+
+**Changelog v2.3.19 → v2.3.20** — **Moteur statique EN : l'alerte bras se déclenche dès 32 pour les profils à bras sensible déclaré
+(règle 2)** (décision de l'orchestrateur du 11/10/2026, Pierre ayant délégué ; arbitrage n° 1 de la v2.3.19 ; `tsa-core`). **Constat** :
+`evaluateForProfile` ne renvoyait le verdict `risque_sante` (« tennis elbow risk ») qu'à partir de l'indice 35, même pour le profil que
+le configurateur EN pose quand le visiteur déclare une douleur (« Sensitive arm » ou « Fragile shoulder » → `tennis_elbow`, lu dans la
+page et constaté en exécution) et pour `reeducation` et `senior` (sélecteur de la calculatrice), alors que `advanced-rcs.ts` alerte dès 32
+pour un bras sensible. Entre 32 et 34 ces trois profils recevaient « trop_rigide » (« Index above the profile range »), un verdict de
+plage, pas une alerte. **Changé** (moteurs EN et FR) : drapeau `armSensitive` sur les 9 profils (vrai pour `reeducation`, `tennis_elbow`,
+`senior`), constante `HEALTH_ALERT_SENSITIVE_RCS: 32` et un verdict `risque_sante` pour ces profils dès 32 (« Firm setup (index 32): tennis
+elbow risk for a sensitive arm », suggestion qui cite les deux seuils) ; les six autres profils restent à 35. **Inchangé, vérifié** :
+formule, bornes, niveaux et zones, `getHealthWarning` (orange 32-34, rouge dès 35), verdict et texte dès 35 ; sur RCS 0-60 × 9 profils, 9
+verdicts seulement changent (3 profils × RCS 32, 33, 34 : `trop_rigide` → `risque_sante`). **Contrôles** : le 9 est étendu (chaque profil
+reçoit `risque_sante` de son seuil à RCS 45, 32 pour les trois profils sensibles et 35 pour les six autres ; drapeaux attendus ; le profil
+que la page configurateur pose pour une douleur déclarée est à bras sensible ; 14 + 3 tests négatifs dont « seuil remis à 35 pour
+`tennis_elbow` ») et le 20 suit (seuil par profil, `HEALTH_ALERT_SENSITIVE_RCS` = seuil sondé, le verdict sensible cite 32 et 35 ; 60 tests
+négatifs, 18 témoins) ; le sondage des seuils est factorisé (`probeArmAlert`). Sur les moteurs d'`origin/main` le contrôle 9 échoue (18
+constats par moteur : les 9 verdicts de 32 à 34 des trois profils sensibles et les 9 drapeaux absents). **Mesure** : le moteur EN n'est pas dans la grille du contrôle 5 (celle du configurateur FR), aucun taux d'alerte de la grille
+ne bouge ; ce qui change est le verdict d'un profil à bras sensible entre 32 et 34. **Vérifié en exécution** (Chrome, `/en/rcs-calculator.html`
+profil « Tennis elbow » puis « Club player », `/en/configurator.html`, RCS 31 / 32 / 34 / 36, moteur d'`origin/main` servi par interception
+pour comparer) : à 31 et à 36 rien ne change ; à 32 et 34 l'alerte orange est inchangée et le verdict passe de « Index above the profile
+range » à « tennis elbow risk for a sensitive arm » ; le profil « Club player » reste sans alerte à 32 et 34 ; le parcours réel du
+configurateur pose `tennis_elbow` pour « Sensitive arm » comme pour « Fragile shoulder ». ⚠️ **Dépendance de fusion (règle 2)** : `statusColors`
+des deux pages ignore `risque_sante` (correction par `tsa-acquisition`) ; tant qu'elle n'est pas fusionnée, ce verdict s'affiche en vert
+sur `configurator.html` (rouge avant, pour « trop_rigide ») et sans couleur sur `rcs-calculator.html` : fusionner la correction des pages
+avant ou avec cette PR. ⚠️ **À arbitrer** : le configurateur FR n'applique jamais le seuil 32 : ni `configurator/page.tsx` ni
+`pdf-configuration-data.ts` ne passent `profile` à `calculateAdvancedRcs` (`armSensitive` vaut `false`) et la page ne propose aucun champ pour
+déclarer un bras sensible ; l'alerte FR est donc à 35 pour tous les visiteurs, alors que `getStringRecommendation` et la page disent « dès 32
+pour un bras sensible ». Le moteur le prévoit, aucune interface ne l'active.
 
 **Changelog v2.3.18 → v2.3.19** — **Textes des moteurs statiques du RCS : plus aucune allégation thérapeutique ou protectrice, des
 descriptions tirées de l'indice et des seuils d'alerte réels** (décision de l'orchestrateur du 11/10/2026, Pierre ayant délégué les
@@ -1284,4 +1312,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.3.19 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.3.20 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
