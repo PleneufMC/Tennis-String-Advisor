@@ -552,6 +552,25 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
   }
 }
 
+// Seuils d'alerte bras du configurateur (`calculateAdvancedRcs`), sondés une fois pour les contrôles 9 et 20 : plus petit indice
+// qui déclenche l'alerte, sans second filet (aucune note de confort). Au 11/10/2026 : 32 pour un bras sensible, 35 sinon.
+const probeArmAlert = (armSensitive: boolean): number | null => {
+  for (let st = 60; st <= 400; st++) {
+    const adv = calculateAdvancedRcs({
+      racquetStiffness: DEFAULT_RACQUET_RA,
+      mainStringStiffness: st,
+      mainStringFamily: 'polyester',
+      mainRatings: {},
+      mainTension: 24,
+      profile: { armSensitive },
+    });
+    if (adv.warnings.length > 0) return adv.rcs;
+  }
+  return null;
+};
+const ARM_ALERT_SENSITIVE = probeArmAlert(true);
+const ARM_ALERT_STANDARD = probeArmAlert(false);
+
 // ---------------------------------------------------------------------------
 // 9. ALERTE SANTÉ — aucun profil ne peut la désactiver, aucune surface ne
 //    peut afficher un RCS sans chemin vers un avertissement
@@ -561,46 +580,107 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
 // « Pro » (plage 31-41) — c'est-à-dire en pleine zone « très ferme, risque
 // tennis elbow ». L'alerte était désactivée par la personne qu'elle protège.
 // Et 3 des 4 surfaces affichant un RCS n'appelaient jamais getHealthWarning.
+//
+// Complété le 11/10/2026 (règle 2) : le moteur EN n'alertait qu'à 35, même pour un visiteur ayant déclaré une douleur (le
+// configurateur EN pose le profil `tennis_elbow` pour « Sensitive arm » et « Fragile shoulder »), alors que l'alerte bras du
+// configurateur (`advanced-rcs.ts`) se déclenche dès 32 pour un bras sensible. Les profils à bras sensible déclaré
+// (`reeducation`, `tennis_elbow`, `senior`) reçoivent désormais le verdict `risque_sante` dès ce seuil, les autres dès 35.
+// Échoue si : (a) un profil, de son seuil à RCS 45, ne reçoit pas `risque_sante` (ou reçoit un verdict favorable) ; (b) le
+// drapeau `armSensitive` d'un profil n'est pas celui attendu (la liste des profils sensibles ne dérive pas en silence) ;
+// (c) le profil que la page configurateur pose quand le visiteur déclare une douleur n'est pas à bras sensible. Chaque garde
+// est rejouée sur des copies altérées du moteur ou de la page.
 {
   const engines = ['public/js/rcs-calculator.js', 'public/js/rcs-calculator-en.js'];
   const PROFILS = [
     'reeducation', 'tennis_elbow', 'senior', 'debutant',
     'club', 'confirme', 'competiteur', 'expert', 'pro',
   ];
-
-  for (const path of engines) {
-    let engine: any;
-    try {
-      const src = readFileSync(path, 'utf8');
-      engine = new Function(
-        'window',
-        'document',
-        `${src}; return typeof RCS !== 'undefined' ? RCS : window.RCS;`
-      )({}, { addEventListener() {} });
-    } catch {
-      continue; // l'absence du moteur est déjà signalée par le contrôle 8
-    }
-
+  // Profils à bras sensible déclaré : alerte dès le seuil « bras sensible » du configurateur. `reeducation` et `senior`
+  // ne viennent que du sélecteur de la calculatrice ; `tennis_elbow` est aussi celui du configurateur.
+  const SENSIBLES = ['reeducation', 'tennis_elbow', 'senior'];
+  const before9 = failures.length;
+  const S9 = ARM_ALERT_SENSITIVE;
+  const N9 = ARM_ALERT_STANDARD;
+  const loadEngine = (src: string): any =>
+    new Function('window', 'document', `${src}; return typeof RCS !== 'undefined' ? RCS : window.RCS;`)({}, { addEventListener() {} });
+  const replaceFirst = (s: string, find: string | RegExp, replace: string): string | null => {
+    const out = s.replace(find, replace);
+    return out === s ? null : out;
+  };
+  // Ce que le moteur laisse passer : pour chaque profil, tout RCS de son seuil à 45 doit recevoir `risque_sante`.
+  const leaksOf = (engine: any, S: number, N: number): string[] => {
     const leaks: string[] = [];
     for (const p of PROFILS) {
-      for (let rcs = 35; rcs <= 45; rcs++) {
+      const sensible = SENSIBLES.includes(p);
+      const flag = engine.getRecommendations?.(p)?.armSensitive;
+      if (flag !== sensible) leaks.push(`${p} : armSensitive = ${flag} au lieu de ${sensible}`);
+      for (let rcs = sensible ? S : N; rcs <= 45; rcs++) {
         const verdict = engine.evaluateForProfile(rcs, p);
-        if (verdict?.isOk === true) leaks.push(`${p} @ RCS ${rcs}`);
+        if (verdict?.isOk !== false || verdict?.status !== 'risque_sante') leaks.push(`${p} @ RCS ${rcs}`);
       }
     }
-    if (leaks.length > 0) {
-      fail(
-        `${path} : ${leaks.length} verdict(s) favorable(s) sur un montage en zone ` +
-          `d'alerte (ex. ${leaks.slice(0, 3).join(', ')}). Aucun profil de joueur ne ` +
-          `doit pouvoir transformer un risque tennis elbow en « configuration optimale ».`
-      );
-    } else {
-      ok(`${path} : aucun profil ne neutralise l'alerte santé (9 profils × RCS 35-45)`);
-    }
+    return leaks;
+  };
 
-    if (!engine.getHealthWarning || !engine.getHealthWarning(40)) {
-      fail(`${path} : getHealthWarning n'émet aucune alerte à RCS 40.`);
+  if (S9 === null || N9 === null) {
+    fail("alerte santé : seuils d'alerte bras introuvables dans calculateAdvancedRcs (sonde muette)");
+  } else {
+    let negatives = 0;
+    for (const path of engines) {
+      let src = '';
+      let engine: any;
+      try {
+        src = readFileSync(path, 'utf8');
+        engine = loadEngine(src);
+      } catch {
+        continue; // l'absence du moteur est déjà signalée par le contrôle 8
+      }
+
+      const leaks = leaksOf(engine, S9, N9);
+      if (leaks.length > 0) {
+        fail(
+          `${path} : ${leaks.length} verdict(s) sans alerte ou favorable(s) au-delà du seuil du profil ` +
+            `(ex. ${leaks.slice(0, 3).join(', ')}). Aucun profil de joueur ne doit pouvoir transformer un risque tennis elbow ` +
+            `en « configuration optimale », et un profil à bras sensible est alerté dès ${S9} (les autres dès ${N9}).`
+        );
+      } else {
+        ok(
+          `${path} : aucun profil ne neutralise l'alerte santé (${SENSIBLES.length} profils à bras sensible alertés dès RCS ${S9}, ` +
+            `${PROFILS.length - SENSIBLES.length} autres dès ${N9}, jusqu'à RCS 45)`
+        );
+      }
+
+      if (!engine.getHealthWarning || !engine.getHealthWarning(40)) {
+        fail(`${path} : getHealthWarning n'émet aucune alerte à RCS 40.`);
+      }
+
+      // Tests négatifs : le moteur altéré doit être refusé.
+      const MUTATIONS: Array<[string, string | RegExp, string]> = [
+        ['seuil remis à 35 pour tennis_elbow (profil à bras sensible rendu standard)', /('tennis_elbow':[^\n]*armSensitive: )true/, '$1false'],
+        ['seuil « bras sensible » du moteur remis à 35', 'HEALTH_ALERT_SENSITIVE_RCS: 32,', 'HEALTH_ALERT_SENSITIVE_RCS: 35,'],
+        ['seuil « bras sensible » du moteur décalé à 33', 'HEALTH_ALERT_SENSITIVE_RCS: 32,', 'HEALTH_ALERT_SENSITIVE_RCS: 33,'],
+        ['alerte des profils sensibles supprimée', 'if (rec.armSensitive && rcs >= this.HEALTH_ALERT_SENSITIVE_RCS) {', 'if (false) {'],
+        ['profil sensible qui perd son drapeau (senior)', /('senior':[^\n]*armSensitive: )true/, '$1false'],
+        ['profil standard rendu sensible sans décision (club)', /('club':[^\n]*armSensitive: )false/, '$1true'],
+        ['alerte standard décalée à 36', 'HEALTH_ALERT_RCS: 35,', 'HEALTH_ALERT_RCS: 36,'],
+      ];
+      for (const [name, find, replace] of MUTATIONS) {
+        const mutated = replaceFirst(src, find, replace);
+        if (mutated === null) {
+          fail(`${path} : prémisse du test négatif « ${name} » fausse (motif absent du moteur).`);
+          continue;
+        }
+        let caught = false;
+        try {
+          caught = leaksOf(loadEngine(mutated), S9, N9).length > 0;
+        } catch {
+          caught = false; // un moteur altéré illisible ne prouve rien : le test doit échouer bruyamment
+        }
+        if (caught) negatives++;
+        else fail(`${path} : garde-fou muet sur « ${name} » (le moteur altéré passe le contrôle d'alerte).`);
+      }
     }
+    if (failures.length === before9 && negatives > 0) ok(`alerte santé par profil : ${negatives} tests négatifs détectés (seuil remis à 35 pour tennis_elbow, drapeau perdu, alerte supprimée, seuils décalés)`);
   }
 
   // Les surfaces qui affichent un RCS doivent avoir un chemin vers une alerte.
@@ -623,6 +703,55 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
       );
     } else {
       ok(`${surface} : chemin d'appel vers l'alerte santé présent`);
+    }
+  }
+
+  // (c) Le profil que le configurateur EN pose quand le visiteur déclare une douleur (« Sensitive arm », « Fragile shoulder »)
+  //     doit être un profil à bras sensible : sinon l'alerte dès le seuil « bras sensible » ne s'appliquerait à personne.
+  if (S9 !== null) {
+    const declared = (html: string): { profile: string | null; shoulderSharesBranch: boolean } => {
+      const m = /currentSelections\.physical === 'bras'[\s\S]{0,1500}?rcsProfile = '([a-z_]+)'/.exec(html);
+      return {
+        profile: m ? m[1] : null,
+        shoulderSharesBranch: /currentSelections\.physical === 'bras' \|\| currentSelections\.physical === 'epaule'/.test(html),
+      };
+    };
+    const mappingIssues = (html: string): string[] => {
+      const { profile, shoulderSharesBranch } = declared(html);
+      const issues: string[] = [];
+      if (profile === null) issues.push("le profil posé quand le visiteur déclare une douleur (physical === 'bras') est introuvable : la page a changé, relire le contrôle 9");
+      else if (!SENSIBLES.includes(profile)) issues.push(`la douleur déclarée pose le profil « ${profile} », qui n'est pas à bras sensible : l'alerte dès ${S9} ne s'appliquerait pas`);
+      if (!shoulderSharesBranch) issues.push("la douleur à l'épaule (physical === 'epaule') ne partage plus la branche de la douleur au bras : relire le contrôle 9");
+      return issues;
+    };
+    const PAGE = 'public/en/configurator.html';
+    let page = '';
+    try {
+      page = readFileSync(PAGE, 'utf8'); // surface introuvable : déjà signalée plus haut
+    } catch {
+      page = '';
+    }
+    if (page) {
+      const real = mappingIssues(page);
+      real.forEach((i) => fail(`${PAGE} : ${i}`));
+      const PAGE_MUTATIONS: Array<[string, string, string, string]> = [
+        ['la douleur déclarée pose un profil standard (club)', "rcsProfile = 'tennis_elbow';", "rcsProfile = 'club';", 'pas à bras sensible'],
+        ['l\'épaule ne partage plus la branche du bras', "currentSelections.physical === 'bras' || currentSelections.physical === 'epaule'", "currentSelections.physical === 'bras'", 'épaule'],
+        ['la branche de la douleur déclarée disparaît', "currentSelections.physical === 'bras'", "currentSelections.physical === 'xxx'", 'introuvable'],
+      ];
+      let caught = 0;
+      for (const [name, find, replace, needle] of PAGE_MUTATIONS) {
+        const mutated = replaceFirst(page, find, replace);
+        if (mutated === null) {
+          fail(`${PAGE} : prémisse du test négatif « ${name} » fausse (motif absent de la page).`);
+          continue;
+        }
+        if (mappingIssues(mutated).some((i) => i.includes(needle))) caught++;
+        else fail(`${PAGE} : garde-fou muet sur « ${name} » (motif attendu « ${needle} »).`);
+      }
+      if (real.length === 0) {
+        ok(`${PAGE} : la douleur déclarée (bras ou épaule) pose « ${declared(page).profile} », profil à bras sensible (alerte dès RCS ${S9}) ; ${caught} tests négatifs détectés`);
+      }
     }
   }
 }
@@ -2530,7 +2659,9 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
 //       doivent tomber dans leur niveau), levier « 1 kg de tension = 0,5 point » (mesuré sur la formule), plage des
 //       profils ;
 //   (c) une alerte santé est supprimée ou déplacée : seuils du moteur ≠ seuils sondés, « tennis elbow » absent d'un
-//       message d'alerte, conseil de consulter un professionnel de santé disparu.
+//       message d'alerte, conseil de consulter un professionnel de santé disparu ; un profil à bras sensible (drapeau
+//       `armSensitive`, tenu par le contrôle 9) est alerté dès le seuil « bras sensible », les autres dès le seuil standard, et
+//       le verdict d'un profil sensible entre les deux seuils cite les deux.
 // Chaque garde est rejouée sur des copies altérées du source ; des témoins positifs prouvent que les avertissements
 // légitimes et les reformulations inoffensives passent. L'équivalence « code identique, seules les chaînes changent »
 // se prouve hors de ce script (squelette syntaxique comparé à `origin/main`, PR du 11/10/2026).
@@ -2619,16 +2750,9 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
     return [...out];
   };
 
-  // Seuils d'alerte bras sondés dans le moteur du configurateur (comme au contrôle 19) : plus petit indice qui déclenche l'alerte.
-  const probe = (armSensitive: boolean): number | null => {
-    for (let st = 60; st <= 400; st++) {
-      const adv = calculateAdvancedRcs({ racquetStiffness: DEFAULT_RACQUET_RA, mainStringStiffness: st, mainStringFamily: 'polyester', mainRatings: {}, mainTension: 24, profile: { armSensitive } });
-      if (adv.warnings.length > 0) return adv.rcs;
-    }
-    return null;
-  };
-  const SENSITIVE_AT = probe(true);
-  const STANDARD_AT = probe(false);
+  // Seuils d'alerte bras sondés dans le moteur du configurateur (`probeArmAlert`, plus haut, partagé avec le contrôle 9).
+  const SENSITIVE_AT = ARM_ALERT_SENSITIVE;
+  const STANDARD_AT = ARM_ALERT_STANDARD;
 
   const nums = (t: string): string[] => [...t.matchAll(/\d+(?:[.,]\d+)?/g)].map((m) => m[0].replace(',', '.'));
   const same = (a: string[], b: string[]) => a.length === b.length && a.every((x, i) => x === b[i]);
@@ -2715,6 +2839,7 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
 
     // (c) alertes : seuils du moteur = seuils sondés, texte du risque présent, jamais supprimées
     if (engine.HEALTH_ALERT_RCS !== N) issues.push(`alerte : HEALTH_ALERT_RCS = ${engine.HEALTH_ALERT_RCS} alors que l'alerte standard du configurateur est à ${N}`);
+    if (engine.HEALTH_ALERT_SENSITIVE_RCS !== S) issues.push(`alerte : HEALTH_ALERT_SENSITIVE_RCS = ${engine.HEALTH_ALERT_SENSITIVE_RCS} alors que l'alerte bras sensible du configurateur est à ${S}`);
     const levelAt = (v: number): string | null => engine.getHealthWarning(v)?.level ?? null;
     if (levelAt(S - 1) !== null || levelAt(S) !== 'warning' || levelAt(N - 1) !== 'warning' || levelAt(N) !== 'danger' || levelAt(N + 10) !== 'danger') {
       issues.push(`alerte : getHealthWarning ne bascule pas aux seuils du configurateur (${S - 1}:${levelAt(S - 1)}, ${S}:${levelAt(S)}, ${N - 1}:${levelAt(N - 1)}, ${N}:${levelAt(N)}) — attendu null, warning, warning, danger`);
@@ -2733,12 +2858,16 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
       if (!Array.isArray(amber.tips) || amber.tips.length < 3) issues.push(`alerte : l'alerte orange n'a plus ses 3 conseils (${amber.tips?.length ?? 0})`);
     }
     for (const p of PROFILS) {
+      // Profil à bras sensible déclaré : alerte dès S ; les autres dès N (drapeau lu dans le moteur, dont la liste est tenue par le contrôle 9).
+      const alertAt = engine.getRecommendations(p).armSensitive === true ? S : N;
       for (let rcs = 0; rcs <= 60; rcs++) {
         const ev = engine.evaluateForProfile(rcs, p);
-        if (rcs >= N) {
+        if (rcs >= alertAt) {
           if (ev.status !== 'risque_sante' || ev.isOk !== false || !/tennis elbow/i.test(ev.message)) issues.push(`alerte : profil ${p} à RCS ${rcs} : « ${clip(String(ev.message))} » (statut ${ev.status}) ne signale plus le risque de tennis elbow`);
+          // Entre S et N, le verdict d'un profil à bras sensible cite les deux seuils : l'alerte ne dépend plus du seul profil standard.
+          if (rcs < N && !same(nums(String(ev.suggestion)), [String(S), String(N)])) issues.push(`seuil : profil ${p} à RCS ${rcs} : « ${clip(String(ev.suggestion))} » cite ${nums(String(ev.suggestion)).join(', ') || 'aucun seuil'} au lieu de ${S}, ${N}`);
         } else {
-          if (ev.status === 'risque_sante') issues.push(`alerte : profil ${p} à RCS ${rcs} signale un risque sous le seuil ${N}`);
+          if (ev.status === 'risque_sante') issues.push(`alerte : profil ${p} à RCS ${rcs} signale un risque sous son seuil ${alertAt}`);
           if (ev.status === 'trop_souple' || ev.status === 'trop_rigide') {
             const tail = nums(ev.suggestion).slice(-2);
             if (!same(tail, [String(S), String(N)])) issues.push(`seuil : profil ${p} à RCS ${rcs} : « ${clip(ev.suggestion)} » cite ${tail.join(', ')} au lieu de ${S}, ${N}`);
@@ -2801,6 +2930,10 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
         { name: 'plage de profil fausse', find: "description: 'Club player (RCS 26 to 29)'", replace: "description: 'Club player (RCS 26 to 30)'", needle: 'plage :' },
         { name: 'l\'alerte rouge ne dit plus le risque', find: '(tennis elbow risk). This configuration generates', replace: '. This configuration generates', needle: 'alerte :' },
         { name: 'le verdict de profil ne dit plus le risque', find: '): tennis elbow risk', replace: '): risk', needle: 'alerte :' },
+        { name: 'le verdict du profil sensible (32-34) ne dit plus le risque', find: '): tennis elbow risk for a sensitive arm', replace: '): risk for a sensitive arm', needle: 'alerte :' },
+        { name: 'le verdict du profil sensible cite un seuil faux (30 au lieu de 32)', find: 'Lower the tension or switch to a softer string in the mains. Arm alerts of the configurator: from 32', replace: 'Lower the tension or switch to a softer string in the mains. Arm alerts of the configurator: from 30', needle: 'seuil :' },
+        { name: 'le seuil « bras sensible » du moteur décalé à 31', find: 'HEALTH_ALERT_SENSITIVE_RCS: 32,', replace: 'HEALTH_ALERT_SENSITIVE_RCS: 31,', needle: 'alerte :' },
+        { name: 'l\'alerte des profils sensibles supprimée', find: 'if (rec.armSensitive && rcs >= this.HEALTH_ALERT_SENSITIVE_RCS) {', replace: 'if (false) {', needle: 'alerte :' },
         { name: 'le conseil de consulter disparaît', find: "'Consult a health professional if pain or discomfort persists'", replace: "'Take a rest'", needle: 'alerte :' },
       ],
       fr: [
@@ -2829,6 +2962,10 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
         { name: 'plage de profil fausse', find: "description: 'Joueur de club (RCS 26 à 29)'", replace: "description: 'Joueur de club (RCS 26 à 30)'", needle: 'plage :' },
         { name: 'l\'alerte rouge ne dit plus le risque', find: '(risque de tennis elbow). Cette configuration', replace: '. Cette configuration', needle: 'alerte :' },
         { name: 'le verdict de profil ne dit plus le risque', find: ') : risque de tennis elbow', replace: ') : risque', needle: 'alerte :' },
+        { name: 'le verdict du profil sensible (32-34) ne dit plus le risque', find: ') : risque de tennis elbow pour un bras sensible', replace: ') : risque pour un bras sensible', needle: 'alerte :' },
+        { name: 'le verdict du profil sensible cite un seuil faux (30 au lieu de 32)', find: "Baissez la tension ou passez à un cordage plus souple sur les montants. Seuils d'alerte bras du configurateur : dès 32", replace: "Baissez la tension ou passez à un cordage plus souple sur les montants. Seuils d'alerte bras du configurateur : dès 30", needle: 'seuil :' },
+        { name: 'le seuil « bras sensible » du moteur décalé à 31', find: 'HEALTH_ALERT_SENSITIVE_RCS: 32,', replace: 'HEALTH_ALERT_SENSITIVE_RCS: 31,', needle: 'alerte :' },
+        { name: 'l\'alerte des profils sensibles supprimée', find: 'if (rec.armSensitive && rcs >= this.HEALTH_ALERT_SENSITIVE_RCS) {', replace: 'if (false) {', needle: 'alerte :' },
         { name: 'le conseil de consulter disparaît', find: "'Consultez un professionnel de santé en cas de douleur ou de gêne persistante'", replace: "'Reposez-vous'", needle: 'alerte :' },
       ],
     };
@@ -2877,7 +3014,13 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
       }
       // L'avertissement légitime passe : le verdict de risque et l'alerte rouge, tels que le moteur les émet.
       const engine: any = new Function('window', 'document', `${src}; return RCS;`)({}, { addEventListener() {} });
-      for (const text of [engine.evaluateForProfile(40, 'club').message, engine.getHealthWarning(40).message, engine.getHealthWarning(40).tips.join(' ')]) {
+      for (const text of [
+        engine.evaluateForProfile(40, 'club').message,
+        engine.getHealthWarning(40).message,
+        engine.getHealthWarning(40).tips.join(' '),
+        engine.evaluateForProfile(33, 'tennis_elbow').message,
+        engine.evaluateForProfile(33, 'tennis_elbow').suggestion,
+      ]) {
         if (claimsIn(text, lang).length > 0) fail(`textes des moteurs : l'avertissement légitime est rejeté à tort (${file}) : ${clip(text)}`);
         else accepted++;
       }
