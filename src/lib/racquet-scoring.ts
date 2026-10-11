@@ -54,7 +54,9 @@
  * L'écart de −83,5 sur le Tour Bite illustre exactement ce piège : il compare
  * notre entrée à la jauge 19 (1,10 mm).
  * La correction demande donc de fixer une JAUGE DE RÉFÉRENCE par fiche — une
- * décision produit, pas un choix technique. Elle est soumise à l'utilisateur.
+ * décision produit, pas un choix technique. Tranchée par Pierre le 10/10/2026 :
+ * règle C (jauge la plus rigide mesurée, jamais de baisse sans son GO) en
+ * attendant la rigidité par jauge ; cf. `src/data/string-stiffness-provenance.ts`.
  *
  * RESTE À RECOUPER :
  *   P1  RA de `wilson-ultra-26-v5` / `wilson-ultra-25-v5` : la fiche TW de ce

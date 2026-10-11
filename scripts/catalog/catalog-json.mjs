@@ -60,6 +60,9 @@ export function toEnString(s) {
     type: s.type,
     gauges: n(s.gauges),
     stiffness: s.stiffness,
+    // D1 : rigidité mesurée par jauge (null si absente) ; aucune page EN ne la lit avant D3.
+    stiffness_by_gauge: n(s.stiffnessByGauge),
+    stiffness_by_gauge_suspect: n(s.stiffnessByGaugeSuspect),
     performance: n(s.performance),
     control: n(s.control),
     comfort: n(s.comfort),

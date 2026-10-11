@@ -70,6 +70,15 @@ page.
 | schema-tennis-elbow-zones-tension-fr.svg | Schéma maison | Tennis String Advisor | Propriété TSA | 20–24 kg, 2–4 kg, > 26 kg de la section 2.2 de l'article tennis elbow | 29/09/2026 |
 | schema-profils-cordage-fr.svg | Schéma maison | Tennis String Advisor | Propriété TSA | Aucune donnée chiffrée (profils cités dans les articles terre battue et nouveautés) | 29/09/2026 |
 
+## Graphiques générés depuis la base
+
+Graphiques SVG **en ligne** dans les articles (aucun fichier dans ce dossier, donc aucune ligne dans les tableaux ci-dessus : la légende de chaque figure suffit). Ils sont produits par `scripts/blog-covers/build-rigidite-figures.mts`, qui lit `src/data/` : chaque valeur tracée est celle de la base (rigidités, familles, `calculateRCS`, paliers de `getStringRecommendation`, seuils d'alerte de `src/lib/advanced-rcs.ts`), rien n'est saisi à la main. Légende : « Schéma Tennis String Advisor, d'après la base du site, état au … », suivie du nombre EXACT de fiches dont la rigidité est alignée sur une mesure du laboratoire TWU (calculé par le script : provenance `appliquee` de `src/data/string-stiffness-provenance.ts` et fiches Toroline signalées par un commentaire « Rigidité : TWU » de la base) ; les autres valeurs sont celles des fiches, jamais présentées comme des mesures TWU. Sur le graphique des polyesters, un point cerclé marque les fiches alignées. À relancer quand la base change ; `--check` échoue si un graphique ou un chiffre clé du texte ne colle plus à la base.
+
+| Graphique | Script | Données reprises de | Utilisé par | Date |
+|---|---|---|---|---|
+| Répartition de la rigidité des polyesters : un point par fiche (cerclé si alignée sur une mesure TWU), zones à 200 et 240 lb/in, médiane, seuils d'alerte du montage d'exemple (RA 65, 22 kg) | `scripts/blog-covers/build-rigidite-figures.mts` | `stringsDatabase` (polyesters), `string-stiffness-provenance.ts`, `calculateRCS`, seuils de `advanced-rcs.ts` | cordage-polyester-tennis-elbow (FR), polyester-strings-tennis-elbow (EN) | 10/10/2026 |
+| Rigidité par famille de cordage (minimum, médiane, maximum) avec la bande d'indice RCS du montage d'exemple | `scripts/blog-covers/build-rigidite-figures.mts` | `stringsDatabase` (cinq familles), `calculateRCS`, `getStringRecommendation` | cordage-tennis-elbow (FR), best-tennis-strings-for-tennis-elbow (EN) | 10/10/2026 |
+
 ## Couvertures illustrées
 
 Générées le 09/10/2026 par `scripts/blog-covers/build-covers.py` (Pillow, dessin
