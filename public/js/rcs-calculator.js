@@ -368,17 +368,20 @@ const RCS = {
     };
   },
 
+  // armSensitive : profil à bras sensible déclaré. Le configurateur EN pose « tennis_elbow » quand le visiteur
+  // coche « Sensitive arm » ou « Fragile shoulder » ; « reeducation » et « senior » ne viennent que du sélecteur
+  // de la calculatrice. Ces trois profils sont alertés dès HEALTH_ALERT_SENSITIVE_RCS, les autres dès HEALTH_ALERT_RCS.
   getRecommendations(profile) {
     const p = {
-      'reeducation': { targetDecile: [1, 2], rcsRange: [11, 22], description: 'Indice très bas (RCS 11 à 22)', quintile: 1 },
-      'tennis_elbow': { targetDecile: [1, 3], rcsRange: [11, 24], description: 'Indice bas (RCS 11 à 24)', quintile: 1 },
-      'senior': { targetDecile: [2, 4], rcsRange: [22, 26], description: 'Indice bas à moyen (RCS 22 à 26)', quintile: 2 },
-      'debutant': { targetDecile: [3, 5], rcsRange: [24, 27], description: 'Débutant / Loisir (RCS 24 à 27)', quintile: 2 },
-      'club': { targetDecile: [4, 6], rcsRange: [26, 29], description: 'Joueur de club (RCS 26 à 29)', quintile: 3 },
-      'confirme': { targetDecile: [5, 7], rcsRange: [27, 31], description: 'Club confirmé (RCS 27 à 31)', quintile: 3 },
-      'competiteur': { targetDecile: [6, 8], rcsRange: [28, 32], description: 'Compétiteur (RCS 28 à 32)', quintile: 4 },
-      'expert': { targetDecile: [7, 9], rcsRange: [29, 34], description: 'Expert / Semi-pro (RCS 29 à 34)', quintile: 4 },
-      'pro': { targetDecile: [8, 10], rcsRange: [31, 41], description: 'Pro / Élite (RCS 31 à 41)', quintile: 5 }
+      'reeducation': { targetDecile: [1, 2], rcsRange: [11, 22], description: 'Indice très bas (RCS 11 à 22)', quintile: 1, armSensitive: true },
+      'tennis_elbow': { targetDecile: [1, 3], rcsRange: [11, 24], description: 'Indice bas (RCS 11 à 24)', quintile: 1, armSensitive: true },
+      'senior': { targetDecile: [2, 4], rcsRange: [22, 26], description: 'Indice bas à moyen (RCS 22 à 26)', quintile: 2, armSensitive: true },
+      'debutant': { targetDecile: [3, 5], rcsRange: [24, 27], description: 'Débutant / Loisir (RCS 24 à 27)', quintile: 2, armSensitive: false },
+      'club': { targetDecile: [4, 6], rcsRange: [26, 29], description: 'Joueur de club (RCS 26 à 29)', quintile: 3, armSensitive: false },
+      'confirme': { targetDecile: [5, 7], rcsRange: [27, 31], description: 'Club confirmé (RCS 27 à 31)', quintile: 3, armSensitive: false },
+      'competiteur': { targetDecile: [6, 8], rcsRange: [28, 32], description: 'Compétiteur (RCS 28 à 32)', quintile: 4, armSensitive: false },
+      'expert': { targetDecile: [7, 9], rcsRange: [29, 34], description: 'Expert / Semi-pro (RCS 29 à 34)', quintile: 4, armSensitive: false },
+      'pro': { targetDecile: [8, 10], rcsRange: [31, 41], description: 'Pro / Élite (RCS 31 à 41)', quintile: 5, armSensitive: false }
     };
     return p[profile] || p['club'];
   },
@@ -391,6 +394,10 @@ const RCS = {
   // Valeur alignee sur le palier publie (§1) et sur advanced-rcs.
   HEALTH_ALERT_RCS: 35,
 
+  // Bras sensible déclaré : l'alerte bras du configurateur (advanced-rcs.ts) se déclenche dès 32 pour ces profils,
+  // pas dès 35. Même verdict « risque_sante », même icône ; contrôles 9 et 20 de audit:ratings.
+  HEALTH_ALERT_SENSITIVE_RCS: 32,
+
   evaluateForProfile(rcs, profile) {
     const rec = this.getRecommendations(profile);
     const [minRCS, maxRCS] = rec.rcsRange;
@@ -401,6 +408,15 @@ const RCS = {
         status: 'risque_sante',
         message: `Montage très ferme (indice ${rcs}) : risque de tennis elbow`,
         suggestion: `Quel que soit votre niveau, baissez la tension ou passez à un cordage plus souple sur les montants. Ce seuil ne dépend pas du profil de joueur.`,
+        icon: '⚠️'
+      };
+    }
+    if (rec.armSensitive && rcs >= this.HEALTH_ALERT_SENSITIVE_RCS) {
+      return {
+        isOk: false,
+        status: 'risque_sante',
+        message: `Montage ferme (indice ${rcs}) : risque de tennis elbow pour un bras sensible`,
+        suggestion: `Baissez la tension ou passez à un cordage plus souple sur les montants. Seuils d'alerte bras du configurateur : dès 32 pour un bras sensible, dès 35 sinon.`,
         icon: '⚠️'
       };
     }
