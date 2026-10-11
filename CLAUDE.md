@@ -1,7 +1,7 @@
 # CLAUDE.md — Tennis String Advisor
 
 > **Version** : 2.3.17
-> **Date** : 10 octobre 2026
+> **Date** : 11 octobre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
 > **Branche de référence** : `main` (seule branche longue ; la production Netlify en déploie)
