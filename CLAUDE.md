@@ -1,13 +1,13 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.3.19
+> **Version** : 2.3.20
 > **Date** : 11 octobre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
 > **Branche de référence** : `main` (seule branche longue ; la production Netlify en déploie)
 > **Repo** : https://github.com/PleneufMC/Tennis-String-Advisor.git
 
-**Changelog (numéro de version à fixer à la fusion)** — **Allégations de santé et claims faux retirés des pages, des
+**Changelog v2.3.19 → v2.3.20** — **Allégations de santé et claims faux retirés des pages, des
 métadonnées et des dictionnaires ; verdict d'alerte en rouge ; garde-fou `audit:claims`** (demande de l'orchestrateur du
 11/10/2026, complétée après la PR #121 de `tsa-core` ; relevés de `tsa-core` et de `tsa-pigiste` ; `tsa-acquisition` ;
 **`[verrou: layout.tsx, page.tsx, configurator/page.tsx]`**, commits séparés, révocables un à un). **Constat** : l'interface
@@ -1335,4 +1335,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.3.19 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.3.20 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
