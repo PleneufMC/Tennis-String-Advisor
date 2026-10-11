@@ -172,6 +172,19 @@ export interface PdfAdvancedAnalysis {
   summary: string;
 }
 
+/**
+ * Seuils d'alerte bras cités par la méthodologie, et profil appliqué à CE document. Fournis par `lib/pdf-configuration-data`, qui les
+ * lit dans le moteur : ce module d'impression ne recopie aucun seuil.
+ */
+export interface PdfArmAlert {
+  /** Indice de fermeté dès lequel l'alerte se déclenche pour le profil standard. */
+  standardAt: number;
+  /** Indice dès lequel elle se déclenche pour un bras sensible déclaré. */
+  sensitiveAt: number;
+  /** Ce PDF a été établi pour un bras sensible déclaré (seuil sensible appliqué). Faux pour un export qui ne connaît pas la déclaration. */
+  sensitiveApplied: boolean;
+}
+
 export interface ConfigurationPdfData {
   name: string;
   racquetLabel: string;
@@ -186,6 +199,8 @@ export interface ConfigurationPdfData {
   rcsScore: number;
   compatibility: number;
   createdAt: string;
+  /** Seuils d'alerte bras de la méthodologie : imprimés dans tout PDF, avec ou sans analyse avancée. */
+  armAlert: PdfArmAlert;
 
   // ---- Enrichissements Premium (optionnels : un PDF reste produit sans eux) ----
   racquet?: PdfRacquetSpecs;
@@ -378,6 +393,21 @@ function warningBox(L: Layout, items: string[]): void {
     });
     L.y += 3;
   });
+}
+
+/**
+ * Ligne de méthodologie sur les seuils d'alerte bras (11/10/2026, option C de l'arbitrage de la PR #124).
+ *
+ * Le PDF est recalculé à l'export depuis une configuration ENREGISTRÉE, qui ne porte pas la déclaration « bras sensible » (rien n'est
+ * enregistré) : sauf appelant qui la fournit, il applique le seuil standard. Le lecteur d'un PDF sans alerte à l'indice 32-34 doit
+ * donc pouvoir lire les deux seuils et savoir lequel a été appliqué. Des faits seulement : aucune promesse de protection (charte F7),
+ * et le conseil de consulter un professionnel de santé si la douleur persiste. Les accents sont dans Latin-1 : `latin1()` les garde.
+ */
+function armAlertLine(a: PdfArmAlert): string {
+  const seuils = `Alerte bras : dès l'indice ${a.standardAt} (profil standard), dès ${a.sensitiveAt} si le bras est déclaré sensible dans le configurateur`;
+  return a.sensitiveApplied
+    ? `${seuils}. Ce PDF a été établi pour un bras sensible déclaré : seuil ${a.sensitiveAt} appliqué. Consultez un professionnel de santé si la douleur persiste.`
+    : `${seuils} (déclaration non enregistrée). Ce PDF applique le seuil ${a.standardAt} : en cas de bras sensible ou de douleur, reportez-vous au seuil ${a.sensitiveAt} et consultez un professionnel de santé si la douleur persiste.`;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -630,6 +660,7 @@ export async function exportConfigurationPdf(data: ConfigurationPdfData): Promis
   sectionTitle(L, 'Methodologie');
   bulletList(L, [
     "L'indice de fermete combine la rigidite du cadre (RA), celle du cordage (lb/in) et la tension. Plus il est eleve, plus le montage est ferme.",
+    armAlertLine(data.armAlert),
     'Les sous-scores 0-100 partent des notes du cordage puis sont ajustes par la tension, la jauge, le tamis et le RA du cadre.',
     ...(data.ratingsNotice ? [`Notes /10 du cordage : ${data.ratingsNotice}`] : []),
     "Aucune note de la raquette n'est deduite de ses caracteristiques. Pour une raquette evaluee, l'avis de testeurs est une synthese d'avis publies (moyenne de 20 criteres, sur 20), reproduite telle quelle.",
