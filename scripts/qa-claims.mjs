@@ -10,7 +10,7 @@
  *     pour un RCS de 0 à 30 alors que l'alerte bras commence à 32 ;
  *   - faux : « Base de données complète — Specs vérifiées et tenues à jour » (RA absent de 29 fiches,
  *     équilibre de 91, des rigidités sans mesure), « recommandations IA » (aucune IA), « Join thousands
- *     of players » (28 à 43 humains par mois), « RCS (0-100) » (l'échelle publiée va de 11 à 41),
+ *     of players » (28 à 43 humains par mois), « RCS (0-100) » (l'échelle publiée va de 11 à plus de 40),
  *     « score de confort objectif » (un indice calculé par formule), un aperçu d'accueil « Confortable
  *     23 » pour un montage dont l'indice est 32 ;
  *   - absolus : « parfaits pour votre style de jeu », « montage idéal », « RCS Optimal ».
@@ -31,9 +31,12 @@
  *   ÉCHEC   public/ hors blog, hors public/js (pages EN, fiches EN générées, pages racine) ; les deux
  *           index du blog ; src/ (app, components, lib, types), scripts/en-products (gabarits).
  *   AVERT   les articles du blog (leur fact-check est celui de `tsa-pigiste`, leur corps celui de
- *           `tsa-redacteur` : le script signale, il ne bloque pas) ; public/js (moteur RCS statique,
- *           traité par `tsa-core` en parallèle : passer JS_SEVERITY à 'fail' une fois sa PR fusionnée) ;
- *           tout fichier de src/ qu'aucune route n'atteint (composant sans import : rien n'est affiché).
+ *           `tsa-redacteur` : le script signale, il ne bloque pas) ; tout fichier de src/ qu'aucune route
+ *           n'atteint (composant sans import : rien n'est affiché).
+ *   ÉCHEC   aussi : public/js, le moteur RCS statique, depuis la fusion des textes de `tsa-core` (PR #121,
+ *           JS_SEVERITY) ; une seule exception, l'alerte « joint stress » qu'il a conservée par décision.
+ *   AFFICHAGE  les pages EN qui colorent les verdicts du moteur (`statusColors`) : chaque statut du moteur a sa
+ *           couleur, `risque_sante` est rouge, un statut inconnu n'est jamais vert (règle 2).
  *   HORS    src/data (descriptions des fiches : contrôle 19 de `audit:ratings`), public/images,
  *           public/data.
  *
@@ -47,6 +50,10 @@
  * Périmètre du script : `tsa-measure` (scripts/qa-*), écrit par tsa-acquisition — signalé dans la PR.
  * Les fonctions de repérage (HTML, code) reprennent celles de qa-comptages-catalogue.mjs ; leur
  * factorisation dans un module commun est à décider par `tsa-measure`.
+ *
+ * Ajouts du 11/10/2026 (orchestrateur, après la PR #121 de `tsa-core`) : icône médicale du RCS, libellés de profil
+ * médicaux, références non vérifiées, « Arm Comfort », repères de niveau, superlatifs de performance, couleur du
+ * verdict `risque_sante`.
  *
  * Usage : node scripts/qa-claims.mjs [--all]    (npm run audit:claims ; --all : tous les AVERT)
  * Sortie : 0 si conforme, 1 sinon.
@@ -72,8 +79,8 @@ const warn = (msg) => {
   process.stdout.write(`  AVERT ${msg}\n`);
 };
 
-/** Sévérité du moteur statique de public/js : AVERT tant que `tsa-core` n'a pas fusionné sa PR. */
-const JS_SEVERITY = 'warn';
+/** Sévérité du moteur statique de public/js : ÉCHEC depuis la fusion de la PR #121 de `tsa-core` (AVERT avant). */
+const JS_SEVERITY = 'fail';
 
 // Caractères invisibles : toujours par leur nom, jamais littéraux dans le source.
 const NBSP = String.fromCharCode(0xa0);
@@ -90,11 +97,11 @@ const normalize = (s) => s.replace(SPACES_RE, ' ').replace(APOS_RE, "'");
 // ---------------------------------------------------------------------------
 const EXCEPTIONS = [
   {
-    file: 'public/en/rcs-calculator.html',
-    contains: 'Post-injury rehabilitation',
+    file: 'public/js/rcs-calculator-en.js',
+    contains: 'joint stress',
     date: '2026-10-11',
     reason:
-      "libellé d'un profil que le visiteur CHOISIT (liste « Your Profile »), comme « Tennis elbow, elbow pain » du configurateur : ce n'est pas une promesse de l'outil. Le texte que le moteur rend pour ce profil est celui de public/js (AVERT, tsa-core).",
+      "message de l'alerte rouge (indice 35 et plus), conservé par tsa-core (PR #121, point à arbitrer n° 2) en attendant une source médicale ou une décision : règle 2, une alerte ne s'adoucit pas. À retirer dès que le texte change.",
   },
 ];
 
@@ -161,7 +168,7 @@ const CLAIMS = [
   { cls: 'sante', id: 'prevenir-ou-soulager', re: `<B>(?:prevent or relieve|pr[ée]venir ou soulager|injury prevention|pr[ée]vention des blessures|prevention of injur[\\p{L}]*)<E>` },
   { cls: 'sante', id: 'contre-tennis-elbow', re: `<B>contre (?:le |la |les )?(?:tennis[- ]elbow|[ée]picondylite|blessures?|douleurs?)<E>` },
   { cls: 'sante', id: 'protection-bras', re: `<B>(?:(?:arm|joint|elbow) protection|protection (?:of|for) (?:the |your )?(?:arm|joints?|elbow)|protection (?:du |de votre |des )?(?:bras|coude|articulations)|priority on (?:joint|arm|elbow) health)<E>` },
-  { cls: 'sante', id: 'termes-medicaux', re: `<B>(?:post-injury )?(?:therapeutic|th[ée]rapeutiques?|therapy|th[ée]rapie|rehabilitation|r[ée][ée]ducation)<E>` },
+  { cls: 'sante', id: 'termes-medicaux', re: `<B>(?:post-injury )?(?:therapeutic|th[ée]rapeutiques?|therapy|th[ée]rapie|rehabilitation|r[ée]éducation)<E>` },
   {
     cls: 'sante',
     id: 'absolu-en',
@@ -173,9 +180,20 @@ const CLAIMS = [
     re: `<B>(?:sans (?:danger|risque|douleur|blessure)s?|z[ée]ro (?:risque|douleur|blessure)|(?:doux|douce|douces|ami|amie|gentil|bienveillante?) (?:pour|avec|envers|du|de) (?:le |la |les |l')?(?:bras|coude|articulations?)|(?:id[ée]al(?:e|es|aux)?|parfait(?:e|es|s)?|recommand[ée]e?s?|adapt[ée]e?s?|con[çc]ue?s?) (?:pour|aux?) (?:les |le |un |une |votre |vos )?(?:[\\p{L}]+ ){0,2}(?:coudes?|bras (?:sensibles?|fragiles?)|[ée]picondylite|tennis[- ]elbow|blessures?|douleurs?)|adapt[ée][\\p{L}]* (?:à|a|aux?) (?:[\\p{L}]+,? ){0,6}?(?:sensibilit[ée](?: du| au| de votre)? bras|bras sensibles?)|[ée]vite(?:r|z|nt)? les montages)<E>`,
   },
   { cls: 'sante', id: 'evite-en', re: `<B>avoid(?:s)? overly stiff setups<E>` },
+  // libellés et prescriptions médicales : un profil se nomme par son indice, pas par une pathologie ou un traitement
+  { cls: 'sante', id: 'libelle-medical', re: `<B>(?:tennis elbow ?/ ?epicondylitis|fragile (?:shoulder|arm|elbow|wrist)|(?:elbow|support) brace|(?:under )?medical supervision|recovery program|post-surgery|(?:seniors? )?with arthritis)<E>` },
+  // le stéthoscope n'est pas une icône d'indice de fermeté ; l'hôpital n'est une icône de rien sur ce site
+  { cls: 'sante', id: 'icone-medicale', re: `\\u{1fa7a} ?(?:[\\p{L}\\p{N}'-]+ ){0,2}RCS<E>` },
+  { cls: 'sante', id: 'icone-hopital', re: `\\u{1f3e5}` },
   { cls: 'sante', id: 'vibrations', re: `<B>(?:absorbs?|dampens?|reduces?|fewer|less|filters?) (?:the |your )?vibrations?<E>` },
 
   // ---- FAUX : ce que le site, ses données, son audience ou son échelle ne permettent pas d'affirmer
+  // « RCS Score - Arm Comfort » : le RCS est un indice de fermeté, pas une mesure du confort du bras
+  { cls: 'faux', id: 'rcs-confort-bras', re: `<B>(?:(?:RCS|firmness index)[^.<>\\n]{0,25}arm[- ]comfort|arm[- ]comfort (?:score|index|firmness))<E>` },
+  // sources invoquées sans avoir été ouvertes (règle 4)
+  { cls: 'faux', id: 'references-non-verifiees', re: `<B>(?:based on research by|brody h\\.|hennig e\\.|kawazoe y\\.|(?:brody|hennig|kawazoe) \\((?:19|20)\\d\\d\\))` },
+  // repères de « niveau » collés à un indice : l'indice ne dit rien du niveau du joueur
+  { cls: 'faux', id: 'repere-niveau', re: `<B>average club level<E>` },
   { cls: 'faux', id: 'base-complete', re: `<B>(?:base de donn[ée]es compl[èe]te|complete database|exhaustive database)<E>` },
   {
     cls: 'faux',
@@ -218,7 +236,8 @@ const CLAIMS = [
     id: 'parfait-ideal-fr',
     re: `<B>(?:(?:cordages?|raquettes?|montages?|setups?|configurations?|[ée]quipements?|combinaisons?) (?:id[ée]al(?:e|es|aux)?|parfait(?:e|es|s)?)|(?:id[ée]al|parfait)(?:e|es|s)? pour (?:votre|vos) (?:style|jeu|niveau)|confort adapt[ée] [àa] la majorit[ée])<E>`,
   },
-  { cls: 'absolu', id: 'optimal', re: `<B>(?:(?:RCS|indice|score) optimale?|optimale? (?:setup|configuration|montage)|configuration optimale)<E>` },
+  { cls: 'absolu', id: 'optimal', re: `<B>(?:(?:RCS|indice|score) optimale?|optimale? (?:setup|configuration|montage|control|contr[ôo]le|power|spin|tension|string|racquet|choice|choix)|configuration optimale)<E>` },
+  { cls: 'absolu', id: 'superlatif-performance', re: `<B>(?:(?:for|to|generates?|offers?|gives?|delivers?|provides?|ensures?) maxim(?:um|ise|ize) (?:precision|spin|control|comfort|power|string bite)|excellent (?:precision|durability|energy return|for generating spin))<E>` },
 ];
 
 const FLAGS = 'giu';
@@ -233,7 +252,7 @@ const PATTERNS = CLAIMS.map((c) => {
 
 const HINT = {
   sante: "dire l'indice RCS et ses seuils d'alerte (dès 32 pour un bras sensible, dès 35 sinon), jamais un effet sur le bras (charte F7, règle 2)",
-  faux: 'dire ce qui est vrai : champ non publié affiché comme tel, indice de fermeté (11 à 41), aucune IA, aucun chiffre d\'audience (règle 3)',
+  faux: 'dire ce qui est vrai : champ non publié affiché comme tel, indice de fermeté (de 11 à plus de 40), aucune IA, aucun chiffre d\'audience (règle 3)',
   absolu: 'décrire ce que fait la page (comparer, calculer, filtrer), sans promesse de résultat',
 };
 const CLASS_FR = { sante: 'allégation de santé', faux: 'claim faux ou invérifiable', absolu: 'promesse de résultat' };
@@ -483,6 +502,62 @@ function scanFile(file, text, opts = {}) {
 }
 
 // ---------------------------------------------------------------------------
+// Affichage des verdicts du moteur statique : chaque statut a sa couleur, le risque est rouge, jamais vert
+// (règle 2 : l'alerte de santé ne s'affiche pas dans le vert d'« optimal » ni sans couleur)
+// ---------------------------------------------------------------------------
+/** Les valeurs de `status: '…'` du moteur : tous les verdicts qu'une page peut avoir à colorer. */
+function engineStatuses(src) {
+  const sf = ts.createSourceFile('engine.js', src, ts.ScriptTarget.Latest, true, ts.ScriptKind.JS);
+  const out = new Set();
+  const visit = (n) => {
+    if (ts.isPropertyAssignment(n) && (ts.isIdentifier(n.name) || ts.isStringLiteral(n.name)) && n.name.text === 'status' && ts.isStringLiteral(n.initializer)) out.add(n.initializer.text);
+    ts.forEachChild(n, visit);
+  };
+  visit(sf);
+  return out;
+}
+
+/** Les tables `statusColors` / `textColors` des scripts en ligne d'une page : { name, keys: Map(clé -> texte de la valeur), pos }. */
+function colorMaps(html) {
+  const maps = [];
+  for (const m of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)) {
+    if (/\bsrc\s*=/i.test(m[1]) || /application\/ld\+json/i.test(m[1]) || !m[2].trim()) continue;
+    const sf = ts.createSourceFile('inline.js', m[2], ts.ScriptTarget.Latest, true, ts.ScriptKind.JS);
+    const offset = m.index + m[0].indexOf('>') + 1;
+    const visit = (n) => {
+      if (ts.isVariableDeclaration(n) && ts.isIdentifier(n.name) && /^(?:statusColors|textColors)$/.test(n.name.text) && n.initializer && ts.isObjectLiteralExpression(n.initializer)) {
+        const keys = new Map();
+        for (const p of n.initializer.properties) {
+          if (ts.isPropertyAssignment(p) && (ts.isIdentifier(p.name) || ts.isStringLiteral(p.name))) keys.set(p.name.text, p.initializer.getText(sf));
+        }
+        maps.push({ name: n.name.text, keys, pos: offset + n.getStart(sf) });
+      }
+      ts.forEachChild(n, visit);
+    };
+    visit(sf);
+  }
+  return maps;
+}
+
+/** Problèmes d'affichage : statut sans couleur, risque sans rouge, repli d'un statut inconnu sur le vert d'« optimal ». */
+function statusColorProblems(statuses, html) {
+  const problems = [];
+  const starts = lineStarts(html);
+  for (const map of colorMaps(html)) {
+    const line = lineAt(starts, map.pos);
+    for (const st of statuses) {
+      if (!map.keys.has(st)) problems.push({ line, text: `${map.name} : le statut « ${st} » du moteur n'a pas de couleur (classe « undefined » ou repli sur « optimal »)` });
+      else if (/sante|health|risk|risque/i.test(st) && (!/red/i.test(map.keys.get(st)) || /green|blue|amber|undefined/i.test(map.keys.get(st)))) {
+        problems.push({ line, text: `${map.name} : le statut « ${st} » doit s'afficher en rouge (alerte), pas « ${map.keys.get(st).replace(/\s+/g, ' ').slice(0, 60)} »` });
+      }
+    }
+  }
+  const fall = /statusColors\[[^\]]+\]\s*\|\|\s*statusColors\[\s*['"]optimal['"]\s*\]/.exec(html);
+  if (fall) problems.push({ line: lineAt(starts, fall.index), text: "repli d'un statut inconnu sur le vert d'« optimal » : un verdict inconnu ne s'affiche jamais en vert" });
+  return problems;
+}
+
+// ---------------------------------------------------------------------------
 // Fichiers : parcours, et code que rien n'atteint
 // ---------------------------------------------------------------------------
 function walk(dir, { exts, skipDirs = [] }) {
@@ -581,6 +656,8 @@ const failScopes = [
   { name: 'src/ atteignable (app, components, lib, types)', files: liveSrc },
   { name: 'scripts/en-products (gabarits des fiches EN)', files: enProductTemplates },
 ];
+const jsFiles = walk('public/js', { exts: ['.js'] });
+if (JS_SEVERITY === 'fail') failScopes.push({ name: 'public/js (moteur RCS statique)', files: jsFiles });
 const failFindings = [];
 for (const scope of failScopes) for (const f of scope.files) failFindings.push(...scanFile(f, read(f), { severity: 'fail' }));
 
@@ -595,7 +672,30 @@ else {
   );
 }
 
-// 3. AVERT : articles (pigiste, rédacteur), moteur statique (tsa-core), code que rien n'atteint
+// 2 bis. Affichage des verdicts du moteur statique (règle 2)
+{
+  const engineFile = 'public/js/rcs-calculator-en.js';
+  const statuses = existsSync(path.join(ROOT, engineFile)) ? engineStatuses(read(engineFile)) : new Set();
+  if (!statuses.has('risque_sante')) fail(`${engineFile} : aucun statut « risque_sante » : le contrôle d'affichage de l'alerte est à revoir`);
+  let tables = 0;
+  let pagesWithMaps = 0;
+  let bad = 0;
+  for (const file of publicFiles.filter((p) => /^public\/en\/[^/]+\.html$/.test(p))) {
+    const html = read(file);
+    const maps = colorMaps(html);
+    if (!maps.length) continue;
+    pagesWithMaps++;
+    tables += maps.length;
+    for (const p of statusColorProblems(statuses, html)) {
+      bad++;
+      fail(`${file}:${p.line} ${p.text}`);
+    }
+  }
+  if (pagesWithMaps === 0) fail('aucune page EN ne définit statusColors : le contrôle d\'affichage de l\'alerte ne voit rien (instrument à revoir)');
+  else if (bad === 0) ok(`verdicts du moteur : ${statuses.size} statuts (${[...statuses].join(', ')}), ${tables} table(s) de couleurs dans ${pagesWithMaps} pages EN, chaque statut a sa couleur, « risque_sante » est rouge, aucun repli sur le vert`);
+}
+
+// 3. AVERT : articles (pigiste, rédacteur), code que rien n'atteint (et le moteur statique si JS_SEVERITY = 'warn')
 {
   const blog = walk('public/blog', { exts: ['.html'] }).concat(walk('public/en/blog', { exts: ['.html'] })).filter((f) => !blogIndexes.includes(f));
   const found = blog.flatMap((f) => scanFile(f, read(f), { severity: 'warn' }));
@@ -604,13 +704,13 @@ else {
     printWarnings('articles du blog', found);
     process.stdout.write(`        (articles : ${blog.length} pages lues, ${found.length} motif(s) signalé(s) à tsa-pigiste / tsa-redacteur, jamais bloquants)\n`);
   }
-  const jsFiles = walk('public/js', { exts: ['.js'] });
-  const jsFound = jsFiles.flatMap((f) => scanFile(f, read(f), { severity: JS_SEVERITY }));
-  if (jsFound.length === 0) ok(`public/js : ${jsFiles.length} scripts lus, aucun motif`);
-  else if (JS_SEVERITY === 'fail') jsFound.forEach((f) => fail(describe(f)));
-  else {
-    printWarnings('public/js', jsFound);
-    process.stdout.write(`        (public/js : ${jsFiles.length} scripts lus, ${jsFound.length} motif(s) dans le moteur RCS statique, périmètre tsa-core ; JS_SEVERITY = 'fail' dès la fusion de sa PR)\n`);
+  if (JS_SEVERITY !== 'fail') {
+    const jsFound = jsFiles.flatMap((f) => scanFile(f, read(f), { severity: 'warn' }));
+    if (jsFound.length === 0) ok(`public/js : ${jsFiles.length} scripts lus, aucun motif`);
+    else {
+      printWarnings('public/js', jsFound);
+      process.stdout.write(`        (public/js : ${jsFiles.length} scripts lus, ${jsFound.length} motif(s) dans le moteur RCS statique ; JS_SEVERITY = 'fail' depuis la fusion de la PR #121 de tsa-core)\n`);
+    }
   }
   const deadFound = deadSrc.flatMap((f) => scanFile(f, read(f), { severity: 'warn' }));
   if (deadFound.length === 0) ok(`code non atteint : ${deadSrc.length} fichier(s) de src/ sans route, aucun motif`);
@@ -654,6 +754,15 @@ else {
     ['« arm-friendly »', 'seventeen arm-friendly and arm-hostile strings', 'sante'],
     ['« Maximum arm protection »', 'Therapeutic setup: maximum arm protection', 'sante'],
     ['« absorbs vibrations »', 'Comfortable racquet that absorbs vibrations well.', 'sante'],
+    ['option « Tennis elbow / Epicondylitis »', '<option value="tennis_elbow">Tennis elbow / Epicondylitis</option>', 'sante'],
+    ['libellé « Fragile shoulder »', '<h3>Fragile shoulder</h3>', 'sante'],
+    ['« Wear a support elbow brace »', 'Wear a support elbow brace during play', 'sante'],
+    ['« under medical supervision »', 'Recommended under medical supervision', 'sante'],
+    ['« Seniors with arthritis »', 'Target: Seniors with arthritis', 'sante'],
+    ['icône 🩺 devant le RCS (navigation)', '<a href="/en/rcs-calculator.html">\u{1fa7a} RCS</a>', 'sante'],
+    ['icône 🩺 d\'une tuile « RCS Calculator »', '<div class="icon">\u{1fa7a}</div><div><h3>RCS Calculator</h3></div>', 'sante'],
+    ['icône 🩺 d\'une fonction « Advanced RCS »', '<span>\u{1fa7a}</span> <h3>Advanced RCS</h3>', 'sante'],
+    ['icône 🏥 (hôpital)', '<option value="reeducation">\u{1f3e5} Very low index</option>', 'sante'],
     ['« fewer vibrations »', 'Low tension for more comfort and fewer vibrations.', 'sante'],
     ['« without risk of aggravation »', 'Perfectly suited, without risk of aggravation', 'sante'],
     ['« Post-injury rehabilitation »', 'Ultra Comfort+ - Post-injury rehabilitation', 'sante'],
@@ -687,6 +796,11 @@ else {
     ['« RCS … from 0 to 100 »', 'The RCS (Recommendation Comfort Score) is an indicator from 0 to 100', 'faux'],
     ['« The RCS score (0-100) »', 'The RCS score (0-100) evaluates the stress on your joints', 'faux'],
     ['« joint stress »', 'Evaluate the joint stress of your setup.', 'faux'],
+    ['« RCS Score - Arm Comfort »', 'RCS Score - Arm Comfort', 'faux'],
+    ['« arm-comfort firmness index »', 'with an arm-comfort firmness index (RCS)', 'faux'],
+    ['« Based on research by Brody … »', 'Based on research by Brody (1987), Hennig (1992), Kawazoe (1997)', 'faux'],
+    ['références « Brody H. (1987) »', 'Brody H. (1987) - Tennis Science', 'faux'],
+    ['repère « Average club level »', 'D5 - Balanced Flexible. Average club level', 'faux'],
     ['« joint comfort score »', 'Calculate your joint comfort score (RCS)', 'faux'],
     ['légende « 0 - Maximum Comfort »', '<span>0 - Maximum Comfort</span>', 'faux'],
     // absolus
@@ -701,6 +815,12 @@ else {
     ['« comfort suited to the majority of players »', 'high control with comfort suited to the majority of players.', 'absolu'],
     ['« RCS Optimal »', 'RCS Optimal: 20-25 (Confortable)', 'absolu'],
     ['« Optimal configuration for »', 'Optimal configuration for club players', 'absolu'],
+    ['« Optimal control to channel your power »', 'Optimal control to channel your power.', 'absolu'],
+    ['« Control racquet for maximum precision »', 'Control racquet for maximum precision.', 'absolu'],
+    ['« String for maximum spin »', 'String for maximum spin.', 'absolu'],
+    ['« Racquet built to generate maximum spin »', 'Racquet built to generate maximum spin.', 'absolu'],
+    ['« High tension to maximise control »', 'High tension to maximise control.', 'absolu'],
+    ['« Excellent precision and durability »', 'Excellent precision and durability.', 'absolu'],
   ];
   for (const [name, text, cls] of BAD_BODY) {
     add(`HTML corps : ${name}`, () => html('', `<p>${text}</p>`), 'echec');
@@ -762,6 +882,21 @@ else {
     'RCS : indice de fermeté de 11 à 41 ; palier « Confortable » de 20 à 25.',
     'Le configurateur calcule l’indice RCS de votre montage (raquette, cordage, tension).',
     'Premium : configurations illimitées, analyse RCS avancée et export PDF.',
+    'Very low index (RCS 11 to 22)',
+    'Low-to-mid index (RCS 22 to 26)',
+    'RCS Score - Firmness Index',
+    'RCS firmness index and arm-alert thresholds',
+    'Sensitive shoulder',
+    'One of the multifilament or hybrid strings with the highest comfort rating in the catalog.',
+    'Default string for answers that match no dedicated rule.',
+    'Tweener or modern-player category, RA 60 to 67.',
+    '9+ (Maximum spin)',
+    '9+ (Maximum control)',
+    'D5 - Balanced Flexible',
+    '\u{1f4cf} RCS Calculator',
+    '\u{1fa7a} Santé',
+    '\u{1fa7a} Symptôme → action',
+    'Index inside the profile range: Low index (RCS 11 to 24)',
     'Catalogue de plus de 120 raquettes et de plus de 170 cordages.',
     'A softer setup reduces the load your arm receives at impact.',
     'Une douleur au coude qui persiste relève d’un avis médical.',
@@ -770,6 +905,8 @@ else {
     add(`témoin HTML : ${g.slice(0, 60)}`, () => html('', `<p>${g}</p>`), 'propre');
     add(`témoin meta : ${g.slice(0, 60)}`, () => html(meta(g.replace(/"/g, '&quot;')), ''), 'propre');
   }
+  add('témoin : clé technique « reeducation » (pas un texte)', () => code("const PROFILES = { 'reeducation': { rcsRange: [11, 22], description: 'Very low index (RCS 11 to 22)' } };\n", 'public/js/x.js'), 'propre');
+  add('témoin : option du sélecteur (valeur technique, libellé honnête)', () => html('', '<select><option value="reeducation">\u{1f4cf} Very low index (RCS 11 to 22)</option></select>'), 'propre');
   add('témoin : e.preventDefault() (script en ligne)', () => html('', '<script>form.addEventListener("submit", function (e) { e.preventDefault(); /* prevent injuries */ });</script>'), 'propre');
   add('témoin : commentaire HTML', () => html('', '<!-- Find your perfect setup, prevent injuries -->'), 'propre');
   add('témoin : style en ligne', () => html('', '<style>.a::after{content:"perfect setup"}</style>'), 'propre');
@@ -845,6 +982,25 @@ else {
     const expectDead = ['src/components/dead.tsx', 'src/components/dead-user.tsx'];
     for (const f of expectLive) if (!live.has(f)) fail(`atteignabilité : ${f} devrait être atteint`);
     for (const f of expectDead) if (live.has(f)) fail(`atteignabilité : ${f} ne devrait pas être atteint (un fichier mort qui importe un autre ne le rend pas vivant)`);
+  }
+
+  // Verdicts du moteur : chaque statut a sa couleur, le risque est rouge, un statut inconnu n'est jamais vert
+  {
+    const ENGINE = "const RCS = { a() { return { status: 'risque_sante' }; }, b() { return { status: 'optimal' }; }, c() { return { status: 'trop_souple' }; }, d() { return { status: 'trop_rigide' }; } };";
+    const st = engineStatuses(ENGINE);
+    if (!(st.size === 4 && st.has('risque_sante') && st.has('optimal') && st.has('trop_souple') && st.has('trop_rigide'))) fail('verdicts : les 4 statuts du moteur d\'essai ne sont pas lus');
+    const MAPS = (risk) => "const statusColors = { 'optimal': 'bg-green-50 border-green-300', 'trop_souple': 'bg-blue-50 border-blue-300', 'trop_rigide': 'bg-red-50 border-red-300'" + (risk ? ", 'risque_sante': '" + risk + "'" : '') + " }; const textColors = { 'optimal': 'text-green-800', 'trop_souple': 'text-blue-800', 'trop_rigide': 'text-red-800'" + (risk ? ", 'risque_sante': 'text-red-900'" : '') + " };";
+    const PG = (body) => '<html><body><script>' + body + '</script></body></html>';
+    const probs = (body) => statusColorProblems(st, PG(body));
+    if (probs(MAPS('bg-red-50 border-red-400')).length !== 0) fail('verdicts : une table complète, risque en rouge, est refusée');
+    if (probs(MAPS(null)).length < 1) fail('verdicts : un statut « risque_sante » sans couleur n\'est pas détecté (c\'était le défaut des deux pages)');
+    if (probs(MAPS('bg-green-50 border-green-300')).length < 1) fail('verdicts : le risque en vert n\'est pas détecté');
+    if (probs(MAPS('bg-gray-50 border-gray-300')).length < 1) fail('verdicts : le risque sans rouge n\'est pas détecté');
+    if (probs(MAPS('bg-red-50 border-red-400') + " const colors = statusColors[evaluation.status] || statusColors['optimal'];").length < 1) fail('verdicts : le repli sur le vert d\'« optimal » n\'est pas détecté');
+    if (probs(MAPS('bg-red-50 border-red-400') + " const colors = statusColors[evaluation.status] || { bg: 'bg-gray-50' };").length !== 0) fail('verdicts : un repli neutre est refusé');
+    if (probs('const x = 1;').length !== 0) fail('verdicts : une page sans table de couleurs ne doit rien signaler');
+    const lines = statusColorProblems(st, '<html>\n<body>\n<script>\n' + MAPS(null) + '\n</script>\n</body>\n</html>');
+    if (!(lines.length >= 1 && lines[0].line === 4)) fail('verdicts : numéro de ligne attendu 4, obtenu ' + (lines[0]?.line ?? 'aucun'));
   }
 
   // Exceptions : une exception valide retire le constat, une inutilisée échoue, une mal formée est refusée
