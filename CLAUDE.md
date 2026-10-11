@@ -7,6 +7,51 @@
 > **Branche de référence** : `main` (seule branche longue ; la production Netlify en déploie)
 > **Repo** : https://github.com/PleneufMC/Tennis-String-Advisor.git
 
+**Changelog (numéro de version à fixer à la fusion)** — **Données structurées des articles : un logo d'éditeur qui existe, un
+FAQPage identique à la FAQ affichée, un sitemap qui dit la vraie date ; garde-fou `audit:jsonld`** (demande de l'orchestrateur du
+11/10/2026 ; relevé O-8 de `tsa-pigiste` ; `tsa-acquisition`). **Constat** : trois défauts silencieux. **(1) Logo** : le
+`publisher.logo` de 11 articles (9 FR, 2 EN) pointait vers `/logo.png` (10) ou `/assets/logo.png` (1) : HTTP 404 en production
+(vérifié le 11/10/2026), une URL devinée (règle 4). Remplacé par `/apple-touch-icon.png` (200, image/png, 180 × 180, l'icône que
+`layout.tsx` et `manifest.ts` déclarent déjà), `width` et `height` ajoutés. **(2) FAQPage** : sur 15 pages, 44 questions dont la
+question ou la réponse balisée n'est pas ce que la page affiche : 21 réponses abrégées, reformulées ou prolongées dans 5 articles
+et 4 FAQ n° 1 (relevés de `tsa-pigiste`, O-8), 12 questions de trois pages (`jauge-cordage-tennis` : 4 questions absentes du texte
+; `plan-de-cordage-tennis` : 4 ; `nouveautes-equipement-tennis-2025-2026` : 4, aucune FAQ affichée), et 7 que seul le contrôle a
+trouvées (`tennis-string-pattern` EN 3, `tennis-string-tension-cold-weather` EN 1, `faq.html` EN 3). **Corrigé dans le JSON-LD, le
+texte affiché n'est pas touché** : 26 réponses réécrites mot pour mot sur l'affichage (10 pages) ; les FAQPage de
+`jauge-cordage-tennis` (3 questions), `plan-de-cordage-tennis` (3) et `tennis-string-pattern` EN (4) reconstruits depuis leurs
+questions affichées (la quatrième de `jauge` et de `plan-de-cordage`, « quelle jauge / quel plan utilisent les pros », n'existait
+qu'en JSON-LD et disparaît) ; le bloc de `nouveautes-equipement-tennis-2025-2026` retiré (aucune FAQ affichée) ; `faq.html` EN :
+la réponse n° 1 reprend à l'octet près la modification de la PR #120 (affichage et JSON-LD), pour que les deux PR fusionnent dans
+n'importe quel ordre, la question 2, « Is registration free? », qui n'est pas affichée, est remplacée par la question affichée, «
+Is the website free? », avec sa réponse, et la question 3 est retirée du JSON-LD (la réponse affichée est une liste à emoji, les
+prix sont dans une autre question). **`dateModified` inchangé** (rien d'affiché n'a changé : le rédacteur date le corps) ; 8
+empreintes d'`audit:blog-images` renouvelées, motif daté (comme en PR #102 et #116). **(3) Sitemap** : `lastModified: now` donnait
+la date du build (2026-10-11T09:00:24Z en production) aux 666 URL, ce que les moteurs lisent comme « tout a changé à chaque
+déploiement ». Deux tables `BLOG_ARTICLES` et `EN_BLOG_ARTICLES` (`slug`, `modified`) portent le `dateModified` du JSON-LD de
+chaque article ; 33 `<lastmod>`, tous sur des articles ; aucune autre URL n'en porte (aucune date de modification n'est établie
+pour les routes de l'application, les index du blog et les 308 fiches produit : une date absente vaut mieux qu'une date fausse).
+**Les 666 `<loc>` sont identiques à ceux de la production** (comparés dans l'ordre sur la sortie du build). **Garde-fou** `npm run
+audit:jsonld` (`scripts/qa-jsonld.mjs`, **périmètre `tsa-measure`, signalé dans la PR**, ajouté à `audit:all`) : (a) toute URL de
+logo du site pointe vers un fichier de `public/` ; (b) pour chaque FAQPage, la question et la réponse figurent en entier dans le
+texte affiché, après la question (mêmes mots, du début à la fin d'un bloc ; entités, espaces insécables, apostrophes
+typographiques et emoji ne comptent pas) ; (c) chaque date `modified` de `sitemap.ts` est le `dateModified` de l'article, tout
+article y figure, aucun `new Date()` sans argument ; et, si le build est présent, seules des URL d'articles portent un
+`<lastmod>`, à la bonne date. Exceptions : liste explicite, datée, motivée, vide à ce jour ; une exception inutilisée échoue. 27
+altérations détectées, 16 témoins acceptés, 1 cas en AVERT ; **le contrôle échoue sur `origin/main`** (616a72e : 58 échecs) ; 8
+mutations de vraies pages (réponse prolongée, reformulée, mot changé à l'affichage, logo remis en 404, date fausse, `new Date()`)
+détectées puis annulées. **Vérifié en exécution** (Chrome, Playwright, 1280 et 390 px, 56 vérifications) : la parité est mesurée
+AUTREMENT que par le contrôle, dans le DOM rendu, accordéons dépliés, en blocs exacts, sur 28 pages et 127 questions : 0 écart (la
+même sonde sur la production en trouve 40, soit les 44 moins les 4 de `nouveautes-equipement-tennis-2025-2026`, hors de sa liste)
+; logo servi en 200 ; réponse n° 1 de la FAQ EN dépliée au clic = JSON-LD ; sitemap servi : 666 URL, 33 `<lastmod>`. ⚠️ **Limites
+et listé, non modifié** : le contrôle compare le sitemap au JSON-LD de l'article, pas le JSON-LD au corps : un article retouché
+sans mise à jour de `dateModified` garde son ancienne date (c'est la discipline du rédacteur) ; `cordage-terre-battue.html:44`
+déclare `/icon.svg` (200, un SVG) comme logo, laissé ; les affirmations qui n'étaient qu'en JSON-LD (jauges de Nadal, Alcaraz et
+Federer ; plans de cordage des pros, FR et EN ; Tsitsipas et l'Open d'Australie) ne sont plus déclarées, ces pages ne les
+affichent pas : à ré-écrire, avec une source vérifiée par `tsa-pigiste`, par `tsa-redacteur` si elles doivent revenir ; le JSON-LD
+de `cordage-mono-vs-multifilament.html` reprend désormais mot pour mot le texte affiché, dont « protéger le bras » et « ménageant
+le bras » (l. 656-657, relevés par `audit:claims` de la PR #120) : le corps reste au rédacteur, le JSON-LD suivra et le contrôle
+l'y oblige.
+
 **Changelog v2.3.18 → v2.3.19** — **Textes des moteurs statiques du RCS : plus aucune allégation thérapeutique ou protectrice, des
 descriptions tirées de l'indice et des seuils d'alerte réels** (décision de l'orchestrateur du 11/10/2026, Pierre ayant délégué les
 arbitrages ; relevé de `tsa-core` pendant la PR #119 ; `tsa-core`). **Constat** : `public/js/rcs-calculator-en.js` (chargé par
