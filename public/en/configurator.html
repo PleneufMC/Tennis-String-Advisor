@@ -35,7 +35,7 @@
       "Personalized racquet recommendations",
       "Personalized string recommendations",
       "Tension recommendation",
-      "RCS firmness index (arm comfort)"
+      "RCS firmness index and arm-alert thresholds"
     ]
   }
   </script>
@@ -191,7 +191,7 @@
           <a href="/en/racquets.html" class="text-gray-600 hover:text-green-600 transition">Racquets</a>
           <a href="/en/strings.html" class="text-gray-600 hover:text-green-600 transition">Strings</a>
           <a href="/en/compare.html" class="text-gray-600 hover:text-green-600 transition">Compare</a>
-          <a href="/en/rcs-calculator.html" class="text-gray-600 hover:text-green-600 transition">🩺 RCS</a>
+          <a href="/en/rcs-calculator.html" class="text-gray-600 hover:text-green-600 transition">📏 RCS</a>
         </nav>
         <div class="flex items-center gap-3">
           <button onclick="toggleDarkMode()" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition" aria-label="Toggle dark mode">
@@ -428,7 +428,7 @@
           </label>
 
         </div>
-          <h3 class="font-semibold text-gray-900 mb-1">Fragile shoulder</h3>
+          <h3 class="font-semibold text-gray-900 mb-1">Sensitive shoulder</h3>
           <p class="text-sm text-gray-500">Shoulder pain</p>
         </div>
       </div>
@@ -661,8 +661,8 @@
       <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
         <div class="flex items-center justify-between mb-4">
           <div class="flex items-center gap-2">
-            <span class="text-2xl">🩺</span>
-            <h3 class="text-xl font-bold text-gray-900">RCS Score - Arm Comfort</h3>
+            <span class="text-2xl">📏</span>
+            <h3 class="text-xl font-bold text-gray-900">RCS Score - Firmness Index</h3>
           </div>
           <a href="/en/rcs-calculator.html" class="text-sm text-green-600 hover:underline">Detailed calculator →</a>
         </div>
@@ -1320,9 +1320,9 @@
 
       // Profil sans règle dédiée (avancé ou compétition « polyvalent », ou
       // niveau non renseigné) : couple désigné par son id, lu dans le catalogue.
-      let racquet = racquetView(catalogById(racquetsDB, DEFAULT_RACQUET_ID), 'All-round racquet for an improving player.');
-      let string = stringView(catalogById(stringsDB, DEFAULT_STRING_ID), 'Excellent for generating spin.');
-      let tension = { value: '23-25 kg', numValue: 24, reason: 'Mid-range tension for a balance of power and control.' };
+      let racquet = racquetView(catalogById(racquetsDB, DEFAULT_RACQUET_ID), 'Default racquet for answers that match no dedicated rule.');
+      let string = stringView(catalogById(stringsDB, DEFAULT_STRING_ID), 'Default string for answers that match no dedicated rule.');
+      let tension = { value: '23-25 kg', numValue: 24, reason: 'Mid-range tension (23-25 kg).' };
       let rcsProfile = null;
       
       let racquetCriteria = {};
@@ -1357,11 +1357,11 @@
           types: ['Multifilament', 'Hybrid'],
           preferComfort: true
         };
-        tension = { value: '22-24 kg', numValue: 23, reason: 'Moderate tension for comfort and control.' };
+        tension = { value: '22-24 kg', numValue: 23, reason: 'Mid-range tension (22-24 kg).' };
         rcsProfile = 'club';
         
-        racquet = racquetView(pickBestRacquet(racquetCriteria), 'Balanced racquet for an improving player.');
-        string = stringView(pickBestString(stringCriteria), 'Comfortable string with good energy return.');
+        racquet = racquetView(pickBestRacquet(racquetCriteria), 'Tweener or modern-player category, RA 60 to 67.');
+        string = stringView(pickBestString(stringCriteria), 'One of the multifilament or hybrid strings with the highest comfort rating in the catalog.');
       }
 
       // PRIORITY 2: Adjust for physical issues (OVERRIDES level for safety)
@@ -1394,11 +1394,11 @@
             types: ['Polyester', 'Co-Polyester'],
             preferControl: true
           };
-          tension = { value: '24-26 kg', numValue: 25, reason: 'Higher tension for more control.' };
+          tension = { value: '24-26 kg', numValue: 25, reason: 'Upper mid-range tension (24-26 kg).' };
           rcsProfile = 'competiteur';
           
-          racquet = racquetView(pickBestRacquet(racquetCriteria), 'Powerful racquet with excellent energy return.');
-          string = stringView(pickBestString(stringCriteria), 'Optimal control to channel your power.');
+          racquet = racquetView(pickBestRacquet(racquetCriteria), 'Power or modern-player category, RA 66 or above.');
+          string = stringView(pickBestString(stringCriteria), 'One of the polyester or co-polyester strings with the highest control rating in the catalog.');
         } else if (currentSelections.style === 'controle') {
           racquetCriteria = {
             level: currentSelections.level === 'avance' ? 'Advanced' : 'Pro',
@@ -1408,11 +1408,11 @@
             types: ['Polyester'],
             preferControl: true
           };
-          tension = { value: '25-27 kg', numValue: 26, reason: 'High tension to maximise control.' };
+          tension = { value: '25-27 kg', numValue: 26, reason: 'High tension (25-27 kg).' };
           rcsProfile = 'confirme';
           
-          racquet = racquetView(pickBestRacquet(racquetCriteria), 'Control racquet for maximum precision.');
-          string = stringView(pickBestString(stringCriteria), 'Excellent precision and durability.');
+          racquet = racquetView(pickBestRacquet(racquetCriteria), 'Control or classic-player category.');
+          string = stringView(pickBestString(stringCriteria), 'One of the polyester strings with the highest control rating in the catalog.');
         } else if (currentSelections.style === 'spin') {
           racquetCriteria = {
             level: currentSelections.level === 'avance' ? 'Advanced' : 'Pro',
@@ -1422,11 +1422,11 @@
             types: ['Polyester', 'Co-Polyester'],
             preferSpin: true
           };
-          tension = { value: '23-25 kg', numValue: 24, reason: 'Mid-range tension to maximise string bite.' };
+          tension = { value: '23-25 kg', numValue: 24, reason: 'Mid-range tension (23-25 kg).' };
           rcsProfile = 'club';
           
-          racquet = racquetView(pickBestRacquet(racquetCriteria), 'Racquet built to generate maximum spin.');
-          string = stringView(pickBestString(stringCriteria), 'String for maximum spin.');
+          racquet = racquetView(pickBestRacquet(racquetCriteria), 'Modern-player or spin category.');
+          string = stringView(pickBestString(stringCriteria), 'One of the polyester or co-polyester strings with the highest spin rating in the catalog.');
         }
       }
 
@@ -1560,12 +1560,15 @@
         const evalContainer = document.getElementById('rcs-profile-eval');
         evalContainer.classList.remove('hidden');
         
+        // Un verdict par statut du moteur : `risque_sante` (35 et plus) prend le rouge de l'alerte, jamais le vert d'« optimal ».
+        // Un statut inconnu reste neutre : il ne s'affiche pas en vert.
         const statusColors = {
           'optimal': { bg: 'bg-green-50', border: 'border-green-300', text: 'text-green-800' },
           'trop_souple': { bg: 'bg-blue-50', border: 'border-blue-300', text: 'text-blue-800' },
-          'trop_rigide': { bg: 'bg-red-50', border: 'border-red-300', text: 'text-red-800' }
+          'trop_rigide': { bg: 'bg-red-50', border: 'border-red-300', text: 'text-red-800' },
+          'risque_sante': { bg: 'bg-red-50', border: 'border-red-400', text: 'text-red-900' }
         };
-        const colors = statusColors[evaluation.status] || statusColors['optimal'];
+        const colors = statusColors[evaluation.status] || { bg: 'bg-gray-50', border: 'border-gray-300', text: 'text-gray-800' };
         
         evalContainer.className = `mt-4 p-4 rounded-lg border-2 ${colors.bg} ${colors.border}`;
         document.getElementById('rcs-eval-icon').textContent = evaluation.icon;
