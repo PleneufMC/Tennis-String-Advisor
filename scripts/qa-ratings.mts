@@ -25,6 +25,7 @@
 import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import path from 'node:path';
+import ts from 'typescript';
 // @ts-ignore -- module JS sans déclaration de types (générateur du catalogue EN, C3)
 import { buildCatalog, serializeCatalog, CATALOG_JSON_PATH } from './catalog/catalog-json.mjs';
 import { racquetsDatabase, calculateCompatibility } from '../src/data/racquets-database';
@@ -2506,6 +2507,389 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
     ok(`descriptions : ${stringsDatabase.length} fiches sans mot de santé ; aucun mot de confort sur les ${above} fiches plus rigides que la médiane de leur famille (hors indice « Confortable » ≤ ${comfortableMax}) ni sur les ${alerting} à alerte standard au montage médian (RA ${DEFAULT_RACQUET_RA}, ${REF_TENSION} kg ; médianes : ${medians}) ; ` +
       `${keepers} fiches souples gardent leurs mots ; ${ranks} rang(s) de rigidité annoncé(s) exact(s) ; getStringRecommendation : 5 paliers sans absolu, seuils cités = seuils du moteur (${SENSITIVE_AT} sensible, ${STANDARD_AT} sinon), palier « Très Ferme » dès ${STANDARD_AT} ; ` +
       `${negatives.length} tests négatifs détectés, ${positives.length} témoins positifs acceptés`);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 20. TEXTES DES MOTEURS STATIQUES RCS — aucune allégation thérapeutique ou protectrice, des chiffres qui sont
+//     ceux du moteur (décision de l'orchestrateur du 11/10/2026, charte F7 « la santé d'abord »)
+// ---------------------------------------------------------------------------
+// Constat (relevé par tsa-core pendant la PR #119) : `public/js/rcs-calculator-en.js` (chargé par configurator.html,
+// rcs-calculator.html et setups.html) et sa jumelle FR portaient les allégations médicales les plus graves du dépôt :
+// « Post-injury rehabilitation », « Chronic tennis elbow », « Seniors / Fragile arm », « Therapeutic Comfort Zone »,
+// « Maximum arm protection », « Recommended under medical supervision »... Sans source médicale, c'est contraire à la
+// charte F7 et à la règle 2. Les textes décrivent désormais ce que l'indice mesure (plage, position par rapport aux
+// seuils d'alerte bras du configurateur) ; ce bloc rend les allégations impossibles à réintroduire. Il échoue si :
+//   (a) une chaîne du source (littéraux de chaîne et de gabarit ; clés de structure et codes machine exclus) ou une
+//       sortie du moteur (niveaux, zones, profils, évaluations et alertes pour RCS 0 à 60, gabarits HTML) contient une
+//       allégation thérapeutique, médicale, protectrice, de public médicalisé ou un absolu de santé, hors la mise en
+//       garde du message d'alerte (« Non recommandé pour ... antécédents de blessures »), qui doit rester présente et
+//       n'apparaître nulle part ailleurs ;
+//   (b) un chiffre cité n'est pas celui du moteur : plage de chaque niveau et de chaque zone (bornes du moteur), marge
+//       au seuil d'alerte, seuils cités (sondés dans `calculateAdvancedRcs`), exemples de valeurs (recalculés, ils
+//       doivent tomber dans leur niveau), levier « 1 kg de tension = 0,5 point » (mesuré sur la formule), plage des
+//       profils ;
+//   (c) une alerte santé est supprimée ou déplacée : seuils du moteur ≠ seuils sondés, « tennis elbow » absent d'un
+//       message d'alerte, conseil de consulter un professionnel de santé disparu.
+// Chaque garde est rejouée sur des copies altérées du source ; des témoins positifs prouvent que les avertissements
+// légitimes et les reformulations inoffensives passent. L'équivalence « code identique, seules les chaînes changent »
+// se prouve hors de ce script (squelette syntaxique comparé à `origin/main`, PR du 11/10/2026).
+{
+  const before = failures.length;
+  type Lang = 'en' | 'fr';
+  const ENGINES: Array<{ path: string; lang: Lang }> = [
+    { path: 'public/js/rcs-calculator-en.js', lang: 'en' },
+    { path: 'public/js/rcs-calculator.js', lang: 'fr' },
+  ];
+  const PROFILS = ['reeducation', 'tennis_elbow', 'senior', 'debutant', 'club', 'confirme', 'competiteur', 'expert', 'pro'];
+  const SWEEP = Array.from({ length: 61 }, (_, i) => i); // RCS 0 à 60
+
+  // Les familles d'allégations de la décision du 11/10/2026 (therapeutic|thérap|rehabilit|rééduc|injur|blessure|
+  // protection|prévent|prevent|soulag|relieve|heal|guér|medical|médical|supervision|chronic|chronique|fragile|seniors?),
+  // élargies aux formes voisines qui portaient les mêmes allégations (épicondylite, coudière, kiné, « santé articulaire »,
+  // icône d'hôpital, « absorbe les vibrations »...) et aux absolus de la charte F7. « heal » est pris en mot entier et « health » /
+  // « santé » ne sont permis que dans « health professional » / « professionnel de santé » (le conseil de consulter).
+  const CLAIMS: Array<[string, RegExp]> = [
+    ['thérapeutique', /therap|thérap|rehabilit|rééduc|reeduc|physio|kin[ée]sith/i],
+    ['médical', /injur|bless[eéèuû]|medical|médical|supervision|tendin|surgery|chirurg|opératoire|operatoire|post-op|épicondyl|epicondyl|arthr(?:it|os)|\bbrace\b|coudière|[\u{1F3E5}\u{1FA7A}\u{1F48A}\u{1FA79}\u{1F691}⚕]/iu],
+    ['protection', /protect|prot[eéè]g|pr[eé]ven|soulag|relie(?:f|ve)|allevia|\bheal(?:s|ed|ing)?\b|guér|\bcure[sd]?\b|aggravat|pr[eé]serv|\bhealth\b(?! professional)|(?<!professionnel de )\bsant[eé](?![a-zà-ÿ_])/i],
+    ['effet sur le bras', /absorb|dampen|(?:reduce|reduces|reducing|lessen|lessens)\s+(?:the\s+|significantly\s+)?(?:stress|strain|vibration|shock|pain)|absorbe|amortit|(?:réduit|diminue)\s+(?:considérablement\s+)?(?:le\s+|les\s+)?(?:stress|vibration|choc|douleur|sollicitation)/i],
+    ['public médicalisé', /chronic|chronique|fragile|\bs[eé]niors?\b|âgé|elderly/i],
+    ['absolu', /\bideal|\bidéal|perfect|parfait|optimal|\bsafe\b|\bsafely\b|\bsûr|sans (?:aucun )?(?:danger|risque)|without (?:any )?risk|risk-free|guarantee|garanti|ultimate|ultime/i],
+  ];
+  // La seule mise en garde qui nomme les antécédents de blessure : elle DÉCONSEILLE, elle ne promet rien.
+  const ALERT_PHRASE: Record<Lang, string> = {
+    en: 'Not recommended for occasional players or those with injury history',
+    fr: 'Non recommandé pour les joueurs occasionnels ou ayant des antécédents de blessures',
+  };
+  const clip = (s: string) => (s.length > 80 ? `${s.slice(0, 77)}…` : s);
+  const claimsIn = (text: string, lang: Lang): string[] => {
+    const t = text.split(ALERT_PHRASE[lang]).join(' ');
+    const hits: string[] = [];
+    for (const [family, re] of CLAIMS) {
+      const m = re.exec(t);
+      if (m) hits.push(`${family} « ${m[0]} » dans « ${clip(text)} »`);
+    }
+    return hits;
+  };
+
+  // Chaînes du source : littéraux et gabarits, hors clés de structure ('senior', 'reeducation'...) et codes machine
+  // (status, level) que les pages lisent mais n'affichent pas.
+  const sourceStrings = (src: string): string[] => {
+    const sf = ts.createSourceFile('engine.js', src, ts.ScriptTarget.Latest, true, ts.ScriptKind.JS);
+    const out: string[] = [];
+    const MACHINE = new Set(['status', 'level']);
+    const visit = (node: ts.Node): void => {
+      if (ts.isStringLiteral(node)) {
+        const p = node.parent;
+        const isKey = ts.isPropertyAssignment(p) && p.name === node;
+        const isCode = ts.isPropertyAssignment(p) && p.initializer === node && MACHINE.has(p.name.getText(sf).replace(/['"]/g, ''));
+        if (!isKey && !isCode) out.push(node.text);
+      } else if (ts.isNoSubstitutionTemplateLiteral(node)) {
+        out.push(node.text);
+      } else if (ts.isTemplateExpression(node)) {
+        out.push(node.head.text + node.templateSpans.map((s) => `\${…}${s.literal.text}`).join(''));
+      }
+      ts.forEachChild(node, visit);
+    };
+    visit(sf);
+    return out;
+  };
+
+  // Sorties du moteur : tout ce qu'un visiteur peut lire.
+  const runtimeStrings = (engine: any): string[] => {
+    const out = new Set<string>();
+    const SKIP = new Set(['status', 'level']);
+    const walk = (v: unknown, key?: string): void => {
+      if (key && SKIP.has(key)) return;
+      if (typeof v === 'string') out.add(v);
+      else if (Array.isArray(v)) v.forEach((x) => walk(x));
+      else if (v && typeof v === 'object') for (const [k, x] of Object.entries(v as Record<string, unknown>)) walk(x, k);
+    };
+    walk(engine.DECILES);
+    walk(engine.QUINTILES);
+    for (const p of PROFILS) {
+      walk(engine.getRecommendations(p));
+      for (const rcs of SWEEP) walk(engine.evaluateForProfile(rcs, p));
+    }
+    for (const rcs of SWEEP) walk(engine.getHealthWarning(rcs));
+    engine.DECILES.forEach((d: any, i: number) => out.add(engine.generateDecileDetailHTML({ number: i + 1, ...d })));
+    engine.QUINTILES.forEach((q: any, i: number) => out.add(engine.generateQuintileHTML({ number: i + 1, ...q })));
+    for (const [ra, st, tn] of [[56, 95, 19], [64, 160, 23], [68, 220, 26], [70, 250, 28]]) out.add(engine.generateReport(engine.calculate(ra, st, tn), ra, st, tn));
+    return [...out];
+  };
+
+  // Seuils d'alerte bras sondés dans le moteur du configurateur (comme au contrôle 19) : plus petit indice qui déclenche l'alerte.
+  const probe = (armSensitive: boolean): number | null => {
+    for (let st = 60; st <= 400; st++) {
+      const adv = calculateAdvancedRcs({ racquetStiffness: DEFAULT_RACQUET_RA, mainStringStiffness: st, mainStringFamily: 'polyester', mainRatings: {}, mainTension: 24, profile: { armSensitive } });
+      if (adv.warnings.length > 0) return adv.rcs;
+    }
+    return null;
+  };
+  const SENSITIVE_AT = probe(true);
+  const STANDARD_AT = probe(false);
+
+  const nums = (t: string): string[] => [...t.matchAll(/\d+(?:[.,]\d+)?/g)].map((m) => m[0].replace(',', '.'));
+  const same = (a: string[], b: string[]) => a.length === b.length && a.every((x, i) => x === b[i]);
+  const rangeOf = (bounds: number[], i: number, count: number) => ({ lo: i === 0 ? null : bounds[i - 1], hi: i === count - 1 ? null : bounds[i] - 1 });
+  const rangeNums = (lo: number | null, hi: number | null): string[] =>
+    lo === null ? [String(hi)] : hi === null || hi === lo ? [String(lo)] : [String(lo), String(hi)];
+
+  const analyse = (src: string, lang: Lang, S: number, N: number): { issues: string[]; scanned: [number, number]; examples: number } => {
+    const issues: string[] = [];
+    let engine: any;
+    try {
+      engine = new Function('window', 'document', `${src}; return typeof RCS !== 'undefined' ? RCS : window.RCS;`)({}, { addEventListener() {} });
+    } catch (e) {
+      return { issues: [`moteur illisible (${(e as Error).message})`], scanned: [0, 0], examples: 0 };
+    }
+
+    // (a) allégations : source puis sorties
+    const fromSource = sourceStrings(src);
+    const fromRuntime = runtimeStrings(engine);
+    for (const s of fromSource) issues.push(...claimsIn(s, lang));
+    for (const s of fromRuntime) issues.push(...claimsIn(s, lang));
+    const carriers = fromSource.filter((s) => s.includes(ALERT_PHRASE[lang]));
+    if (carriers.length !== 1) issues.push(`phrase d'alerte « ${ALERT_PHRASE[lang]} » présente dans ${carriers.length} chaînes du source au lieu de 1 (le message d'alerte seul)`);
+
+    // (b) chiffres vrais
+    const decs: any[] = engine.DECILES;
+    const quis: any[] = engine.QUINTILES;
+    const bounds: number[] = engine.DECILE_BOUNDS;
+    const qb: number[] = engine.QUINTILE_BOUNDS;
+    if (decs.length !== 10 || bounds.length !== 9 || quis.length !== 5 || qb.length !== 4) {
+      issues.push(`structure : ${decs.length} niveaux / ${bounds.length} bornes, ${quis.length} zones / ${qb.length} bornes (attendu 10 / 9 et 5 / 4) — les textes citent ces plages`);
+      return { issues, scanned: [fromSource.length, fromRuntime.length], examples: 0 };
+    }
+    const lever = Math.round(2 * (engine.calculate(64, 160, 24).details.score_brut - engine.calculate(64, 160, 23).details.score_brut) * 10) / 10;
+    let examples = 0;
+    decs.forEach((d, i) => {
+      const tag = `D${i + 1}`;
+      const { lo, hi } = rangeOf(bounds, i, decs.length);
+      const range = rangeNums(lo, hi);
+      const cls = hi !== null && hi < S ? 'A' : lo !== null && hi !== null && lo >= S && hi < N ? 'B' : hi === null && lo !== null && lo >= S && lo < N ? 'C' : '?';
+      if (cls === '?') {
+        issues.push(`plage : ${tag} (${lo ?? '…'} à ${hi ?? '…'}) n'entre dans aucune des trois classes de texte (sous les deux seuils ${S}/${N}, entre eux, à cheval sur ${N}) — réécrire ce niveau`);
+        return;
+      }
+      let margin: string[];
+      if (cls === 'A') {
+        const hiM = S - (hi as number);
+        margin = lo === null || S - lo === hiM ? [String(hiM), String(S)] : [String(hiM), String(S - lo), String(S)];
+      } else margin = cls === 'B' ? [String(S)] : [String(S), String(N)];
+      if (!same(nums(d.description), margin)) issues.push(`marge : ${tag} « ${d.description} » cite ${nums(d.description).join(', ')} au lieu de ${margin.join(', ')} (seuils ${S}/${N}, plage ${range.join('-')})`);
+      const comment = cls === 'C' ? [...range, String(N)] : range;
+      if (!same(nums(d.detailedComment), comment)) issues.push(`plage : ${tag} « ${clip(d.detailedComment)} » cite ${nums(d.detailedComment).join(', ')} au lieu de ${comment.join(', ')}`);
+      const chips: string[] = d.targetPlayers;
+      if (chips.length !== 3 || !same(nums(chips[0] ?? ''), range) || !same(nums(chips[1] ?? ''), [String(S)]) || !same(nums(chips[2] ?? ''), [String(N)])) {
+        issues.push(`plage : ${tag} repères ${JSON.stringify(chips)} ≠ plage ${range.join('-')}, seuils ${S} et ${N}`);
+      }
+      const advice = nums(d.recommendations.advice);
+      if (advice.length !== 4 || !same(advice.slice(0, 3), [String(S), String(N), '1'])) issues.push(`seuil : ${tag} conseil « ${clip(d.recommendations.advice)} » cite ${advice.join(', ')} au lieu de ${S}, ${N}, 1, ${lever}`);
+      else if (advice[3] !== String(lever)) issues.push(`levier : ${tag} conseil « ${clip(d.recommendations.advice)} » annonce ${advice[3]} point par kg de tension, la formule du moteur en donne ${lever}`);
+      const ra = /RA\s*(\d+(?:[.,]\d+)?)/.exec(d.recommendations.racquet);
+      const st = /(\d+(?:[.,]\d+)?)\s*lb\/in/.exec(d.recommendations.string);
+      const tn = /(\d+(?:[.,]\d+)?)\s*kg/.exec(d.recommendations.tension);
+      if (!ra || !st || !tn) issues.push(`exemple : ${tag} valeurs illisibles (« ${d.recommendations.racquet} », « ${d.recommendations.string} », « ${d.recommendations.tension} »)`);
+      else {
+        const [r, s, t] = [ra[1], st[1], tn[1]].map((x) => Number(x.replace(',', '.')));
+        const got = engine.calculate(r, s, t);
+        const expected = calculateRCS(r, s, t);
+        if (got.rcs !== expected || got.decile.number !== i + 1 || (lo !== null && expected < lo) || (hi !== null && expected > hi)) {
+          issues.push(`exemple : ${tag} RA ${r} · ${s} lb/in · ${t} kg donne RCS ${expected} (moteur ${got.rcs}, niveau D${got.decile.number}) hors de la plage ${range.join('-')}`);
+        } else examples++;
+      }
+    });
+    quis.forEach((q, j) => {
+      const { lo, hi } = rangeOf(qb, j, quis.length);
+      const place = hi !== null ? hi < S : lo !== null && lo >= S;
+      if (!place) issues.push(`plage : zone Q${j + 1} (${lo ?? '…'} à ${hi ?? '…'}) à cheval sur le seuil ${S} — réécrire cette zone`);
+      const want = [...rangeNums(lo, hi), String(S), String(N)];
+      if (!same(nums(q.description), want)) issues.push(`plage : Q${j + 1} « ${clip(q.description)} » cite ${nums(q.description).join(', ')} au lieu de ${want.join(', ')}`);
+    });
+    for (const p of PROFILS) {
+      const rec = engine.getRecommendations(p);
+      if (!same(nums(rec.description), rec.rcsRange.map(String))) issues.push(`plage : profil ${p} « ${rec.description} » cite ${nums(rec.description).join(', ')} au lieu de ${rec.rcsRange.join(', ')}`);
+    }
+
+    // (c) alertes : seuils du moteur = seuils sondés, texte du risque présent, jamais supprimées
+    if (engine.HEALTH_ALERT_RCS !== N) issues.push(`alerte : HEALTH_ALERT_RCS = ${engine.HEALTH_ALERT_RCS} alors que l'alerte standard du configurateur est à ${N}`);
+    const levelAt = (v: number): string | null => engine.getHealthWarning(v)?.level ?? null;
+    if (levelAt(S - 1) !== null || levelAt(S) !== 'warning' || levelAt(N - 1) !== 'warning' || levelAt(N) !== 'danger' || levelAt(N + 10) !== 'danger') {
+      issues.push(`alerte : getHealthWarning ne bascule pas aux seuils du configurateur (${S - 1}:${levelAt(S - 1)}, ${S}:${levelAt(S)}, ${N - 1}:${levelAt(N - 1)}, ${N}:${levelAt(N)}) — attendu null, warning, warning, danger`);
+    }
+    const danger = engine.getHealthWarning(N);
+    const amber = engine.getHealthWarning(S);
+    if (danger) {
+      if (!same(nums(danger.message), [String(N)])) issues.push(`alerte : message de l'alerte rouge cite ${nums(danger.message).join(', ')} au lieu de ${N}`);
+      if (!/tennis elbow/i.test(danger.message)) issues.push(`alerte : le message de l'alerte rouge ne dit plus le risque de tennis elbow`);
+      if (!danger.message.includes(ALERT_PHRASE[lang])) issues.push(`alerte : le message de l'alerte rouge ne porte plus sa mise en garde (« ${ALERT_PHRASE[lang]} »)`);
+      if (!Array.isArray(danger.tips) || danger.tips.length < 4) issues.push(`alerte : l'alerte rouge n'a plus ses 4 conseils (${danger.tips?.length ?? 0})`);
+      else if (!danger.tips.some((t: string) => (lang === 'en' ? /health professional/i : /professionnel de santé/i).test(t))) issues.push(`alerte : l'alerte rouge ne conseille plus de consulter un professionnel de santé si la douleur persiste`);
+    }
+    if (amber) {
+      if (!same(nums(amber.message), [String(S), String(N - 1), String(N)])) issues.push(`alerte : message de l'alerte orange cite ${nums(amber.message).join(', ')} au lieu de ${S}, ${N - 1}, ${N}`);
+      if (!Array.isArray(amber.tips) || amber.tips.length < 3) issues.push(`alerte : l'alerte orange n'a plus ses 3 conseils (${amber.tips?.length ?? 0})`);
+    }
+    for (const p of PROFILS) {
+      for (let rcs = 0; rcs <= 60; rcs++) {
+        const ev = engine.evaluateForProfile(rcs, p);
+        if (rcs >= N) {
+          if (ev.status !== 'risque_sante' || ev.isOk !== false || !/tennis elbow/i.test(ev.message)) issues.push(`alerte : profil ${p} à RCS ${rcs} : « ${clip(String(ev.message))} » (statut ${ev.status}) ne signale plus le risque de tennis elbow`);
+        } else {
+          if (ev.status === 'risque_sante') issues.push(`alerte : profil ${p} à RCS ${rcs} signale un risque sous le seuil ${N}`);
+          if (ev.status === 'trop_souple' || ev.status === 'trop_rigide') {
+            const tail = nums(ev.suggestion).slice(-2);
+            if (!same(tail, [String(S), String(N)])) issues.push(`seuil : profil ${p} à RCS ${rcs} : « ${clip(ev.suggestion)} » cite ${tail.join(', ')} au lieu de ${S}, ${N}`);
+          }
+        }
+      }
+    }
+    return { issues: [...new Set(issues)], scanned: [fromSource.length, fromRuntime.length], examples };
+  };
+
+  // --- Les moteurs réels -----------------------------------------------------------------------------------------
+  if (SENSITIVE_AT === null || STANDARD_AT === null) fail('textes des moteurs : seuils d\'alerte introuvables dans calculateAdvancedRcs (sonde muette)');
+  else {
+    const S = SENSITIVE_AT;
+    const N = STANDARD_AT;
+    const sources = new Map<string, string>();
+    let scanned = '';
+    let examplesChecked = 0;
+    for (const { path: file, lang } of ENGINES) {
+      let src = '';
+      try {
+        src = readFileSync(file, 'utf8');
+      } catch {
+        fail(`${file} : moteur introuvable`);
+        continue;
+      }
+      sources.set(file, src);
+      const res = analyse(src, lang, S, N);
+      res.issues.forEach((i) => fail(`${file} : ${i}`));
+      scanned += `${scanned ? ' + ' : ''}${res.scanned[0]} chaînes du source et ${res.scanned[1]} sorties (${lang.toUpperCase()})`;
+      examplesChecked += res.examples;
+    }
+
+    // --- Tests négatifs : le source altéré doit être refusé, pour la bonne raison ---------------------------------
+    type Mutation = { name: string; find: string; replace: string; needle: string };
+    const NEGATIVES: Record<Lang, Mutation[]> = {
+      en: [
+        { name: 'libellé « Therapeutic »', find: "label: 'Very Soft'", replace: "label: 'Therapeutic Comfort+'", needle: 'thérapeutique' },
+        { name: '« Post-injury rehabilitation »', find: "description: 'At least 11 points under the sensitive-arm alert (32)'", replace: "description: 'Post-injury rehabilitation'", needle: 'thérapeutique' },
+        { name: '« Recommended under medical supervision »', find: "description: '6 points under the sensitive-arm alert (32)'", replace: "description: 'Recommended under medical supervision'", needle: 'médical' },
+        { name: '« Chronic tennis elbow » dans un commentaire', find: "detailedComment: 'RCS 22 to 23. Below both arm alert thresholds of the configurator.'", replace: "detailedComment: 'Therapeutic setup for chronic tennis elbow. It significantly reduces stress transmitted to the arm.'", needle: 'public médicalisé' },
+        { name: '« Seniors / Fragile arm »', find: "label: 'Medium-Soft'", replace: "label: 'Seniors / Fragile arm'", needle: 'public médicalisé' },
+        { name: '« Maximum arm protection »', find: "summary: 'Lowest firmness index'", replace: "summary: 'Maximum arm protection'", needle: 'protection' },
+        { name: '« Helps prevent injuries »', find: "summary: 'Lower-middle firmness index'", replace: "summary: 'Helps prevent injuries'", needle: 'protection' },
+        { name: '« Ideal for beginners »', find: "summary: 'Middle of the scale'", replace: "summary: 'Ideal for beginners'", needle: 'absolu' },
+        { name: 'protection dans un gabarit de chaîne', find: 'moves the index up toward this range (more control, less comfort).', replace: 'moves the index up toward this range to protect your arm.', needle: 'protection' },
+        { name: '« Absolute priority on joint health »', find: "summary: 'Sensitive-arm alert reached or exceeded'", replace: "summary: 'Absolute priority on joint health'", needle: 'protection' },
+        { name: '« absorbs vibrations and reduces stress »', find: "summary: 'Upper-middle, approaching the sensitive-arm alert'", replace: "summary: 'Absorbs vibrations and significantly reduces stress transmitted to the arm'", needle: 'effet sur le bras' },
+        { name: 'icône d\'hôpital', find: "icon: '☁️'", replace: "icon: '🏥'", needle: 'médical' },
+        { name: 'blessure hors du message d\'alerte', find: "'Consult a health professional if pain or discomfort persists'", replace: "'Recommended after an injury'", needle: 'médical' },
+        { name: 'mise en garde recopiée hors du message d\'alerte', find: "summary: 'Lowest firmness index'", replace: "summary: 'Not recommended for occasional players or those with injury history'", needle: 'phrase d\'alerte' },
+        { name: 'seuil du moteur décalé (HEALTH_ALERT_RCS)', find: 'HEALTH_ALERT_RCS: 35,', replace: 'HEALTH_ALERT_RCS: 36,', needle: 'alerte :' },
+        { name: 'alerte orange décalée à 33', find: '} else if (rcs >= 32) {', replace: '} else if (rcs >= 33) {', needle: 'alerte :' },
+        { name: 'seuil cité faux (30 au lieu de 32)', find: 'from 32 for a sensitive arm, from 35 otherwise. A change of 1 kg', replace: 'from 30 for a sensitive arm, from 35 otherwise. A change of 1 kg', needle: 'seuil :' },
+        { name: 'plage citée fausse (24 à 26 au lieu de 24 à 25)', find: "'RCS 24 to 25', 'Sensitive-arm alert: 32'", replace: "'RCS 24 to 26', 'Sensitive-arm alert: 32'", needle: 'plage :' },
+        { name: 'marge citée fausse (7 au lieu de 6)', find: "description: '6 points under the sensitive-arm alert (32)'", replace: "description: '7 points under the sensitive-arm alert (32)'", needle: 'marge :' },
+        { name: 'exemple hors de son niveau', find: "string: '95 lb/in'", replace: "string: '250 lb/in'", needle: 'exemple :' },
+        { name: 'levier faux (1 point au lieu de 0,5)', find: 'moves the index by 0.5 point', replace: 'moves the index by 1 point', needle: 'levier :' },
+        { name: 'plage de zone fausse', find: "description: 'RCS 27 to 28. Below", replace: "description: 'RCS 27 to 29. Below", needle: 'plage :' },
+        { name: 'plage de profil fausse', find: "description: 'Club player (RCS 26 to 29)'", replace: "description: 'Club player (RCS 26 to 30)'", needle: 'plage :' },
+        { name: 'l\'alerte rouge ne dit plus le risque', find: '(tennis elbow risk). This configuration generates', replace: '. This configuration generates', needle: 'alerte :' },
+        { name: 'le verdict de profil ne dit plus le risque', find: '): tennis elbow risk', replace: '): risk', needle: 'alerte :' },
+        { name: 'le conseil de consulter disparaît', find: "'Consult a health professional if pain or discomfort persists'", replace: "'Take a rest'", needle: 'alerte :' },
+      ],
+      fr: [
+        { name: 'libellé « thérapeutique »', find: "label: 'Très souple'", replace: "label: 'Confort thérapeutique'", needle: 'thérapeutique' },
+        { name: '« Rééducation post-blessure »', find: "description: 'Au moins 11 points sous l\\'alerte bras sensible (32)'", replace: "description: 'Rééducation post-blessure'", needle: 'thérapeutique' },
+        { name: '« supervision médicale »', find: "description: '6 points sous l\\'alerte bras sensible (32)'", replace: "description: 'Recommandé sous supervision médicale'", needle: 'médical' },
+        { name: '« tennis elbow chronique » dans un commentaire', find: "detailedComment: 'RCS 22 à 23. Sous les deux seuils d\\'alerte bras du configurateur.'", replace: "detailedComment: 'Setup thérapeutique pour tennis elbow chronique.'", needle: 'public médicalisé' },
+        { name: '« Seniors / Bras fragile »', find: "label: 'Moyennement souple'", replace: "label: 'Seniors / Bras fragile'", needle: 'public médicalisé' },
+        { name: '« Protection maximale du bras »', find: "summary: 'Indice de fermeté le plus bas'", replace: "summary: 'Protection maximale du bras'", needle: 'protection' },
+        { name: '« prévenir les blessures »', find: "summary: 'Indice de fermeté moyen-bas'", replace: "summary: 'Aide à prévenir les blessures'", needle: 'protection' },
+        { name: '« Idéal pour les débutants »', find: "summary: 'Milieu de l\\'échelle'", replace: "summary: 'Idéal pour les débutants'", needle: 'absolu' },
+        { name: 'protection dans un gabarit de chaîne', find: "rapproche l'indice de cette plage (plus de contrôle, moins de confort).", replace: 'protège votre bras (plus de contrôle, moins de confort).', needle: 'protection' },
+        { name: '« Priorité absolue à la santé articulaire »', find: "summary: 'Alerte bras sensible atteinte ou dépassée'", replace: "summary: 'Priorité absolue à la santé articulaire'", needle: 'protection' },
+        { name: '« absorbe les vibrations et réduit le stress »', find: "summary: 'Moyen-haut, à l\\'approche de l\\'alerte bras sensible'", replace: "summary: 'Absorbe les vibrations et réduit considérablement le stress transmis au bras'", needle: 'effet sur le bras' },
+        { name: 'icône d\'hôpital', find: "icon: '☁️'", replace: "icon: '🏥'", needle: 'médical' },
+        { name: 'blessure hors du message d\'alerte', find: "'Consultez un professionnel de santé en cas de douleur ou de gêne persistante'", replace: "'Reprise après blessure'", needle: 'médical' },
+        { name: 'mise en garde recopiée hors du message d\'alerte', find: "summary: 'Indice de fermeté le plus bas'", replace: "summary: 'Non recommandé pour les joueurs occasionnels ou ayant des antécédents de blessures'", needle: 'phrase d\'alerte' },
+        { name: 'seuil du moteur décalé (HEALTH_ALERT_RCS)', find: 'HEALTH_ALERT_RCS: 35,', replace: 'HEALTH_ALERT_RCS: 36,', needle: 'alerte :' },
+        { name: 'alerte orange décalée à 33', find: '} else if (rcs >= 32) {', replace: '} else if (rcs >= 33) {', needle: 'alerte :' },
+        { name: 'seuil cité faux (30 au lieu de 32)', find: 'dès 32 pour un bras sensible, dès 35 sinon. Une variation de 1 kg', replace: 'dès 30 pour un bras sensible, dès 35 sinon. Une variation de 1 kg', needle: 'seuil :' },
+        { name: 'plage citée fausse (24 à 26 au lieu de 24 à 25)', find: "'RCS 24 à 25', 'Alerte bras sensible : 32'", replace: "'RCS 24 à 26', 'Alerte bras sensible : 32'", needle: 'plage :' },
+        { name: 'marge citée fausse (7 au lieu de 6)', find: "description: '6 points sous l\\'alerte bras sensible (32)'", replace: "description: '7 points sous l\\'alerte bras sensible (32)'", needle: 'marge :' },
+        { name: 'exemple hors de son niveau', find: "string: '95 lb/in'", replace: "string: '250 lb/in'", needle: 'exemple :' },
+        { name: 'levier faux (1 point au lieu de 0,5)', find: "déplace l\\'indice de 0,5 point", replace: "déplace l\\'indice de 1 point", needle: 'levier :' },
+        { name: 'plage de zone fausse', find: "description: 'RCS 27 à 28. Sous", replace: "description: 'RCS 27 à 29. Sous", needle: 'plage :' },
+        { name: 'plage de profil fausse', find: "description: 'Joueur de club (RCS 26 à 29)'", replace: "description: 'Joueur de club (RCS 26 à 30)'", needle: 'plage :' },
+        { name: 'l\'alerte rouge ne dit plus le risque', find: '(risque de tennis elbow). Cette configuration', replace: '. Cette configuration', needle: 'alerte :' },
+        { name: 'le verdict de profil ne dit plus le risque', find: ') : risque de tennis elbow', replace: ') : risque', needle: 'alerte :' },
+        { name: 'le conseil de consulter disparaît', find: "'Consultez un professionnel de santé en cas de douleur ou de gêne persistante'", replace: "'Reposez-vous'", needle: 'alerte :' },
+      ],
+    };
+    // --- Témoins positifs : ce qui est légitime passe ----------------------------------------------------------
+    const POSITIVES: Record<Lang, Array<{ name: string; find: string; replace: string }>> = {
+      en: [
+        { name: 'un libellé reformulé sans allégation', find: "label: 'Very Soft'", replace: "label: 'Very soft setup'" },
+        { name: 'un conseil d\'alerte complété sans allégation', find: "'Stay well hydrated'", replace: "'Stay well hydrated and listen to your arm'" },
+        { name: 'un conseil reformulé, mêmes chiffres', find: 'Arm alerts of the configurator: from 32', replace: 'Arm alert thresholds: from 32' },
+        { name: 'un message d\'alerte qui dit « tennis elbow »', find: "summary: 'Lowest firmness index'", replace: "summary: 'Lowest index, far from the tennis elbow alerts'" },
+      ],
+      fr: [
+        { name: 'un libellé reformulé sans allégation', find: "label: 'Très souple'", replace: "label: 'Montage très souple'" },
+        { name: 'un conseil d\'alerte complété sans allégation', find: "'Hydratation importante'", replace: "'Hydratation importante et écoute du bras'" },
+        { name: 'un conseil reformulé, mêmes chiffres', find: "Seuils d\\'alerte bras du configurateur : dès 32", replace: "Seuils d\\'alerte bras : dès 32" },
+        { name: 'un message d\'alerte qui dit « tennis elbow »', find: "summary: 'Indice de fermeté le plus bas'", replace: "summary: 'Indice le plus bas, loin des alertes de tennis elbow'" },
+      ],
+    };
+    const replaceFirst = (s: string, find: string, replace: string): string | null => {
+      const i = s.indexOf(find);
+      return i < 0 ? null : s.slice(0, i) + replace + s.slice(i + find.length);
+    };
+    let detected = 0;
+    let accepted = 0;
+    for (const { path: file, lang } of ENGINES) {
+      const src = sources.get(file);
+      if (src === undefined) continue;
+      for (const m of NEGATIVES[lang]) {
+        const mutated = replaceFirst(src, m.find, m.replace);
+        if (mutated === null) {
+          fail(`textes des moteurs : prémisse du test négatif « ${m.name} » fausse (${file} ne contient plus « ${clip(m.find)} »)`);
+          continue;
+        }
+        if (analyse(mutated, lang, S, N).issues.some((i) => i.includes(m.needle))) detected++;
+        else fail(`textes des moteurs : garde-fou muet sur « ${m.name} » (${file}, motif attendu « ${m.needle} »)`);
+      }
+      for (const p of POSITIVES[lang]) {
+        const mutated = replaceFirst(src, p.find, p.replace);
+        if (mutated === null) {
+          fail(`textes des moteurs : prémisse du témoin positif « ${p.name} » fausse (${file} ne contient plus « ${clip(p.find)} »)`);
+          continue;
+        }
+        const found = analyse(mutated, lang, S, N).issues;
+        if (found.length > 0) fail(`textes des moteurs : témoin positif « ${p.name} » rejeté à tort (${file}) : ${found.join(' ; ')}`);
+        else accepted++;
+      }
+      // L'avertissement légitime passe : le verdict de risque et l'alerte rouge, tels que le moteur les émet.
+      const engine: any = new Function('window', 'document', `${src}; return RCS;`)({}, { addEventListener() {} });
+      for (const text of [engine.evaluateForProfile(40, 'club').message, engine.getHealthWarning(40).message, engine.getHealthWarning(40).tips.join(' ')]) {
+        if (claimsIn(text, lang).length > 0) fail(`textes des moteurs : l'avertissement légitime est rejeté à tort (${file}) : ${clip(text)}`);
+        else accepted++;
+      }
+    }
+
+    if (failures.length === before) {
+      ok(
+        `textes des moteurs statiques : ${scanned} sans allégation thérapeutique, médicale, protectrice ni de public médicalisé (6 familles dont les absolus de la charte F7, mise en garde « antécédents de blessure » limitée au message d'alerte) ; ` +
+          `plages des 10 niveaux, des 5 zones et des 9 profils, marges, seuils cités (${S} bras sensible, ${N} sinon, sondés dans le moteur du configurateur), levier 1 kg = 0,5 point et ${examplesChecked} exemples de valeurs recalculés ; ` +
+          `alertes : seuils du moteur = seuils sondés, risque de tennis elbow dit à chaque verdict, conseils conservés ; ${detected} tests négatifs détectés, ${accepted} témoins positifs acceptés`
+      );
+    }
   }
 }
 

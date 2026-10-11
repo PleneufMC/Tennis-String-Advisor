@@ -1,6 +1,6 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.3.18
+> **Version** : 2.3.19
 > **Date** : 11 octobre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
@@ -43,6 +43,60 @@ provenance non établie) et `:909` (curseur de la jauge à `rcs %` sur un axe 0-
 « the RCS calculator … stay free ») : `tsa-revenue` ; `pricing/page.tsx:61` (« Catalogue complet ») ; `dictionaries.ts:30`
 (« base mise à jour », sans date) ; `layout.tsx:154` (`SearchAction` vers `/search`, route inexistante, hors chaînes de
 métadonnées) ; `configurator.html:1324-1429` (superlatifs de performance : « Excellent for generating spin »…).
+
+**Changelog v2.3.18 → v2.3.19** — **Textes des moteurs statiques du RCS : plus aucune allégation thérapeutique ou protectrice, des
+descriptions tirées de l'indice et des seuils d'alerte réels** (décision de l'orchestrateur du 11/10/2026, Pierre ayant délégué les
+arbitrages ; relevé de `tsa-core` pendant la PR #119 ; `tsa-core`). **Constat** : `public/js/rcs-calculator-en.js` (chargé par
+`configurator.html`, `rcs-calculator.html` et `setups.html`) et sa jumelle `rcs-calculator.js` (aucune page ne la charge) portaient les
+allégations médicales les plus graves du dépôt, sans source médicale (charte F7, règle 2) : « Post-injury rehabilitation », « Chronic
+tennis elbow », « Seniors / Fragile arm », « Therapeutic Comfort Zone », « Maximum arm protection », « Absolute priority on joint health »,
+« prevent injuries », « without risk of aggravation. Recommended under medical supervision », « significantly reduces stress transmitted
+to the arm », « Wear a support elbow brace », « Consult a physiotherapist for an adapted recovery program », cibles « Seniors with
+arthritis » et « Post-surgery », profils nommés par pathologie, icône d'hôpital. **Textes seulement, aucun calcul touché** : le squelette
+syntaxique de chaque moteur (tout sauf le contenu des chaînes) est identique à celui d'`origin/main` (comparaison par arbre syntaxique ;
+trois altérations volontaires — constante de la formule, seuil d'alerte, plage d'un profil — détectées) ; 134 chaînes changent en EN et
+136 en FR, sur 279 ; clés, bornes, couleurs, formule, seuils et verdicts d'alerte identiques ; parité exacte avec `calculateRCS` sur 138 546
+combinaisons. **Ce que disent maintenant les niveaux** : chacun des 10 niveaux et des 5 zones porte sa plage (« RCS 24 à 25 »), sa marge
+sous le seuil d'alerte bras sensible (« 7 à 8 points sous l'alerte bras sensible (32) »), les deux seuils (dès 32 pour un bras sensible,
+dès 35 sinon : ceux de `advanced-rcs.ts`, cités comme dans `getStringRecommendation` depuis #119), un exemple de valeurs recalculé (« RA 64 ·
+160 lb/in · 23 kg ») et le levier de la formule (1 kg de tension = 0,5 point d'indice). Plus de public cible (ni médicalisé, ni NTRP, ni
+« réservé aux professionnels »), plus de matériel conseillé, de poids ni de marque de cordage : rien de cela n'entre dans l'indice.
+**Libellés** : « Ultra Comfort+ », « Ultra Comfort », « Very Comfortable », « Comfortable » deviennent « Very Soft », « Soft », « Fairly
+Soft », « Medium-Soft » (« Very Comfortable » à 24-25 et « Comfortable » à 26 contredisaient les paliers publiés « Très confortable » < 20
+et « Standard » 25-29) ; les cinq zones deviennent « Low » à « High Index Zone ». **Profils** : la liste déroulante des pages garde ses clés ;
+le moteur n'en dit plus que la plage (« Low index (RCS 11 to 24) »), et ses verdicts disent « Index inside / below / above the profile
+range » au lieu de « Optimal configuration » et de « to protect your arm ». **Icônes** : hôpital → nuage, couronne → ⚠️ (D10 et zone haute),
+✅ → ℹ️. **Alertes, jamais supprimées ni adoucies** : le message de l'alerte rouge dit maintenant son seuil et son risque (« Index 35 or
+more: arm alert threshold for every profile (tennis elbow risk) »), l'orange cite 32 et 35, « Consult a physio » devient « Consult a health
+professional if pain or discomfort persists » (charte F7) ; titres, conseils, « Not recommended for … injury history », verdict
+`risque_sante` et seuils inchangés (accents du moteur FR rétablis). **Contrôle 20** de `audit:ratings` : aucune chaîne du source
+(littéraux et gabarits, clés exclues) ni sortie des deux moteurs (niveaux, zones, profils, évaluations et alertes de RCS 0 à 60, gabarits
+HTML) ne contient d'allégation thérapeutique, médicale, protectrice, de public médicalisé, d'effet sur le bras ni d'absolu de santé (6
+familles : la liste de la décision plus les formes voisines), hors la mise en garde « antécédents de blessure » du message d'alerte, qui
+doit y rester et n'apparaître nulle part ailleurs ; chaque chiffre cité est celui du moteur (plages des niveaux, zones et profils, marges,
+seuils 32 et 35 sondés dans `calculateAdvancedRcs`, 20 exemples recalculés, levier mesuré sur la formule) ; les seuils d'alerte du moteur
+statique sont ceux du configurateur et chaque verdict nomme le tennis elbow. 52 tests négatifs (copies altérées du source) détectés, 14
+témoins positifs acceptés ; sur les moteurs d'`origin/main` le contrôle relève 938 constats dont 235 allégations. **Vérifié en exécution**
+(Chrome, Playwright, `/en/rcs-calculator.html` et `/en/configurator.html`, RCS 12, 33 et 38, ancien moteur servi par interception pour
+comparer) : alerte absente, orange, rouge comme avant, mêmes conseils, aucune erreur de console ; `setups.html` renvoie un visiteur non
+connecté vers `/en/auth.html` (avant comme après) et ne lit que `decile.label`. ⚠️ **Hors périmètre, non modifié, à confier à leur
+propriétaire** (`public/en/*.html` : `tsa-acquisition` ; articles : `tsa-redacteur` ; `src/` : voir ci-dessous) : sur
+`rcs-calculator.html`, les trois options du sélecteur de profil (« Post-injury rehabilitation », « Tennis elbow / Epicondylitis », « Senior /
+Sensitive arm »), la méta-description (« prevent injuries »), « Evaluate the joint stress of your configuration », « Based on research by
+Brody (1987), Hennig (1992), Kawazoe (1997) » et sa liste de références (non vérifiées), l'échelle « 0-100 » et la jauge « 0 - Maximum
+Comfort … 100 - Maximum Performance » (le RCS va de 11 à 41 et plus), le repère « D5 - Balanced Flexible / Average club level » ; sur
+`configurator.html`, « Fragile shoulder », les raisons « protects the arm » et « excellent for protecting the arm », « ideal for starting out
+without strain », les conseils « Ideal if you are protecting your arm » (< 20) et « forgiving on the joints » (< 25), « RCS Score - Arm
+Comfort » ; `faq.html` (« 0 to 100 », « Low score (0-30): Maximum comfort, ideal for sensitive arms ») ; `premium.html` (« protect your
+joints ») ; l'icône 🩺 du RCS dans la navigation ; `src/lib/i18n/dictionaries.ts` (« préserver votre bras » / « protect your arm », « montage
+idéal ») et `configurator/page.tsx` (« RCS Optimal »). **Défaut de page qui touche la règle 2** : `statusColors` des deux pages ne connaît pas
+`risque_sante` — sur `configurator.html` le verdict « tennis elbow risk » s'affiche dans le vert du statut « optimal » (l'alerte rouge au-dessus
+reste affichée), sur `rcs-calculator.html` il est sans couleur (classe `undefined`). **À arbitrer** : (1) le moteur EN ne déclenche son verdict
+`risque_sante` qu'à 35, même pour un profil bras sensible, alors que le configurateur FR alerte dès 32 : le texte cite maintenant les deux
+seuils, la logique est inchangée ; (2) « Complete warm-up mandatory (15-20 min) » et « generates significant joint stress » sont des
+affirmations d'alerte sans source médicale, conservées (règle 2) en attendant une source ou une décision ; (3) les kg des suggestions de profil
+(`ceil(écart × 2)`, cohérents avec le levier de 0,5 point par kg) peuvent dépasser la plage physique de tension (« Lowering the tension by 12
+kg ») : logique inchangée.
 
 **Changelog v2.3.17 → v2.3.18** — **Descriptions des cordages et phrases de recommandation alignées sur la rigidité : plus de
 promesse de confort que le chiffre contredit, plus d'absolu de santé** (décision de l'orchestrateur du 11/10/2026, Pierre ayant
@@ -1267,4 +1321,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.3.18 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.3.19 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
