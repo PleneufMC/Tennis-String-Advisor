@@ -1925,8 +1925,11 @@ export default function ConfiguratorPage() {
                     seuil d'alerte du moteur. Il annonçait « > 30 », en
                     contradiction avec le tableau du site (35) et avec
                     advanced-rcs (32 sensible / 35 standard) : trois chiffres
-                    différents pour un même avertissement de santé. */}
-                <span style={{ fontWeight: '500', color: 'var(--state-bad)' }}>Prudence au-delà de 32, risque à partir de 35</span>
+                    différents pour un même avertissement de santé.
+                    11/10/2026 : « au-delà de 32 » devient « dès 32 » (l'alerte du
+                    bras sensible se déclenche À 32, pas après) et la ligne renvoie
+                    à la case de déclaration ; le seuil de 35 est inchangé. */}
+                <span style={{ fontWeight: '500', color: 'var(--state-bad)' }}>Prudence dès 32 (alerte si bras sensible déclaré), risque à partir de 35</span>
               </div>
             </div>
           </div>
