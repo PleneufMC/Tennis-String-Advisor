@@ -2341,6 +2341,175 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
 }
 
 // ---------------------------------------------------------------------------
+// 19. DESCRIPTIONS DES CORDAGES — aucun absolu de santé, aucune promesse de confort
+//     que la rigidité contredit (décision de l'orchestrateur du 11/10/2026)
+// ---------------------------------------------------------------------------
+// Constat (contrôle indépendant de tsa-measure, réserve R1) : après la règle C et le lot 3 de rigidités
+// (PR #116), 39 cordages étaient plus rigides qu'avant et 21 d'entre eux gardaient une `description` qui
+// parlait de « souple », de « confort », de « doux » ou de « bras sensible », affichée sur leur fiche juste à
+// côté d'un chiffre qui la contredit. Ce bloc rend ce défaut, et les absolus de santé de la charte F7
+// (« jamais "idéal pour le coude", ni aucun absolu »), impossibles à réintroduire. Il échoue si :
+//   (a) une description parle du bras, du coude ou de blessure, ou promet un effet sur la santé : le confort
+//       d'un montage se dit par l'indice RCS et ses alertes, pas par l'argumentaire d'une fiche ;
+//   (b) une description contient un mot de confort, de douceur ou de toucher alors que la fiche est plus rigide
+//       que la médiane de sa famille (le `type`, médiane relue dans les données à chaque exécution) ET que le
+//       montage médian (RA 64, 24 kg) sort du palier publié « Confortable », OU alors que l'alerte bras du
+//       profil standard se déclenche à ce montage (même moteur que le configurateur, notes de la fiche
+//       comprises). Les fiches réellement souples gardent leurs mots ;
+//   (c) une description annonce un rang de rigidité (« deuxième polyester le plus rigide du catalogue ») qui
+//       n'est pas le rang réel : un fait de la base se vérifie, il ne se recopie pas ;
+//   (d) `getStringRecommendation` contient un absolu de santé, cite un seuil d'alerte qui n'est pas celui que
+//       le moteur applique (sondé dans `calculateAdvancedRcs`), ou si la borne du palier « Très Ferme » n'est
+//       plus le seuil d'alerte du profil standard.
+// Chaque garde est rejouée sur des copies altérées ; des témoins positifs prouvent que les fiches souples
+// gardent leurs mots (dont un boyau plus rigide que la médiane des boyaux, mais à indice « Confortable »).
+{
+  const before = failures.length;
+  type Fiche = (typeof stringsDatabase)[number];
+  const REF_TENSION = 24; // kg : centre de l'échelle RCS (calculateRCS normalise autour de 24 kg)
+  // « Sensation » capitalisé est un nom de produit (Wilson Sensation) : seul « sensation(s) » minuscule compte.
+  const HEALTH = /\bbras\b|coude|elbow|blessure|épicondyl|tendin|sans (?:aucun )?(?:danger|risque)|prot[eé]g|soulag|pr[eé]vien|pr[eé]vention|thérap|rééduc/i;
+  const COMFORT = /soupl|\bdou(?:x|ce(?:ur)?)\b|confort|moelleu|amorti|indulgen|ménag|\btoucher\b/i;
+  const FEEL = /\bsensations?\b/;
+  const RANK = /(premier|première|deuxième|troisième|quatrième|cinquième|sixième|septième|huitième|neuvième|dixième) (polyester|multifilament|boyau|synthétique|hybride) le (plus|moins) rigide du catalogue/gi;
+  const ORDINAL: Record<string, number> = { premier: 1, première: 1, deuxième: 2, troisième: 3, quatrième: 4, cinquième: 5, sixième: 6, septième: 7, huitième: 8, neuvième: 9, dixième: 10 };
+  const TYPE_OF: Record<string, Fiche['type']> = { polyester: 'Polyester', multifilament: 'Multifilament', boyau: 'Natural Gut', synthétique: 'Synthetic', hybride: 'Hybrid' };
+  const ABSOLUTE = /idéal|parfait|optimal|sans (?:aucun )?(?:danger|risque)|garanti|prot[eé]g|soulag|pr[eé]vien|réservé aux|convient à la majorité/i;
+
+  // Dernier indice RCS entier encore dans un palier « confortable » publié par getStringRecommendation (24).
+  let comfortableMax = -Infinity;
+  for (let v = -50; v <= 100; v++) if (/confortable/i.test(getStringRecommendation(v).level)) comfortableMax = v;
+
+  const median = (v: number[]) => { const s = [...v].sort((a, b) => a - b); const n = s.length; return n % 2 ? s[(n - 1) / 2] : (s[n / 2 - 1] + s[n / 2]) / 2; };
+  // L'alerte bras du profil standard se déclenche-t-elle sur ce cordage au montage médian (RA 64, 24 kg) ?
+  const standardAlertAtReference = (s: Fiche) =>
+    calculateAdvancedRcs({
+      racquetStiffness: DEFAULT_RACQUET_RA,
+      mainStringStiffness: s.stiffness,
+      mainStringFamily: stringTypeToFamily(s.type),
+      mainRatings: { control: s.control, comfort: s.comfort, spin: s.spin, power: s.power, durability: s.durability },
+      mainTension: REF_TENSION,
+      profile: { armSensitive: false },
+    }).warnings.length > 0;
+
+  const descriptionFindings = (catalog: readonly Fiche[]): string[] => {
+    const issues: string[] = [];
+    const medians = new Map<string, number>();
+    for (const t of new Set(catalog.map((s) => s.type))) medians.set(t, median(catalog.filter((s) => s.type === t).map((s) => s.stiffness)));
+    for (const s of catalog) {
+      const d = s.description;
+      const health = HEALTH.exec(d);
+      if (health) issues.push(`${s.id} : la description parle de santé (« ${health[0]} »)`);
+      const comfort = COMFORT.exec(d) ?? FEEL.exec(d);
+      if (comfort) {
+        const med = medians.get(s.type)!;
+        const rcs = calculateRCS(DEFAULT_RACQUET_RA, s.stiffness, REF_TENSION);
+        const stiffer = s.stiffness > med && rcs > comfortableMax;
+        if (stiffer) issues.push(`${s.id} : mot de confort (« ${comfort[0]} ») sur une fiche plus rigide que la médiane des ${s.type} (${s.stiffness} > ${med} lb/in, indice ${rcs} au montage médian)`);
+        else if (standardAlertAtReference(s)) issues.push(`${s.id} : mot de confort (« ${comfort[0]} ») sur une fiche dont l'alerte bras standard se déclenche au montage médian`);
+      }
+      for (const m of d.matchAll(RANK)) {
+        const n = ORDINAL[m[1].toLowerCase()];
+        const family = TYPE_OF[m[2].toLowerCase()];
+        const inFamily = catalog.filter((x) => x.type === family);
+        const ahead = inFamily.filter((x) => (m[3].toLowerCase() === 'plus' ? x.stiffness > s.stiffness : x.stiffness < s.stiffness)).length;
+        const tied = inFamily.filter((x) => x.id !== s.id && x.stiffness === s.stiffness).length;
+        if (s.type !== family || ahead + 1 !== n || tied > 0) issues.push(`${s.id} : rang de rigidité inexact (« ${m[0]} ») — rang réel ${ahead + 1} parmi les ${family}${tied > 0 ? ', ex æquo' : ''}`);
+      }
+    }
+    return issues;
+  };
+
+  // (d) Seuils d'alerte sondés dans le moteur : plus petit indice qui déclenche l'alerte, sans second filet (aucune note).
+  const probe = (armSensitive: boolean): number | null => {
+    for (let st = 60; st <= 400; st++) {
+      const adv = calculateAdvancedRcs({ racquetStiffness: DEFAULT_RACQUET_RA, mainStringStiffness: st, mainStringFamily: 'polyester', mainRatings: {}, mainTension: REF_TENSION, profile: { armSensitive } });
+      if (adv.warnings.length > 0) return adv.rcs;
+    }
+    return null;
+  };
+  const SENSITIVE_AT = probe(true);
+  const STANDARD_AT = probe(false);
+  const recommendationFindings = (texts: readonly string[], sensitive: number | null, standard: number | null, levelAt: (v: number) => string): string[] => {
+    const issues: string[] = [];
+    const all = texts.join(' | ');
+    const absolute = ABSOLUTE.exec(all);
+    if (absolute) issues.push(`absolu de santé « ${absolute[0]} »`);
+    const cited = (re: RegExp) => [...all.matchAll(re)].map((m) => Number(m[1]));
+    const sens = cited(/dès (\d+) pour un bras sensible/g);
+    const std = cited(/dès (\d+) sinon/g);
+    if (sens.length === 0 || sens.some((v) => v !== sensitive)) issues.push(`seuil « bras sensible » cité (${sens.join(', ') || 'aucun'}) ≠ seuil du moteur (${sensitive})`);
+    if (std.length === 0 || std.some((v) => v !== standard)) issues.push(`seuil « sinon » cité (${std.join(', ') || 'aucun'}) ≠ seuil du moteur (${standard})`);
+    if (standard === null || levelAt(standard) !== 'Très Ferme' || levelAt(standard - 1) === 'Très Ferme') issues.push(`la borne du palier « Très Ferme » n'est plus le seuil d'alerte standard (${standard})`);
+    return issues;
+  };
+  const byLevel = new Map<string, string[]>();
+  for (let v = 0; v <= 60; v++) { const r = getStringRecommendation(v); byLevel.set(r.level, [r.description, r.suggestion]); }
+  const recoTexts = [...byLevel.values()].flat();
+  const recoLevel = (v: number) => getStringRecommendation(v).level;
+
+  // --- Le catalogue réel -----------------------------------------------------------------------------------------
+  if (SENSITIVE_AT === null || STANDARD_AT === null) fail('descriptions : seuils d\'alerte introuvables dans calculateAdvancedRcs (sonde muette)');
+  descriptionFindings(stringsDatabase).forEach((i) => fail(`descriptions : ${i}`));
+  recommendationFindings(recoTexts, SENSITIVE_AT, STANDARD_AT, recoLevel).forEach((i) => fail(`getStringRecommendation : ${i}`));
+  if (byLevel.size !== 5) fail(`getStringRecommendation : ${byLevel.size} paliers au lieu de 5 sur l'intervalle sondé (0-60)`);
+
+  // --- Tests négatifs et témoins positifs, sur des copies altérées ------------------------------------------------
+  const get = (id: string): Fiche => stringsDatabase.find((s) => s.id === id) ?? (fail(`descriptions : fiche témoin ${id} absente`), stringsDatabase[0]);
+  // Une fiche altérée dans le catalogue entier ; seuls les constats de CETTE fiche comptent (un défaut réel ailleurs ne doit
+  // ni fabriquer une détection, ni faire rejeter un témoin).
+  const on = (id: string, patch: Partial<Fiche>): string[] =>
+    descriptionFindings(stringsDatabase.map((s) => (s.id === id ? { ...s, ...patch } : s))).filter((i) => i.startsWith(`${id} :`));
+  const softMulti = get('head-intellitour'); // multifilament souple, sous la médiane des multifilaments
+  const gut = get('wilson-natural-gut'); // boyau le plus rigide du catalogue : au-dessus de la médiane des boyaux, mais indice « Confortable »
+  const gutMedian = median(stringsDatabase.filter((s) => s.type === gut.type).map((s) => s.stiffness));
+  const alertingSoft = { stiffness: 150, comfort: 2, description: 'Multifilament confortable.' }; // sous la médiane, mais note de confort très basse : l'alerte se déclenche
+  if (!(softMulti.stiffness <= median(stringsDatabase.filter((s) => s.type === softMulti.type).map((s) => s.stiffness)))) fail('descriptions : témoin souple head-intellitour n\'est plus sous la médiane des multifilaments');
+  if (!(gut.stiffness > gutMedian && calculateRCS(DEFAULT_RACQUET_RA, gut.stiffness, REF_TENSION) <= comfortableMax)) fail('descriptions : témoin boyau wilson-natural-gut n\'est plus « au-dessus de la médiane des boyaux et à indice Confortable »');
+  if (!standardAlertAtReference({ ...softMulti, ...alertingSoft })) fail('descriptions : prémisse du test d\'alerte fausse (la fiche altérée ne déclenche pas l\'alerte standard)');
+
+  const negatives: Array<[string, string[], string]> = [
+    ['absolu de santé sur une fiche souple', on(softMulti.id, { description: 'Multifilament souple, idéal pour bras sensibles.' }), 'parle de santé'],
+    ['« sans risque pour le coude »', on(softMulti.id, { description: 'Montage sans risque pour le coude.' }), 'parle de santé'],
+    ['« prévention des blessures »', on(softMulti.id, { description: 'Réputé pour la prévention des blessures.' }), 'parle de santé'],
+    ['confort promis sur le 2e polyester le plus rigide', on('babolat-rpm-team', { description: 'Polyester avec bon équilibre entre spin, contrôle et confort.' }), 'plus rigide que la médiane'],
+    ['« le plus confortable des multifilaments » au-dessus de la médiane', on('tecnifibre-tgv', { description: 'PU400 technology : 400% d\'élasticité. Le plus confortable des multifilaments.' }), 'plus rigide que la médiane'],
+    ['« excellent toucher » au-dessus de la médiane', on('tecnifibre-xr3', { description: 'Multifilament avec âme en polyuréthane pour un excellent toucher.' }), 'plus rigide que la médiane'],
+    ['« sensation multifilament » sur un polyester durci', on('luxilon-element', { description: 'Multi-Mono technology : sensation multifilament dans structure monofilament.', stiffness: 232 }), 'plus rigide que la médiane'],
+    ['douceur promise quand l\'alerte standard se déclenche (sous la médiane)', on(softMulti.id, alertingSoft), 'alerte bras standard'],
+    ['rang de rigidité inexact (3e au lieu de 2e)', on('babolat-rpm-team', { description: 'Troisième polyester le plus rigide du catalogue.' }), 'rang de rigidité inexact'],
+    ['rang de rigidité inexact (côté « moins » inversé)', on('isospeed-cream', { description: 'Cinquième polyester le plus rigide du catalogue.' }), 'rang de rigidité inexact'],
+    ['rang annoncé pour la mauvaise famille', on('tecnifibre-tgv', { description: 'Deuxième polyester le plus rigide du catalogue.' }), 'rang de rigidité inexact'],
+    ['recommandation : ancien absolu « idéal pour … sensibilité du bras »', recommendationFindings([...recoTexts, 'Idéal pour les joueurs avec sensibilité du bras ou recherchant le maximum de confort'], SENSITIVE_AT, STANDARD_AT, recoLevel), 'absolu de santé'],
+    ['recommandation : « réservé aux professionnels »', recommendationFindings([...recoTexts, 'risque élevé de tennis elbow, réservé aux professionnels'], SENSITIVE_AT, STANDARD_AT, recoLevel), 'absolu de santé'],
+    ['recommandation : seuil sensible cité faux (30 au lieu de 32)', recommendationFindings(recoTexts.map((t) => t.replace('dès 32', 'dès 30')), SENSITIVE_AT, STANDARD_AT, recoLevel), 'seuil « bras sensible » cité'],
+    ['recommandation : seuil standard cité faux (36 au lieu de 35)', recommendationFindings(recoTexts.map((t) => t.replace('dès 35', 'dès 36')), SENSITIVE_AT, STANDARD_AT, recoLevel), 'seuil « sinon » cité'],
+    ['recommandation : plus aucun seuil cité', recommendationFindings(['Configuration très souple', 'Configuration rigide'], SENSITIVE_AT, STANDARD_AT, recoLevel), 'seuil « bras sensible » cité'],
+    ['recommandation : palier « Très Ferme » décalé du seuil d\'alerte', recommendationFindings(recoTexts, SENSITIVE_AT, STANDARD_AT, (v) => recoLevel(v + 1)), 'borne du palier'],
+  ];
+  for (const [name, found, needle] of negatives) {
+    if (!found.some((i) => i.includes(needle))) fail(`descriptions : garde-fou muet sur « ${name} » (${needle})`);
+  }
+  const positives: Array<[string, string[]]> = [
+    ['une fiche souple garde « très confortable » et « toucher »', on(softMulti.id, { description: 'Multifilament très confortable, toucher soyeux.' })],
+    ['un boyau au-dessus de la médiane des boyaux garde « confort » (indice Confortable)', on(gut.id, { description: 'Boyau naturel premium. Confort et puissance exceptionnels.' })],
+    ['un rang exact est accepté', on('babolat-rpm-team', { description: 'Deuxième polyester le plus rigide du catalogue.' })],
+  ];
+  for (const [name, found] of positives) if (found.length > 0) fail(`descriptions : témoin positif « ${name} » rejeté à tort : ${found.join(' ; ')}`);
+
+  if (failures.length === before) {
+    const medians = [...new Set(stringsDatabase.map((s) => s.type))].map((t) => `${t} ${median(stringsDatabase.filter((s) => s.type === t).map((s) => s.stiffness))}`).join(', ');
+    const above = stringsDatabase.filter((s) => s.stiffness > median(stringsDatabase.filter((x) => x.type === s.type).map((x) => x.stiffness)) && calculateRCS(DEFAULT_RACQUET_RA, s.stiffness, REF_TENSION) > comfortableMax).length;
+    const alerting = stringsDatabase.filter(standardAlertAtReference).length;
+    const keepers = stringsDatabase.filter((s) => COMFORT.test(s.description) || FEEL.test(s.description)).length;
+    const ranks = stringsDatabase.reduce((n, s) => n + [...s.description.matchAll(RANK)].length, 0);
+    ok(`descriptions : ${stringsDatabase.length} fiches sans mot de santé ; aucun mot de confort sur les ${above} fiches plus rigides que la médiane de leur famille (hors indice « Confortable » ≤ ${comfortableMax}) ni sur les ${alerting} à alerte standard au montage médian (RA ${DEFAULT_RACQUET_RA}, ${REF_TENSION} kg ; médianes : ${medians}) ; ` +
+      `${keepers} fiches souples gardent leurs mots ; ${ranks} rang(s) de rigidité annoncé(s) exact(s) ; getStringRecommendation : 5 paliers sans absolu, seuils cités = seuils du moteur (${SENSITIVE_AT} sensible, ${STANDARD_AT} sinon), palier « Très Ferme » dès ${STANDARD_AT} ; ` +
+      `${negatives.length} tests négatifs détectés, ${positives.length} témoins positifs acceptés`);
+  }
+}
+
+// ---------------------------------------------------------------------------
 console.log('--- audit notation raquettes/cordages ---');
 notes.forEach((n) => console.log(n));
 if (failures.length > 0) {
