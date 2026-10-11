@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>RCS Calculator - Tennis String Advisor</title>
-  <meta name="description" content="Calculate your joint comfort score (RCS) to optimize your tennis setup and prevent injuries.">
+  <meta name="description" content="Calculate the RCS firmness index of your tennis setup (racquet, string, tension) and read it against the arm-alert thresholds.">
   <link rel="canonical" href="https://tennisstringadvisor.org/en/rcs-calculator.html">
   <link rel="alternate" hreflang="en" href="https://tennisstringadvisor.org/en/rcs-calculator.html">
   <script src="https://cdn.tailwindcss.com"></script>
@@ -122,7 +122,7 @@
     <!-- Page Header -->
     <div class="text-center mb-8">
       <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-3">🩺 RCS Calculator</h1>
-      <p class="text-gray-600 text-lg">Racquet Comfort Score - Evaluate the joint stress of your configuration</p>
+      <p class="text-gray-600 text-lg">Racquet Comfort Score - the firmness index of your configuration</p>
       <p class="text-sm text-gray-500 mt-2">Based on research by Brody (1987), Hennig (1992), Kawazoe (1997)</p>
     </div>
 
@@ -132,7 +132,7 @@
         <span class="text-2xl">ℹ️</span>
         <div>
           <h3 class="font-semibold text-blue-800">What is RCS?</h3>
-          <p class="text-sm text-blue-700 mt-1">The RCS score (0-100) evaluates the stress on your joints (elbow, shoulder, wrist) based on your equipment. A <strong>low score = more comfort</strong>, a <strong>high score = more performance but more joint stress</strong>.</p>
+          <p class="text-sm text-blue-700 mt-1">The RCS is a firmness index of your equipment: racquet stiffness, string stiffness and tension. A <strong>low index = a softer setup</strong>, a <strong>high index = a firmer setup</strong>; from 35, there is a tennis elbow risk.</p>
         </div>
       </div>
     </div>
@@ -288,9 +288,8 @@
               <div id="rcsIndicator" class="rcs-indicator" style="left: 50%;"></div>
             </div>
             <div class="flex justify-between text-xs text-gray-500 mt-3">
-              <span>0 - Maximum Comfort</span>
-              <span>50 - Balanced</span>
-              <span>100 - Maximum Performance</span>
+              <span>Softer setup</span>
+              <span>Firmer setup</span>
             </div>
           </div>
         </div>
