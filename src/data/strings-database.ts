@@ -85,7 +85,7 @@ export const stringsDatabase: TennisString[] = [
     power: 7.4,
     recommendedTension: { min: 22, max: 27 },
     price: { europe: 15, usa: 15 },
-    description: 'Le "sea of green" du circuit. Polyester confortable avec excellent snapback pour le spin.',
+    description: 'Le "sea of green" du circuit. Polyester avec excellent snapback pour le spin.',
     proUsage: 'Populaire chez les jeunes pros',
     color: 'Green'
   },
@@ -265,7 +265,7 @@ export const stringsDatabase: TennisString[] = [
     power: 9.0,
     recommendedTension: { min: 21, max: 26 },
     price: { europe: 25, usa: 25 },
-    description: 'Technologie Biphase pour 20% de puissance en plus. Confort exceptionnel.',
+    description: 'Technologie Biphase pour 20% de puissance en plus.',
     color: 'Red'
   },
   {
@@ -393,7 +393,7 @@ export const stringsDatabase: TennisString[] = [
     power: 8.0,
     recommendedTension: { min: 21, max: 26 },
     price: { europe: 20, usa: 20 },
-    description: 'Multi-Mono technology : sensation multifilament dans structure monofilament.',
+    description: 'Multi-Mono technology dans une structure monofilament.',
     color: 'Bronze'
   },
   {
@@ -524,7 +524,7 @@ export const stringsDatabase: TennisString[] = [
     power: 8.0,
     recommendedTension: { min: 20, max: 25 },
     price: { europe: 14, usa: 16 },
-    description: 'Le polyester le plus doux du marché. Parfait pour transition du multi au poly.',
+    description: 'Cinquième polyester le moins rigide du catalogue, pour la transition du multifilament au polyester.',
     color: 'Cream'
   },
   {
@@ -548,7 +548,7 @@ export const stringsDatabase: TennisString[] = [
     power: 8.5,
     recommendedTension: { min: 19, max: 24 },
     price: { europe: 24, usa: 24 },
-    description: 'PU400 technology : 400% d\'élasticité. Le plus confortable des multifilaments.',
+    description: 'PU400 technology : 400% d\'élasticité.',
     color: 'Black'
   },
   {
@@ -702,7 +702,7 @@ export const stringsDatabase: TennisString[] = [
     power: 7.8,
     recommendedTension: { min: 22, max: 27 },
     price: { europe: 18, usa: 18 },
-    description: 'Co-polyester confortable et contrôlé, excellent maintien de tension pour le jeu quotidien.',
+    description: 'Co-polyester de contrôle, excellent maintien de tension pour le jeu quotidien.',
     color: 'Bronze'
   },
 
@@ -769,7 +769,7 @@ export const stringsDatabase: TennisString[] = [
     power: 8.0,
     recommendedTension: { min: 22, max: 27 },
     price: { europe: 16, usa: 16 },
-    description: 'Profil hexagonal pour maximiser le spin avec un toucher accessible.',
+    description: 'Profil hexagonal pour maximiser le spin.',
     color: 'Black'
   },
 
@@ -815,7 +815,7 @@ export const stringsDatabase: TennisString[] = [
     power: 7.8,
     recommendedTension: { min: 22, max: 27 },
     price: { europe: 16, usa: 16 },
-    description: 'Équilibre puissance/contrôle avec un toucher net et confortable.',
+    description: 'Équilibre puissance/contrôle.',
     color: 'White'
   },
   {
@@ -1041,7 +1041,7 @@ export const stringsDatabase: TennisString[] = [
     power: 8.3,
     recommendedTension: { min: 22, max: 27 },
     price: { europe: 15, usa: 15 },
-    description: 'Polyester souple mêlant puissance, confort et spin, apprécié des joueurs all-court.',
+    description: 'Polyester mêlant puissance et spin, apprécié des joueurs all-court.',
     color: 'Black'
   },
 
@@ -1093,7 +1093,7 @@ export const stringsDatabase: TennisString[] = [
     power: 8.8,
     recommendedTension: { min: 21, max: 26 },
     price: { europe: 18, usa: 18 },
-    description: 'Grand classique du confort chez Tecnifibre. Polyuréthane très souple, puissance et toucher proches du boyau. Valeur sûre pour bras sensibles.',
+    description: 'Grand classique chez Tecnifibre. Multifilament en polyuréthane, orienté puissance.',
     color: 'Natural'
   },
   {
@@ -1138,7 +1138,7 @@ export const stringsDatabase: TennisString[] = [
     power: 8.6,
     recommendedTension: { min: 21, max: 26 },
     price: { europe: 23, usa: 24 },
-    description: '1600 fibres pour une des meilleures sensations du marché. Puissance et confort généreux, référence historique du multifilament. Durabilité en retrait : à éviter si vous cassez souvent.',
+    description: '1600 fibres. Orienté puissance, référence historique du multifilament. Durabilité en retrait : à éviter si vous cassez souvent.',
     color: 'Natural'
   },
   {
@@ -1222,7 +1222,7 @@ export const stringsDatabase: TennisString[] = [
     power: 8.5,
     recommendedTension: { min: 22, max: 27 },
     price: { europe: 16, usa: 17 },
-    description: 'Multifilament polyamide Babolat orienté confort et puissance, alternative moderne au Xcel.',
+    description: 'Multifilament polyamide Babolat orienté puissance, alternative moderne au Xcel.',
     color: 'Natural'
   },
   {
@@ -1325,7 +1325,7 @@ export const stringsDatabase: TennisString[] = [
     power: 8.6,
     recommendedTension: { min: 21, max: 26 },
     price: { europe: 11, usa: 12 },
-    description: 'Le multifilament confort de Solinco, pensé pour être hybridé avec un Hyper-G ou un Tour Bite en montants.',
+    description: 'Multifilament de Solinco, pensé pour être hybridé avec un Hyper-G ou un Tour Bite en montants.',
     color: 'Natural'
   },
   {
@@ -1369,7 +1369,7 @@ export const stringsDatabase: TennisString[] = [
     power: 8.7,
     recommendedTension: { min: 21, max: 26 },
     price: { europe: 14, usa: 15 },
-    description: 'Multifilament allemand haut de gamme : confort de premier ordre et très bonne tenue de tension.',
+    description: 'Multifilament allemand haut de gamme, à très bonne tenue de tension.',
     color: 'Natural'
   },
   {
@@ -1577,7 +1577,7 @@ export const stringsDatabase: TennisString[] = [
     power: 8,
     recommendedTension: { min: 22, max: 27 },
     price: { europe: 14, usa: 16 },
-    description: 'Polyester polyvalent avec bon équilibre entre puissance, contrôle et confort.',
+    description: 'Polyester polyvalent avec bon équilibre entre puissance et contrôle.',
     color: 'Blue'
   },
   {
@@ -1674,7 +1674,7 @@ export const stringsDatabase: TennisString[] = [
     power: 7.4,
     recommendedTension: { min: 22, max: 27 },
     price: { europe: 14, usa: 16 },
-    description: 'Version plus accessible du RPM Blast avec un bon équilibre entre spin, contrôle et confort.',
+    description: 'Version du RPM Blast avec un bon équilibre entre spin et contrôle. Deuxième polyester le plus rigide du catalogue.',
     color: 'Black'
   },
   {
@@ -1754,7 +1754,7 @@ export const stringsDatabase: TennisString[] = [
     power: 8.5,
     recommendedTension: { min: 23, max: 27 },
     price: { europe: 20, usa: 23 },
-    description: 'Multifilament haut de gamme avec toucher exceptionnel et excellent confort.',
+    description: 'Multifilament haut de gamme de Babolat.',
     color: 'Natural/White'
   },
   {
@@ -1774,7 +1774,7 @@ export const stringsDatabase: TennisString[] = [
     power: 8.5,
     recommendedTension: { min: 23, max: 27 },
     price: { europe: 15, usa: 17 },
-    description: 'Multifilament accessible avec bon confort et puissance. Idéal pour débuter en multifilament.',
+    description: 'Multifilament accessible, orienté puissance, pour débuter en multifilament.',
     color: 'White'
   },
   {
@@ -1964,7 +1964,7 @@ export const stringsDatabase: TennisString[] = [
     power: 8,
     recommendedTension: { min: 21, max: 26 },
     price: { europe: 23, usa: 25 },
-    description: 'ALU Power avec technologie anti-vibration intégrée. Confort optimal sans sacrifier les performances.',
+    description: 'ALU Power avec technologie anti-vibration intégrée.',
     color: 'Lime Green'
   },
   {
@@ -2058,7 +2058,7 @@ export const stringsDatabase: TennisString[] = [
     power: 8.5,
     recommendedTension: { min: 22, max: 27 },
     price: { europe: 21, usa: 23 },
-    description: 'Element avec surface texturée. Combine le confort de l\'Element avec plus de potentiel de spin.',
+    description: 'Element avec surface texturée, pour plus de potentiel de spin.',
     color: 'Bronze'
   },
   {
@@ -2322,7 +2322,7 @@ export const stringsDatabase: TennisString[] = [
     power: 9,
     recommendedTension: { min: 22, max: 27 },
     price: { europe: 14, usa: 16 },
-    description: 'Hawk orienté puissance avec plus de dynamisme et de confort.',
+    description: 'Hawk orienté puissance, avec plus de dynamisme.',
     color: 'Blue'
   },
   {
@@ -2695,7 +2695,7 @@ export const stringsDatabase: TennisString[] = [
     power: 8.5,
     recommendedTension: { min: 21, max: 26 },
     price: { europe: 16, usa: 18 },
-    description: 'Version assouplie du Razor Code pour plus de confort et de puissance.',
+    description: 'Variante du Razor Code, avec plus de puissance.',
     color: 'Carbon Grey'
   },
   {
@@ -2733,7 +2733,7 @@ export const stringsDatabase: TennisString[] = [
     power: 7.5,
     recommendedTension: { min: 22, max: 27 },
     price: { europe: 14, usa: 16 },
-    description: 'Version améliorée du Red Code avec meilleur toucher et spin accru.',
+    description: 'Version améliorée du Red Code avec spin accru.',
     color: 'Red'
   },
   {
@@ -2753,7 +2753,7 @@ export const stringsDatabase: TennisString[] = [
     power: 7.5,
     recommendedTension: { min: 22, max: 27 },
     price: { europe: 15, usa: 17 },
-    description: 'Pro Red Code avec traitement cire pour plus de glissement et de confort.',
+    description: 'Pro Red Code avec traitement cire pour plus de glissement.',
     color: 'Red'
   },
   {
@@ -2847,7 +2847,7 @@ export const stringsDatabase: TennisString[] = [
     power: 8.5,
     recommendedTension: { min: 23, max: 27 },
     price: { europe: 19, usa: 21 },
-    description: 'Multifilament avec âme en polyuréthane pour un excellent toucher.',
+    description: 'Multifilament avec âme en polyuréthane.',
     color: 'Natural/Black'
   },
   {
