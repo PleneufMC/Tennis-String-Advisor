@@ -39,7 +39,7 @@ export const metadata: Metadata = {
     template: '%s | Tennis String Advisor',
   },
   description:
-    'Trouvez le cordage et la raquette de tennis parfaits pour votre style de jeu. Configurateur expert, comparateur, recommandations IA personnalisées et base de données complète.',
+    "Configurateur de cordage et de tension, comparateur, catalogue de raquettes et de cordages. Indice RCS publié avec ses seuils d’alerte pour le bras.",
   keywords: [
     'tennis',
     'cordage tennis',
@@ -83,7 +83,7 @@ export const metadata: Metadata = {
     siteName: 'Tennis String Advisor',
     title: 'Tennis String Advisor - Expert en Cordages et Raquettes',
     description:
-      'Trouvez le cordage et la raquette parfaits pour votre jeu. Configurateur expert et recommandations personnalisées.',
+      "Configurateur de cordage et de tension, comparateur et catalogue, avec l’indice RCS et ses seuils d’alerte pour le bras.",
     images: [
       {
         url: '/og-image.png',
@@ -96,7 +96,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Tennis String Advisor - Expert en Cordages',
-    description: 'Trouvez le cordage parfait pour votre style de jeu.',
+    description: "Configurateur de cordage et de tension, avec l’indice RCS et ses seuils d’alerte pour le bras.",
     images: ['/og-image.png'],
   },
   robots: {

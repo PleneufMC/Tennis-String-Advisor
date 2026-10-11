@@ -31,7 +31,7 @@ export const dictionaries = {
     'home.title1': 'Le bon cordage,',
     'home.title2': 'pour votre jeu.',
     'home.subtitle':
-      'Tennis String Advisor croise votre raquette, votre cordage et votre tension pour calculer un score de confort objectif (RCS) — et vous guider vers le montage idéal.',
+      'Tennis String Advisor croise votre raquette, votre cordage et votre tension pour calculer l’indice de fermeté de votre montage (RCS), publié avec ses seuils d’alerte pour le bras.',
     'home.cta.configurator': 'Lancer le configurateur',
     'home.cta.explore': 'Explorer la base',
     'home.stats.racquets': 'Raquettes',
@@ -45,7 +45,7 @@ export const dictionaries = {
     'home.rcs.string': 'Cordage',
     'home.rcs.tension': 'Tension',
     'home.rcs.note':
-      'Configuration équilibrée : contrôle élevé avec un confort adapté à la majorité des joueurs.',
+      'Exemple calculé avec les données du catalogue. L’alerte bras se déclenche dès 32 pour un bras sensible, dès 35 sinon.',
     'home.brands.label': 'Toutes les grandes marques',
 
     // --- Home: Features ---
@@ -57,22 +57,22 @@ export const dictionaries = {
       'Croisez raquette, cordage, jauge et tension. Le résultat se met à jour en direct.',
     'home.feature.rcs.title': 'Analyse RCS',
     'home.feature.rcs.desc':
-      'Un score de confort objectif pour anticiper la sensation de jeu et préserver votre bras.',
+      'Un indice de fermeté pour comparer vos montages, publié avec ses seuils d’alerte pour le bras.',
     'home.feature.journal.title': 'Journal de cordage',
     'home.feature.journal.desc':
       'Historisez vos montages, notez vos sensations et recevez des rappels de recordage.',
-    'home.feature.database.title': 'Base de données complète',
+    'home.feature.database.title': 'Catalogue raquettes et cordages',
     'home.feature.database.desc':
-      'Specs vérifiées et tenues à jour pour les modèles vendus aujourd’hui.',
+      'Les caractéristiques de chaque fiche ; ce que le fabricant ne publie pas est signalé « non publié » ou « estimé ».',
 
     // --- Home: RCS explication ---
     'home.rcsSection.eyebrow': 'Le score RCS',
     'home.rcsSection.title': 'Un indicateur de confort, pas une boîte noire',
     'home.rcsSection.desc':
-      'Le RCS combine la rigidité de votre raquette, celle de votre cordage et votre tension pour estimer la fermeté ressentie. Plus il est bas, plus le montage est doux pour le bras.',
-    'home.rcsSection.point1': 'Évite les montages trop rigides (risque de tennis elbow)',
-    'home.rcsSection.point2': 'Compare objectivement plusieurs configurations',
-    'home.rcsSection.point3': 'Adapté à votre niveau et à votre style de jeu',
+      'Le RCS combine la rigidité de votre raquette, celle de votre cordage et votre tension pour estimer la fermeté du montage. Plus l’indice est bas, plus le montage est souple ; l’alerte bras se déclenche dès 32 pour un bras sensible, dès 35 sinon.',
+    'home.rcsSection.point1': 'Signale les montages trop rigides (risque de tennis elbow)',
+    'home.rcsSection.point2': 'Compare plusieurs configurations avec le même indice',
+    'home.rcsSection.point3': 'Tient compte de la raquette, du cordage et de la tension',
     'home.rcsSection.scale': 'Échelle de lecture',
     'home.rcsSection.veryComfortable': 'Très confortable',
     'home.rcsSection.comfortable': 'Confortable',
@@ -81,7 +81,7 @@ export const dictionaries = {
     'home.rcsSection.veryFirm': 'Très ferme',
 
     // --- Home: CTA final ---
-    'home.finalCta.title': 'Prêt à trouver votre montage idéal ?',
+    'home.finalCta.title': 'Prêt à comparer vos montages ?',
     'home.finalCta.desc':
       'Testez gratuitement le configurateur. Passez Premium pour le journal complet, l’export PDF et les configurations illimitées.',
     'home.finalCta.start': 'Commencer gratuitement',
@@ -148,7 +148,7 @@ export const dictionaries = {
     'home.title1': 'The right string,',
     'home.title2': 'for your game.',
     'home.subtitle':
-      'Tennis String Advisor combines your racquet, string and tension to compute an objective comfort score (RCS) — and guide you to the ideal setup.',
+      'Tennis String Advisor combines your racquet, string and tension to compute the firmness index of your setup (RCS), published with its arm-alert thresholds.',
     'home.cta.configurator': 'Launch the configurator',
     'home.cta.explore': 'Explore the database',
     'home.stats.racquets': 'Racquets',
@@ -162,7 +162,7 @@ export const dictionaries = {
     'home.rcs.string': 'String',
     'home.rcs.tension': 'Tension',
     'home.rcs.note':
-      'Balanced setup: high control with comfort suited to the majority of players.',
+      'Example computed from the catalog data. The arm alert starts at 32 for a sensitive arm, and at 35 otherwise.',
     'home.brands.label': 'All the major brands',
 
     // --- Home: Features ---
@@ -174,22 +174,22 @@ export const dictionaries = {
       'Combine racquet, string, gauge and tension. The result updates in real time.',
     'home.feature.rcs.title': 'RCS analysis',
     'home.feature.rcs.desc':
-      'An objective comfort score to anticipate feel and protect your arm.',
+      'A firmness index to compare your setups, published with its arm-alert thresholds.',
     'home.feature.journal.title': 'Stringing journal',
     'home.feature.journal.desc':
       'Log your setups, note your feel and get restringing reminders.',
-    'home.feature.database.title': 'Complete database',
+    'home.feature.database.title': 'Racquet and string catalog',
     'home.feature.database.desc':
-      'Verified, up-to-date specs for the models sold today.',
+      'The specifications of each listing; what the maker does not publish is marked “not published” or “estimated”.',
 
     // --- Home: RCS explanation ---
     'home.rcsSection.eyebrow': 'The RCS score',
     'home.rcsSection.title': 'A comfort indicator, not a black box',
     'home.rcsSection.desc':
-      'RCS combines your racquet stiffness, string stiffness and tension to estimate the perceived firmness. The lower it is, the gentler the setup is on your arm.',
-    'home.rcsSection.point1': 'Avoid overly stiff setups (tennis elbow risk)',
-    'home.rcsSection.point2': 'Objectively compare several configurations',
-    'home.rcsSection.point3': 'Tailored to your level and playing style',
+      'RCS combines your racquet stiffness, string stiffness and tension to estimate the firmness of the setup. The lower the index, the softer the setup; the arm alert starts at 32 for a sensitive arm, and at 35 otherwise.',
+    'home.rcsSection.point1': 'Flags overly stiff setups (tennis elbow risk)',
+    'home.rcsSection.point2': 'Compares several configurations with the same index',
+    'home.rcsSection.point3': 'Takes the racquet, the string and the tension into account',
     'home.rcsSection.scale': 'Reading scale',
     'home.rcsSection.veryComfortable': 'Very comfortable',
     'home.rcsSection.comfortable': 'Comfortable',
@@ -198,7 +198,7 @@ export const dictionaries = {
     'home.rcsSection.veryFirm': 'Very firm',
 
     // --- Home: final CTA ---
-    'home.finalCta.title': 'Ready to find your ideal setup?',
+    'home.finalCta.title': 'Ready to compare your setups?',
     'home.finalCta.desc':
       'Try the configurator for free. Go Premium for the full journal, PDF export and unlimited configurations.',
     'home.finalCta.start': 'Start for free',
