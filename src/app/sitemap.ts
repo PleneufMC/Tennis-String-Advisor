@@ -48,32 +48,36 @@ const APP_ROUTES: Array<{
 
 // Articles de blog réellement présents dans `public/blog/*.html`.
 // (Liste explicite : pas d'accès filesystem au runtime sur l'edge.)
-const BLOG_SLUGS: string[] = [
+// Date de dernière modification de chaque article : celle de son JSON-LD (`dateModified`),
+// que le rédacteur met à jour quand un chiffre ou une phrase du corps change. C'est la seule
+// `lastmod` du sitemap : une date que rien n'établit (ou la date du build) n'est pas publiée.
+// `npm run audit:jsonld` échoue si une date diffère de celle de l'article ou si un article manque.
+const BLOG_ARTICLES: Array<{ slug: string; modified: string }> = [
   // Comparatif Gravity MP vs Tour retiré le 10/10/2026 (décision de Pierre) :
   // 301 vers le classement 2026, cf. redirects() de next.config.js.
-  'plan-de-cordage-tennis.html',
-  'jauge-cordage-tennis.html',
-  'guide-tension-cordage-tennis.html',
-  'cordage-tennis-elbow.html',
-  'guide-materiel-tennis.html',
-  'analyse-setups-atp-top-20.html',
-  'nouveautes-equipement-tennis-2025-2026.html',
-  'cordage-terre-battue.html',
-  'challengers-sinner-alcaraz-2026.html',
-  'actualite-materiel-tennis-2026-guerre-du-spin.html',
-  'cordage-mono-vs-multifilament.html',
-  'cordage-tennis-chaleur.html',
-  'tension-cordage-hiver.html',
-  'raquette-point-fort-ou-point-faible.html',
+  { slug: 'plan-de-cordage-tennis.html', modified: '2026-06-01' },
+  { slug: 'jauge-cordage-tennis.html', modified: '2026-06-01' },
+  { slug: 'guide-tension-cordage-tennis.html', modified: '2025-12-19' },
+  { slug: 'cordage-tennis-elbow.html', modified: '2026-10-10' },
+  { slug: 'guide-materiel-tennis.html', modified: '2026-10-10' },
+  { slug: 'analyse-setups-atp-top-20.html', modified: '2025-12-21' },
+  { slug: 'nouveautes-equipement-tennis-2025-2026.html', modified: '2026-01-06' },
+  { slug: 'cordage-terre-battue.html', modified: '2026-06-03' },
+  { slug: 'challengers-sinner-alcaraz-2026.html', modified: '2026-10-10' },
+  { slug: 'actualite-materiel-tennis-2026-guerre-du-spin.html', modified: '2026-10-10' },
+  { slug: 'cordage-mono-vs-multifilament.html', modified: '2026-06-23' },
+  { slug: 'cordage-tennis-chaleur.html', modified: '2026-08-28' },
+  { slug: 'tension-cordage-hiver.html', modified: '2026-10-01' },
+  { slug: 'raquette-point-fort-ou-point-faible.html', modified: '2026-08-27' },
   // Adapté de l'EN next-gen (01/10/2026), appairé en hreflang.
-  'materiel-next-gen-fonseca-mensik-cobolli-jodar.html',
-  'combien-de-temps-dure-un-cordage.html',
+  { slug: 'materiel-next-gen-fonseca-mensik-cobolli-jodar.html', modified: '2026-10-10' },
+  { slug: 'combien-de-temps-dure-un-cordage.html', modified: '2026-10-01' },
   // Classement polyester 2026 (09/10/2026), appairé en hreflang.
-  'meilleur-cordage-polyester-2026.html',
+  { slug: 'meilleur-cordage-polyester-2026.html', modified: '2026-10-10' },
   // Meilleures raquettes 2026 par profil (09/10/2026), appairé en hreflang.
-  'meilleures-raquettes-tennis-2026.html',
+  { slug: 'meilleures-raquettes-tennis-2026.html', modified: '2026-10-10' },
   // Polyester et tennis elbow, tri par rigidité (09/10/2026), appairé en hreflang.
-  'cordage-polyester-tennis-elbow.html',
+  { slug: 'cordage-polyester-tennis-elbow.html', modified: '2026-10-10' },
 ];
 
 // Pages anglaises statiques publiques (`public/en/*.html`).
@@ -93,41 +97,39 @@ const EN_PAGES: Array<{ path: string; priority: number }> = [
 ];
 
 // Articles de blog anglais réellement présents dans `public/en/blog/*.html`.
-const EN_BLOG_SLUGS: string[] = [
-  'challengers-sinner-alcaraz-2026.html',
-  'next-gen-tennis-racquets-fonseca-mensik-cobolli-jodar.html',
+// Même règle de date que BLOG_ARTICLES (dateModified du JSON-LD de l'article).
+const EN_BLOG_ARTICLES: Array<{ slug: string; modified: string }> = [
+  { slug: 'challengers-sinner-alcaraz-2026.html', modified: '2026-10-10' },
+  { slug: 'next-gen-tennis-racquets-fonseca-mensik-cobolli-jodar.html', modified: '2026-10-01' },
   // Guides evergreen adaptés du français (14/08/2026), appairés en hreflang
   // avec leur source FR.
-  'tennis-string-gauge.html',
-  'tennis-string-pattern.html',
-  'polyester-vs-multifilament-strings.html',
-  'tennis-string-tension-guide.html',
+  { slug: 'tennis-string-gauge.html', modified: '2026-08-14' },
+  { slug: 'tennis-string-pattern.html', modified: '2026-08-14' },
+  { slug: 'polyester-vs-multifilament-strings.html', modified: '2026-08-14' },
+  { slug: 'tennis-string-tension-guide.html', modified: '2026-08-14' },
   // Article chaleur (28/08/2026), appairé en hreflang avec
   // /blog/cordage-tennis-chaleur.html.
-  'tennis-strings-heat-tension.html',
+  { slug: 'tennis-strings-heat-tension.html', modified: '2026-08-28' },
   // Adapté du FR raquette-point-fort-ou-point-faible (27/08/2026), appairé en hreflang.
-  'racquet-strengths-or-weaknesses.html',
+  { slug: 'racquet-strengths-or-weaknesses.html', modified: '2026-08-27' },
   // Pilier durée de vie (01/10/2026), appairé en hreflang avec
   // /blog/combien-de-temps-dure-un-cordage.html.
-  'how-long-do-tennis-strings-last.html',
+  { slug: 'how-long-do-tennis-strings-last.html', modified: '2026-10-01' },
   // Adapté du FR meilleur-cordage-polyester-2026 (09/10/2026), appairé en hreflang.
-  'best-polyester-tennis-strings-2026.html',
+  { slug: 'best-polyester-tennis-strings-2026.html', modified: '2026-10-10' },
   // Adapté du FR tension-cordage-hiver (09/10/2026), appairé en hreflang.
-  'tennis-string-tension-cold-weather.html',
+  { slug: 'tennis-string-tension-cold-weather.html', modified: '2026-10-09' },
   // Adapté du FR cordage-tennis-elbow (09/10/2026), réécrit sur le catalogue, appairé en hreflang.
-  'best-tennis-strings-for-tennis-elbow.html',
+  { slug: 'best-tennis-strings-for-tennis-elbow.html', modified: '2026-10-10' },
   // Adapté du FR meilleures-raquettes-tennis-2026 (09/10/2026), appairé en hreflang.
-  'best-tennis-racquets-2026.html',
+  { slug: 'best-tennis-racquets-2026.html', modified: '2026-10-10' },
   // Adapté du FR cordage-polyester-tennis-elbow (09/10/2026), appairé en hreflang.
-  'polyester-strings-tennis-elbow.html',
+  { slug: 'polyester-strings-tennis-elbow.html', modified: '2026-10-10' },
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const now = new Date();
-
   const appEntries: MetadataRoute.Sitemap = APP_ROUTES.map((route) => ({
     url: `${BASE_URL}${route.path}`,
-    lastModified: now,
     changeFrequency: route.changeFrequency,
     priority: route.priority,
   }));
@@ -135,15 +137,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const blogIndex: MetadataRoute.Sitemap = [
     {
       url: `${BASE_URL}/blog/`,
-      lastModified: now,
       changeFrequency: 'weekly',
       priority: 0.7,
     },
   ];
 
-  const blogEntries: MetadataRoute.Sitemap = BLOG_SLUGS.map((slug) => ({
+  const blogEntries: MetadataRoute.Sitemap = BLOG_ARTICLES.map(({ slug, modified }) => ({
     url: `${BASE_URL}/blog/${slug}`,
-    lastModified: now,
+    lastModified: modified,
     changeFrequency: 'monthly',
     priority: 0.6,
   }));
@@ -156,7 +157,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...stringsDatabase.map((s) => `/tennis-strings/${s.id}`),
   ].map((path) => ({
     url: `${BASE_URL}${path}`,
-    lastModified: now,
     changeFrequency: 'monthly' as const,
     priority: 0.6,
   }));
@@ -169,14 +169,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...stringsDatabase.map((s) => `/en/strings/${s.id}.html`),
   ].map((path) => ({
     url: `${BASE_URL}${path}`,
-    lastModified: now,
     changeFrequency: 'monthly' as const,
     priority: 0.5,
   }));
 
   const enPageEntries: MetadataRoute.Sitemap = EN_PAGES.map((p) => ({
     url: `${BASE_URL}${p.path}`,
-    lastModified: now,
     changeFrequency: 'monthly',
     priority: p.priority,
   }));
@@ -184,15 +182,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const enBlogIndex: MetadataRoute.Sitemap = [
     {
       url: `${BASE_URL}/en/blog/`,
-      lastModified: now,
       changeFrequency: 'weekly',
       priority: 0.6,
     },
   ];
 
-  const enBlogEntries: MetadataRoute.Sitemap = EN_BLOG_SLUGS.map((slug) => ({
+  const enBlogEntries: MetadataRoute.Sitemap = EN_BLOG_ARTICLES.map(({ slug, modified }) => ({
     url: `${BASE_URL}/en/blog/${slug}`,
-    lastModified: now,
+    lastModified: modified,
     changeFrequency: 'monthly',
     priority: 0.6,
   }));

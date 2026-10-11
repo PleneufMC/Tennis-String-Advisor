@@ -24,6 +24,7 @@ const CHECKS = [
   { name: 'ratings', cmd: 'npm', args: ['run', '--silent', 'audit:ratings'] },
   { name: 'blog-funnel', cmd: 'npm', args: ['run', '--silent', 'audit:blog-funnel'] },
   { name: 'blog-images', cmd: 'npm', args: ['run', '--silent', 'audit:blog-images'] },
+  { name: 'jsonld', cmd: 'npm', args: ['run', '--silent', 'audit:jsonld'] },
   { name: 'string-labels', cmd: 'npm', args: ['run', '--silent', 'audit:string-labels'] },
   { name: 'comptages', cmd: 'npm', args: ['run', '--silent', 'audit:comptages'] },
   { name: 'claims', cmd: 'npm', args: ['run', '--silent', 'audit:claims'] },

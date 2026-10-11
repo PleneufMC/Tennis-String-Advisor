@@ -5,9 +5,9 @@
   "articles": [
     {
       "fichier": "public/blog/actualite-materiel-tennis-2026-guerre-du-spin.html",
-      "empreinte": "sha256:b106f9e42ae93b2dcf636539df00cf7c0c6d4b7e4664d23feba5781e9511a547",
-      "depuis": "2026-10-10",
-      "motif": "Antérieur à la règle images du 10/10/2026 ; corrigé le 10/10/2026 (PR #102 : valeurs produit alignées sur la base, urgence d'exactitude) — visuel de corps à créer, première mission de l’équipe éditoriale"
+      "empreinte": "sha256:f5f0347a0bb589f7a00c3f44b01df72205e8813715bb5b0d7eef40d812eb3d8b",
+      "depuis": "2026-10-11",
+      "motif": "Antérieur à la règle images du 10/10/2026 ; corrigé le 10/10/2026 (PR #102 : valeurs produit alignées sur la base, urgence d'exactitude) — visuel de corps à créer, première mission de l’équipe éditoriale ; JSON-LD du <head> corrigé le 11/10/2026 (logo éditeur en 404 remplacé ; corps inchangé)"
     },
     {
       "fichier": "public/blog/challengers-sinner-alcaraz-2026.html",
@@ -23,21 +23,21 @@
     },
     {
       "fichier": "public/blog/materiel-next-gen-fonseca-mensik-cobolli-jodar.html",
-      "empreinte": "sha256:7b02eb8ce0177d49a800e45c1dd32d6273a42bf5d50e4a2903e0861a2418dbba",
-      "depuis": "2026-10-10",
-      "motif": "Antérieur à la règle images du 10/10/2026 ; corrigé le 10/10/2026 (PR #116 : rigidités, indices et rangs alignés sur la base après la règle C et le lot 3, urgence d'exactitude) — visuel de corps à créer, première mission de l’équipe éditoriale"
+      "empreinte": "sha256:76c116c40177c5464d48ae915353813069ab2ea6b6db5a0ec46357cda800ff86",
+      "depuis": "2026-10-11",
+      "motif": "Antérieur à la règle images du 10/10/2026 ; corrigé le 10/10/2026 (PR #116 : rigidités, indices et rangs alignés sur la base après la règle C et le lot 3, urgence d'exactitude) — visuel de corps à créer, première mission de l’équipe éditoriale ; JSON-LD du <head> corrigé le 11/10/2026 (logo éditeur en 404 remplacé ; corps inchangé)"
     },
     {
       "fichier": "public/blog/meilleur-cordage-polyester-2026.html",
-      "empreinte": "sha256:1b41cb30ab5fa0d24e64c782b7fb886855b14be1e63ab8e79293f2ce2818799a",
-      "depuis": "2026-10-10",
-      "motif": "Antérieur à la règle images du 10/10/2026 ; corrigé le 10/10/2026 (PR #116 : rigidités, indices et rangs alignés sur la base après la règle C et le lot 3, urgence d'exactitude) — visuel de corps à créer, première mission de l’équipe éditoriale"
+      "empreinte": "sha256:9b420e3854cd0135f16994fb7b34c5d50314bdf567c3e695ddf01f712a89af43",
+      "depuis": "2026-10-11",
+      "motif": "Antérieur à la règle images du 10/10/2026 ; corrigé le 10/10/2026 (PR #116 : rigidités, indices et rangs alignés sur la base après la règle C et le lot 3, urgence d'exactitude) — visuel de corps à créer, première mission de l’équipe éditoriale ; JSON-LD du <head> corrigé le 11/10/2026 (réponse n° 1 du FAQPage alignée sur le texte visible ; corps inchangé)"
     },
     {
       "fichier": "public/blog/meilleures-raquettes-tennis-2026.html",
-      "empreinte": "sha256:d057fd8ab89f00492729903d8de8c695e828f1f677f7d2cad142e441be8203ea",
-      "depuis": "2026-10-10",
-      "motif": "Antérieur à la règle images du 10/10/2026 ; corrigé le 10/10/2026 (PR #116 : rigidités, indices et rangs alignés sur la base après la règle C et le lot 3, urgence d'exactitude) — visuel de corps à créer, première mission de l’équipe éditoriale"
+      "empreinte": "sha256:6c7fd82cf3f5b17ddb915fe0b02a816a66b7ff8cb26484cdcf68645576d7e58f",
+      "depuis": "2026-10-11",
+      "motif": "Antérieur à la règle images du 10/10/2026 ; corrigé le 10/10/2026 (PR #116 : rigidités, indices et rangs alignés sur la base après la règle C et le lot 3, urgence d'exactitude) — visuel de corps à créer, première mission de l’équipe éditoriale ; JSON-LD du <head> corrigé le 11/10/2026 (réponse n° 1 du FAQPage alignée sur le texte visible ; corps inchangé)"
     },
     {
       "fichier": "public/blog/tension-cordage-hiver.html",
@@ -47,15 +47,15 @@
     },
     {
       "fichier": "public/en/blog/best-polyester-tennis-strings-2026.html",
-      "empreinte": "sha256:f1203abdaee45c53d93227993b128be6fc8d3a14bc97efff8f5a8e726ad6a231",
-      "depuis": "2026-10-10",
-      "motif": "Antérieur à la règle images du 10/10/2026 ; corrigé le 10/10/2026 (PR #116 : rigidités, indices et rangs alignés sur la base après la règle C et le lot 3, urgence d'exactitude) — visuel de corps à créer, première mission de l’équipe éditoriale"
+      "empreinte": "sha256:ececf92a1937f94d9327cc5da6c2e7c1615f3a56409aa97fcdc754e47bbe7b80",
+      "depuis": "2026-10-11",
+      "motif": "Antérieur à la règle images du 10/10/2026 ; corrigé le 10/10/2026 (PR #116 : rigidités, indices et rangs alignés sur la base après la règle C et le lot 3, urgence d'exactitude) — visuel de corps à créer, première mission de l’équipe éditoriale ; JSON-LD du <head> corrigé le 11/10/2026 (réponse n° 1 du FAQPage alignée sur le texte visible ; corps inchangé)"
     },
     {
       "fichier": "public/en/blog/best-tennis-racquets-2026.html",
-      "empreinte": "sha256:1adcc45deee43710950bf811a6184abd73ab097deadc2dec659cdeaa61bb85ba",
-      "depuis": "2026-10-10",
-      "motif": "Antérieur à la règle images du 10/10/2026 ; corrigé le 10/10/2026 (PR #116 : rigidités, indices et rangs alignés sur la base après la règle C et le lot 3, urgence d'exactitude) — visuel de corps à créer, première mission de l’équipe éditoriale"
+      "empreinte": "sha256:56b501a2960e580a17032beadb6e18024cab1f1564baa2a2a9b4743473c0889f",
+      "depuis": "2026-10-11",
+      "motif": "Antérieur à la règle images du 10/10/2026 ; corrigé le 10/10/2026 (PR #116 : rigidités, indices et rangs alignés sur la base après la règle C et le lot 3, urgence d'exactitude) — visuel de corps à créer, première mission de l’équipe éditoriale ; JSON-LD du <head> corrigé le 11/10/2026 (réponse n° 1 du FAQPage alignée sur le texte visible ; corps inchangé)"
     },
     {
       "fichier": "public/en/blog/challengers-sinner-alcaraz-2026.html",
@@ -71,15 +71,15 @@
     },
     {
       "fichier": "public/en/blog/next-gen-tennis-racquets-fonseca-mensik-cobolli-jodar.html",
-      "empreinte": "sha256:f7982b9524dd12292fb9c418b73dc91c84cb27a848b886ff2d7159d2998c7c30",
-      "depuis": "2026-10-10",
-      "motif": "Antérieur à la règle images du 10/10/2026 : couverture conforme, visuel de corps à créer (première mission de l’équipe éditoriale)"
+      "empreinte": "sha256:ffc803e8e2fa371a4b3d27d408040a169026aee1ea1f55c039c4ecaee9887699",
+      "depuis": "2026-10-11",
+      "motif": "Antérieur à la règle images du 10/10/2026 : couverture conforme, visuel de corps à créer (première mission de l’équipe éditoriale) ; JSON-LD du <head> corrigé le 11/10/2026 (logo éditeur en 404 remplacé ; corps inchangé)"
     },
     {
       "fichier": "public/en/blog/tennis-string-tension-cold-weather.html",
-      "empreinte": "sha256:d8337b2cafc44b8d5d790bef2afcb63aed59fbfea81606d14877dd82d7a0d54f",
-      "depuis": "2026-10-10",
-      "motif": "Antérieur à la règle images du 10/10/2026 : couverture conforme, visuel de corps à créer (première mission de l’équipe éditoriale)"
+      "empreinte": "sha256:454018158491e8a44c93131edda2294e7a6060d200c9c2c400f7989f4c004272",
+      "depuis": "2026-10-11",
+      "motif": "Antérieur à la règle images du 10/10/2026 : couverture conforme, visuel de corps à créer (première mission de l’équipe éditoriale) ; JSON-LD du <head> corrigé le 11/10/2026 (réponse n° 3 du FAQPage alignée sur le texte visible ; corps inchangé)"
     }
   ]
 }
