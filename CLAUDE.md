@@ -34,8 +34,8 @@ renvoie à la FAQ), le repère « D5 - Balanced Flexible / Average club level »
 Firmness Index », le JSON-LD ne dit plus « arm comfort », les phrases de lecture de l'indice et les raisons des recommandations
 citent l'indice, ses seuils et les critères réels du code (catégorie, RA, familles de cordages, tri par note) au lieu de
 superlatifs (« Optimal control », « maximum precision », « protects the arm »…). **Icône** : le stéthoscope n'est plus l'icône du RCS
-(15 occurrences sur 7 pages EN : navigation, tuiles, boutons ; navigation de l'index du blog FR ; étiquette « RCS for each » de
-l'index EN) : remplacé par 📏 ; restent « 🩺 Diagnostic », « 🩺 Santé », « 🩺 Symptôme → action » (rubriques, pas le RCS) et, dans les
+(18 occurrences sur 9 pages EN : navigation, tuiles, boutons, titres du configurateur et du calculateur ; navigation de l'index
+du blog FR ; étiquette « RCS for each » de l'index EN) : remplacé par 📏 ; restent « 🩺 Diagnostic », « 🩺 Santé », « 🩺 Symptôme → action » (rubriques, pas le RCS) et, dans les
 articles, 12 occurrences devant « RCS » (navigation, boutons : propositions au rédacteur). **Aperçu de l'accueil** : l'indice, le
 palier et la jauge sont CALCULÉS par `calculateRCS` (le couple Blade 98 / ALU Power est conservé : « Ferme 32 », en orange, jauge sur
 la plage 11-44 mesurée le 11/10/2026 sur le catalogue) ; le choix du couple montré reste une décision éditoriale de Pierre (constante
