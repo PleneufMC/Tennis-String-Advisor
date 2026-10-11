@@ -7,6 +7,43 @@
 > **Branche de référence** : `main` (seule branche longue ; la production Netlify en déploie)
 > **Repo** : https://github.com/PleneufMC/Tennis-String-Advisor.git
 
+**Changelog (numéro de version à fixer à la fusion)** — **Allégations de santé et claims faux retirés des pages, des
+métadonnées et des dictionnaires ; garde-fou `audit:claims`** (demande de l'orchestrateur du 11/10/2026 ; relevés de
+`tsa-core` et de `tsa-pigiste` ; `tsa-acquisition` ; **`[verrou: layout.tsx, page.tsx, configurator/page.tsx]`**, en trois
+commits séparés, révocables un à un). **Constat** : l'interface promettait ce que le produit ne tient pas. Les plus graves : la
+carte de l'accueil FR affichait « Confortable, 23 » pour Wilson Blade 98 v9 + Luxilon ALU Power à 24 kg, dont l'indice RCS est
+**32** (palier « Ferme », seuil d'alerte d'un bras sensible) ; la FAQ et le calculateur EN donnaient le RCS « de 0 à 100 », avec
+« 30 à 60 : équilibre » et « bas : idéal pour les bras sensibles », alors que l'échelle publiée va de 11 à 41 et que l'alerte
+commence à 35 ; la carte du blog EN promettait de « prévenir ou soulager » le tennis elbow ; « Base de données complète — Specs
+vérifiées et tenues à jour » (RA absent de 29 fiches, équilibre de 91), « recommandations IA » (aucune IA), « des milliers de
+joueurs » (28 à 43 humains par mois), « score de confort objectif », « parfaits pour votre style de jeu », « RCS Optimal ».
+**Corrigé** (textes seulement ; aucune donnée, note, formule ni seuil touchés) : `dictionaries.ts` (FR et EN, 10 clés chacun),
+métadonnées de `layout.tsx` (description, Open Graph, Twitter), de `manifest.ts` et de `configurator/layout.tsx`, légende
+« RCS Optimal / RCS Moyen » du configurateur (« Palier Confortable : RCS de 20 à 25 »), 9 pages EN statiques (accueil, FAQ,
+calculateur, configurateur, catalogue des raquettes, comparateur, Premium, connexion, index du blog), dont la réponse n° 1 de la
+FAQ EN (visible et JSON-LD réécrits à l'identique : indice de fermeté, cinq paliers, aucune échelle 0-100) et les phrases de
+lecture de l'indice du configurateur EN (l'indice et ses seuils, aucun effet promis sur le bras ; les raisons des
+recommandations citent les critères réels : RA 66 ou moins, familles multifilament et boyau). **Aperçu de l'accueil** : l'indice,
+le palier et la jauge sont désormais CALCULÉS par `calculateRCS` à partir du catalogue (le couple Blade 98 / ALU Power est
+conservé : il affiche « Ferme 32 », en orange, avec la note « dès 32 pour un bras sensible, dès 35 sinon ») ; le choix du couple
+montré reste une décision éditoriale de Pierre (constante `PREVIEW` de `page.tsx`). **Garde-fou** `npm run audit:claims`
+(`scripts/qa-claims.mjs`, **périmètre `tsa-measure`, signalé dans la PR**, ajouté à `audit:all`) : 22 motifs en trois classes
+(santé, faux, absolu), lus dans le texte visible, les attributs, le JSON-LD, les scripts en ligne et le code (chaînes, JSX,
+`metadata`, dictionnaires) ; ÉCHEC sur les pages publiques, les deux index du blog et le code de `src/` qu'une route atteint ;
+AVERT sur les articles du blog (fact-check de `tsa-pigiste`, corps de `tsa-redacteur`), sur `public/js` (moteur statique, traité
+par `tsa-core` : constante `JS_SEVERITY` à passer à `'fail'` après sa fusion) et sur le code qu'aucune route n'atteint ;
+exceptions datées et motivées (une : le libellé de profil « Post-injury rehabilitation », que le visiteur choisit) ; 141
+altérations détectées et 63 témoins acceptés, dont tous les avertissements de risque. **Il échoue sur `origin/main`** (1afa872 :
+81 échecs). **Listé, non traité** : 69 motifs dans 21 articles du blog (`node scripts/qa-claims.mjs --all`, dont 14 dans des
+`<head>` : propositions à `tsa-redacteur` et `tsa-pigiste`), 39 dans le moteur statique de `public/js`, 4 dans un composant sans
+import (`how-it-works.tsx`). Hors motifs, vus et non modifiés : `rcs-calculator.html:126` (« Based on research by Brody (1987) ».
+provenance non établie) et `:909` (curseur de la jauge à `rcs %` sur un axe 0-100, alors que l'indice va de 11 à 41 : logique,
+`tsa-core`) ; `compare.html:291` (« Choose a lower RA if you have arm issues » : conseil de santé) ; `premium.html:197`
+(« Guaranteed response within 24h ») et `faq.html:42, 155, 215` (« 1 free RCS calculation » contre la note de `premium.html` :
+« the RCS calculator … stay free ») : `tsa-revenue` ; `pricing/page.tsx:61` (« Catalogue complet ») ; `dictionaries.ts:30`
+(« base mise à jour », sans date) ; `layout.tsx:154` (`SearchAction` vers `/search`, route inexistante, hors chaînes de
+métadonnées) ; `configurator.html:1324-1429` (superlatifs de performance : « Excellent for generating spin »…).
+
 **Changelog v2.3.17 → v2.3.18** — **Descriptions des cordages et phrases de recommandation alignées sur la rigidité : plus de
 promesse de confort que le chiffre contredit, plus d'absolu de santé** (décision de l'orchestrateur du 11/10/2026, Pierre ayant
 délégué les arbitrages ; réserve R1 du contrôle indépendant de `tsa-measure` ; `tsa-core` ; **à fusionner après #116**).
