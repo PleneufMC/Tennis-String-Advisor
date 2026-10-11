@@ -1,11 +1,39 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.3.23
+> **Version** : 2.3.24
 > **Date** : 11 octobre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
 > **Branche de référence** : `main` (seule branche longue ; la production Netlify en déploie)
 > **Repo** : https://github.com/PleneufMC/Tennis-String-Advisor.git
+
+**Changelog v2.3.23 → v2.3.24** — **PDF : la méthodologie imprimée cite les deux seuils d'alerte bras et dit lequel le document
+applique ; contrôle 21 bis** (option C de l'arbitrage n° 1 de la PR #124, retenue par Pierre le 11/10/2026 sur la recommandation de
+`tsa-core` ; `tsa-core`). **Constat** : un PDF exporté du compte est recalculé depuis une configuration ENREGISTRÉE, qui ne porte pas la
+déclaration « bras sensible » (rien n'est enregistré) : il applique le seuil standard et n'a donc aucune alerte aux indices 32 à 34, alors que
+la page en aurait une pour un bras sensible ; rien ne le disait au lecteur du PDF. **Changé** : une puce de la méthodologie, imprimée dans TOUT
+PDF (avec ou sans analyse avancée) : « Alerte bras : dès l'indice 35 (profil standard), dès 32 si le bras est déclaré sensible dans le
+configurateur (déclaration non enregistrée). Ce PDF applique le seuil 35 : en cas de bras sensible ou de douleur, reportez-vous au seuil 32 et
+consultez un professionnel de santé si la douleur persiste. » ; si l'appelant fournit la déclaration (`options.armSensitive`), elle dit « Ce PDF
+a été établi pour un bras sensible déclaré : seuil 32 appliqué » : elle ne peut pas annoncer un profil que le document n'a pas appliqué. Faits
+seulement, aucune promesse de protection (charte F7). Rien n'est enregistré : `StoredConfiguration` et `SavedConfiguration` inchangés. **Les
+seuils ne sont pas recopiés** : `advanced-rcs.ts` exporte `ARM_ALERT_RCS = { sensitive: 32, standard: 35 }`, miroir des littéraux de `armRisk`
+(laissés en clair parce que `scripts/blog-covers/build-rigidite-figures.mts` les relit par expression régulière) ; `buildConfigurationPdfData` les
+lit et les transmet (`armAlert: { standardAt, sensitiveAt, sensitiveApplied }`, champ obligatoire de `ConfigurationPdfData`) ; `pdf-export.ts`
+n'imprime que ce qu'il reçoit. **Inchangés** : formule, seuils, second filet « confort », textes d'alerte, page du configurateur, aucune donnée,
+taux d'alerte (standard 7,12 %, sensible 23,25 %). **Contrôle 21 bis** de `audit:ratings` : (a) `ARM_ALERT_RCS` = seuils sondés dans
+`calculateAdvancedRcs` ; (b) le constructeur lit `ARM_ALERT_RCS` (analyse syntaxique : ni littéral, ni profil annoncé différent de celui passé au
+moteur) ; (c) la ligne figure une fois, dans la méthodologie, dans le texte imprimé de 4 PDF (export du compte, hybride, bras sensible déclaré,
+sans analyse avancée), avec les seuils du moteur, le profil réellement appliqué et le renvoi vers un professionnel de santé, sans allégation ;
+25 tests négatifs (constantes, moteur, texte imprimé, données, exporteur rechargé depuis son source, constructeur) détectés, 3 témoins positifs
+acceptés ; **il échoue sur les fichiers d'`origin/main`** (29 constats dont 11 de fond). **Vérifié en exécution** : la VRAIE fonction avec le VRAI
+jsPDF 2.5.2 (jsDelivr, empreinte sha256 identique à celle publiée), 81 PDF écrits, texte extrait par PyMuPDF : ligne entière sur une seule page,
+après le titre, avant la puce suivante, pieds de page « Page k/N » corrects, accents rendus, seuils = sondage du moteur ; balayage de 0 à 76 lignes
+de remarques (la ligne passe entière à la page suivante à 22 lignes, puis à 76) ; rendu visuel relu. `type-check`, `build` et `audit:claims`
+verts. **Limites** : (1) le PDF du compte n'est toujours pas établi pour un bras sensible (le compte ne connaît pas la case) : la ligne informe,
+elle n'alerte pas ; reste l'option B (case équivalente sur l'export du compte, interface hors du périmètre de `tsa-core`) ; (2) l'export réel
+depuis l'interface du compte (premium et base) n'est pas exercé, la fonction et son rendu le sont ; (3) les autres puces statiques de la
+méthodologie sont écrites sans accents (historique) ; celle-ci, comme la puce des notes /10, en porte : Latin-1, rendu vérifié.
 
 **Changelog v2.3.22 → v2.3.23** — **Configurateur FR : le bras sensible se déclare (case facultative), l'alerte dès l'indice 32
 devient atteignable ; rien n'est enregistré ni envoyé ; contrôle 21** (décision de l'orchestrateur du 11/10/2026, Pierre ayant
@@ -1021,7 +1049,8 @@ corrigé dans la même PR.
   facultative « Bras sensible ou douleur au coude / à l'épaule » en tête de la page, état en mémoire du composant seulement (ni
   enregistrée, ni envoyée, ni dans GA4 ; `arm_warning_shown` suit l'alerte du profil standard, `arm_sensitive` vaut toujours `false`).
   Sans la case, l'alerte est à 35 pour tous, comme avant. Limite : le PDF exporté depuis le compte ne connaît pas la case et applique le
-  seuil standard. Garde-fou : contrôle 21 de `audit:ratings`.
+  seuil standard ; sa méthodologie cite les deux seuils et dit lequel est appliqué (v2.3.24, contrôle 21 bis). Garde-fou : contrôle 21 de
+  `audit:ratings`.
 - Export PDF, thème sombre, i18n FR/EN livrés.
 - Photos produit Tennis Warehouse (29/09/2026), Tennis Warehouse Europe et
   sites officiels des fabricants (10/10/2026) : 65/129 raquettes, 60/179
@@ -1484,4 +1513,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.3.23 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.3.24 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
