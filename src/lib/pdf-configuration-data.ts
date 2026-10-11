@@ -72,6 +72,19 @@ const LEVEL_LABEL: Record<string, string> = {
   poor: 'Desequilibre',
 };
 
+/** Options de l'analyse recalculée à l'export. */
+export interface PdfAnalysisOptions {
+  /**
+   * Bras sensible déclaré par le visiteur : l'alerte bras se déclenche dès l'indice 32 au lieu de 35 (cf. `calculateAdvancedRcs`).
+   *
+   * Jamais lu dans la configuration enregistrée : la déclaration n'est PAS persistée (elle ne vit que dans l'état de la page du
+   * configurateur, qui ne l'enregistre, ne l'envoie ni ne la stocke nulle part). C'est donc à l'appelant de la fournir. Absent =
+   * `false` (alerte dès 35). ⚠️ L'export du compte (`account/configurations`) ne la connaît pas : un PDF exporté de là applique
+   * le seuil standard, même si le visiteur l'avait cochée dans le configurateur.
+   */
+  armSensitive?: boolean;
+}
+
 /**
  * Construit l'objet complet attendu par `exportConfigurationPdf`.
  *
@@ -82,6 +95,7 @@ const LEVEL_LABEL: Record<string, string> = {
  */
 export function buildConfigurationPdfData(
   config: StoredConfiguration,
+  options: PdfAnalysisOptions = {},
 ): ConfigurationPdfData {
   const racquet = racquetsDatabase.find((r) => r.id === config.racquetId);
   // Alias hérités résolus (doublons fusionnés le 28/09/2026).
@@ -207,6 +221,8 @@ export function buildConfigurationPdfData(
       crossGaugeMm: parseGaugeMm(config.crossGauge),
       mainTension: config.mainTension,
       crossTension: config.crossTension,
+      // Seuil d'alerte bras : celui de la déclaration fournie par l'appelant (`options`), jamais celui d'une valeur enregistrée.
+      profile: { armSensitive: options.armSensitive === true },
     });
 
     advanced = {
