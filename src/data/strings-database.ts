@@ -836,7 +836,7 @@ export const stringsDatabase: TennisString[] = [
     power: 8.5,
     recommendedTension: { min: 22, max: 27 },
     price: { europe: 14, usa: 14 },
-    description: 'Multifilament confortable et puissant, idéal pour bras sensibles et débutants.',
+    description: 'Multifilament confortable et puissant, pour débutants.',
     color: 'Black'
   },
 
@@ -879,7 +879,7 @@ export const stringsDatabase: TennisString[] = [
     power: 8.5,
     recommendedTension: { min: 22, max: 27 },
     price: { europe: 13, usa: 13 },
-    description: 'Multifilament polyvalent et confortable, bon rapport qualité-prix pour le bras.',
+    description: 'Multifilament polyvalent, bon rapport qualité-prix.',
     color: 'Natural'
   },
 
@@ -922,7 +922,7 @@ export const stringsDatabase: TennisString[] = [
     power: 8.8,
     recommendedTension: { min: 22, max: 27 },
     price: { europe: 16, usa: 16 },
-    description: 'Multifilament premium ultra-confortable, proche du toucher boyau pour bras fragiles.',
+    description: 'Multifilament premium ultra-confortable, proche du toucher boyau.',
     color: 'Natural'
   },
 
@@ -1069,7 +1069,7 @@ export const stringsDatabase: TennisString[] = [
     power: 8.0,
     recommendedTension: { min: 22, max: 27 },
     price: { europe: 17, usa: 18 },
-    description: 'Multifilament hybride unique : 50% polyamide / 50% fibres polyester (TPI). Le multi le plus orienté contrôle et spin testé par Tennis Warehouse, tout en restant très confortable. La passerelle idéale pour un joueur de poly qui veut préserver son bras.',
+    description: 'Multifilament hybride unique : 50% polyamide / 50% fibres polyester (TPI). Le multi le plus orienté contrôle et spin testé par Tennis Warehouse, tout en restant très confortable.',
     proUsage: 'Recommandé en sortie de tendinite / tennis elbow',
     color: 'Natural'
   },
@@ -1115,7 +1115,7 @@ export const stringsDatabase: TennisString[] = [
     power: 8.0,
     recommendedTension: { min: 22, max: 27 },
     price: { europe: 13, usa: 13 },
-    description: 'Multifilament renforcé haute densité : le compromis confort / durabilité de la gamme Tecnifibre, pour joueur qui casse un peu.',
+    description: 'Multifilament renforcé haute densité de la gamme Tecnifibre, pour joueur qui casse un peu.',
     color: 'Natural'
   },
   {
@@ -1180,7 +1180,7 @@ export const stringsDatabase: TennisString[] = [
     power: 8.4,
     recommendedTension: { min: 22, max: 27 },
     price: { europe: 12, usa: 14 },
-    description: 'Un des multifilaments les plus anciens et les plus vendus. Puissance proche du NXT pour la moitié du prix : le meilleur rapport qualité/prix du confort.',
+    description: 'Un des multifilaments les plus anciens et les plus vendus. Puissance proche du NXT pour la moitié du prix.',
     color: 'Natural'
   },
   {
@@ -1242,7 +1242,7 @@ export const stringsDatabase: TennisString[] = [
     power: 8.2,
     recommendedTension: { min: 22, max: 27 },
     price: { europe: 12, usa: 13 },
-    description: 'Multifilament d\'entrée de gamme Babolat : confort accessible pour joueur loisir et club.',
+    description: 'Multifilament d\'entrée de gamme Babolat, pour joueur loisir et club.',
     color: 'Natural'
   },
   {
@@ -1303,7 +1303,7 @@ export const stringsDatabase: TennisString[] = [
     power: 9.0,
     recommendedTension: { min: 21, max: 26 },
     price: { europe: 10, usa: 11 },
-    description: 'Déclinaison puissance du Velocity MLT : très souple, beaucoup de profondeur, excellent pour bras fragile.',
+    description: 'Déclinaison puissance du Velocity MLT : très souple, beaucoup de profondeur.',
     color: 'Natural'
   },
   {
@@ -1452,7 +1452,7 @@ export const stringsDatabase: TennisString[] = [
     power: 8.3,
     recommendedTension: { min: 21, max: 26 },
     price: { europe: 11, usa: 12 },
-    description: 'Multifilament autrichien réputé pour son amorti : marque historiquement positionnée sur la prévention des blessures.',
+    description: 'Multifilament autrichien réputé pour son amorti.',
     color: 'Natural'
   },
   {
@@ -1473,7 +1473,7 @@ export const stringsDatabase: TennisString[] = [
     power: 7.3,
     recommendedTension: { min: 23, max: 28 },
     price: { europe: 13, usa: 14 },
-    description: 'La déclinaison contrôle d\'Isospeed : multifilament sec et précis pour joueur offensif sensible du bras.',
+    description: 'La déclinaison contrôle d\'Isospeed : multifilament sec et précis pour joueur offensif.',
     color: 'Natural'
   },
   {
@@ -1493,7 +1493,7 @@ export const stringsDatabase: TennisString[] = [
     power: 8.0,
     recommendedTension: { min: 22, max: 27 },
     price: { europe: 9, usa: 10 },
-    description: 'Multifilament économique de la marque allemande Signum Pro : confort correct à petit prix.',
+    description: 'Multifilament économique de la marque allemande Signum Pro, à petit prix.',
     color: 'Natural'
   },
   {
@@ -1513,7 +1513,7 @@ export const stringsDatabase: TennisString[] = [
     power: 9.0,
     recommendedTension: { min: 20, max: 25 },
     price: { europe: 16, usa: 17 },
-    description: 'Cordage à âme Zyex : élasticité et tenue de tension exceptionnelles, un des multis les plus doux du marché. Choix de niche pour bras très sensibles.',
+    description: 'Cordage à âme Zyex : élasticité et tenue de tension exceptionnelles, un des multis les plus doux du catalogue.',
     color: 'Optic Green'
   },
 
@@ -1537,7 +1537,7 @@ export const stringsDatabase: TennisString[] = [
     power: 8.5,
     recommendedTension: { min: 20, max: 25 },
     price: { europe: 17, usa: 19 },
-    description: 'La version la plus confortable de la famille Hyper-G. Idéale pour les bras sensibles.',
+    description: 'La version la plus confortable de la famille Hyper-G.',
     color: 'Teal'
   },
   {
@@ -1849,7 +1849,7 @@ export const stringsDatabase: TennisString[] = [
     power: 8,
     recommendedTension: { min: 22, max: 26 },
     price: { europe: 22, usa: 25 },
-    description: 'Hybride populaire : spin du RPM Blast avec le confort du Xcel. Excellent compromis.',
+    description: 'Hybride populaire : spin du RPM Blast associé au Xcel.',
     color: 'Black/White'
   },
   {
@@ -2019,7 +2019,7 @@ export const stringsDatabase: TennisString[] = [
     power: 7,
     recommendedTension: { min: 21, max: 27 },
     price: { europe: 23, usa: 25 },
-    description: 'Version assouplie du 4G. Garde le contrôle et la durabilité avec plus de confort.',
+    description: 'Variante du 4G qui garde le contrôle et la durabilité.',
     color: 'Gold/Grey'
   },
   {
@@ -2437,7 +2437,7 @@ export const stringsDatabase: TennisString[] = [
     power: 8.5,
     recommendedTension: { min: 22, max: 26 },
     price: { europe: 22, usa: 25 },
-    description: 'Set hybride Gravity poly + multi pour un excellent équilibre confort/performance.',
+    description: 'Set hybride Gravity poly + multi.',
     color: 'Teal/White'
   },
   {
@@ -2772,7 +2772,7 @@ export const stringsDatabase: TennisString[] = [
     power: 8,
     recommendedTension: { min: 23, max: 27 },
     price: { europe: 16, usa: 18 },
-    description: 'Multifilament avec bon contrôle et confort. Excellent rapport qualité/prix.',
+    description: 'Multifilament avec bon contrôle. Excellent rapport qualité/prix.',
     color: 'White/Blue'
   },
   {
@@ -3220,7 +3220,7 @@ export const stringsDatabase: TennisString[] = [
     power: 9,
     recommendedTension: { min: 23, max: 27 },
     price: { europe: 22, usa: 24 },
-    description: 'Le multifilament le plus confortable de Yonex. Idéal pour bras sensibles.',
+    description: 'Le multifilament le plus confortable de Yonex.',
     color: 'Off White'
   },
   {
