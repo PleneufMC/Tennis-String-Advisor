@@ -27,6 +27,7 @@ const CHECKS = [
   { name: 'jsonld', cmd: 'npm', args: ['run', '--silent', 'audit:jsonld'] },
   { name: 'string-labels', cmd: 'npm', args: ['run', '--silent', 'audit:string-labels'] },
   { name: 'comptages', cmd: 'npm', args: ['run', '--silent', 'audit:comptages'] },
+  { name: 'claims', cmd: 'npm', args: ['run', '--silent', 'audit:claims'] },
   { name: 'stripe-webhook', cmd: 'npm', args: ['run', '--silent', 'audit:stripe-webhook'] },
   { name: 'security', cmd: 'npm', args: ['run', '--silent', 'audit:security'] },
 ];

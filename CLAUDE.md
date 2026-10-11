@@ -1,13 +1,13 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.3.19
+> **Version** : 2.3.22
 > **Date** : 11 octobre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
 > **Branche de référence** : `main` (seule branche longue ; la production Netlify en déploie)
 > **Repo** : https://github.com/PleneufMC/Tennis-String-Advisor.git
 
-**Changelog (numéro de version à fixer à la fusion)** — **Données structurées des articles : un logo d'éditeur qui existe, un
+**Changelog v2.3.21 → v2.3.22** — **Données structurées des articles : un logo d'éditeur qui existe, un
 FAQPage identique à la FAQ affichée, un sitemap qui dit la vraie date ; garde-fou `audit:jsonld`** (demande de l'orchestrateur du
 11/10/2026 ; relevé O-8 de `tsa-pigiste` ; `tsa-acquisition`). **Constat** : trois défauts silencieux. **(1) Logo** : le
 `publisher.logo` de 11 articles (9 FR, 2 EN) pointait vers `/logo.png` (10) ou `/assets/logo.png` (1) : HTTP 404 en production
@@ -51,6 +51,85 @@ affichent pas : à ré-écrire, avec une source vérifiée par `tsa-pigiste`, pa
 de `cordage-mono-vs-multifilament.html` reprend désormais mot pour mot le texte affiché, dont « protéger le bras » et « ménageant
 le bras » (l. 656-657, relevés par `audit:claims` de la PR #120) : le corps reste au rédacteur, le JSON-LD suivra et le contrôle
 l'y oblige.
+
+**Changelog v2.3.20 → v2.3.21** — **Moteur statique EN : l'alerte bras se déclenche dès 32 pour les profils à bras sensible déclaré
+(règle 2)** (décision de l'orchestrateur du 11/10/2026, Pierre ayant délégué ; arbitrage n° 1 de la v2.3.19 ; `tsa-core`). **Constat** :
+`evaluateForProfile` ne renvoyait le verdict `risque_sante` (« tennis elbow risk ») qu'à partir de l'indice 35, même pour le profil que
+le configurateur EN pose quand le visiteur déclare une douleur (« Sensitive arm » ou « Fragile shoulder » → `tennis_elbow`, lu dans la
+page et constaté en exécution) et pour `reeducation` et `senior` (sélecteur de la calculatrice), alors que `advanced-rcs.ts` alerte dès 32
+pour un bras sensible. Entre 32 et 34 ces trois profils recevaient « trop_rigide » (« Index above the profile range »), un verdict de
+plage, pas une alerte. **Changé** (moteurs EN et FR) : drapeau `armSensitive` sur les 9 profils (vrai pour `reeducation`, `tennis_elbow`,
+`senior`), constante `HEALTH_ALERT_SENSITIVE_RCS: 32` et un verdict `risque_sante` pour ces profils dès 32 (« Firm setup (index 32): tennis
+elbow risk for a sensitive arm », suggestion qui cite les deux seuils) ; les six autres profils restent à 35. **Inchangé, vérifié** :
+formule, bornes, niveaux et zones, `getHealthWarning` (orange 32-34, rouge dès 35), verdict et texte dès 35 ; sur RCS 0-60 × 9 profils, 9
+verdicts seulement changent (3 profils × RCS 32, 33, 34 : `trop_rigide` → `risque_sante`). **Contrôles** : le 9 est étendu (chaque profil
+reçoit `risque_sante` de son seuil à RCS 45, 32 pour les trois profils sensibles et 35 pour les six autres ; drapeaux attendus ; le profil
+que la page configurateur pose pour une douleur déclarée est à bras sensible ; 14 + 3 tests négatifs dont « seuil remis à 35 pour
+`tennis_elbow` ») et le 20 suit (seuil par profil, `HEALTH_ALERT_SENSITIVE_RCS` = seuil sondé, le verdict sensible cite 32 et 35 ; 60 tests
+négatifs, 18 témoins) ; le sondage des seuils est factorisé (`probeArmAlert`). Sur les moteurs d'`origin/main` le contrôle 9 échoue (18
+constats par moteur : les 9 verdicts de 32 à 34 des trois profils sensibles et les 9 drapeaux absents). **Mesure** : le moteur EN n'est pas dans la grille du contrôle 5 (celle du configurateur FR), aucun taux d'alerte de la grille
+ne bouge ; ce qui change est le verdict d'un profil à bras sensible entre 32 et 34. **Vérifié en exécution** (Chrome, `/en/rcs-calculator.html`
+profil « Tennis elbow » puis « Club player », `/en/configurator.html`, RCS 31 / 32 / 34 / 36, moteur d'`origin/main` servi par interception
+pour comparer) : à 31 et à 36 rien ne change ; à 32 et 34 l'alerte orange est inchangée et le verdict passe de « Index above the profile
+range » à « tennis elbow risk for a sensitive arm » ; le profil « Club player » reste sans alerte à 32 et 34 ; le parcours réel du
+configurateur pose `tennis_elbow` pour « Sensitive arm » comme pour « Fragile shoulder ». ⚠️ **Dépendance de fusion (règle 2)** : `statusColors`
+des deux pages ignore `risque_sante` (correction par `tsa-acquisition`) ; tant qu'elle n'est pas fusionnée, ce verdict s'affiche en vert
+sur `configurator.html` (rouge avant, pour « trop_rigide ») et sans couleur sur `rcs-calculator.html` : fusionner la correction des pages
+avant ou avec cette PR. ⚠️ **À arbitrer** : le configurateur FR n'applique jamais le seuil 32 : ni `configurator/page.tsx` ni
+`pdf-configuration-data.ts` ne passent `profile` à `calculateAdvancedRcs` (`armSensitive` vaut `false`) et la page ne propose aucun champ pour
+déclarer un bras sensible ; l'alerte FR est donc à 35 pour tous les visiteurs, alors que `getStringRecommendation` et la page disent « dès 32
+pour un bras sensible ». Le moteur le prévoit, aucune interface ne l'active.
+
+**Changelog v2.3.19 → v2.3.20** — **Allégations de santé et claims faux retirés des pages, des
+métadonnées et des dictionnaires ; verdict d'alerte en rouge ; garde-fou `audit:claims`** (demande de l'orchestrateur du
+11/10/2026, complétée après la PR #121 de `tsa-core` ; relevés de `tsa-core` et de `tsa-pigiste` ; `tsa-acquisition` ;
+**`[verrou: layout.tsx, page.tsx, configurator/page.tsx]`**, commits séparés, révocables un à un). **Constat** : l'interface
+promettait ce que le produit ne tient pas. Les plus graves : la carte de l'accueil FR affichait « Confortable, 23 » pour Wilson
+Blade 98 v9 + Luxilon ALU Power à 24 kg, dont l'indice RCS est **32** (palier « Ferme ») ; **à RCS 38, le verdict « tennis elbow
+risk » du configurateur EN s'affichait dans le vert du statut « optimal » et, sur le calculateur EN, sans couleur (classe
+`undefined`)** : `statusColors` ne connaissait pas `risque_sante` (règle 2) ; la FAQ et le calculateur EN donnaient le RCS « de 0 à
+100 », avec « 30 à 60 : équilibre » et « bas : idéal pour les bras sensibles », alors que l'échelle va de 11 à plus de 40 et que
+l'alerte commence à 35 ; la carte du blog EN promettait de « prévenir ou soulager » le tennis elbow ; « Base de données complète —
+Specs vérifiées et tenues à jour » (RA absent de 29 fiches, équilibre de 91), « recommandations IA » (aucune IA), « des milliers de
+joueurs » (28 à 43 humains par mois), « score de confort objectif », « parfaits pour votre style de jeu », « RCS Optimal ». **Corrigé**
+(textes et couleurs seulement ; aucune donnée, note, formule, seuil ni logique de moteur touchés) : `dictionaries.ts` (FR et EN, 10
+clés chacun), métadonnées de `layout.tsx` (description, Open Graph, Twitter), de `manifest.ts` et de `configurator/layout.tsx`, légende
+« RCS Optimal / RCS Moyen » du configurateur (« Palier Confortable : RCS de 20 à 25 »), 9 pages EN statiques, dont la réponse n° 1 de la
+FAQ EN (visible et JSON-LD réécrits à l'identique : indice de fermeté, cinq paliers, aucune échelle 0-100). **Verdict `risque_sante`** :
+`configurator.html` et `rcs-calculator.html` lui donnent le rouge de l'alerte (`bg-red-50 border-red-400 text-red-900`) ; un statut
+inconnu devient gris, jamais le vert d'« optimal » ; vérifié dans Chrome à RCS 38 (profils club et pro : rouge), 33 (club : rouge
+« au-dessus de la plage », alerte orange) et 12 (club : bleu, aucune alerte), 1280 et 390 px. **`rcs-calculator.html`** : les trois
+options du sélecteur de profil deviennent « Very low index (RCS 11 to 22) », « Low index (RCS 11 to 24) », « Low-to-mid index (RCS 22
+to 26) » (les plages que le moteur dit lui-même, **clés inchangées**), la phrase « Based on research by Brody (1987), Hennig (1992),
+Kawazoe (1997) » et la colonne de références du pied de page, non vérifiées (règle 4), sont retirées (la colonne devient « Help » et
+renvoie à la FAQ), le repère « D5 - Balanced Flexible / Average club level » affiché avant le premier calcul devient neutre.
+**`configurator.html`** : « Fragile shoulder » devient « Sensitive shoulder », « RCS Score - Arm Comfort » (et son 🩺) « RCS Score -
+Firmness Index », le JSON-LD ne dit plus « arm comfort », les phrases de lecture de l'indice et les raisons des recommandations
+citent l'indice, ses seuils et les critères réels du code (catégorie, RA, familles de cordages, tri par note) au lieu de
+superlatifs (« Optimal control », « maximum precision », « protects the arm »…). **Icône** : le stéthoscope n'est plus l'icône du RCS
+(18 occurrences sur 9 pages EN : navigation, tuiles, boutons, titres du configurateur et du calculateur ; navigation de l'index
+du blog FR ; étiquette « RCS for each » de l'index EN) : remplacé par 📏 ; restent « 🩺 Diagnostic », « 🩺 Santé », « 🩺 Symptôme → action » (rubriques, pas le RCS) et, dans les
+articles, 12 occurrences devant « RCS » (navigation, boutons : propositions au rédacteur). **Aperçu de l'accueil** : l'indice, le
+palier et la jauge sont CALCULÉS par `calculateRCS` (le couple Blade 98 / ALU Power est conservé : « Ferme 32 », en orange, jauge sur
+la plage 11-44 mesurée le 11/10/2026 sur le catalogue) ; le choix du couple montré reste une décision éditoriale de Pierre (constante
+`PREVIEW` de `page.tsx`). **Garde-fou** `npm run audit:claims` (`scripts/qa-claims.mjs`, **périmètre `tsa-measure`, signalé dans la
+PR**, ajouté à `audit:all`) : 29 motifs en trois classes (santé 14, faux 11, absolu 4), lus dans le texte visible, les attributs, le
+JSON-LD, les scripts en ligne et le code (chaînes, JSX, `metadata`, dictionnaires) ; ÉCHEC sur les pages publiques, les deux index
+du blog, le code de `src/` qu'une route atteint, les gabarits EN et **le moteur statique de `public/js`** (`JS_SEVERITY = 'fail'`
+depuis la fusion de #121 ; une seule exception datée, l'alerte « joint stress » que `tsa-core` a conservée par décision, à retirer
+dès que le texte change) ; AVERT sur les articles du blog (fact-check de `tsa-pigiste`, corps de `tsa-redacteur`) et sur le code
+qu'aucune route n'atteint ; **contrôle d'affichage des verdicts** : chaque statut du moteur a une couleur dans les tables
+`statusColors` / `textColors` des pages EN, `risque_sante` est rouge, un statut inconnu ne se replie jamais sur le vert d'« optimal » ;
+181 altérations détectées et 95 témoins acceptés, dont tous les avertissements de risque. **Il échoue sur `origin/main`** (616a72e :
+129 échecs, dont les 3 tables de couleurs). **Listé, non traité** : 83 motifs dans 21 articles du blog (`node scripts/qa-claims.mjs
+--all`, dont 12 icônes 🩺 et 14 dans des `<head>` : propositions à `tsa-redacteur` et `tsa-pigiste`), 4 dans un composant sans import
+(`how-it-works.tsx`). Hors motifs, vus et non modifiés : `rcs-calculator.html` (curseur de la jauge à `rcs %` sur un axe 0-100 alors
+que l'indice va de 11 à 44 : logique, `tsa-core`) ; moteur EN, profil pro à RCS 33 : verdict « optimal » vert sous l'alerte orange, et
+suggestions de profil de plus de 20 kg (« Raising the tension by 28 kg ») : logique de `tsa-core`, déjà à son arbitrage ;
+`compare.html:291` (« Choose a lower RA if you have arm issues » : conseil de santé) ; `premium.html:197` (« Guaranteed response within
+24h ») et `faq.html:42, 155, 215` (« 1 free RCS calculation » contre la note de `premium.html` : « the RCS calculator … stay free ») :
+`tsa-revenue` ; `pricing/page.tsx:61` (« Catalogue complet ») ; `dictionaries.ts:30` (« base mise à jour », sans date) ; `layout.tsx:154`
+(`SearchAction` vers `/search`, route inexistante, hors chaînes de metadata).
 
 **Changelog v2.3.18 → v2.3.19** — **Textes des moteurs statiques du RCS : plus aucune allégation thérapeutique ou protectrice, des
 descriptions tirées de l'indice et des seuils d'alerte réels** (décision de l'orchestrateur du 11/10/2026, Pierre ayant délégué les
@@ -1329,4 +1408,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.3.19 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.3.22 — Tennis String Advisor — « Mesurer avant d'affirmer. »*

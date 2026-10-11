@@ -1822,12 +1822,12 @@ export default function ConfiguratorPage() {
                 </span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                <span style={{ color: 'var(--tint-blue-fg)' }}>RCS Optimal:</span>
-                <span style={{ fontWeight: '500', color: 'var(--tint-blue-fg)' }}>20-25 (Confortable)</span>
+                <span style={{ color: 'var(--tint-blue-fg)' }}>Palier Confortable:</span>
+                <span style={{ fontWeight: '500', color: 'var(--tint-blue-fg)' }}>RCS de 20 à 25</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                <span style={{ color: 'var(--tint-blue-fg)' }}>RCS Moyen:</span>
-                <span style={{ fontWeight: '500', color: 'var(--tint-blue-fg)' }}>25-30 (Standard)</span>
+                <span style={{ color: 'var(--tint-blue-fg)' }}>Palier Standard:</span>
+                <span style={{ fontWeight: '500', color: 'var(--tint-blue-fg)' }}>RCS de 25 à 30</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: 'var(--tint-blue-fg)' }}>Tennis Elbow:</span>
