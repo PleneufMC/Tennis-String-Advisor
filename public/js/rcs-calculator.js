@@ -17,165 +17,171 @@ const RCS = {
   get TENSION_MIN() { return this._c[5]; },
   get TENSION_MAX() { return this._c[6]; },
 
+  // TEXTES DES NIVEAUX (11/10/2026, charte F7 : « la santé d'abord »). Ils décrivent ce que l'indice
+  // MESURE : sa plage et sa position par rapport aux seuils d'alerte bras du configurateur
+  // (src/lib/advanced-rcs.ts : dès 32 pour un bras sensible, dès 35 sinon). Ni public cible, ni effet
+  // thérapeutique ou protecteur, ni absolu : une allégation médicale exige une source médicale.
+  // Les chiffres cités (plages, seuils, exemples) sont recalculés par le contrôle 20 de
+  // `npm run audit:ratings` ; une chaîne qui les contredit ou promet un effet sur la santé le fait échouer.
   DECILES: [
     { 
       min: 11, max: 22, 
-      label: 'Ultra Confort+', 
-      description: 'Rééducation post-blessure',
+      label: 'Très souple', 
+      description: 'Au moins 11 points sous l\'alerte bras sensible (32)',
       color: '#006400', 
       textColor: '#ffffff',
-      icon: '🏥',
-      detailedComment: 'Configuration ultra-protectrice idéale pour la rééducation après une blessure au coude ou à l\'épaule. La sollicitation articulaire est minimale, permettant une reprise progressive du tennis sans risque d\'aggravation. Recommandé sous supervision médicale.',
-      targetPlayers: ['Joueurs en rééducation', 'Post-opératoire', 'Épicondylite sévère'],
+      icon: '☁️',
+      detailedComment: 'RCS 21 ou moins. Sous les deux seuils d\'alerte bras du configurateur.',
+      targetPlayers: ['RCS 21 ou moins', 'Alerte bras sensible : 32', 'Alerte tous profils : 35'],
       recommendations: {
-        racquet: 'Raquette très flexible (RA < 60), légère (< 280g)',
-        string: 'Boyau naturel ou multifilament très souple',
-        tension: 'Tension basse (18-20 kg)',
-        advice: 'Consultez un kinésithérapeute pour un programme de reprise adapté.'
+        racquet: 'RA 58',
+        string: '95 lb/in',
+        tension: '20 kg',
+        advice: 'Seuils d\'alerte bras du configurateur : dès 32 pour un bras sensible, dès 35 sinon. Une variation de 1 kg de tension déplace l\'indice de 0,5 point.'
       }
     },
     { 
       min: 22, max: 24, 
-      label: 'Ultra Confort', 
-      description: 'Tennis elbow chronique',
+      label: 'Souple', 
+      description: '9 à 10 points sous l\'alerte bras sensible (32)',
       color: '#228B22', 
       textColor: '#ffffff',
       icon: '💚',
-      detailedComment: 'Setup thérapeutique pour les joueurs souffrant de tennis elbow chronique ou de douleurs articulaires persistantes. Cette configuration absorbe efficacement les vibrations et réduit considérablement le stress transmis au bras.',
-      targetPlayers: ['Tennis elbow chronique', 'Seniors avec arthrose', 'Joueurs avec historique de blessures'],
+      detailedComment: 'RCS 22 à 23. Sous les deux seuils d\'alerte bras du configurateur.',
+      targetPlayers: ['RCS 22 à 23', 'Alerte bras sensible : 32', 'Alerte tous profils : 35'],
       recommendations: {
-        racquet: 'Raquette flexible (RA 58-62), tête moyenne à grande',
-        string: 'Multifilament premium ou boyau naturel',
-        tension: 'Tension basse à moyenne (19-22 kg)',
-        advice: 'Portez une coudière de soutien et échauffez-vous bien avant chaque session.'
+        racquet: 'RA 62',
+        string: '150 lb/in',
+        tension: '22 kg',
+        advice: 'Seuils d\'alerte bras du configurateur : dès 32 pour un bras sensible, dès 35 sinon. Une variation de 1 kg de tension déplace l\'indice de 0,5 point.'
       }
     },
     { 
       min: 24, max: 26, 
-      label: 'Très Confortable', 
-      description: 'Seniors / Bras fragile',
+      label: 'Assez souple', 
+      description: '7 à 8 points sous l\'alerte bras sensible (32)',
       color: '#32CD32', 
       textColor: '#000000',
       icon: '🌿',
-      detailedComment: 'Configuration préventive excellente pour les joueurs seniors ou ceux ayant un bras sensible. Offre un excellent compromis entre confort et jouabilité, permettant de jouer régulièrement sans accumulation de fatigue articulaire.',
-      targetPlayers: ['Seniors actifs', 'Joueurs au bras sensible', 'Prévention tennis elbow'],
+      detailedComment: 'RCS 24 à 25. Sous les deux seuils d\'alerte bras du configurateur.',
+      targetPlayers: ['RCS 24 à 25', 'Alerte bras sensible : 32', 'Alerte tous profils : 35'],
       recommendations: {
-        racquet: 'Raquette confort (RA 60-64), poids moyen',
-        string: 'Multifilament ou hybride avec multifilament en travers',
-        tension: 'Tension moyenne-basse (21-23 kg)',
-        advice: 'Idéal pour jouer 2-3 fois par semaine en préservant votre santé articulaire.'
+        racquet: 'RA 64',
+        string: '160 lb/in',
+        tension: '23 kg',
+        advice: 'Seuils d\'alerte bras du configurateur : dès 32 pour un bras sensible, dès 35 sinon. Une variation de 1 kg de tension déplace l\'indice de 0,5 point.'
       }
     },
     { 
       min: 26, max: 27, 
-      label: 'Confortable', 
-      description: 'Débutants / Loisir doux',
+      label: 'Moyennement souple', 
+      description: '6 points sous l\'alerte bras sensible (32)',
       color: '#9ACD32', 
       textColor: '#000000',
       icon: '🌱',
-      detailedComment: 'Setup parfait pour les débutants et les joueurs de loisir. La raquette pardonne les erreurs de centrage et génère suffisamment de puissance pour compenser un swing encore en développement. Confort optimal pour apprendre sereinement.',
-      targetPlayers: ['Débutants', 'Joueurs loisir occasionnels', 'Reprise du tennis'],
+      detailedComment: 'RCS 26. Sous les deux seuils d\'alerte bras du configurateur.',
+      targetPlayers: ['RCS 26', 'Alerte bras sensible : 32', 'Alerte tous profils : 35'],
       recommendations: {
-        racquet: 'Raquette polyvalente (RA 62-66), tête 100-105 sq in',
-        string: 'Multifilament ou synthétique confort',
-        tension: 'Tension moyenne (22-24 kg)',
-        advice: 'Prenez des cours pour acquérir les bons gestes et éviter les mauvaises habitudes.'
+        racquet: 'RA 65',
+        string: '175 lb/in',
+        tension: '24 kg',
+        advice: 'Seuils d\'alerte bras du configurateur : dès 32 pour un bras sensible, dès 35 sinon. Une variation de 1 kg de tension déplace l\'indice de 0,5 point.'
       }
     },
     { 
       min: 27, max: 28, 
       label: 'Équilibré Souple', 
-      description: 'Club niveau moyen',
+      description: '5 points sous l\'alerte bras sensible (32)',
       color: '#FFD700', 
       textColor: '#000000',
       icon: '⚖️',
-      detailedComment: 'Configuration équilibrée privilégiant légèrement le confort. Idéale pour les joueurs de club de niveau moyen qui jouent régulièrement. Bon compromis entre puissance, contrôle et préservation du bras.',
-      targetPlayers: ['Joueurs de club réguliers', 'Classement 30 à 15/4', 'Joueurs en progression'],
+      detailedComment: 'RCS 27. Sous les deux seuils d\'alerte bras du configurateur.',
+      targetPlayers: ['RCS 27', 'Alerte bras sensible : 32', 'Alerte tous profils : 35'],
       recommendations: {
-        racquet: 'Raquette tweener (RA 64-67), 295-305g',
-        string: 'Poly souple ou hybride polyvalent',
-        tension: 'Tension moyenne (23-25 kg)',
-        advice: 'Variez vos sessions avec du travail technique et des matchs pour progresser.'
+        racquet: 'RA 66',
+        string: '180 lb/in',
+        tension: '24 kg',
+        advice: 'Seuils d\'alerte bras du configurateur : dès 32 pour un bras sensible, dès 35 sinon. Une variation de 1 kg de tension déplace l\'indice de 0,5 point.'
       }
     },
     { 
       min: 28, max: 29, 
       label: 'Équilibré', 
-      description: 'Club confirmé',
+      description: '4 points sous l\'alerte bras sensible (32)',
       color: '#FFC000', 
       textColor: '#000000',
       icon: '🎯',
-      detailedComment: 'Setup standard pour les joueurs de club confirmés. Offre un excellent équilibre entre toutes les caractéristiques. Convient à la majorité des styles de jeu et permet une bonne progression technique.',
-      targetPlayers: ['Joueurs confirmés', 'Classement 15/4 à 5/6', 'Compétiteurs occasionnels'],
+      detailedComment: 'RCS 28. Sous les deux seuils d\'alerte bras du configurateur.',
+      targetPlayers: ['RCS 28', 'Alerte bras sensible : 32', 'Alerte tous profils : 35'],
       recommendations: {
-        racquet: 'Raquette performance (RA 65-68), 300-310g',
-        string: 'Polyester médium ou co-poly',
-        tension: 'Tension moyenne-haute (24-26 kg)',
-        advice: 'C\'est le sweet spot pour la plupart des joueurs - ajustez finement selon vos sensations.'
+        racquet: 'RA 66',
+        string: '190 lb/in',
+        tension: '24 kg',
+        advice: 'Seuils d\'alerte bras du configurateur : dès 32 pour un bras sensible, dès 35 sinon. Une variation de 1 kg de tension déplace l\'indice de 0,5 point.'
       }
     },
     { 
       min: 29, max: 31, 
       label: 'Dynamique', 
-      description: 'Compétiteur régional',
+      description: '2 à 3 points sous l\'alerte bras sensible (32)',
       color: '#FF8C00', 
       textColor: '#000000',
       icon: '🔥',
-      detailedComment: 'Configuration orientée performance pour les compétiteurs régionaux. Privilégie le contrôle et la précision. Nécessite une bonne technique et une condition physique solide pour être pleinement exploitée.',
-      targetPlayers: ['Compétiteurs régionaux', 'Classement 4/6 à 1/6', 'Joueurs techniques'],
+      detailedComment: 'RCS 29 à 30. Sous les deux seuils d\'alerte bras du configurateur.',
+      targetPlayers: ['RCS 29 à 30', 'Alerte bras sensible : 32', 'Alerte tous profils : 35'],
       recommendations: {
-        racquet: 'Raquette contrôle (RA 66-69), 305-315g',
-        string: 'Polyester contrôle (ALU Power, Tour Bite)',
-        tension: 'Tension haute (25-27 kg)',
-        advice: 'Travaillez votre physique pour supporter la rigidité et maximiser vos performances.'
+        racquet: 'RA 66',
+        string: '200 lb/in',
+        tension: '24 kg',
+        advice: 'Seuils d\'alerte bras du configurateur : dès 32 pour un bras sensible, dès 35 sinon. Une variation de 1 kg de tension déplace l\'indice de 0,5 point.'
       }
     },
     { 
       min: 31, max: 32, 
       label: 'Ferme', 
-      description: 'Compétiteur national',
+      description: '1 point sous l\'alerte bras sensible (32)',
       color: '#FF6600', 
       textColor: '#ffffff',
       icon: '💪',
-      detailedComment: 'Setup exigeant pour les compétiteurs de niveau national. Offre un contrôle maximal mais demande une excellente technique et un physique entraîné. Attention au risque de blessure en cas de fatigue ou de mauvaise préparation.',
-      targetPlayers: ['Compétiteurs nationaux', 'Classement 0 à -2/6', 'Joueurs physiques'],
+      detailedComment: 'RCS 31. Sous les deux seuils d\'alerte bras du configurateur.',
+      targetPlayers: ['RCS 31', 'Alerte bras sensible : 32', 'Alerte tous profils : 35'],
       recommendations: {
-        racquet: 'Raquette player (RA 68-70), 310-320g',
-        string: 'Polyester rigide (Tour Bite, Hyper-G)',
-        tension: 'Tension haute (26-28 kg)',
-        advice: 'Échauffement rigoureux obligatoire. Surveillez les premiers signes de fatigue articulaire.'
+        racquet: 'RA 67',
+        string: '210 lb/in',
+        tension: '25 kg',
+        advice: 'Seuils d\'alerte bras du configurateur : dès 32 pour un bras sensible, dès 35 sinon. Une variation de 1 kg de tension déplace l\'indice de 0,5 point.'
       }
     },
     { 
       min: 32, max: 34, 
       label: 'Rigide', 
-      description: 'Expert / Semi-pro',
+      description: 'Alerte bras sensible atteinte (32)',
       color: '#FF4444', 
       textColor: '#ffffff',
       icon: '⚡',
-      detailedComment: 'Configuration réservée aux joueurs experts et semi-professionnels. Contrôle ultime mais sollicitation articulaire importante. Requiert une préparation physique de haut niveau et une technique irréprochable.',
-      targetPlayers: ['Semi-professionnels', 'Joueurs très expérimentés', 'Gros frappeurs'],
+      detailedComment: 'RCS 32 à 33. Au niveau ou au-dessus du seuil d\'alerte bras pour un bras sensible ; sous le seuil des autres profils.',
+      targetPlayers: ['RCS 32 à 33', 'Alerte bras sensible : 32', 'Alerte tous profils : 35'],
       recommendations: {
-        racquet: 'Raquette pro (RA 69-72), 315-330g',
-        string: 'Polyester haute performance',
-        tension: 'Tension très haute (27-29 kg)',
-        advice: 'Protocole de prévention des blessures indispensable. Rotation régulière des cordages.'
+        racquet: 'RA 68',
+        string: '220 lb/in',
+        tension: '26 kg',
+        advice: 'Seuils d\'alerte bras du configurateur : dès 32 pour un bras sensible, dès 35 sinon. Réduire la tension de 1 kg baisse l\'indice de 0,5 point ; un cordage plus souple le baisse aussi.'
       }
     },
     { 
       min: 34, max: 41, 
       label: 'Extrême', 
-      description: 'Pro / Gros frappeur élite',
+      description: 'Au-dessus de l\'alerte bras sensible (32) ; alerte tous profils dès 35',
       color: '#CC0000', 
       textColor: '#ffffff',
-      icon: '👑',
-      detailedComment: 'Configuration extrême utilisée par les professionnels et les gros frappeurs d\'élite. Sollicitation articulaire maximale - réservé aux joueurs avec un staff médical et un préparateur physique. Non recommandé pour les amateurs.',
-      targetPlayers: ['Joueurs professionnels', 'Top joueurs nationaux', 'Frappeurs d\'élite'],
+      icon: '⚠️',
+      detailedComment: 'RCS 34 ou plus. Au-dessus du seuil d\'alerte bras pour un bras sensible ; le seuil des autres profils est atteint dès 35 (risque de tennis elbow).',
+      targetPlayers: ['RCS 34 ou plus', 'Alerte bras sensible : 32', 'Alerte tous profils : 35'],
       recommendations: {
-        racquet: 'Raquette tour (RA 70+), customisée',
-        string: 'Polyester tour, cordage frais à chaque match',
-        tension: 'Tension maximale (28-30 kg)',
-        advice: '⚠️ Configuration à haut risque. Staff médical recommandé. Pas pour les amateurs.'
+        racquet: 'RA 70',
+        string: '245 lb/in',
+        tension: '27 kg',
+        advice: '⚠️ Seuils d\'alerte bras du configurateur : dès 32 pour un bras sensible, dès 35 sinon (risque de tennis elbow). Réduire la tension de 1 kg baisse l\'indice de 0,5 point ; un cordage plus souple le baisse aussi.'
       }
     }
   ],
@@ -183,47 +189,47 @@ const RCS = {
   QUINTILES: [
     {
       min: 11, max: 24,
-      label: 'Zone Confort Thérapeutique',
+      label: 'Zone Indice Bas',
       color: '#228B22',
       icon: '💚',
-      summary: 'Protection maximale du bras',
-      description: 'Configurations ultra-confortables pour la rééducation, le tennis elbow ou les seniors avec bras fragile. Priorité absolue à la santé articulaire.',
+      summary: 'Indice de fermeté le plus bas',
+      description: 'RCS 23 ou moins. Sous les deux seuils d\'alerte bras du configurateur (dès 32 pour un bras sensible, dès 35 sinon).',
       targetRCS: '11-24'
     },
     {
       min: 24, max: 27,
-      label: 'Zone Confort Préventive',
+      label: 'Zone Indice Moyen-Bas',
       color: '#9ACD32',
       icon: '🌿',
-      summary: 'Confort et prévention',
-      description: 'Idéal pour les débutants, joueurs occasionnels ou ceux souhaitant prévenir les blessures. Bon équilibre vers le confort.',
+      summary: 'Indice de fermeté moyen-bas',
+      description: 'RCS 24 à 26. Sous les deux seuils d\'alerte bras du configurateur (dès 32 pour un bras sensible, dès 35 sinon).',
       targetRCS: '24-27'
     },
     {
       min: 27, max: 29,
-      label: 'Zone Équilibrée',
+      label: 'Zone Indice Moyen',
       color: '#FFD700',
       icon: '⚖️',
-      summary: 'Le sweet spot polyvalent',
-      description: 'Configuration standard pour la majorité des joueurs de club. Équilibre optimal entre confort, puissance et contrôle.',
+      summary: 'Milieu de l\'échelle',
+      description: 'RCS 27 à 28. Sous les deux seuils d\'alerte bras du configurateur (dès 32 pour un bras sensible, dès 35 sinon).',
       targetRCS: '27-29'
     },
     {
       min: 29, max: 32,
-      label: 'Zone Performance',
+      label: 'Zone Indice Moyen-Haut',
       color: '#FF8C00',
       icon: '🔥',
-      summary: 'Contrôle et précision',
-      description: 'Pour les compétiteurs confirmés recherchant plus de contrôle. Nécessite bonne technique et condition physique.',
+      summary: 'Moyen-haut, à l\'approche de l\'alerte bras sensible',
+      description: 'RCS 29 à 31. Sous les deux seuils d\'alerte bras du configurateur (dès 32 pour un bras sensible, dès 35 sinon).',
       targetRCS: '29-32'
     },
     {
       min: 32, max: 41,
-      label: 'Zone Expert/Pro',
+      label: 'Zone Indice Élevé',
       color: '#CC0000',
-      icon: '👑',
-      summary: 'Performance maximale',
-      description: 'Réservé aux experts et professionnels. Sollicitation articulaire élevée - préparation physique indispensable.',
+      icon: '⚠️',
+      summary: 'Alerte bras sensible atteinte ou dépassée',
+      description: 'RCS 32 ou plus. L\'alerte bras s\'applique dès 32 pour un bras sensible et dès 35 à tous les profils (risque de tennis elbow).',
       targetRCS: '32-41'
     }
   ],
@@ -364,15 +370,15 @@ const RCS = {
 
   getRecommendations(profile) {
     const p = {
-      'reeducation': { targetDecile: [1, 2], rcsRange: [11, 22], description: 'Rééducation post-blessure', quintile: 1 },
-      'tennis_elbow': { targetDecile: [1, 3], rcsRange: [11, 24], description: 'Tennis elbow / Épicondylite', quintile: 1 },
-      'senior': { targetDecile: [2, 4], rcsRange: [22, 26], description: 'Senior / Bras sensible', quintile: 2 },
-      'debutant': { targetDecile: [3, 5], rcsRange: [24, 27], description: 'Débutant / Loisir', quintile: 2 },
-      'club': { targetDecile: [4, 6], rcsRange: [26, 29], description: 'Joueur de club', quintile: 3 },
-      'confirme': { targetDecile: [5, 7], rcsRange: [27, 31], description: 'Club confirmé', quintile: 3 },
-      'competiteur': { targetDecile: [6, 8], rcsRange: [28, 32], description: 'Compétiteur', quintile: 4 },
-      'expert': { targetDecile: [7, 9], rcsRange: [29, 34], description: 'Expert / Semi-pro', quintile: 4 },
-      'pro': { targetDecile: [8, 10], rcsRange: [31, 41], description: 'Pro / Élite', quintile: 5 }
+      'reeducation': { targetDecile: [1, 2], rcsRange: [11, 22], description: 'Indice très bas (RCS 11 à 22)', quintile: 1 },
+      'tennis_elbow': { targetDecile: [1, 3], rcsRange: [11, 24], description: 'Indice bas (RCS 11 à 24)', quintile: 1 },
+      'senior': { targetDecile: [2, 4], rcsRange: [22, 26], description: 'Indice bas à moyen (RCS 22 à 26)', quintile: 2 },
+      'debutant': { targetDecile: [3, 5], rcsRange: [24, 27], description: 'Débutant / Loisir (RCS 24 à 27)', quintile: 2 },
+      'club': { targetDecile: [4, 6], rcsRange: [26, 29], description: 'Joueur de club (RCS 26 à 29)', quintile: 3 },
+      'confirme': { targetDecile: [5, 7], rcsRange: [27, 31], description: 'Club confirmé (RCS 27 à 31)', quintile: 3 },
+      'competiteur': { targetDecile: [6, 8], rcsRange: [28, 32], description: 'Compétiteur (RCS 28 à 32)', quintile: 4 },
+      'expert': { targetDecile: [7, 9], rcsRange: [29, 34], description: 'Expert / Semi-pro (RCS 29 à 34)', quintile: 4 },
+      'pro': { targetDecile: [8, 10], rcsRange: [31, 41], description: 'Pro / Élite (RCS 31 à 41)', quintile: 5 }
     };
     return p[profile] || p['club'];
   },
@@ -393,8 +399,8 @@ const RCS = {
       return {
         isOk: false,
         status: 'risque_sante',
-        message: `Montage tres ferme (indice ${rcs}) : risque de tennis elbow`,
-        suggestion: `Quel que soit votre niveau, baissez la tension ou passez a un cordage plus souple sur les montants. Ce seuil ne depend pas du profil de joueur.`,
+        message: `Montage très ferme (indice ${rcs}) : risque de tennis elbow`,
+        suggestion: `Quel que soit votre niveau, baissez la tension ou passez à un cordage plus souple sur les montants. Ce seuil ne dépend pas du profil de joueur.`,
         icon: '⚠️'
       };
     }
@@ -402,41 +408,43 @@ const RCS = {
       return {
         isOk: true,
         status: 'optimal',
-        message: `Configuration optimale pour ${rec.description}`,
+        message: `Indice dans la plage du profil : ${rec.description}`,
         suggestion: dec.recommendations.advice,
-        icon: '✅'
+        icon: 'ℹ️'
       };
     } else if (rcs < minRCS) {
       return {
         isOk: false,
         status: 'trop_souple',
-        message: `Configuration trop souple pour ${rec.description}`,
-        suggestion: `Augmentez la tension de ${Math.ceil((minRCS - rcs) * 2)} kg ou choisissez un cordage plus rigide pour plus de contrôle.`,
+        message: `Indice sous la plage du profil : ${rec.description}`,
+        suggestion: `Augmenter la tension de ${Math.ceil((minRCS - rcs) * 2)} kg ou choisir un cordage plus rigide rapproche l'indice de cette plage (plus de contrôle, moins de confort). Seuils d'alerte bras du configurateur : dès 32 pour un bras sensible, dès 35 sinon.`,
         icon: '❄️'
       };
     } else {
       return {
         isOk: false,
         status: 'trop_rigide',
-        message: `Configuration trop rigide pour ${rec.description}`,
-        suggestion: `Réduisez la tension de ${Math.ceil((rcs - maxRCS) * 2)} kg ou optez pour un cordage plus souple pour protéger votre bras.`,
+        message: `Indice au-dessus de la plage du profil : ${rec.description}`,
+        suggestion: `Réduire la tension de ${Math.ceil((rcs - maxRCS) * 2)} kg ou choisir un cordage plus souple rapproche l'indice de cette plage. Seuils d'alerte bras du configurateur : dès 32 pour un bras sensible, dès 35 sinon.`,
         icon: '🔥'
       };
     }
   },
 
+  // ALERTES DE SANTÉ : seuils 32 (bras sensible) et 35 (tous profils), ceux de advanced-rcs.ts, contrôlés
+  // par le contrôle 20. Elles ne se suppriment ni ne s'adoucissent (règle 2) ; seule leur clarté peut changer.
   getHealthWarning(rcs) {
     if (rcs >= 35) {
       return {
         level: 'danger',
         icon: '⚠️',
         title: 'Attention - Sollicitation élevée',
-        message: 'Cette configuration génère une sollicitation articulaire importante. Non recommandé pour les joueurs occasionnels ou ayant des antécédents de blessures.',
+        message: 'Indice de 35 ou plus : seuil d\'alerte bras pour tous les profils (risque de tennis elbow). Cette configuration génère une sollicitation articulaire importante. Non recommandé pour les joueurs occasionnels ou ayant des antécédents de blessures.',
         tips: [
           'Échauffement complet obligatoire (15-20 min)',
           'Surveillez tout signe de douleur au coude ou épaule',
           'Limitez la durée des sessions',
-          'Consultez un kiné en cas de gêne persistante'
+          'Consultez un professionnel de santé en cas de douleur ou de gêne persistante'
         ]
       };
     } else if (rcs >= 32) {
@@ -444,7 +452,7 @@ const RCS = {
         level: 'warning',
         icon: '⚡',
         title: 'Configuration exigeante',
-        message: 'Setup performant mais exigeant physiquement. Assurez-vous d\'avoir une bonne condition physique.',
+        message: 'Indices 32 à 34 : seuil d\'alerte bras pour un bras sensible atteint (35 pour les autres profils). Setup performant mais exigeant physiquement. Assurez-vous d\'avoir une bonne condition physique.',
         tips: [
           'Échauffement sérieux recommandé',
           'Hydratation importante',
@@ -480,13 +488,13 @@ const RCS = {
         </div>
         <p class="text-gray-700 mb-4">${decile.detailedComment}</p>
         <div class="mb-4">
-          <h5 class="font-semibold text-sm text-gray-700 mb-2">👥 Profils ciblés :</h5>
+          <h5 class="font-semibold text-sm text-gray-700 mb-2">📍 Repères chiffrés :</h5>
           <div class="flex flex-wrap gap-2">
             ${decile.targetPlayers.map(p => `<span class="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">${p}</span>`).join('')}
           </div>
         </div>
         <div class="bg-white rounded-lg p-3 space-y-2">
-          <h5 class="font-semibold text-sm text-gray-700 mb-2">💡 Recommandations :</h5>
+          <h5 class="font-semibold text-sm text-gray-700 mb-2">📐 Exemple de valeurs pour cette plage :</h5>
           <div class="text-sm space-y-1">
             <p><span class="font-medium">🎾 Raquette :</span> ${decile.recommendations.racquet}</p>
             <p><span class="font-medium">🧵 Cordage :</span> ${decile.recommendations.string}</p>
