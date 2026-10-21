@@ -7,8 +7,8 @@
 > [`README.md`](README.md). La v1.1 intègre trois décisions de Pierre du
 > 10/10/2026 : evergreen d'abord (§1), images générées par son outil MCP (§4),
 > consentement avant toute publication (§6). La v1.2 réécrit F7 (§2) sur sa
-> décision du 21/10/2026 : qualifier franchement un montage, ne jamais prêter
-> au matériel un effet sur la santé.
+> décision du 21/10/2026 : qualifier franchement un montage, confort compris,
+> ne jamais prêter au matériel un effet sur la santé.
 >
 > **Rang.** Les neuf règles non négociables de `CLAUDE.md` §4 passent avant
 > tout ; cette charte les applique au contenu. En cas de conflit, `CLAUDE.md`
@@ -102,10 +102,35 @@ concernés.
 *Origine : colonne « Confiance » retirée des quatre classements le 10/10/2026,
 à la demande de Pierre.*
 
-**F7 — La santé d'abord (règle 2).** On qualifie franchement un montage ; on
-ne prête jamais au matériel un effet sur la santé.
+**F7 — La santé d'abord (règle 2).** On dit franchement ce que vaut un
+montage, confort compris ; on ne prête jamais au matériel un effet sur la
+santé.
 
-- **Interdit** :
+- **Dire qu'un montage est confortable est permis et attendu.** On le dit avec
+  la grille publiée du site, relue dans `getStringRecommendation`
+  (`src/data/strings-database.ts`) au moment d'écrire (au 21/10/2026 : « Très
+  confortable » sous 20, « Confortable » de 20 à 24, « Standard » de 25 à 29,
+  « Ferme » de 30 à 34, « Très ferme » dès 35). Un montage se qualifie par son
+  palier, avec son indice et son montage : « confortable : indice 22 au
+  montage RA 64 à 24 kg, palier Confortable » ; de même « standard »,
+  « ferme », « très ferme ». Un cordage seul se qualifie au montage de
+  référence. Deux interdits seulement : appeler confortable un montage que le
+  chiffre contredit (palier Ferme ou au-delà) ; tirer du confort un effet sur
+  la santé (« confortable, donc il protège le bras »).
+- **Un avis net sur un montage est permis**, au-delà du palier (« le plus
+  souple de sa famille », « à privilégier si le confort passe avant le
+  contrôle »), adossé dans la même phrase à un critère chiffré de la base
+  (F1) — rigidité, rang, écart à la médiane de la famille, indice RCS — et au
+  montage qui le produit (RA, tension). Sa condition est une préférence de jeu
+  ou de sensation, jamais un état de santé. La position d'un indice par rapport
+  aux seuils d'alerte s'écrit comme un **constat**, montage nommé, sans conseil
+  ni public de santé : « indice 24 au montage de référence, 8 points sous le
+  seuil d'alerte bras sensible (32) ». Sur les fiches produit, les
+  **comparatifs** (rang, « le plus souple de sa famille », écart à la médiane)
+  sont calculés à l'affichage, jamais écrits à la main ; le palier et le mot
+  « confortable » s'affichent sur la fiche et s'écrivent dans les articles.
+- **Interdit** (le confort n'en fait pas partie : c'est une sensation, dite par
+  le palier) :
   - tout effet du matériel sur la santé ou sur le corps, quel que soit le mot :
     protéger, prévenir, soigner, soulager, ménager le bras, mais aussi réduire
     la charge ou les chocs qu'il reçoit, absorber les vibrations, moins
@@ -126,22 +151,12 @@ ne prête jamais au matériel un effet sur la santé.
   ne soigne pas un tendon »), sauf si la même phrase, ou la question de FAQ qui
   la porte, affirme ou présuppose un effet : « … mais réduit la charge sur le
   bras » ; « baisser la tension suffit-il à protéger le coude ? ».
-- **Permis : un avis net sur un montage** (« le plus souple de sa famille »,
-  « à privilégier si le confort passe avant le contrôle »), adossé dans la même
-  phrase à un critère chiffré de la base (F1) — rigidité, rang, écart à la
-  médiane de la famille, indice RCS — et au montage qui le produit (RA,
-  tension). Sa condition est une préférence de jeu ou de sensation, jamais un
-  état de santé. La position d'un indice par rapport aux seuils d'alerte
-  s'écrit comme un **constat**, montage nommé, sans conseil ni public de santé :
-  « indice 24 au montage de référence, 8 points sous le seuil d'alerte bras
-  sensible (32) ». Sur les fiches produit, ces comparatifs de confort et de
-  souplesse sont calculés à l'affichage, jamais écrits à la main.
 - **« Mesuré »** ne qualifie qu'une valeur alignée sur une mesure indépendante
   (TWU) : pour un cordage, celles que les articles marquent † (statut
   `appliquee` de `src/data/string-stiffness-provenance.ts`, mesures TWU citées
-  dans la base). Sur une valeur sans source, ni rang ni avis de souplesse ;
-  seul un avis dans le sens prudent s'écrit (« plus rigide que la médiane de
-  sa famille »).
+  dans la base). Sur une rigidité sans aucune source, ni rang ni avis de
+  souplesse (« souple », « le plus souple ») ; seul un avis dans le sens
+  prudent s'écrit (« plus rigide que la médiane de sa famille »).
 - **Montage de référence** : RA 64 (`DEFAULT_RACQUET_RA` de
   `src/lib/racquet-scoring.ts`, médiane des RA du catalogue) et 24 kg (centre
   de l'échelle, `REF_TENSION` de `scripts/qa-ratings.mts`). Un indice cité sans
@@ -156,7 +171,10 @@ ne prête jamais au matériel un effet sur la santé.
 *Origine : décision de Pierre du 21/10/2026 (« on ne peut pas ne pas qualifier
 les setups, sinon le site n'a plus d'intérêt »), arbitrages délégués à
 l'orchestrateur, avis d'Opus 5.5 sur les échappatoires de la première
-rédaction ; triage des 87 avertissements de `qa-claims --all` du même jour.*
+rédaction ; triage des 87 avertissements de `qa-claims --all` du même jour.
+Précision du même soir, après le refus de cette rédaction par Pierre (« je
+refuse de ne pas dire quand un setup est confortable ») : le confort se dit,
+c'est même ce qu'on attend d'un article.*
 
 **F8 — L'affiliation ne pèse sur rien (règle 1).** Ni sur un classement, ni sur
 un verdict, ni sur le choix des produits cités. Aucun lien d'affiliation dans
@@ -312,7 +330,8 @@ Elles valent pour le texte (rédacteur) comme pour les titres, descriptions et
 - **Produits** : nommés comme dans la base (marque, modèle, variante).
 - **Ton** :
   - pas d'emphase marketing ;
-  - pas de superlatif sans donnée ; sur un montage, l'avis suit F7 ;
+  - pas de superlatif sans donnée ; sur un montage, l'avis suit F7, qui
+    attend qu'on dise quand il est confortable ;
   - « le meilleur » seulement adossé à un classement du site, et dans ses
     limites.
 
