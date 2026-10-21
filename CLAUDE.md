@@ -1,11 +1,26 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.3.24
-> **Date** : 11 octobre 2026
+> **Version** : 2.3.25
+> **Date** : 21 octobre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
 > **Branche de référence** : `main` (seule branche longue ; la production Netlify en déploie)
 > **Repo** : https://github.com/PleneufMC/Tennis-String-Advisor.git
+
+**Changelog v2.3.24 → v2.3.25** — **Allégation de santé retirée du champ `proUsage` du Tecnifibre Triax** (audit des textes
+réécrits le 11/10, relevé du 21/10/2026 ; arbitrages délégués par Pierre à l'orchestrateur ; `tsa-core`). **Constat** :
+`tecnifibre-triax.proUsage` valait « Recommandé en sortie de tendinite / tennis elbow », une recommandation médicale sans source
+(charte F7, règle 2), pas un usage professionnel. Elle s'affichait sur la fiche FR (« Usage professionnel : … »), sur la carte du
+catalogue FR et, via `pro_usage` de `catalog.json`, sur la carte du catalogue EN et dans le comparateur EN (la fiche EN générée
+l'écartait déjà). Aucun contrôle ne la voyait : le contrôle 19 ne lit que `description`, `audit:claims` exclut `src/data`.
+**Changé** : le champ est retiré de cette fiche (il est optionnel dans `TennisString`) ; aucune autre fiche, valeur, note, formule,
+seuil ni alerte touchés. **Vérifié en exécution** : HTML prérendu de `/tennis-strings/tecnifibre-triax`, le bloc « Usage
+professionnel » disparaît (la description est suivie de la section « Caractéristiques », sans paragraphe vide), « tendinite » 2 → 0 ;
+page catalogue prérendue 1 → 0 ; `catalog.json` : `pro_usage` `null` (15 cordages en portent un, 16 avant) ; fiche EN identique à
+l'octet ; `type-check` et `build` exit 0, `audit:claims` 0 échec (87 avertissements, comme sur `main`), `audit:ratings` exit 0,
+`audit:all` 10 contrôles verts sur 12, comme sur `main` (`style-contrast` : les 3 constats connus de `pricing/page.tsx` ;
+`security` : `npm audit`). **Limites** : aucun contrôle ajouté (l'extension du contrôle 19 à tous les champs texte des fiches
+viendra avec la PR de textes) ; pages EN non rendues dans un navigateur (elles lisent `pro_usage`, désormais `null`).
 
 **Changelog v2.3.23 → v2.3.24** — **PDF : la méthodologie imprimée cite les deux seuils d'alerte bras et dit lequel le document
 applique ; contrôle 21 bis** (option C de l'arbitrage n° 1 de la PR #124, retenue par Pierre le 11/10/2026 sur la recommandation de
@@ -1513,4 +1528,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.3.24 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.3.25 — Tennis String Advisor — « Mesurer avant d'affirmer. »*

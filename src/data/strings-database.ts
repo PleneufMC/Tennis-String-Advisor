@@ -1070,7 +1070,6 @@ export const stringsDatabase: TennisString[] = [
     recommendedTension: { min: 22, max: 27 },
     price: { europe: 17, usa: 18 },
     description: 'Multifilament hybride unique : 50% polyamide / 50% fibres polyester (TPI). Le multi le plus orienté contrôle et spin testé par Tennis Warehouse, tout en restant très confortable.',
-    proUsage: 'Recommandé en sortie de tendinite / tennis elbow',
     color: 'Natural'
   },
   {
