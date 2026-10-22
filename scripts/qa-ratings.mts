@@ -552,6 +552,87 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
   }
 }
 
+// c) Le curseur de rigidité du calculateur EN couvre toute la base (22/10/2026). Plafonné à 275 lb/in, il ramenait Luxilon 4G
+//    (286,9), RPM Team (280,6) et Revenge (276) à 275 : indice affiché sous-estimé (4G à RA 64 et 24 kg : 37 au lieu de 38). Une
+//    rigidité choisie dans la liste ne doit jamais être rabotée par le curseur (règle 2 : l'indice ne baisse pas). Échoue si les
+//    bornes du curseur (min, max) n'encadrent pas toutes les rigidités de `src/data`, si une rigidité de la base n'est pas une
+//    valeur atteignable au pas du curseur, si le paramètre d'URL « cordage » est borné par des littéraux au lieu des bornes du
+//    curseur, si le libellé de la borne haute n'est pas la borne, ou si `CORDAGE_MIN` / `CORDAGE_MAX` d'un moteur statique
+//    n'encadrent pas la base. Bornes lues dans `src/data`, jamais recopiées ; tests négatifs sur des copies altérées.
+{
+  const before = failures.length;
+  const PAGE = 'public/en/rcs-calculator.html';
+  const ENGINES = ['public/js/rcs-calculator.js', 'public/js/rcs-calculator-en.js'];
+  const stiff = stringsDatabase.map((s) => s.stiffness);
+  const lo = Math.min(...stiff);
+  const hi = Math.max(...stiff);
+  const top = stringsDatabase.filter((s) => s.stiffness === hi).map((s) => s.id).join(', ');
+  const pageFindings = (html: string): string[] => {
+    const out: string[] = [];
+    const tag = /<input\b[^>]*\bid="cordageSlider"[^>]*>/.exec(html)?.[0];
+    if (!tag) return ['curseur : <input id="cordageSlider"> introuvable'];
+    const attr = (n: string): number => Number(new RegExp(`\\b${n}="([^"]*)"`).exec(tag)?.[1]);
+    const [min, max, step] = [attr('min'), attr('max'), attr('step')];
+    if (!(min <= lo)) out.push(`curseur : min ${min} au-dessus de la plus basse rigidité de la base (${lo})`);
+    if (!(max >= hi)) out.push(`curseur : max ${max} sous la plus haute rigidité de la base (${hi}, ${top}) : le curseur la ramène à ${max}, indice sous-estimé`);
+    if (!(step > 0)) out.push(`curseur : pas « ${step} » illisible`);
+    else {
+      const off = stringsDatabase.filter((s) => {
+        const k = (s.stiffness - min) / step;
+        return Math.abs(k - Math.round(k)) > 1e-6;
+      });
+      if (off.length > 0) out.push(`curseur : ${off.length} rigidités hors du pas ${step} depuis ${min} (ex. ${off[0].id} ${off[0].stiffness}) : le curseur les arrondit`);
+    }
+    if (/\bcordage\s*[<>]=?\s*\d/.test(html)) out.push("URL : le paramètre « cordage » est borné par des littéraux : lire les bornes du curseur (cordageSlider.min / .max)");
+    const labels = [...html.matchAll(/<span>([\d.]+) \(Stiff Poly\)<\/span>/g)].map((m) => Number(m[1]));
+    if (labels.length !== 1 || labels[0] !== max) out.push(`libellé : la borne haute affichée (${labels.join(', ') || 'absente'}) n'est pas le max du curseur (${max})`);
+    return out;
+  };
+  const engineFindings = (path: string, src: string): string[] => {
+    try {
+      const e = new Function('window', 'document', `${src}; return typeof RCS !== 'undefined' ? RCS : window.RCS;`)({}, { addEventListener() {} });
+      const out: string[] = [];
+      if (!(e.CORDAGE_MAX >= hi)) out.push(`${path} : CORDAGE_MAX ${e.CORDAGE_MAX} sous la plus haute rigidité de la base (${hi})`);
+      if (!(e.CORDAGE_MIN <= lo)) out.push(`${path} : CORDAGE_MIN ${e.CORDAGE_MIN} au-dessus de la plus basse rigidité de la base (${lo})`);
+      return out;
+    } catch (err) {
+      return [`${path} : moteur statique illisible (${(err as Error).message})`];
+    }
+  };
+  const html = readFileSync(PAGE, 'utf8');
+  const engineSrcs = ENGINES.map((p) => [p, readFileSync(p, 'utf8')] as const);
+  pageFindings(html).forEach((i) => fail(`calculateur EN : ${i}`));
+  engineSrcs.flatMap(([p, s]) => engineFindings(p, s)).forEach((i) => fail(`calculateur EN : ${i}`));
+  // Tests négatifs (copies altérées) et témoin positif.
+  const sub = (s: string, a: string, b: string): string | null => (s.includes(a) ? s.replace(a, b) : null);
+  const tagMax = /(<input\b[^>]*\bid="cordageSlider"[^>]*\bmax=")([^"]*)(")/;
+  const maxNow = tagMax.exec(html)?.[2] ?? '';
+  const PAGE_NEG: Array<[string, string | null, string]> = [
+    ['max remis à 275', html.replace(tagMax, '$1275$3'), 'sous la plus haute rigidité'],
+    ['pas de 1 lb/in', sub(html, 'step="0.1" value="180"', 'step="1" value="180"'), 'hors du pas'],
+    ['borne d\'URL recopiée', sub(html, 'cordage <= Number(cordageSlider.max)', 'cordage <= 275'), 'littéraux'],
+    ['libellé de la borne haute périmé', sub(html, `<span>${maxNow} (Stiff Poly)</span>`, '<span>275 (Stiff Poly)</span>'), 'libellé'],
+  ];
+  let detected = 0;
+  for (const [name, mutated, needle] of PAGE_NEG) {
+    if (mutated === null || mutated === html) fail(`calculateur EN : prémisse du test négatif « ${name} » fausse (motif absent de ${PAGE})`);
+    else if (pageFindings(mutated).some((i) => i.includes(needle))) detected++;
+    else fail(`calculateur EN : garde-fou muet sur « ${name} »`);
+  }
+  for (const [p, src] of engineSrcs) {
+    const mutated = src.replace(/(_c: \[54, 72, 63, 88, )[\d.]+(, 18, 30\])/, '$1275$2');
+    if (mutated === src) fail(`calculateur EN : prémisse du test négatif « CORDAGE_MAX remis à 275 » fausse (motif absent de ${p})`);
+    else if (engineFindings(p, mutated).some((i) => i.includes('CORDAGE_MAX'))) detected++;
+    else fail(`calculateur EN : garde-fou muet sur « CORDAGE_MAX remis à 275 » (${p})`);
+  }
+  const witness = sub(html, '// Bornes lues sur le curseur', '// Bornes lues sur le curseur (min, max)');
+  if (witness === null) fail(`calculateur EN : prémisse du témoin positif fausse (commentaire absent de ${PAGE})`);
+  else if (pageFindings(witness).length > 0) fail(`calculateur EN : témoin positif « commentaire reformulé » rejeté à tort`);
+  if (failures.length === before) {
+    ok(`calculateur EN : le curseur de rigidité couvre la base (${lo} à ${hi} lb/in, max ${hi} = ${top}), chaque rigidité au pas du curseur, borne d'URL lue sur le curseur, CORDAGE_MIN/MAX des deux moteurs statiques ; ${detected} tests négatifs détectés, 1 témoin positif accepté`);
+  }
+}
+
 // Seuils d'alerte bras du configurateur (`calculateAdvancedRcs`), sondés une fois pour les contrôles 9 et 20 : plus petit indice
 // qui déclenche l'alerte, sans second filet (aucune note de confort). Au 11/10/2026 : 32 pour un bras sensible, 35 sinon.
 const probeArmAlert = (armSensitive: boolean): number | null => {
