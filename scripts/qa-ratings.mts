@@ -3412,12 +3412,13 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     // Textes de l'alerte (22/10/2026, charte F7 v1.2) : la cause réelle (indice au seuil ou au-delà / second filet « confort »
     // sous le seuil), le seuil franchi, le profil appliqué, le risque nommé comme raison du seuil, l'action en effet sur l'indice,
     // le renvoi vers un professionnel de santé. Chaque nombre cité est relu contre le résultat du moteur et les seuils sondés.
-    const INDEX_TEXT = /^Alerte bras : indice (\d+), seuil d'alerte de (\d+) (atteint|dépassé) \((bras sensible déclaré|profil standard)\), seuil fixé par le site pour le risque de tennis elbow\. Il faut (\d+) (points?) d'indice de moins pour repasser sous (\d+) : 1 kg de tension en moins retire 0,5 point, un cordage moins rigide aux montants(?: \(un multifilament ou un boyau, par exemple\))? l'abaisse aussi\. Douleur persistante : consultez un professionnel de santé\.$/;
-    const COMFORT_TEXT = /^Alerte bras : note de confort calculée du montage sous (\d+) sur 100 \((bras sensible déclaré|profil standard)\), second seuil d'alerte fixé par le site pour le risque de tennis elbow ; l'indice \((\d+)\) reste sous le seuil de (\d+)\. Une tension plus basse ou un cordage mieux noté en confort relève cette note\. Douleur persistante : consultez un professionnel de santé\.$/;
+    const INDEX_TEXT = /^Alerte bras : indice (\d+), seuil d'alerte de (\d+) (atteint|dépassé) \((bras sensible déclaré|profil standard)\), seuil fixé par le site pour le risque de tennis elbow\. Il faut (\d+) (points?) d'indice de moins pour repasser sous (\d+) : 1 kg de tension en moins retire 0,5 point, un cordage moins rigide aux montants( \(un multifilament ou un boyau, par exemple\))? l'abaisse aussi\. Douleur persistante : consultez un professionnel de santé\.$/;
+    const COMFORT_TEXT = /^Alerte bras : note de confort calculée du montage sous (\d+) sur 100( avant arrondi, affichée (\d+))? \((bras sensible déclaré|profil standard)\), second seuil d'alerte fixé par le site pour le risque de tennis elbow ; l'indice \((\d+)\) reste sous le seuil de (\d+)\. Une tension plus basse ou un cordage mieux noté en confort relève cette note\. Douleur persistante : consultez un professionnel de santé\.$/;
     // Une alerte ne promet jamais un effet du matériel sur le bras (charte F7) : « limiter / réduire / éviter le risque », protéger…
     const ALERT_PROMISE = /limit|rédui|diminu|évit|prot[eéè]g|préserv|ménag|soulag|prévien|prévent/i;
-    // Relit une alerte bras du moteur : forme, cause, seuil, profil, points à perdre ; renvoie le défaut ou null.
-    const readAlert = (w: string, profileSensitive: boolean, rcs: number): string | null => {
+    // Relit une alerte bras du moteur : forme, cause, seuil, profil, points à perdre, incise réservée au montant polyester, mention
+    // de l'arrondi quand la note de confort AFFICHÉE (arrondie, `subScores.comfort`) vaut la limite citée ; renvoie le défaut ou null.
+    const readAlert = (w: string, profileSensitive: boolean, rcs: number, shownComfort: number | null, polyMains: boolean): string | null => {
       const T = profileSensitive ? S : N;
       const label = profileSensitive ? 'bras sensible déclaré' : 'profil standard';
       const who = profileSensitive ? '« bras sensible »' : 'standard';
@@ -3425,8 +3426,9 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
       if (rcs >= T) {
         const m = INDEX_TEXT.exec(w);
         if (!m) return `texte : l'alerte ${who} (indice au seuil) n'a plus sa forme (indice, seuil, profil, risque nommé, action sur l'indice, renvoi) : « ${w.slice(0, 90)} »`;
-        const [, idx, seuil, verb, prof, pts, word, sous] = m;
+        const [, idx, seuil, verb, prof, pts, word, sous, incise] = m;
         const want = rcs - T + 1;
+        if (!!incise !== polyMains) return `texte : l'alerte ${who} ${incise ? 'propose' : 'ne propose plus'} « un multifilament ou un boyau » pour un montant ${polyMains ? 'polyester' : 'non polyester'} : « ${w.slice(0, 90)} »`;
         if (Number(idx) !== rcs || Number(seuil) !== T || Number(sous) !== T || prof !== label || verb !== (rcs > T ? 'dépassé' : 'atteint') || Number(pts) !== want || word !== (want > 1 ? 'points' : 'point')) {
           return `texte : l'alerte ${who} cite indice ${idx}, seuil ${seuil}/${sous}, « ${verb} », « ${prof} », ${pts} ${word} au lieu de indice ${rcs}, seuil ${T}, ${want} point(s), « ${label} »`;
         }
@@ -3434,8 +3436,12 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
       }
       const m = COMFORT_TEXT.exec(w);
       if (!m) return `texte : l'alerte ${who} du second filet (indice ${rcs} sous ${T}) n'a plus sa forme (cause, seuil, profil, risque nommé, renvoi) : « ${w.slice(0, 90)} »`;
-      const [, limite, prof, idx, seuil] = m;
+      const [, limite, arrondi, affichee, prof, idx, seuil] = m;
       const wantLimit = profileSensitive ? COMFORT_NET.sensitive : COMFORT_NET.standard;
+      const atLimit = shownComfort !== null && shownComfort >= wantLimit;
+      if (!!arrondi !== atLimit || (arrondi !== undefined && Number(affichee) !== shownComfort)) {
+        return `texte : l'alerte ${who} du second filet ${arrondi ? `dit « affichée ${affichee} »` : "ne dit pas l'arrondi"} alors que la note affichée vaut ${shownComfort} (limite ${wantLimit}) : « ${w.slice(0, 90)} »`;
+      }
       if (Number(limite) !== wantLimit || prof !== label || Number(idx) !== rcs || Number(seuil) !== T) {
         return `texte : l'alerte ${who} du second filet cite note < ${limite}, « ${prof} », indice ${idx}, seuil ${seuil} au lieu de note < ${wantLimit}, « ${label} », indice ${rcs}, seuil ${T}`;
       }
@@ -3484,11 +3490,11 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
             if (expStd !== 'incertain' && aStd.length > 0 !== (expStd === 'oui')) issues.add(`standard : ${aStd.length > 0 ? 'alerte à tort' : 'alerte manquante'} (${where} ; attendu dès l'indice ${N}, second filet confort < ${COMFORT_NET.standard})`);
             if (aSen.length > 1 || aStd.length > 1) issues.add("texte : plus d'une alerte bras pour un même montage");
             for (const w of aSen) {
-              const bad = readAlert(w, true, sen.rcs);
+              const bad = readAlert(w, true, sen.rcs, sen.subScores.comfort, fam === 'polyester');
               if (bad) issues.add(bad);
             }
             for (const w of aStd) {
-              const bad = readAlert(w, false, std.rcs);
+              const bad = readAlert(w, false, std.rcs, std.subScores.comfort, fam === 'polyester');
               if (bad) issues.add(bad);
             }
             const b = band.get(std.rcs);
@@ -3653,6 +3659,9 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
         ['alerte « bras sensible » : profil non dit', "const profil = armSensitive ? 'bras sensible déclaré' : 'profil standard';", "const profil = armSensitive ? 'sensible' : 'profil standard';", 'texte :'],
         ['alerte standard : profil non dit', "const profil = armSensitive ? 'bras sensible déclaré' : 'profil standard';", "const profil = armSensitive ? 'bras sensible déclaré' : 'standard';", 'texte :'],
         ['alerte : seuil cité au lieu du seuil appliqué', 'const seuil = armSensitive ? ARM_ALERT_RCS.sensitive : ARM_ALERT_RCS.standard;', 'const seuil = ARM_ALERT_RCS.standard;', 'texte :'],
+        ['alerte « indice » : incise polyester inversée', "${isPoly ? ' (un multifilament ou un boyau, par exemple)' : ''}", "${isPoly ? '' : ' (un multifilament ou un boyau, par exemple)'}", 'texte :'],
+        ['alerte « second filet » : arrondi à la limite non dit', 'const arrondiALaLimite = comfort !== null && round(comfort) >= limite;', 'const arrondiALaLimite = false;', 'texte :'],
+        ['alerte « second filet » : arrondi dit à tort', 'const arrondiALaLimite = comfort !== null && round(comfort) >= limite;', 'const arrondiALaLimite = comfort !== null;', 'texte :'],
         ['la déclaration change l\'indice', 'const rcs = rcsIndex(racquetStiffness, effStringStiffness, avgTension);', 'const rcs = rcsIndex(racquetStiffness, effStringStiffness, avgTension) - (profile?.armSensitive ? 2 : 0);', 'profil :'],
       ];
       for (const [name, find, replace, needle] of ENGINE_NEGATIVES) {
@@ -3685,7 +3694,7 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
       const bandText = [...real.band].map(([idx, b]) => `${idx} : ${b.n} montages, ${b.sen} alertés (profil sensible), ${b.std} par le seul second filet (profil standard)`).join(' ; ');
       ok(
         `configurateur FR : le bras sensible se déclare (case à cocher reliée à profile.armSensitive, état initial false, en mémoire seulement ; PDF : paramètre de sa fonction) ; ` +
-          `moteur réel sur ${real.n} montages : alerte dès l'indice ${S} pour armSensitive: true, dès ${N} sinon, second filet confort inchangé (< ${COMFORT_NET.sensitive} / < ${COMFORT_NET.standard}), absence de profil = false, texte de chaque alerte relu (cause, indice, seuil, profil, risque nommé, points à perdre, renvoi, aucune promesse) ; ` +
+          `moteur réel sur ${real.n} montages : alerte dès l'indice ${S} pour armSensitive: true, dès ${N} sinon, second filet confort inchangé (< ${COMFORT_NET.sensitive} / < ${COMFORT_NET.standard}), absence de profil = false, texte de chaque alerte relu (cause, indice, seuil, profil, risque nommé, points à perdre, incise polyester, arrondi de la note affichée, renvoi, aucune promesse) ; ` +
           `taux d'alerte standard ${rate(real.stdAlerts)} % -> sensible ${rate(real.senAlerts)} % ; bande ${bandText} ; ` +
           `GA4 : ${gaCallers} appel(s) de trackArmWarningShown, second argument false, événement piloté par le résultat du profil standard ; aucun stockage, URL ni cookie ; ` +
           `texte d'aide : seuils ${S} et ${N} (sondés), professionnel de santé, « ni enregistrée ni envoyée » ; ${detected} tests négatifs détectés, ${accepted} témoins positifs acceptés`

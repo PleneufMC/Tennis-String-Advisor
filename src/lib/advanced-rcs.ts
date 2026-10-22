@@ -373,8 +373,13 @@ export function calculateAdvancedRcs(input: AdvancedRcsInput): AdvancedRcsResult
       );
     } else {
       const limite = armSensitive ? 55 : 45;
+      // La note comparée est la valeur non arrondie ; le sous-score affiché (page, PDF) est `round(comfort)`. Quand l'arrondi
+      // affiche la limite elle-même (note de 54,5 à 55 exclu, par exemple), le texte le dit au lieu d'un « sous 55 » que la
+      // page contredirait.
+      const arrondiALaLimite = comfort !== null && round(comfort) >= limite;
       warnings.push(
-        `Alerte bras : note de confort calculée du montage sous ${limite} sur 100 (${profil}), ` +
+        `Alerte bras : note de confort calculée du montage sous ${limite} sur 100` +
+          `${arrondiALaLimite ? ` avant arrondi, affichée ${limite}` : ''} (${profil}), ` +
           `second seuil d'alerte fixé par le site pour le risque de tennis elbow ; ` +
           `l'indice (${rcs}) reste sous le seuil de ${seuil}. ` +
           `Une tension plus basse ou un cordage mieux noté en confort relève cette note. ${consulter}`
