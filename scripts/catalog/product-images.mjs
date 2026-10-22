@@ -49,10 +49,11 @@ export async function loadProductImages(repoRoot) {
   writeFileSync(file, js);
   try {
     const { PRODUCT_IMAGES, PRODUCT_IMAGE_CREDITS } = await import(pathToFileURL(file).href);
-    // Le crédit (« Photo : <source> ») vient de la table générée avec le manifeste : même libellé que le FR.
+    // Le crédit (« Photo : <source> ») vient de la table générée avec le manifeste : même libellé que le FR ;
+    // un envoi manuel porte son propre crédit (la source réelle), prioritaire.
     const credits = PRODUCT_IMAGE_CREDITS ?? {};
     const images = Object.fromEntries(
-      Object.entries(PRODUCT_IMAGES ?? {}).map(([id, e]) => [id, { ...e, credit: credits[e.source] ?? '' }]),
+      Object.entries(PRODUCT_IMAGES ?? {}).map(([id, e]) => [id, { ...e, credit: e.credit ?? credits[e.source] ?? '' }]),
     );
     return { enabled, images };
   } finally {
