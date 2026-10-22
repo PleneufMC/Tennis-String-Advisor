@@ -52,6 +52,9 @@ dans `fabricants_images.py`. Collecte : robots.txt lu, >= 3 s entre requêtes, p
 `out/refused-hosts.json` (head.com : 429 dès robots.txt ; luxilon.com : 403 à la première
 requête de la passe). Packshot seulement (pas de joueur : les emballages Yonex à portraits
 sont écartés), image PUBLIÉE par la page (jamais modifiée), aplatie sur blanc et rognée.
+Depuis le 22/10/2026, une décision peut attester `shownGauge` (jauge imprimée sur l'emballage
+photographié, la fiche en listant plusieurs) ou `shownColour` (coloris présenté, fiche sans coloris) :
+recopiés au manifeste, ils produisent la légende « jauge présentée » / « coloris présenté ».
 
 Étapes
 ------
@@ -777,6 +780,11 @@ def build() -> None:
                 'retrievedAt': retrieved[rkey], 'source': source,
                 'twProduct': (facts.get('title') or prod['name']) if fab_brand else prod['name'],
             }
+            # Produit voisin (22/10/2026) : jauge imprimée sur l'emballage photographié, coloris présenté
+            # quand la fiche n'en fixe aucun. Attestations humaines du mapping, recopiées pour la légende.
+            for k in OPTIONAL_FIELDS:
+                if decision.get(k):
+                    manifest[pid][k] = decision[k]
             print(f'   ok {pid:40s} <- {prod["name"]} ({size // 1024} Ko)')
 
     QUARANTINE.write_text(json.dumps({
@@ -798,6 +806,9 @@ def build() -> None:
 
 
 MANIFEST_FIELDS = ('file', 'width', 'height', 'sourcePageUrl', 'sourceImageUrl', 'retrievedAt', 'source', 'twProduct')
+# Champs facultatifs, écrits seulement quand la décision les porte : légende « jauge présentée » /
+# « coloris présenté » d'une photo de produit voisin (autre jauge de la fiche, coloris d'une fiche sans coloris).
+OPTIONAL_FIELDS = ('shownGauge', 'shownColour')
 
 
 SOURCE_LABELS = {SOURCE_TW: 'Tennis Warehouse', SOURCE_EU: 'Tennis Warehouse Europe', 'tennis-point': 'Tennis-Point'}
@@ -853,6 +864,10 @@ def write_manifest(manifest: dict) -> None:
         '  source: ProductImageSource;',
         '  /** Intitulé du produit chez la source, pour l\'audit de l\'association. */',
         '  twProduct: string;',
+        '  /** Jauge (mm) imprimée sur l\'emballage photographié, quand la fiche en liste plusieurs : légende « jauge présentée ». */',
+        '  shownGauge?: string;',
+        '  /** Coloris présenté par la photo, quand la fiche n\'en fixe aucun : légende « coloris présenté ». */',
+        '  shownColour?: string;',
         '}',
         '',
         'export const PRODUCT_IMAGES: Readonly<Record<string, ProductImageEntry>> = {',
@@ -860,7 +875,8 @@ def write_manifest(manifest: dict) -> None:
     # Une ligne par produit : le manifeste reste lisible en revue de diff.
     for pid in sorted(manifest):
         e = manifest[pid]
-        fields = ', '.join(f'{k}: {json.dumps(e[k], ensure_ascii=False)}' for k in MANIFEST_FIELDS)
+        fields = ', '.join(f'{k}: {json.dumps(e[k], ensure_ascii=False)}'
+                           for k in MANIFEST_FIELDS + tuple(k for k in OPTIONAL_FIELDS if e.get(k)))
         lines.append(f'  {json.dumps(pid)}: {{ {fields} }},')
     lines += ['};', '']
     MANIFEST_TS.write_text('\n'.join(lines), encoding='utf-8', newline='\n')
@@ -871,7 +887,7 @@ def read_manifest() -> dict:
     out: dict[str, dict] = {}
     if not MANIFEST_TS.exists():
         return out
-    keys = '|'.join(MANIFEST_FIELDS)
+    keys = '|'.join(MANIFEST_FIELDS + OPTIONAL_FIELDS)
     for line in MANIFEST_TS.read_text(encoding='utf-8').splitlines():
         m = re.match(r'^  ("[^"]+"): \{ (.*) \},$', line)
         if not m:
