@@ -215,9 +215,8 @@ export default function StringPage({ params }: { params: { slug: string } }) {
         <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
           La fermeté ressentie dépend de votre raquette et de votre tension, pas du
           cordage seul. Le configurateur calcule le score RCS de votre setup complet
-          et signale les combinaisons à risque de tennis elbow : alerte dès
-          l&apos;indice {ARM_ALERT_RCS.standard}, dès {ARM_ALERT_RCS.sensitive} si le bras est déclaré sensible
-          dans le configurateur.
+          et affiche une alerte dès l&apos;indice {ARM_ALERT_RCS.standard}, dès {ARM_ALERT_RCS.sensitive} si le bras est déclaré
+          sensible dans le configurateur : seuils fixés par le site pour le risque de tennis elbow.
         </p>
         <Link
           href="/configurator"
