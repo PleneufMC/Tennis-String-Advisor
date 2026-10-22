@@ -1205,7 +1205,9 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
 //     ou un cordage inconnu ; (b) un code ne se recalcule plus depuis les données (note
 //     retouchée, score TW modifié, « tw » sans reprise systématique) ; (c) une revue est
 //     mal formée ou citée par aucune fiche ; (d) une surface du site lit la provenance
-//     (code de src/ hors données, générateurs EN, catalogue EN, fiches EN). Chaque garde
+//     (code de src/ hors données, générateurs EN, catalogue EN, fiches EN), ou l'export
+//     catalog.json porte un code ou une clé de provenance au lieu de la seule nature
+//     (`rating_basis`, 22/10/2026). Chaque garde
 //     est rejouée sur une copie altérée : un garde-fou muet fait échouer l'audit.
 {
   const before = failures.length;
@@ -1287,6 +1289,20 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
   const enStrings = buildCatalog(racquetsDatabase, stringsDatabase).strings as Array<{ id: string }>;
   const published = [serializeCatalog(buildCatalog(racquetsDatabase, stringsDatabase)), ...enStrings.map((x) => (stringPage as (s: unknown) => string)(x))].join('\n');
   for (const p of reviewPaths) if (published.includes(p)) issues.push(`URL de revue TW publiée sur le site (catalogue ou fiche EN) : ${p}`);
+  // (d bis, 22/10/2026) l'export catalog.json porte la NATURE des notes (`rating_basis`), jamais un code de provenance ni une clé
+  // qui en annonce une : la nature se déduit de la liste des 18, pas de ce fichier.
+  const PROVENANCE_CODE = /^(tw|testeurs|inconnue:[a-z-]+|harmonisee\+[a-z:-]+)$/;
+  const exportLeaks = (json: string): string[] => {
+    const found: string[] = [];
+    JSON.parse(json, (k, v) => {
+      if (/provenance|reviews?$/i.test(k)) found.push(`clé « ${k} » dans l'export`);
+      if (typeof v === 'string' && PROVENANCE_CODE.test(v)) found.push(`code de provenance « ${k} = ${v} » dans l'export`);
+      return v;
+    });
+    return found;
+  };
+  const exported = serializeCatalog(buildCatalog(racquetsDatabase, stringsDatabase));
+  issues.push(...exportLeaks(exported));
   issues.forEach((i) => fail(`provenance des notes : ${i}`));
   // Tests négatifs : chaque altération doit être détectée.
   const triax = stringsDatabase.find((s) => s.id === 'tecnifibre-triax')!;
@@ -1300,6 +1316,8 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     ["provenance d'une note absente", checkProvenance(stringsDatabase, ghost, P.TW_REVIEWS), 'solinco-revolution.versatility'],
     ['égalité isolée promue en reprise TW', checkProvenance(stringsDatabase, promoted, P.TW_REVIEWS), 'luxilon-original.control'],
     ['composant du site lisant la provenance', scanDisplay([{ path: 'src/app/x.tsx', src: "import { STRING_RATINGS_PROVENANCE } from '@/data/string-ratings-provenance';" }]), 'src/app/x.tsx'],
+    ["export : nature remplacée par un code de provenance", exportLeaks(exported.replace('"rating_basis":"editorial"', '"rating_basis":"inconnue:ecart"')), 'inconnue:ecart'],
+    ["export : clé de provenance ajoutée", exportLeaks(exported.replace('"rating_basis":', '"rating_provenance":"x","rating_basis":')), 'rating_provenance'],
   ];
   for (const [name, found, needle] of negatives) {
     if (!found.some((i) => i.includes(needle))) fail(`provenance des notes : garde-fou muet sur « ${name} » (${needle})`);
@@ -1309,7 +1327,7 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     const n = (re: RegExp) => codes.filter((c) => re.test(c)).length;
     ok(`provenance des notes : ${Object.keys(P.STRING_RATINGS_PROVENANCE).length} cordages, ${codes.length} notes publiées décrites ` +
       `(${n(/^tw$/)} reprises TW établies, ${n(/^harmonisee\+/)} harmonisées, ${n(/^testeurs$/)} testeurs seuls, ${n(/^inconnue:/)} de source inconnue), ` +
-      `${Object.keys(P.TW_REVIEWS).length} revues TW, recalcul identique, aucune surface du site ne lit la provenance, ${negatives.length} tests négatifs détectés`);
+      `${Object.keys(P.TW_REVIEWS).length} revues TW, recalcul identique, aucune surface du site ne lit la provenance, l'export ne porte que la nature des notes, ${negatives.length} tests négatifs détectés`);
   }
 }
 
@@ -2067,7 +2085,10 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
 // (e) en exécution, le PDF d'une configuration (données assemblées, puis rendu enregistré
 //     par un jsPDF factice) omet l'étiquette des notes imprimées ;
 // (f) la description du catalogue (métadonnées) promet des notes ;
-// (g) un des tests négatifs permanents ne détecte plus l'altération qu'il plante.
+// (g) un des tests négatifs permanents ne détecte plus l'altération qu'il plante ;
+// (h) (22/10/2026) un cordage n'a pas la même nature en FR (ce module) et dans l'export catalog.json lu par les pages EN ;
+// (i) (22/10/2026) un cordage sans note (les 7 Toroline du lot 3, option A) reçoit, sur sa fiche, ses cartes ou son PDF, une
+//     barre, un zéro, un NaN ou moins de « Non publié » que de notes absentes.
 // Affichage seulement : aucune note ni aucun calcul n'est touché. La provenance détaillée
 // des notes n'est lue par aucun de ces fichiers (contrôle 13 bis, qui scanne tout src/).
 {
@@ -2202,11 +2223,16 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
 
   // (d) exécution : fiche et carte (pleine, compacte) de CHAQUE cordage, rendues côté serveur.
   const labelTag = (n: Nature) => `>${EXPECT[n]}<`;
+  // (i) notes affichées par surface : une fiche sans note dit « Non publié » autant de fois, sans barre, zéro ni NaN.
+  const NONE_LINES: Readonly<Record<string, number>> = { fiche: 5, carte: 5, 'carte compacte': 4 };
   const renderFindings = (surface: string, id: string, html: string, nature: Nature): string[] => {
     const found: string[] = [];
     if (nature === 'none') {
       if (html.includes('data-rating-nature=') || html.includes('Appréciation')) found.push(`${surface} ${id} : étiquette affichée pour un cordage sans note`);
       if (!html.includes('Non publié')) found.push(`${surface} ${id} : « Non publié » absent`);
+      const missing = (html.match(/Non publié(?!e)/g) ?? []).length;
+      if (missing < (NONE_LINES[surface] ?? 1)) found.push(`${surface} ${id} : ${missing} « Non publié » pour ${NONE_LINES[surface]} notes absentes`);
+      if (/NaN|sur 10"|>0\.0</.test(html)) found.push(`${surface} ${id} : barre, zéro ou NaN rendu pour une note absente`);
       return found;
     }
     if (!html.includes(`data-rating-nature="${nature}"`) || !html.includes(labelTag(nature))) {
@@ -2221,6 +2247,7 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
   const { StringCard } = await import('../src/components/product/string-card');
   let renders = 0;
   let sample: { fiche: string; id: string } | null = null;
+  let sampleNone: { fiche: string; card: string; id: string } | null = null;
   const renderBad: string[] = [];
   for (const s of stringsDatabase) {
     const n = N.stringRatingNature(s);
@@ -2231,6 +2258,7 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     renderBad.push(...renderFindings('fiche', s.id, fiche, n), ...renderFindings('carte', s.id, card, n), ...renderFindings('carte compacte', s.id, compact, n));
     if (n !== 'none' && !fiche.includes('data-rating-notice="full"')) renderBad.push(`fiche ${s.id} : mention absente sous « Notes de jeu »`);
     if (n === 'harmonized' && !sample) sample = { fiche, id: s.id };
+    if (n === 'none' && !sampleNone) sampleNone = { fiche, card, id: s.id };
   }
   if (renderBad.length > 0) fail(`nature des notes : ${renderBad.length} défaut(s) de rendu serveur (fiche, carte pleine, carte compacte), par exemple : ${renderBad.slice(0, 3).join(' | ')}`);
 
@@ -2283,6 +2311,11 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
       if (!lines.some((l) => l.includes(`Notes /10 du cordage : ${NOTICE}`))) found.push(`${name} : mention absente de la méthodologie imprimée`);
     }
     if (!anyLabel && (text.includes('Appréciation') || text.includes('non mesurée en laboratoire'))) found.push(`${name} : étiquette ou mention imprimée pour des notes qui n’existent pas`);
+    // (i) montant sans note : les cinq notes imprimées « non publie » (libellé historique du PDF), ni zéro, ni valeur, ni NaN.
+    if (main === 'none' && cross === null) {
+      if (lines.filter((l) => l === 'non publie').length !== 5) found.push(`${name} : les cinq notes absentes ne sont pas toutes imprimées « non publie »`);
+      if (/NaN|\d[.,]\d\/10/.test(text)) found.push(`${name} : une note (zéro, valeur ou NaN) imprimée pour un cordage sans note`);
+    }
     return found;
   };
   const pdfCases: Array<[string, string, string | null, Nature, Nature | null]> = [
@@ -2312,6 +2345,18 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
   const layoutSource = readFileSync(LAYOUT, 'utf8');
   for (const msg of layoutFindings(layoutSource)) fail(`nature des notes : ${msg}`);
 
+  // (h) même nature en FR (ce module) et dans l'export catalog.json lu par les pages EN (public/js/rating-labels.js).
+  const EN_OF: Readonly<Record<Nature, string>> = { editorial: 'editorial', harmonized: 'harmonised', none: 'none' };
+  type ExportRow = { id: string; rating_basis?: string };
+  const natureMismatch = (rows: readonly ExportRow[]): string[] =>
+    stringsDatabase.flatMap((s) => {
+      const r = rows.find((x) => x.id === s.id);
+      return r?.rating_basis === EN_OF[N.stringRatingNature(s)] ? [] : [`${s.id} : « ${N.stringRatingNature(s)} » en FR, « ${r?.rating_basis} » dans l’export`];
+    });
+  const exportRows = buildCatalog(racquetsDatabase, stringsDatabase).strings as ExportRow[];
+  const mismatched = natureMismatch(exportRows);
+  if (mismatched.length > 0) fail(`nature des notes : ${mismatched.length} cordage(s) de nature différente en FR et dans l’export EN, par exemple ${mismatched.slice(0, 3).join(' | ')}`);
+
   // (g) tests négatifs permanents : chaque altération plantée doit être détectée.
   const srcOf = (f: string) => sources.get(f) ?? '';
   const planted: Array<[string, string[]]> = [
@@ -2332,6 +2377,11 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     ['PDF : mention retirée de la méthodologie', pdfFindings('PDF', pdfRuns[0].data, pdfRuns[0].text.split('\n').filter((l) => !l.includes('Notes /10 du cordage')).join('\n'), 'harmonized', null)],
     ['PDF hybride : étiquette du travers retirée', pdfFindings('PDF', pdfRuns[1].data, pdfRuns[1].text.split('\n').filter((l) => !l.includes('Travers')).join('\n'), 'harmonized', 'editorial')],
     ['description du catalogue annonçant des notes', layoutFindings(layoutSource.replace('de chaque référence', 'de chaque référence ; contrôle, confort, effet et durabilité quand la note existe'))],
+    ['export EN : cordage harmonisé exporté « editorial »', natureMismatch(exportRows.map((r) => (r.id === harmonizedMain.id ? { ...r, rating_basis: 'editorial' } : r)))],
+    ['export EN sans nature', natureMismatch(exportRows.map(({ id }) => ({ id })))],
+    ['fiche sans note rendue avec une barre à zéro', sampleNone ? renderFindings('fiche', sampleNone.id, sampleNone.fiche.replace('Non publié', '<div role="img" aria-label="Contrôle : 0 sur 10"></div>'), 'none') : []],
+    ['carte sans note avec une note globale NaN', sampleNone ? renderFindings('carte', sampleNone.id, `${sampleNone.card}<span>NaN</span>`, 'none') : []],
+    ['PDF sans note : zéro imprimé', noneString ? pdfFindings('PDF', pdfRuns[3].data, pdfRuns[3].text.replace('non publie', '0.0/10'), 'none', null) : []],
   ];
   for (const [name, hits] of planted) if (hits.length === 0) fail(`nature des notes : garde-fou muet sur « ${name} »`);
 
@@ -2339,7 +2389,8 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     ok(`nature des notes : ${stringsDatabase.length} cordages = ${natureCount.harmonized} harmonisés + ${natureCount.editorial} à note éditoriale + ${natureCount.none} sans note ; ` +
       `textes figés (formulation proposée, à valider par Pierre ; aucune chaîne de testeurs, ni TW, ni « rigidité mesurée ») ; description du catalogue sans promesse de note ; ${Object.keys(SURFACES).length} surfaces déclarées portent l’étiquette ` +
       `et aucune surface de ${srcTs.length} fichiers src/ n’est restée hors liste ; ${renders} rendus serveur (fiche + carte pleine + carte compacte) étiquetés selon la nature ; ` +
-      `${pdfCases.length} PDF vérifiés (données et texte imprimé) ; ${planted.length} tests négatifs détectés`);
+      `${pdfCases.length} PDF vérifiés (données et texte imprimé) ; même nature en FR et dans l’export EN (${exportRows.length} cordages) ; ` +
+      `${natureCount.none} sans note : « Non publié » à chaque note, ni barre, ni zéro, ni NaN (fiche, cartes, PDF) ; ${planted.length} tests négatifs détectés`);
   }
 }
 

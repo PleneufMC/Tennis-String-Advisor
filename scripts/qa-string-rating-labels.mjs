@@ -43,6 +43,9 @@
  *     occurrence = étiquetage FR pas encore fusionné, contrôle inactif (AVERT) ; (b) aucune
  *     surface (fiches et pages EN, public/js, src/) n'affirme que la rigidité est « la
  *     grandeur mesurée » : pas assuré pour les 181 fiches.
+ *  7 bis. EXPORT public/data/catalog.json (22/10/2026) — il publie les notes : chaque cordage
+ *     y porte sa nature (`rating_basis`, celle de sa fiche) et `meta` les libellés et la
+ *     mention de référence, en mémoire comme sur disque (si généré).
  *  8. TESTS NÉGATIFS — chaque garde-fou est éprouvé sur une altération qui DOIT échouer
  *     (libellé retiré, faux libellé, libellé placé après les notes, note modifiée, note
  *     dans une meta, aggregateRating, note hors bloc, page sans libellés, liste
@@ -300,6 +303,20 @@ function frMentionProblems(files) {
   return { problems, found };
 }
 
+/** Export catalog.json : nature de chaque cordage (celle de sa fiche), libellés et mention de référence dans `meta`. */
+function catalogExportProblems(catalog, expectedBasis, where) {
+  const problems = [];
+  const meta = catalog?.meta ?? {};
+  for (const k of ['editorial', 'harmonised', 'none']) {
+    if (meta.rating_labels?.[k] !== CONTRACT[k]) problems.push(`${where} : meta.rating_labels.${k} = « ${meta.rating_labels?.[k]} », « ${CONTRACT[k]} » attendu`);
+  }
+  if (meta.ratings_notice !== CONTRACT.note) problems.push(`${where} : meta.ratings_notice absente ou reformulée`);
+  for (const r of catalog?.strings ?? []) {
+    if (r.rating_basis !== expectedBasis(r)) problems.push(`${where} : ${r.id} exporté avec la nature « ${r.rating_basis} », « ${expectedBasis(r)} » attendue`);
+  }
+  return problems;
+}
+
 /** Formule écartée (« la rigidité est la grandeur mesurée ») dans un texte de surface. */
 function discardedPhraseProblems(where, text) {
   const m = DISCARDED_RE.exec(text);
@@ -480,6 +497,23 @@ const walkSrc = (dir) =>
   }
 }
 
+// 7 bis. Export catalog.json ------------------------------------------------------
+// Nature attendue relue indépendamment du générateur : liste des harmonisés lue par expression régulière.
+const harmonisedByRegex = new Set(fromRegex);
+const exportBasis = (r) => (!hasRating(r) ? 'none' : harmonisedByRegex.has(r.id) ? 'harmonised' : 'editorial');
+const catalogMem = buildCatalog(racquetsDatabase, stringsDatabase);
+{
+  const before = failures;
+  catalogExportProblems(catalogMem, exportBasis, 'catalog.json (rendu)').forEach(fail);
+  const file = path.join(ROOT, 'public/data/catalog.json');
+  if (existsSync(file)) catalogExportProblems(JSON.parse(readFileSync(file, 'utf8')), exportBasis, 'public/data/catalog.json').forEach(fail);
+  else warn('public/data/catalog.json absent (npm run build:catalog) : export vérifié sur le rendu en mémoire seulement');
+  if (failures === before) {
+    const n = (b) => catalogMem.strings.filter((r) => r.rating_basis === b).length;
+    ok(`export catalog.json : ${catalogMem.strings.length} cordages exportés avec leur nature (${n('harmonised')} harmonisés, ${n('editorial')} éditoriaux, ${n('none')} « Not published »), libellés et mention de référence dans meta${existsSync(file) ? ', fichier du disque conforme' : ''}`);
+  }
+}
+
 // 8. Tests négatifs -----------------------------------------------------------
 {
   const before = failures;
@@ -562,6 +596,10 @@ const walkSrc = (dir) =>
       'mention FR altérée dans src/',
       () => frMentionProblems([{ path: 'src/x.tsx', src: '<p>Appréciation de l’équipe, non mesurée en laboratoire. La rigidité est la grandeur mesurée derrière le RCS.</p>' }]).problems,
     ],
+    ['export : nature retirée d’un cordage', () => catalogExportProblems({ ...catalogMem, strings: catalogMem.strings.map(({ rating_basis, ...r }) => (r.id === H.id ? r : { ...r, rating_basis })) }, exportBasis, 'export')],
+    ['export : cordage harmonisé exporté « editorial »', () => catalogExportProblems({ ...catalogMem, strings: catalogMem.strings.map((r) => (r.id === H.id ? { ...r, rating_basis: 'editorial' } : r)) }, exportBasis, 'export')],
+    ['export : cordage sans note exporté « editorial »', () => catalogExportProblems({ ...catalogMem, strings: catalogMem.strings.map((r) => (r.id === N.id ? { ...r, rating_basis: 'editorial' } : r)) }, exportBasis, 'export')],
+    ['export sans la mention', () => catalogExportProblems({ ...catalogMem, meta: { ...catalogMem.meta, ratings_notice: undefined } }, exportBasis, 'export')],
     [
       'mention FR tronquée dans src/',
       () => frMentionProblems([{ path: 'src/x.tsx', src: "const NOTE = 'Appréciation de l\\'équipe, non mesurée en laboratoire.';" }]).problems,
@@ -591,7 +629,7 @@ const walkSrc = (dir) =>
   }
   if (failures === before) {
     ok(
-      `tests négatifs : ${negatives.length} altérations détectées (libellé, nature, ordre, note, meta, JSON-LD, page dynamique, liste, meta FR, contrat, ancienne mention, mention FR) ; ` +
+      `tests négatifs : ${negatives.length} altérations détectées (libellé, nature, ordre, note, meta, JSON-LD, page dynamique, liste, meta FR, contrat, ancienne mention, mention FR, export) ; ` +
         `${controls.length} témoins positifs acceptés (mention FR bien écrite)`,
     );
   }
