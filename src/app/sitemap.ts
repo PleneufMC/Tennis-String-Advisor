@@ -55,7 +55,7 @@ const APP_ROUTES: Array<{
 const BLOG_ARTICLES: Array<{ slug: string; modified: string }> = [
   // Comparatif Gravity MP vs Tour retiré le 10/10/2026 (décision de Pierre) :
   // 301 vers le classement 2026, cf. redirects() de next.config.js.
-  { slug: 'plan-de-cordage-tennis.html', modified: '2026-06-01' },
+  { slug: 'plan-de-cordage-tennis.html', modified: '2026-10-22' },
   { slug: 'jauge-cordage-tennis.html', modified: '2026-06-01' },
   { slug: 'guide-tension-cordage-tennis.html', modified: '2026-10-21' },
   { slug: 'cordage-tennis-elbow.html', modified: '2026-10-10' },
@@ -70,8 +70,8 @@ const BLOG_ARTICLES: Array<{ slug: string; modified: string }> = [
   { slug: 'tension-cordage-hiver.html', modified: '2026-10-01' },
   { slug: 'raquette-point-fort-ou-point-faible.html', modified: '2026-08-27' },
   // Adapté de l'EN next-gen (01/10/2026), appairé en hreflang.
-  { slug: 'materiel-next-gen-fonseca-mensik-cobolli-jodar.html', modified: '2026-10-10' },
-  { slug: 'combien-de-temps-dure-un-cordage.html', modified: '2026-10-01' },
+  { slug: 'materiel-next-gen-fonseca-mensik-cobolli-jodar.html', modified: '2026-10-22' },
+  { slug: 'combien-de-temps-dure-un-cordage.html', modified: '2026-10-22' },
   // Classement polyester 2026 (09/10/2026), appairé en hreflang.
   { slug: 'meilleur-cordage-polyester-2026.html', modified: '2026-10-10' },
   // Meilleures raquettes 2026 par profil (09/10/2026), appairé en hreflang.
@@ -104,7 +104,7 @@ const EN_BLOG_ARTICLES: Array<{ slug: string; modified: string }> = [
   // Guides evergreen adaptés du français (14/08/2026), appairés en hreflang
   // avec leur source FR.
   { slug: 'tennis-string-gauge.html', modified: '2026-08-14' },
-  { slug: 'tennis-string-pattern.html', modified: '2026-08-14' },
+  { slug: 'tennis-string-pattern.html', modified: '2026-10-22' },
   { slug: 'polyester-vs-multifilament-strings.html', modified: '2026-10-21' },
   { slug: 'tennis-string-tension-guide.html', modified: '2026-10-21' },
   // Article chaleur (28/08/2026), appairé en hreflang avec
@@ -114,7 +114,7 @@ const EN_BLOG_ARTICLES: Array<{ slug: string; modified: string }> = [
   { slug: 'racquet-strengths-or-weaknesses.html', modified: '2026-08-27' },
   // Pilier durée de vie (01/10/2026), appairé en hreflang avec
   // /blog/combien-de-temps-dure-un-cordage.html.
-  { slug: 'how-long-do-tennis-strings-last.html', modified: '2026-10-01' },
+  { slug: 'how-long-do-tennis-strings-last.html', modified: '2026-10-22' },
   // Adapté du FR meilleur-cordage-polyester-2026 (09/10/2026), appairé en hreflang.
   { slug: 'best-polyester-tennis-strings-2026.html', modified: '2026-10-10' },
   // Adapté du FR tension-cordage-hiver (09/10/2026), appairé en hreflang.
