@@ -17,15 +17,15 @@
     },
     {
       "fichier": "public/blog/combien-de-temps-dure-un-cordage.html",
-      "empreinte": "sha256:50c60c8b66cc97ce31504417b4c804c973022fae27f70f02eaa6994121ef89a0",
-      "depuis": "2026-10-10",
-      "motif": "Antérieur à la règle images du 10/10/2026 : couverture conforme, visuel de corps à créer (première mission de l’équipe éditoriale)"
+      "empreinte": "sha256:8bf067921d985aa5611f31d5682a9dc8fae30d276aabeb6f645f1382c3bbd122",
+      "depuis": "2026-10-22",
+      "motif": "Antérieur à la règle images du 10/10/2026 : couverture conforme, visuel de corps à créer (première mission de l’équipe éditoriale) ; corrigé le 22/10/2026 (avis conditionnés par la santé réécrits en constats chiffrés, charte F7 v1.2, urgence d'exactitude ; visuel de corps toujours à créer)"
     },
     {
       "fichier": "public/blog/materiel-next-gen-fonseca-mensik-cobolli-jodar.html",
-      "empreinte": "sha256:76c116c40177c5464d48ae915353813069ab2ea6b6db5a0ec46357cda800ff86",
-      "depuis": "2026-10-11",
-      "motif": "Antérieur à la règle images du 10/10/2026 ; corrigé le 10/10/2026 (PR #116 : rigidités, indices et rangs alignés sur la base après la règle C et le lot 3, urgence d'exactitude) — visuel de corps à créer, première mission de l’équipe éditoriale ; JSON-LD du <head> corrigé le 11/10/2026 (logo éditeur en 404 remplacé ; corps inchangé)"
+      "empreinte": "sha256:8ca292417d55b65399616ba4e17393d746fdf95a88f23f0fcfbeaf149145bed7",
+      "depuis": "2026-10-22",
+      "motif": "Antérieur à la règle images du 10/10/2026 ; corrigé le 10/10/2026 (PR #116 : rigidités, indices et rangs alignés sur la base après la règle C et le lot 3, urgence d'exactitude) — visuel de corps à créer, première mission de l’équipe éditoriale ; JSON-LD du <head> corrigé le 11/10/2026 (logo éditeur en 404 remplacé ; corps inchangé) ; corrigé le 22/10/2026 (avis conditionnés par la santé réécrits en constats chiffrés, charte F7 v1.2, urgence d'exactitude ; visuel de corps toujours à créer)"
     },
     {
       "fichier": "public/blog/meilleur-cordage-polyester-2026.html",
@@ -65,9 +65,9 @@
     },
     {
       "fichier": "public/en/blog/how-long-do-tennis-strings-last.html",
-      "empreinte": "sha256:6f3e36b2f2f4a1b7ca1f311bf88487f0bd35e93410e5da3ef8feacde7b0cb547",
-      "depuis": "2026-10-10",
-      "motif": "Antérieur à la règle images du 10/10/2026 : couverture conforme, visuel de corps à créer (première mission de l’équipe éditoriale)"
+      "empreinte": "sha256:304a2a9f93b554cc2fbb3567a5462dced227ec76460ff26d13088c89e731f291",
+      "depuis": "2026-10-22",
+      "motif": "Antérieur à la règle images du 10/10/2026 : couverture conforme, visuel de corps à créer (première mission de l’équipe éditoriale) ; corrigé le 22/10/2026 (avis conditionnés par la santé réécrits en constats chiffrés, charte F7 v1.2, urgence d'exactitude ; visuel de corps toujours à créer)"
     },
     {
       "fichier": "public/en/blog/next-gen-tennis-racquets-fonseca-mensik-cobolli-jodar.html",
