@@ -352,15 +352,32 @@ export function calculateAdvancedRcs(input: AdvancedRcsInput): AdvancedRcsResult
   const armRisk = armSensitive
     ? rcs >= 32 || (comfort !== null && comfort < 55)
     : rcs >= 35 || (comfort !== null && comfort < 45);
+  // Textes de l'alerte (22/10/2026, charte F7 v1.2) : la condition `armRisk` ci-dessus est inchangée, seul le texte change.
+  // Chaque alerte dit sa cause réelle (l'indice au seuil ou au-delà, ou le second filet « confort » alors que l'indice reste
+  // sous le seuil), le seuil franchi, le profil appliqué, le risque comme raison du seuil (fixé par le site, pas une mesure
+  // médicale), l'action en effet sur l'INDICE et jamais sur le bras, et le renvoi vers un professionnel de santé. Les seuils
+  // d'indice viennent de `ARM_ALERT_RCS` ; ceux du second filet (55 / 45) reprennent les littéraux de `armRisk`. Le contrôle 21
+  // de `audit:ratings` relit chaque nombre cité sur la grille réelle.
   if (armRisk) {
-    if (armSensitive) {
+    const seuil = armSensitive ? ARM_ALERT_RCS.sensitive : ARM_ALERT_RCS.standard;
+    const profil = armSensitive ? 'bras sensible déclaré' : 'profil standard';
+    const consulter = 'Douleur persistante : consultez un professionnel de santé.';
+    if (rcs >= seuil) {
+      const points = rcs - seuil + 1;
       warnings.push(
-        `Setup rigide (indice ${rcs}) alors que votre profil est sensible du bras : ` +
-          `baissez la tension de 1 à 2 kg${isPoly ? ' ou passez à un multifilament/boyau sur le montant' : ''} pour limiter le risque de tennis elbow.`
+        `Alerte bras : indice ${rcs}, seuil d'alerte de ${seuil} ${rcs > seuil ? 'dépassé' : 'atteint'} (${profil}), ` +
+          `seuil fixé par le site pour le risque de tennis elbow. ` +
+          `Il faut ${points} point${points > 1 ? 's' : ''} d'indice de moins pour repasser sous ${seuil} : ` +
+          `1 kg de tension en moins retire 0,5 point, un cordage moins rigide aux montants` +
+          `${isPoly ? ' (un multifilament ou un boyau, par exemple)' : ''} l'abaisse aussi. ${consulter}`
       );
     } else {
+      const limite = armSensitive ? 55 : 45;
       warnings.push(
-        `Setup rigide (indice ${rcs}) : surveillez votre bras, surtout en cas de jeu intensif.`
+        `Alerte bras : note de confort calculée du montage sous ${limite} sur 100 (${profil}), ` +
+          `second seuil d'alerte fixé par le site pour le risque de tennis elbow ; ` +
+          `l'indice (${rcs}) reste sous le seuil de ${seuil}. ` +
+          `Une tension plus basse ou un cordage mieux noté en confort relève cette note. ${consulter}`
       );
     }
   }
