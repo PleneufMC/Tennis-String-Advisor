@@ -3413,7 +3413,7 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     // sous le seuil), le seuil franchi, le profil appliqué, le risque nommé comme raison du seuil, l'action en effet sur l'indice,
     // le renvoi vers un professionnel de santé. Chaque nombre cité est relu contre le résultat du moteur et les seuils sondés.
     const INDEX_TEXT = /^Alerte bras : indice (\d+), seuil d'alerte de (\d+) (atteint|dépassé) \((bras sensible déclaré|profil standard)\), seuil fixé par le site pour le risque de tennis elbow\. Il faut (\d+) (points?) d'indice de moins pour repasser sous (\d+) : 1 kg de tension en moins retire 0,5 point, un cordage moins rigide aux montants( \(un multifilament ou un boyau, par exemple\))? l'abaisse aussi\. Douleur persistante : consultez un professionnel de santé\.$/;
-    const COMFORT_TEXT = /^Alerte bras : note de confort calculée du montage sous (\d+) sur 100( avant arrondi, affichée (\d+))? \((bras sensible déclaré|profil standard)\), second seuil d'alerte fixé par le site pour le risque de tennis elbow ; l'indice \((\d+)\) reste sous le seuil de (\d+)\. Une tension plus basse ou un cordage mieux noté en confort relève cette note\. Douleur persistante : consultez un professionnel de santé\.$/;
+    const COMFORT_TEXT = /^Alerte bras : note de confort calculée du montage sous (\d+) sur 100( avant arrondi, affichée (\d+))? \((bras sensible déclaré|profil standard)\), second seuil d'alerte fixé par le site pour le risque de tennis elbow ; elle part de la note de confort de l'équipe, non mesurée, et l'indice \((\d+)\) reste sous le seuil de (\d+)\. Une tension plus basse ou un cordage mieux noté en confort relève cette note\. Douleur persistante : consultez un professionnel de santé\.$/;
     // Une alerte ne promet jamais un effet du matériel sur le bras (charte F7) : « limiter / réduire / éviter le risque », protéger…
     const ALERT_PROMISE = /limit|rédui|diminu|évit|prot[eéè]g|préserv|ménag|soulag|prévien|prévent/i;
     // Relit une alerte bras du moteur : forme, cause, seuil, profil, points à perdre, incise réservée au montant polyester, mention
@@ -3661,6 +3661,7 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
         ['alerte : seuil cité au lieu du seuil appliqué', 'const seuil = armSensitive ? ARM_ALERT_RCS.sensitive : ARM_ALERT_RCS.standard;', 'const seuil = ARM_ALERT_RCS.standard;', 'texte :'],
         ['alerte « indice » : incise polyester inversée', "${isPoly ? ' (un multifilament ou un boyau, par exemple)' : ''}", "${isPoly ? '' : ' (un multifilament ou un boyau, par exemple)'}", 'texte :'],
         ['alerte « second filet » : arrondi à la limite non dit', 'const arrondiALaLimite = comfort !== null && round(comfort) >= limite;', 'const arrondiALaLimite = false;', 'texte :'],
+        ['alerte « second filet » : la note éditoriale non mesurée n\'est plus nommée', "elle part de la note de confort de l'équipe, non mesurée, et ", '', 'texte :'],
         ['alerte « second filet » : arrondi dit à tort', 'const arrondiALaLimite = comfort !== null && round(comfort) >= limite;', 'const arrondiALaLimite = comfort !== null;', 'texte :'],
         ['la déclaration change l\'indice', 'const rcs = rcsIndex(racquetStiffness, effStringStiffness, avgTension);', 'const rcs = rcsIndex(racquetStiffness, effStringStiffness, avgTension) - (profile?.armSensitive ? 2 : 0);', 'profil :'],
       ];
