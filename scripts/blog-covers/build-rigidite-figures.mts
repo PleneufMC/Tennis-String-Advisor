@@ -62,7 +62,7 @@ type Lang = 'fr' | 'en';
 const EXAMPLE = { ra: 65, kg: 22 }; // montage d'exemple des tableaux : raquette de RA 65, 22 kg
 const ZONE_SOFT_MAX = 200; // « les plus souples » : 200 lb/in ou moins (section 2)
 const ZONE_FIRM_MIN = 240; // « les plus fermes » : 240 lb/in ou plus (section 3)
-const AS_OF = { fr: '10 octobre 2026', en: 'October 10, 2026' }; // date de relevé affichée (F11) : à mettre à jour avec la base
+const AS_OF = { fr: '22 octobre 2026', en: 'October 22, 2026' }; // date de relevé affichée (F11) : à mettre à jour avec la base
 
 const NB = '&nbsp;';
 const TARGETS = [
@@ -306,7 +306,7 @@ function polyestersFigure(fa: Facts, lang: Lang): string {
   legend(`<circle cx="${X0 + 8}" cy="{y}" r="6" style="fill:var(--tsa-a3)"/>`,
     T(`Indice RCS &lt;${NB}${aSens}${NB}: ${nBelow}${NB}polyesters`, `RCS index &lt;${NB}${aSens}: ${nBelow}${NB}polys`));
   legend(`<rect x="${X0}" y="{y}" width="16" height="16" transform="translate(0 -8)" style="fill:var(--tsa-a2-soft);stroke:var(--tsa-a2);stroke-width:2"/>`,
-    T(`Indice RCS de ${aSens}${NB}à${NB}${aStd - 1}${NB}: alerte pour un bras sensible, ${nBand}${NB}polyesters`, `RCS index ${aSens}${NB}to${NB}${aStd - 1}: sensitive-arm alert, ${nBand}${NB}polys`));
+    T(`Indice ${aSens}${NB}à${NB}${aStd - 1} (seuil d'alerte bras sensible${NB}: ${aSens})${NB}: ${nBand}${NB}polyesters`, `RCS index ${aSens}${NB}to${NB}${aStd - 1} (sensitive-arm alert threshold: ${aSens}): ${nBand}${NB}polys`));
   legend(`<rect x="${X0}" y="{y}" width="16" height="16" transform="translate(0 -8)" style="fill:var(--tsa-a4-soft);stroke:var(--tsa-a4);stroke-width:2"/>`,
     T(`Indice RCS ≥${NB}${aStd}${NB}: alerte pour tous les profils, ${fa.nStd}${NB}polyesters`, `RCS index ≥${NB}${aStd}: alert for every profile, ${fa.nStd}${NB}polys`));
   legend(`<path d="M${X0 + 8} {y} l-8 9 h16 z" transform="translate(0 -5)" fill="currentColor"/>`,
@@ -317,8 +317,8 @@ function polyestersFigure(fa: Facts, lang: Lang): string {
   o.push(`</svg>`);
 
   const caption = T(
-    `Où se placent les ${fa.nPolys}${NB}polyesters du catalogue : chaque point est une fiche, à la rigidité qu'elle indique. Les repères d'indice situent, pour le montage d'exemple de l'article (raquette de RA${NB}${fa.example.ra}, ${fa.example.kg}${NB}kg), les seuils d'alerte du configurateur : ${aSens} pour un bras sensible, ${aStd} pour tous les profils. Les points cerclés sont les ${fa.nAlignedPolys}${NB}polyesters dont la rigidité est alignée sur une mesure du laboratoire TWU${NB}; pour les ${fa.nPolys - fa.nAlignedPolys}${NB}autres, c'est la valeur de notre fiche, pas une mesure TWU. Schéma Tennis String Advisor, d'après la base du site, état au ${AS_OF.fr}.`,
-    `Where the catalogue's ${fa.nPolys}${NB}polyesters sit: each dot is one product page, at the stiffness it shows. The index markers show, for the article's example setup (racquet with an RA of${NB}${fa.example.ra}, ${fa.example.kg}${NB}kg), where the configurator's alert thresholds fall: ${aSens} for a sensitive arm, ${aStd} for every profile. Outlined dots are the ${fa.nAlignedPolys}${NB}polyesters whose stiffness is aligned on a measurement by the TWU lab; for the other ${fa.nPolys - fa.nAlignedPolys}, it is the value on our product page, not a TWU measurement. Chart by Tennis String Advisor, based on the site's database, as of ${AS_OF.en}.`,
+    `Où se placent les ${fa.nPolys}${NB}polyesters du catalogue : chaque point est une fiche, à la rigidité qu'elle indique. Les repères d'indice situent, pour le montage d'exemple de l'article (raquette de RA${NB}${fa.example.ra}, ${fa.example.kg}${NB}kg), les seuils d'alerte du configurateur : ${aSens} (seuil d'alerte bras sensible) et ${aStd} (seuil pour tous les profils). Les points cerclés sont les ${fa.nAlignedPolys}${NB}polyesters dont la rigidité est alignée sur une mesure du laboratoire TWU${NB}; pour les ${fa.nPolys - fa.nAlignedPolys}${NB}autres, c'est la valeur de notre fiche, pas une mesure TWU. Schéma Tennis String Advisor, d'après la base du site, état au ${AS_OF.fr}.`,
+    `Where the catalogue's ${fa.nPolys}${NB}polyesters sit: each dot is one product page, at the stiffness it shows. The index markers show, for the article's example setup (racquet with an RA of${NB}${fa.example.ra}, ${fa.example.kg}${NB}kg), where the configurator's alert thresholds fall: ${aSens} (sensitive-arm alert threshold) and ${aStd} (threshold for every profile). Outlined dots are the ${fa.nAlignedPolys}${NB}polyesters whose stiffness is aligned on a measurement by the TWU lab; for the other ${fa.nPolys - fa.nAlignedPolys}, it is the value on our product page, not a TWU measurement. Chart by Tennis String Advisor, based on the site's database, as of ${AS_OF.en}.`,
   );
   return wrapFigure(o.join('\n'), caption);
 }
