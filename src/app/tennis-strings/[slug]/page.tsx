@@ -9,6 +9,7 @@ import { StringRatingLabel, StringRatingsNotice } from '@/components/product/str
 import { stringRatingNature } from '@/lib/string-rating-nature';
 import { resolveSiteUrl } from '@/lib/seo/route-metadata';
 import { getAlternateUrl } from '@/lib/i18n/route-map';
+import { ARM_ALERT_RCS } from '@/lib/advanced-rcs';
 
 /**
  * Fiche cordage individuelle (Phase 3 SEO, audit du 13/08/2026).
@@ -209,12 +210,14 @@ export default function StringPage({ params }: { params: { slug: string } }) {
           configurateur, qui le calcule sur le setup réel du joueur. */}
       <section className="mt-10 rounded-xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-900">
         <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
-          Ce cordage convient-il à votre bras ?
+          Quel indice RCS avec votre raquette et votre tension ?
         </h2>
         <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
           La fermeté ressentie dépend de votre raquette et de votre tension, pas du
           cordage seul. Le configurateur calcule le score RCS de votre setup complet
-          et signale les combinaisons à risque de tennis elbow.
+          et signale les combinaisons à risque de tennis elbow : alerte dès
+          l&apos;indice {ARM_ALERT_RCS.standard}, dès {ARM_ALERT_RCS.sensitive} si le bras est déclaré sensible
+          dans le configurateur.
         </p>
         <Link
           href="/configurator"
