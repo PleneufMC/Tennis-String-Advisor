@@ -19,7 +19,10 @@ tant que la ligne n'est pas retirée à la main.
 
 Lot du 22/10/2026 : cordages Wilson (collection « wilson-tennis-string » ; jamais la collection
 Luxilon de wilson.com, Luxilon restant fermé), pages du site Babolat US pour un produit absent du site
-FR (code « us-<id> »), poids Yonex « 315g » sans espace, contrôle strict des montages hybrides.
+FR (code « us-<id> »), poids Yonex « 315g » sans espace, contrôle strict des montages hybrides ; adaptateurs
+Solinco (solincosports.com), Dunlop (us.dunlopsports.com) et Kirschbaum (kirschbaum-shop.de), sites dont agents.md
+et llms.txt ne refusent pas ce robot. Toroline, la boutique Solinco, Diadem, Gamma et Völkl exigent Web Bot Auth :
+aucun adaptateur, aucune page lue.
 
 Ce module ne contient QUE la logique propre à chaque site (découverte des pages,
 lecture des caractéristiques, choix de l'image). Il n'ouvre aucune connexion : les
@@ -53,6 +56,11 @@ BRANDS: dict[str, dict] = {
     'babolat': {'label': 'Babolat', 'catalog_brands': ('Babolat',), 'host': 'www.babolat.com'},
     'tecnifibre': {'label': 'Tecnifibre', 'catalog_brands': ('Tecnifibre',), 'host': 'www.tecnifibre.com'},
     'yonex': {'label': 'Yonex', 'catalog_brands': ('Yonex',), 'host': 'www.yonex.com'},
+    # Lot du 22/10/2026 : sites dont agents.md / llms.txt ne refusent pas ce robot (lus avant toute page).
+    'solinco': {'label': 'Solinco', 'catalog_brands': ('Solinco',), 'host': 'solincosports.com'},
+    'dunlop': {'label': 'Dunlop', 'catalog_brands': ('Dunlop',), 'host': 'us.dunlopsports.com'},
+    # Boutique de la marque (Impressum : Kirschbaum Sportartikel GmbH), liée depuis kirschbaum-strings.de.
+    'kirschbaum': {'label': 'Kirschbaum', 'catalog_brands': ('Kirschbaum',), 'host': 'www.kirschbaum-shop.de'},
 }
 
 
@@ -563,12 +571,146 @@ def facts_yonex(page: str, prod: dict) -> dict:
 
 
 # --------------------------------------------------------------------------
+# Solinco (solincosports.com, WordPress ; la boutique shop.solincosports.com exige Web Bot Auth : jamais lue)
+# --------------------------------------------------------------------------
+# robots.txt (22/10/2026) : plan du site WordPress déclaré ; pages « /equipment/<slug>/ » autorisées.
+# Aucune page de conditions d'utilisation : « © 2025 Solinco®. All Rights Reserved. » en pied de page.
+SOLINCO_BASE = 'https://solincosports.com'
+SOLINCO_SKIP_RE = re.compile(r'(bag|backpack|duffel|roller|shirt|cap|visor|hat|socks|wristband|headband|grip|dampener|'
+                             r'machine|case|hook|mat|banner|stand|module|grommet|cart|stencil|ink|blackout|whiteout|'
+                             r'prizm|shadow|hybrid-system)', re.I)
+
+
+def discover_solinco(fetch, cache) -> list[dict]:
+    index = fetch(SOLINCO_BASE + '/wp-sitemap.xml', cache / 'sitemaps' / 'index.xml')
+    products: dict[str, dict] = {}
+    for loc in re.findall(r'<loc>([^<]+)</loc>', (index or b'').decode('utf-8', 'replace')):
+        if 'wp-sitemap-posts-product' not in loc:
+            continue
+        body = fetch(html.unescape(loc), cache / 'sitemaps' / 'products.xml')
+        for url, slug in re.findall(r'<loc>(https://solincosports\.com/equipment/([a-z0-9-]+)/)</loc>',
+                                    (body or b'').decode('utf-8', 'replace')):
+            if not SOLINCO_SKIP_RE.search(slug):  # cordages seulement : aucune raquette Solinco au catalogue
+                products.setdefault(slug, {'code': slug, 'kind': 'string', 'url': url,
+                                           'name': slug.replace('-', ' '), 'thumb': None})
+    return sorted(products.values(), key=lambda p: p['code'])
+
+
+def facts_solinco(page: str, prod: dict) -> dict:
+    text = page_text(page)
+    facts: dict = {'_text': text}
+    m = re.search(r'String Gauge Choose an option (.*?) Clear', text)
+    if m:
+        facts['gaugesMm'] = sorted(set(re.findall(r'\((\d\.\d{2})\)', m.group(1))))
+    m = re.search(r'Available colou?rs?[^:]{0,40}:\s*([A-Za-z ,]+?)\s+(?:Units|\*|$)', text)
+    if m:
+        facts['colourOptions'] = [c.strip() for c in m.group(1).split(',') if c.strip()]
+    # Packshot de la garniture (« _Set_ »), variante 1200 px publiée par la page (galerie WooCommerce).
+    m = re.search(r'https://solincosports\.com/wp-content/uploads/\d{4}/\d{2}/[^"\s]*_Set_[^"\s]*-1200x1200\.(?:jpg|png)', page)
+    if m:
+        facts['image'] = m.group(0)
+    m = re.search(r'<meta property="og:title" content="([^"]+)"', page) or re.search(r'<title>([^<]+)</title>', page)
+    facts['title'] = html.unescape(m.group(1)).split(' - ')[0].strip() if m else None
+    return facts
+
+
+# --------------------------------------------------------------------------
+# Dunlop (us.dunlopsports.com, Salesforce Commerce Cloud)
+# --------------------------------------------------------------------------
+# robots.txt (22/10/2026) : compte, panier et paiement interdits ; agents.md et llms.txt absents. Pages de
+# catégorie lues dans la navigation (« rackets » et ses séries) ; le JSON-LD Product de la page porte les images.
+DUNLOP_BASE = 'https://us.dunlopsports.com'
+DUNLOP_CATEGORIES = ['/dunlop/tennis/rackets', '/dunlop/tennis/rackets/cx-series', '/dunlop/tennis/rackets/fx-series',
+                     '/dunlop/tennis/rackets/sx-series']
+
+
+def discover_dunlop(fetch, cache) -> list[dict]:
+    products: dict[str, dict] = {}
+    for path in DUNLOP_CATEGORIES:
+        body = fetch(DUNLOP_BASE + path, cache / 'catpages' / (re.sub(r'[^A-Za-z0-9]+', '_', path) + '.html'))
+        for u, slug, code in re.findall(r'href="(?:https://us\.dunlopsports\.com)?(/dunlop/tennis/rackets/[a-z0-9-]+/([a-z0-9-]+)/([A-Za-z0-9-]+)\.html)',
+                                        (body or b'').decode('utf-8', 'replace')):
+            products.setdefault(code, {'code': code, 'kind': 'racquet', 'url': DUNLOP_BASE + u,
+                                       'name': slug.replace('-', ' '), 'thumb': None})
+    return sorted(products.values(), key=lambda p: p['code'])
+
+
+def facts_dunlop(page: str, prod: dict) -> dict:
+    text = page_text(page)
+    facts: dict = {'_text': text}
+    # Deux gabarits : « 632 / 98 Head Size (SQ Inches) … 305 / 10.8 Un-Strung Weight … 65 RA/STIFFNESS 16 X 19
+    # STRING PATTERN » (séries CX) et « Head size 98sq inch … Weight (Unstrung) 305g … String Pattern 16x19 ».
+    m = re.search(r'\d{3} / (\d{2,3}) Head Size \(SQ Inches\)', text) or re.search(r'Head size (\d{2,3}) ?sq inch', text)
+    if m:
+        facts['headSize'] = float(m.group(1))
+    m = re.search(r'(\d{3}) / [\d.]+ Un-Strung Weight', text) or re.search(r'Weight \(Unstrung\) (\d{3}) ?g', text)
+    if m:
+        facts['weight'] = int(m.group(1))
+    m = re.search(r'(\d+) X (\d+) STRING PATTERN', text) or re.search(r'String Pattern (\d+)x(\d+)', text)
+    if m:
+        facts['stringPattern'] = f'{m.group(1)}x{m.group(2)}'
+    m = re.search(r'(\d{2}) RA/STIFFNESS', text)
+    if m:
+        facts['stiffness'] = int(m.group(1))
+    prods = ld_products(page)
+    if prods:
+        facts['title'] = html.unescape(prods[0].get('name', ''))
+        img = prods[0].get('image')
+        facts['image'] = (img[0] if isinstance(img, list) and img else img) or None
+    return facts
+
+
+# --------------------------------------------------------------------------
+# Kirschbaum (www.kirschbaum-shop.de, boutique de la marque, OXID eShop)
+# --------------------------------------------------------------------------
+# robots.txt (22/10/2026) : les CGV (/AGB/) sont interdites au robot, donc non lues ; Impressum : Kirschbaum
+# Sportartikel GmbH, Witten. Pages « Sets » des catégories du menu : une fiche par modèle, jauges en variante.
+KIRSCHBAUM_BASE = 'https://www.kirschbaum-shop.de'
+KIRSCHBAUM_CATEGORIES = ['/Co-Polyester-Saiten/Sets-Co-Polyester-Saiten/', '/Polyamid-Darmsaiten/Sets-Polyamid-Darmsaiten/']
+DE_COLOURS = {'natur': 'natural', 'blau': 'blue', 'weiss': 'white', 'weiß': 'white', 'schwarz': 'black', 'gelb': 'yellow',
+              'rot': 'red', 'grün': 'green', 'gruen': 'green', 'türkis': 'turquoise', 'tuerkis': 'turquoise',
+              'anthrazit': 'anthracite', 'silber': 'silver', 'gold': 'gold', 'orange': 'orange', 'pink': 'pink', 'lime': 'lime'}
+
+
+def discover_kirschbaum(fetch, cache) -> list[dict]:
+    products: dict[str, dict] = {}
+    for path in KIRSCHBAUM_CATEGORIES:
+        body = fetch(KIRSCHBAUM_BASE + path, cache / 'catpages' / (re.sub(r'[^A-Za-z0-9]+', '_', path) + '.html'))
+        for url, slug in re.findall(r'href="(https://www\.kirschbaum-shop\.de' + re.escape(path) + r'([A-Za-z0-9-]+)\.html)"',
+                                    (body or b'').decode('utf-8', 'replace')):
+            if re.search(r'(Badminton|Squash|Rolle)', slug):
+                continue
+            products.setdefault(slug, {'code': slug, 'kind': 'string', 'url': url,
+                                       'name': slug.replace('-', ' '), 'thumb': None})
+    return sorted(products.values(), key=lambda p: p['code'])
+
+
+def facts_kirschbaum(page: str, prod: dict) -> dict:
+    text = page_text(page)
+    facts: dict = {'_text': text}
+    m = re.search(r'Stärke Variante wählen ((?:\d,\d{2} ?mm ?)+)', text)
+    if m:
+        facts['gaugesMm'] = sorted({g.replace(',', '.') for g in re.findall(r'(\d,\d{2}) ?mm', m.group(1))})
+    m = re.search(r'Farbe:? ([a-zäöüß]+)', text)
+    if m and m.group(1) in DE_COLOURS:
+        facts['color'] = DE_COLOURS[m.group(1)]
+    m = re.search(r'<meta property="og:image" content="([^"]+)"', page)
+    if m:
+        facts['image'] = html.unescape(m.group(1))
+    m = re.search(r'<meta property="og:title" content="([^"]+)"', page) or re.search(r'<title>([^<]+)</title>', page)
+    facts['title'] = html.unescape(m.group(1)).strip() if m else None
+    return facts
+
+
+# --------------------------------------------------------------------------
 # Registre
 # --------------------------------------------------------------------------
 DISCOVER = {'wilson': discover_wilson, 'luxilon': discover_luxilon, 'babolat': discover_babolat,
-            'tecnifibre': discover_tecnifibre, 'yonex': discover_yonex}
+            'tecnifibre': discover_tecnifibre, 'yonex': discover_yonex,
+            'solinco': discover_solinco, 'dunlop': discover_dunlop, 'kirschbaum': discover_kirschbaum}
 FACTS = {'wilson': facts_wilson, 'luxilon': facts_luxilon, 'babolat': facts_babolat,
-         'tecnifibre': facts_tecnifibre, 'yonex': facts_yonex}
+         'tecnifibre': facts_tecnifibre, 'yonex': facts_yonex,
+         'solinco': facts_solinco, 'dunlop': facts_dunlop, 'kirschbaum': facts_kirschbaum}
 
 
 def facts(brand: str, page: str, prod: dict) -> dict:

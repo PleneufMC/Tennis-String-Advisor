@@ -71,6 +71,7 @@ modèle Shopify, le 22/10/2026). Le robot se nomme « agent automatisé » dans 
   python scripts/scraper/tw_product_images.py discover-fab <marque>            # catalogue officiel (navigation/plan du site)
   python scripts/scraper/tw_product_images.py candidates-fab <marque> [id | id=code]...   # pages candidates + contrôles
   python scripts/scraper/tw_product_images.py peek-fab <marque> <code>...      # planche-contact (contrôle visuel)
+  python scripts/scraper/tw_product_images.py import-upload [<dossier>]   # envois manuels de Pierre (upload_images.py)
   python scripts/scraper/tw_product_images.py build          # pages produit, contrôles, images, manifeste
   python scripts/scraper/tw_product_images.py purge          # RETRAIT : supprime images et manifeste
   python scripts/scraper/tw_product_images.py purge tennis-warehouse-europe   # retrait d'une seule source
@@ -98,6 +99,7 @@ from pathlib import Path
 
 sys.dont_write_bytecode = True  # pas de __pycache__ dans le dépôt
 import fabricants_images as fab  # logique propre à chaque site fabricant (aucune connexion)
+import upload_images as up  # envois manuels de Pierre (aucune connexion)
 
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / 'scripts' / 'scraper' / 'out'
@@ -112,8 +114,10 @@ BASE_EU = 'https://www.tenniswarehouse-europe.com'
 CACHE_EU = CACHE / 'eu'
 SOURCE_TW = 'tennis-warehouse'
 SOURCE_EU = 'tennis-warehouse-europe'
-SOURCES = (SOURCE_TW, SOURCE_EU, 'tennis-point')
+SOURCES = (SOURCE_TW, SOURCE_EU, 'tennis-point', up.SOURCE)
 CACHE_FAB = CACHE / 'fab'
+CACHE_UPLOAD = CACHE / 'upload'  # copie des images envoyées par Pierre (reconstruction sans son dossier)
+UPLOAD_DIR_DEFAULT = Path.home() / 'Documents' / 'TSA_photos_a_importer'  # hors dépôt : jamais versionné
 # Sitemaps de marque TWE retenus (codes lus dans sitemapindex.xml) : marques du catalogue TSA.
 EU_BRANDS = {'BABOLAT', 'WILSON', 'HEAD', 'YONEX', 'DUNLOP', 'PRINCE', 'TECNIFIBRE', 'VOLKL',
              'LUXILON', 'SOLINCO', 'GAMMA', 'GOSEN', 'ISOSPEED', 'KIRSCH', 'SIGNUMPRO', 'TOROLINE',
@@ -146,10 +150,16 @@ SEEDS = [
 ]
 
 _last_request = 0.0
+_last_status: int | str = 0  # statut de la dernière requête réseau (200, code HTTP ou « erreur réseau »)
 
 
 class AccessRefused(SystemExit):
     """Refus du site (403/406/429, captcha) : arrêt immédiat, jamais de contournement."""
+
+
+class PolicyUnreadable(AccessRefused):
+    """robots.txt, agents.md ou llms.txt illisible (erreur réseau, statut autre que 404/410) : politique
+    inconnue, aucune requête vers l'hôte pendant cette exécution ; ce n'est pas un refus du site (non consigné)."""
 
 
 # Statuts qui signifient « le site refuse le robot » : on s'arrête, on ne réessaie pas.
@@ -191,7 +201,7 @@ def mark_refused(host: str, code: int | str, note: str) -> None:
 # et llms.txt. Un agents.md / llms.txt qui exige une identification que ce robot ne fournit pas (Web Bot
 # Auth : requêtes signées) ou qui refuse la collecte automatisée vaut REFUS : hôte consigné, aucune
 # requête. Les fichiers lus sont gardés dans out/tw-images/policies/<date>/<hôte>/.
-POLICY_FILES = ('robots.txt', 'agents.md', 'llms.txt')
+POLICY_FILES = ('agents.md', 'llms.txt', 'robots.txt')  # agents.md d'abord : aucune autre requête avant de l'avoir lu
 POLICY_BLOCKERS = [
     (re.compile(r'Web Bot Auth', re.I),
      "exige l'identification « Web Bot Auth » (requêtes signées), que ce robot ne fournit pas"),
@@ -259,7 +269,9 @@ def check_policies(host: str, scheme: str) -> list[tuple[bool, str]]:
     for name in POLICY_FILES:
         body = _get(f'{scheme}://{host}/{name}', folder / name)
         if body is None:
-            continue
+            if _last_status in (404, 410):
+                continue  # fichier absent : aucune consigne
+            raise PolicyUnreadable(f'ARRÊT : {host} — {name} illisible ({_last_status}) : politique inconnue, aucune requête')
         text = body.decode('utf-8', 'replace')
         if name == 'robots.txt':
             rules, delay = robots_rules(text)
@@ -299,7 +311,7 @@ def fetch(url: str, dest: Path, binary: bool = False) -> bytes | None:
 
 def _get(url: str, dest: Path, binary: bool = False) -> bytes | None:
     """Requête réseau elle-même (débit par hôte, une nouvelle tentative, arrêt au refus)."""
-    global _last_request
+    global _last_request, _last_status
     if dest.exists() and dest.stat().st_size > 0:
         return dest.read_bytes()
     host = urllib.parse.urlsplit(url).hostname or ''
@@ -327,8 +339,10 @@ def _get(url: str, dest: Path, binary: bool = False) -> bytes | None:
                 raise AccessRefused(f'ARRÊT : page de contrôle anti-robot sur {url}')
             dest.parent.mkdir(parents=True, exist_ok=True)
             dest.write_bytes(body)
+            _last_status = 200
             return body
         except urllib.error.HTTPError as err:
+            _last_status = err.code
             print(f'   HTTP {err.code} {url}')
             if err.code in REFUSAL_CODES:
                 mark_refused(host, err.code, f'refus sur {url}')
@@ -338,6 +352,7 @@ def _get(url: str, dest: Path, binary: bool = False) -> bytes | None:
         except AccessRefused:
             raise
         except Exception as err:  # réseau
+            _last_status = 'erreur réseau'
             print(f'   erreur {err} {url}')
             if attempt == 2:
                 return None
@@ -825,6 +840,14 @@ def build() -> None:
                 quarantine.append({'id': pid, 'kind': kind, 'reason': decision['quarantine']})
                 continue
             source = decision.get('source', SOURCE_TW)
+            if source == up.SOURCE:
+                entry = build_upload(kind, it, decision, folder, pid)
+                if isinstance(entry, str):
+                    quarantine.append({'id': pid, 'kind': kind, 'reason': entry, 'sourcePageUrl': decision.get('page')})
+                    continue
+                manifest[pid] = entry
+                print(f'   ok {pid:40s} <- envoi de Pierre « {decision.get("intitule")} » ({entry["bytes"] // 1024} Ko)')
+                continue
             fab_brand = fab.brand_of(source) if fab.is_fab(source) else None
             if fab_brand:
                 if fab_brand not in catalog_fab:
@@ -922,11 +945,86 @@ def build() -> None:
 
 MANIFEST_FIELDS = ('file', 'width', 'height', 'sourcePageUrl', 'sourceImageUrl', 'retrievedAt', 'source', 'twProduct')
 # Champs facultatifs, écrits seulement quand la décision les porte : légende « jauge présentée » /
-# « coloris présenté » d'une photo de produit voisin (autre jauge de la fiche, coloris d'une fiche sans coloris).
-OPTIONAL_FIELDS = ('shownGauge', 'shownColour')
+# « coloris présenté » d'une photo de produit voisin (autre jauge de la fiche, coloris d'une fiche sans coloris),
+# crédit propre à l'image (envoi manuel : la source réelle nommée par Pierre).
+OPTIONAL_FIELDS = ('shownGauge', 'shownColour', 'credit')
 
 
-SOURCE_LABELS = {SOURCE_TW: 'Tennis Warehouse', SOURCE_EU: 'Tennis Warehouse Europe', 'tennis-point': 'Tennis-Point'}
+def build_upload(kind: str, item: dict, decision: dict, folder: str, pid: str) -> dict | str:
+    """Entrée de manifeste d'un envoi manuel de Pierre, ou raison de quarantaine. L'image vient de la copie
+    faite par import-upload (cache du collecteur) : la reconstruction ne dépend pas du dossier de Pierre."""
+    reason = up.check(kind, item, decision)
+    if reason:
+        return f'envoi de Pierre : {reason}'
+    raw_path = CACHE_UPLOAD / 'raw' / decision['code']
+    if not raw_path.is_file():
+        return f"envoi de Pierre : image {decision['code']} absente du cache (relancer import-upload)"
+    w, h, size = to_webp(raw_path.read_bytes(), PUBLIC / folder / f'{pid}.webp', trim=True)
+    entry = {'file': f'/images/products/{folder}/{pid}.webp', 'width': w, 'height': h, 'bytes': size,
+             'sourcePageUrl': decision['page'], 'sourceImageUrl': decision.get('imageOrigine') or f"upload:{decision['code']}",
+             'retrievedAt': decision['date'], 'source': up.SOURCE, 'twProduct': decision['intitule']}
+    for k in OPTIONAL_FIELDS:
+        if decision.get(k):
+            entry[k] = decision[k]
+    return entry
+
+
+def set_mapping_decisions(decisions: dict[str, dict[str, dict]]) -> int:
+    """Remplace, ligne à ligne, les décisions données (une ligne par id ; les autres lignes intactes)."""
+    lines = MAPPING.read_text(encoding='utf-8').replace('\r\n', '\n').split('\n')
+    section, done = None, 0
+    for i, line in enumerate(lines):
+        m = re.match(r'^ "(racquets|strings)": \{$', line)
+        if m:
+            section = m.group(1)
+            continue
+        m = re.match(r'^  "([^"]+)": (\{.*\})(,?)$', line)
+        if m and section and m.group(1) in decisions.get(section, {}):
+            lines[i] = f'  "{m.group(1)}": ' + json.dumps(decisions[section][m.group(1)], ensure_ascii=False) + m.group(3)
+            done += 1
+    out = '\n'.join(lines)
+    json.loads(out)
+    MAPPING.write_text(out, encoding='utf-8', newline='\n')
+    return done
+
+
+def import_upload() -> None:
+    """import-upload [<dossier>] : contrôle photos.json, copie les images acceptées dans le cache du collecteur,
+    écrit leurs décisions au mapping, puis rapport et planche-contact (contrôle visuel). Lancer build ensuite."""
+    folder = Path(sys.argv[2]) if len(sys.argv) > 2 else UPLOAD_DIR_DEFAULT
+    if not (folder / up.METADATA).is_file():
+        raise SystemExit(f'{folder / up.METADATA} introuvable (modèle : docs/photos-a-importer/modele-photos.json)')
+    base = load_base()
+    mapping = json.loads(MAPPING.read_text(encoding='utf-8'))
+    ids = {pid: sec for sec in ('racquets', 'strings') for pid in mapping[sec]}
+    decisions, report = up.import_folder(folder, base, ids, CACHE_UPLOAD / 'raw')
+    n = set_mapping_decisions(decisions)
+    (OUT / 'upload-pierre-rapport.json').write_text(json.dumps(report, indent=1, ensure_ascii=False), encoding='utf-8')
+    for r in report:
+        print(f"   {r['statut']:8s} {r['id']} : " + ('; '.join(r.get('raisons') or []) or r.get('association', '')) +
+              (f" — AVERTISSEMENT : {r['avertissement']}" if r.get('avertissement') else ''))
+    from PIL import Image, ImageDraw
+    tiles = []
+    for sec in decisions.values():
+        for pid, d in sec.items():
+            img = Image.open(CACHE_UPLOAD / 'raw' / d['code']).convert('RGB')
+            img.thumbnail((260, 380))
+            tile = Image.new('RGB', (270, 420), 'white')
+            tile.paste(img, (5, 5))
+            ImageDraw.Draw(tile).text((5, 392), pid[-44:], fill=(0, 0, 0))
+            tiles.append(tile)
+    if tiles:
+        sheet = Image.new('RGB', (270 * len(tiles), 420), 'white')
+        for i, t in enumerate(tiles):
+            sheet.paste(t, (270 * i, 0))
+        sheet.save(OUT / 'peek-upload.png')
+    print(f'{n} décision(s) écrite(s) au mapping ; rapport : {OUT / "upload-pierre-rapport.json"} ; '
+          f'planche : {OUT / "peek-upload.png"} ; lancer ensuite : build')
+
+
+# « upload:pierre » : libellé de repli seulement ; chaque envoi porte son propre crédit (la source réelle).
+SOURCE_LABELS = {SOURCE_TW: 'Tennis Warehouse', SOURCE_EU: 'Tennis Warehouse Europe', 'tennis-point': 'Tennis-Point',
+                 up.SOURCE: 'envoi de Pierre'}
 
 
 def source_labels(used: set[str] | None = None) -> dict[str, str]:
@@ -953,15 +1051,16 @@ def write_manifest(manifest: dict) -> None:
         '// FICHIER GÉNÉRÉ par scripts/scraper/tw_product_images.py — ne pas éditer à la main.',
         '//',
         '// Photos produit hébergées chez nous (public/images/products/) : Tennis Warehouse (US),',
-        '// Tennis Warehouse Europe, Tennis-Point et images officielles des fabricants',
-        '// (source « fabricant:<marque> »). Retrait : PRODUCT_IMAGES_ENABLED = false',
-        '// (src/lib/product-images.ts), puis : python scripts/scraper/tw_product_images.py purge',
-        '// (ou « purge <source> » pour une seule source, ex. « purge fabricant:wilson »).',
+        '// Tennis Warehouse Europe, Tennis-Point, images officielles des fabricants (source',
+        '// « fabricant:<marque> ») et envois manuels de Pierre (« upload:pierre »). Retrait :',
+        '// PRODUCT_IMAGES_ENABLED = false (src/lib/product-images.ts), puis : python scripts/scraper/tw_product_images.py purge',
+        '// (ou « purge <source> » pour une seule source, ex. « purge fabricant:wilson », « purge upload:pierre »).',
         '',
         'export type ProductImageSource =',
         "  | 'tennis-warehouse'",
         "  | 'tennis-warehouse-europe'",
         "  | 'tennis-point'",
+        "  | 'upload:pierre'",
         '  | `fabricant:${string}`;',
         '',
         '/** Libellé du crédit « Photo : … » affiché sous chaque photo, par source. */',
@@ -983,6 +1082,8 @@ def write_manifest(manifest: dict) -> None:
         '  shownGauge?: string;',
         '  /** Coloris présenté par la photo, quand la fiche n\'en fixe aucun : légende « coloris présenté ». */',
         '  shownColour?: string;',
+        '  /** Crédit propre à l\'image (envoi manuel de Pierre : la source réelle) ; à défaut, le libellé de la source. */',
+        '  credit?: string;',
         '}',
         '',
         'export const PRODUCT_IMAGES: Readonly<Record<string, ProductImageEntry>> = {',
@@ -1018,7 +1119,7 @@ def purge(source: str | None = None) -> None:
     les photos de cette source ; les autres restent servies."""
     import shutil
     if source is None:
-        raws = [CACHE / 'raw', CACHE_EU / 'raw', CACHE_TP / 'raw'] + sorted(CACHE_FAB.glob('*/raw'))
+        raws = [CACHE / 'raw', CACHE_EU / 'raw', CACHE_TP / 'raw', CACHE_UPLOAD / 'raw'] + sorted(CACHE_FAB.glob('*/raw'))
         for path in [PUBLIC] + raws:
             if path.exists():
                 shutil.rmtree(path)
@@ -1035,7 +1136,7 @@ def purge(source: str | None = None) -> None:
         if pid not in kept:
             (ROOT / 'public' / e['file'].lstrip('/')).unlink(missing_ok=True)
     raw = (fab_cache(fab.brand_of(source)) if fab.is_fab(source)
-           else {SOURCE_TW: CACHE, SOURCE_EU: CACHE_EU, SOURCE_TP: CACHE_TP}[source]) / 'raw'
+           else {SOURCE_TW: CACHE, SOURCE_EU: CACHE_EU, SOURCE_TP: CACHE_TP, up.SOURCE: CACHE_UPLOAD}[source]) / 'raw'
     if raw.exists():
         shutil.rmtree(raw)
     write_manifest(kept)
@@ -1262,4 +1363,4 @@ if __name__ == '__main__':
          'discover-fab': discover_fab, 'peek-fab': peek_fab,
          'candidates': candidates, 'candidates-eu': candidates_eu, 'candidates-tp': candidates_tp,
          'candidates-fab': candidates_fab,
-         'build': build}.get(step, lambda: sys.exit(__doc__))()
+         'import-upload': import_upload, 'build': build}.get(step, lambda: sys.exit(__doc__))()
