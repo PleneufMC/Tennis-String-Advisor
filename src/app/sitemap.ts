@@ -70,7 +70,7 @@ const BLOG_ARTICLES: Array<{ slug: string; modified: string }> = [
   { slug: 'tension-cordage-hiver.html', modified: '2026-10-01' },
   { slug: 'raquette-point-fort-ou-point-faible.html', modified: '2026-08-27' },
   // Adapté de l'EN next-gen (01/10/2026), appairé en hreflang.
-  { slug: 'materiel-next-gen-fonseca-mensik-cobolli-jodar.html', modified: '2026-10-22' },
+  { slug: 'materiel-next-gen-fonseca-mensik-cobolli-jodar.html', modified: '2026-10-23' },
   { slug: 'combien-de-temps-dure-un-cordage.html', modified: '2026-10-23' },
   // Classement polyester 2026 (09/10/2026), appairé en hreflang.
   { slug: 'meilleur-cordage-polyester-2026.html', modified: '2026-10-10' },
