@@ -8,10 +8,10 @@
  *
  *   1. « polyesters » : un point par polyester, placé à la rigidité de sa fiche ;
  *      zones à 200 et 240 lb/in (celles des sections 2 et 3 de l'article) ; seuils
- *      d'alerte du configurateur situés, pour le montage d'exemple de l'article
- *      (raquette de RA 65, 22 kg), à la rigidité où l'indice les atteint ; médiane.
+ *      d'alerte du configurateur situés, pour le montage de référence de la charte
+ *      (raquette de RA 64, 24 kg), à la rigidité où l'indice les atteint ; médiane.
  *   2. « familles » : minimum, médiane et maximum de chaque famille de cordage,
- *      avec, au-dessus, l'indice RCS du même montage d'exemple.
+ *      avec, au-dessus, l'indice RCS du même montage de référence.
  *
  * D'OÙ VIENNENT LES CHIFFRES (aucun n'est saisi à la main) :
  *   - rigidités, familles, effectifs : `stringsDatabase` (src/data/strings-database.ts) ;
@@ -24,7 +24,7 @@
  *     src/data/string-stiffness-provenance.ts, ou commentaire « Rigidité : TWU « … » » de la base pour
  *     les fiches Toroline antérieures à ce fichier — même définition que le † des tableaux ;
  *   - seule décision éditoriale posée ici : les zones « ≤ 200 » et « ≥ 240 lb/in » et le
- *     montage d'exemple (RA 65, 22 kg), ceux des tableaux de l'article. Les axes (160-290 et 80-300 lb/in)
+ *     montage de référence (RA 64, 24 kg), celui des tableaux de l'article. Les axes (160-290 et 80-300 lb/in)
  *     sont fixés ici : le script ÉCHOUE si une rigidité en sort (le Luxilon 4G est à 286,9 depuis le lot 3).
  *
  * SORTIE. Un bloc `<figure class="tsa-fig">` (SVG en ligne, classe `tsa-schema`, variables
@@ -59,10 +59,12 @@ type Lang = 'fr' | 'en';
 // ---------------------------------------------------------------------------------------------
 // Décisions éditoriales de l'article (pas des données de la base)
 // ---------------------------------------------------------------------------------------------
-const EXAMPLE = { ra: 65, kg: 22 }; // montage d'exemple des tableaux : raquette de RA 65, 22 kg
+// montage de référence de la charte F7 (docs/redaction/CHARTE.md §2) : RA 64 (DEFAULT_RACQUET_RA, src/lib/racquet-scoring.ts),
+// 24 kg (REF_TENSION, scripts/qa-ratings.mts) ; les tableaux des articles l'utilisent, les cadres de RA 59 et 69 l'encadrent
+const EXAMPLE = { ra: 64, kg: 24 };
 const ZONE_SOFT_MAX = 200; // « les plus souples » : 200 lb/in ou moins (section 2)
 const ZONE_FIRM_MIN = 240; // « les plus fermes » : 240 lb/in ou plus (section 3)
-const AS_OF = { fr: '10 octobre 2026', en: 'October 10, 2026' }; // date de relevé affichée (F11) : à mettre à jour avec la base
+const AS_OF = { fr: '22 octobre 2026', en: 'October 22, 2026' }; // date de relevé affichée (F11) : à mettre à jour avec la base
 
 const NB = '&nbsp;';
 const TARGETS = [
@@ -119,7 +121,7 @@ function rcsBandEdges(): number[] {
   return edges;
 }
 
-/** Plus petite rigidité (pas de 0,01 lb/in) pour laquelle le montage d'exemple atteint l'indice `target`. */
+/** Plus petite rigidité (pas de 0,01 lb/in) pour laquelle le montage de référence atteint l'indice `target`. */
 function stiffnessReaching(target: number): number {
   for (let i = 8000; i <= 40000; i++) {
     const s = i / 100;
@@ -158,7 +160,7 @@ export function computeFacts() {
   // chiffres cités dans le texte des articles (voir expectations) : trois plus souples, plus rigide, écart entre le plus souple et le plus rigide
   const softest = polys[0], stiffest = polys[polys.length - 1];
   const soft3Rcs = polys.slice(0, 3).map(rcsOf);
-  const gaps = [60, 65, 70].map((ra) => calculateRCS(ra, stiffest.stiffness, EXAMPLE.kg) - calculateRCS(ra, softest.stiffness, EXAMPLE.kg));
+  const gaps = [EXAMPLE.ra - 5, EXAMPLE.ra, EXAMPLE.ra + 5].map((ra) => calculateRCS(ra, stiffest.stiffness, EXAMPLE.kg) - calculateRCS(ra, softest.stiffness, EXAMPLE.kg));
   return {
     topLabel: label(stiffest),
     topRcs: rcsOf(stiffest),
@@ -241,15 +243,15 @@ function polyestersFigure(fa: Facts, lang: Lang): string {
   if (top < 112) throw new Error(`pile de points trop haute (${top}) : revoir la géométrie`);
 
   const title = T(
-    `Répartition de la rigidité des ${fa.nPolys} polyesters du catalogue, de ${num(fa.min, 'fr')} à ${num(fa.max, 'fr')} lb/in, médiane ${num(fa.median, 'fr')} : ${fa.nSoft} à ${ZONE_SOFT_MAX} lb/in ou moins, ${fa.nFirm} à ${ZONE_FIRM_MIN} lb/in ou plus. Dans le montage d'exemple (raquette de RA ${fa.example.ra}, ${fa.example.kg} kg), l'indice atteint ${aSens} à partir d'environ ${Math.round(fa.thrSens)} lb/in (${fa.nSens} polyesters) et ${aStd} à partir d'environ ${Math.round(fa.thrStd)} lb/in (${fa.nStd} polyesters). ${fa.nAlignedPolys} polyesters, représentés par un point cerclé, ont une rigidité alignée sur une mesure du laboratoire TWU ; pour les autres, c'est la valeur de la fiche.`,
-    `Distribution of the stiffness of the ${fa.nPolys} polyesters in the catalogue, from ${num(fa.min, 'en')} to ${num(fa.max, 'en')} lb/in, median ${num(fa.median, 'en')}: ${fa.nSoft} at ${ZONE_SOFT_MAX} lb/in or less, ${fa.nFirm} at ${ZONE_FIRM_MIN} lb/in or more. In the example setup (racquet with an RA of ${fa.example.ra}, ${fa.example.kg} kg), the index reaches ${aSens} from about ${Math.round(fa.thrSens)} lb/in (${fa.nSens} polyesters) and ${aStd} from about ${Math.round(fa.thrStd)} lb/in (${fa.nStd} polyesters). ${fa.nAlignedPolys} polyesters, drawn as outlined dots, have a stiffness aligned on a measurement by the TWU lab; for the others, it is the value on the product page.`,
+    `Répartition de la rigidité des ${fa.nPolys} polyesters du catalogue, de ${num(fa.min, 'fr')} à ${num(fa.max, 'fr')} lb/in, médiane ${num(fa.median, 'fr')} : ${fa.nSoft} à ${ZONE_SOFT_MAX} lb/in ou moins, ${fa.nFirm} à ${ZONE_FIRM_MIN} lb/in ou plus. Dans le montage de référence (raquette de RA ${fa.example.ra}, ${fa.example.kg} kg), l'indice atteint ${aSens} à partir d'environ ${Math.round(fa.thrSens)} lb/in (${fa.nSens} polyesters) et ${aStd} à partir d'environ ${Math.round(fa.thrStd)} lb/in (${fa.nStd} polyesters). ${fa.nAlignedPolys} polyesters, représentés par un point cerclé, ont une rigidité alignée sur une mesure du laboratoire TWU ; pour les autres, c'est la valeur de la fiche.`,
+    `Distribution of the stiffness of the ${fa.nPolys} polyesters in the catalogue, from ${num(fa.min, 'en')} to ${num(fa.max, 'en')} lb/in, median ${num(fa.median, 'en')}: ${fa.nSoft} at ${ZONE_SOFT_MAX} lb/in or less, ${fa.nFirm} at ${ZONE_FIRM_MIN} lb/in or more. In the reference setup (racquet with an RA of ${fa.example.ra}, ${fa.example.kg} kg), the index reaches ${aSens} from about ${Math.round(fa.thrSens)} lb/in (${fa.nSens} polyesters) and ${aStd} from about ${Math.round(fa.thrStd)} lb/in (${fa.nStd} polyesters). ${fa.nAlignedPolys} polyesters, drawn as outlined dots, have a stiffness aligned on a measurement by the TWU lab; for the others, it is the value on the product page.`,
   );
 
   const o: string[] = [];
   o.push(`<svg class="tsa-schema" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-labelledby="${id}"><title id="${id}">${esc(title)}</title>`);
   o.push(`<g font-family="${FONT}">`);
 
-  // Bandes d'alerte du montage d'exemple (derrière les points)
+  // Bandes d'alerte du montage de référence (derrière les points)
   const yBand = 98;
   o.push(`<rect x="${f1(X(fa.thrSens))}" y="${yBand}" width="${f1(X(fa.thrStd) - X(fa.thrSens))}" height="${Y_AXIS - yBand}" style="fill:var(--tsa-a2-soft)"/>`);
   o.push(`<rect x="${f1(X(fa.thrStd))}" y="${yBand}" width="${f1(X1 - X(fa.thrStd))}" height="${Y_AXIS - yBand}" style="fill:var(--tsa-a4-soft)"/>`);
@@ -279,7 +281,7 @@ function polyestersFigure(fa: Facts, lang: Lang): string {
     o.push(`<text x="${f1(x)}" y="87" font-size="18" font-weight="600" text-anchor="middle" fill="currentColor">RCS${NB}${idx}</text>`);
   }
 
-  // Points : un par polyester, colorés selon l'alerte atteinte dans le montage d'exemple
+  // Points : un par polyester, colorés selon l'alerte atteinte dans le montage de référence
   for (const d of dots) {
     const rcs = rcsOf(d.s);
     const colour = rcs >= aStd ? 'var(--tsa-a4)' : rcs >= aSens ? 'var(--tsa-a2)' : 'var(--tsa-a3)';
@@ -306,7 +308,7 @@ function polyestersFigure(fa: Facts, lang: Lang): string {
   legend(`<circle cx="${X0 + 8}" cy="{y}" r="6" style="fill:var(--tsa-a3)"/>`,
     T(`Indice RCS &lt;${NB}${aSens}${NB}: ${nBelow}${NB}polyesters`, `RCS index &lt;${NB}${aSens}: ${nBelow}${NB}polys`));
   legend(`<rect x="${X0}" y="{y}" width="16" height="16" transform="translate(0 -8)" style="fill:var(--tsa-a2-soft);stroke:var(--tsa-a2);stroke-width:2"/>`,
-    T(`Indice RCS de ${aSens}${NB}à${NB}${aStd - 1}${NB}: alerte pour un bras sensible, ${nBand}${NB}polyesters`, `RCS index ${aSens}${NB}to${NB}${aStd - 1}: sensitive-arm alert, ${nBand}${NB}polys`));
+    T(`Indice ${aSens}${NB}à${NB}${aStd - 1} (seuil d'alerte bras sensible${NB}: ${aSens})${NB}: ${nBand}${NB}polyesters`, `RCS index ${aSens}${NB}to${NB}${aStd - 1} (sensitive-arm alert threshold: ${aSens}): ${nBand}${NB}polys`));
   legend(`<rect x="${X0}" y="{y}" width="16" height="16" transform="translate(0 -8)" style="fill:var(--tsa-a4-soft);stroke:var(--tsa-a4);stroke-width:2"/>`,
     T(`Indice RCS ≥${NB}${aStd}${NB}: alerte pour tous les profils, ${fa.nStd}${NB}polyesters`, `RCS index ≥${NB}${aStd}: alert for every profile, ${fa.nStd}${NB}polys`));
   legend(`<path d="M${X0 + 8} {y} l-8 9 h16 z" transform="translate(0 -5)" fill="currentColor"/>`,
@@ -317,8 +319,8 @@ function polyestersFigure(fa: Facts, lang: Lang): string {
   o.push(`</svg>`);
 
   const caption = T(
-    `Où se placent les ${fa.nPolys}${NB}polyesters du catalogue : chaque point est une fiche, à la rigidité qu'elle indique. Les repères d'indice situent, pour le montage d'exemple de l'article (raquette de RA${NB}${fa.example.ra}, ${fa.example.kg}${NB}kg), les seuils d'alerte du configurateur : ${aSens} pour un bras sensible, ${aStd} pour tous les profils. Les points cerclés sont les ${fa.nAlignedPolys}${NB}polyesters dont la rigidité est alignée sur une mesure du laboratoire TWU${NB}; pour les ${fa.nPolys - fa.nAlignedPolys}${NB}autres, c'est la valeur de notre fiche, pas une mesure TWU. Schéma Tennis String Advisor, d'après la base du site, état au ${AS_OF.fr}.`,
-    `Where the catalogue's ${fa.nPolys}${NB}polyesters sit: each dot is one product page, at the stiffness it shows. The index markers show, for the article's example setup (racquet with an RA of${NB}${fa.example.ra}, ${fa.example.kg}${NB}kg), where the configurator's alert thresholds fall: ${aSens} for a sensitive arm, ${aStd} for every profile. Outlined dots are the ${fa.nAlignedPolys}${NB}polyesters whose stiffness is aligned on a measurement by the TWU lab; for the other ${fa.nPolys - fa.nAlignedPolys}, it is the value on our product page, not a TWU measurement. Chart by Tennis String Advisor, based on the site's database, as of ${AS_OF.en}.`,
+    `Où se placent les ${fa.nPolys}${NB}polyesters du catalogue : chaque point est une fiche, à la rigidité qu'elle indique. Les repères d'indice situent, pour le montage de référence (raquette de RA${NB}${fa.example.ra}, ${fa.example.kg}${NB}kg), les seuils d'alerte du configurateur : ${aSens} (seuil d'alerte bras sensible) et ${aStd} (seuil pour tous les profils). Les points cerclés sont les ${fa.nAlignedPolys}${NB}polyesters dont la rigidité est alignée sur une mesure du laboratoire TWU${NB}; pour les ${fa.nPolys - fa.nAlignedPolys}${NB}autres, c'est la valeur de notre fiche, pas une mesure TWU. Schéma Tennis String Advisor, d'après la base du site, état au ${AS_OF.fr}.`,
+    `Where the catalogue's ${fa.nPolys}${NB}polyesters sit: each dot is one product page, at the stiffness it shows. The index markers show, for the reference setup (racquet with an RA of${NB}${fa.example.ra}, ${fa.example.kg}${NB}kg), where the configurator's alert thresholds fall: ${aSens} (sensitive-arm alert threshold) and ${aStd} (threshold for every profile). Outlined dots are the ${fa.nAlignedPolys}${NB}polyesters whose stiffness is aligned on a measurement by the TWU lab; for the other ${fa.nPolys - fa.nAlignedPolys}, it is the value on our product page, not a TWU measurement. Chart by Tennis String Advisor, based on the site's database, as of ${AS_OF.en}.`,
   );
   return wrapFigure(o.join('\n'), caption);
 }
@@ -348,16 +350,16 @@ function famillesFigure(fa: Facts, lang: Lang): string {
 
   const parts = fa.families.map((f) => `${T(f.fr, f.en)} ${num(f.min, lang)} ${T('à', 'to')} ${num(f.max, lang)} (${T('médiane', 'median')} ${num(f.med, lang)})`).join(T(' ; ', '; '));
   const title = T(
-    `Rigidité des cordages par famille, en lb/in, du minimum au maximum avec la médiane : ${parts}. Dans le montage d'exemple (raquette de RA ${fa.example.ra}, ${fa.example.kg} kg), l'indice RCS atteint ${edges.join(', ')} à partir d'environ ${edgeX.map(Math.round).join(', ')} lb/in. Ces valeurs sont celles des fiches : ${fa.nAlignedAll} des ${fa.total} sont alignées sur une mesure du laboratoire TWU (${alignedList('fr')}).`,
-    `String stiffness by family, in lb/in, from minimum to maximum with the median: ${parts}. In the example setup (racquet with an RA of ${fa.example.ra}, ${fa.example.kg} kg), the RCS index reaches ${edges.join(', ')} from about ${edgeX.map(Math.round).join(', ')} lb/in. These values are those of the product pages: ${fa.nAlignedAll} of the ${fa.total} are aligned on a measurement by the TWU lab (${alignedList('en')}).`,
+    `Rigidité des cordages par famille, en lb/in, du minimum au maximum avec la médiane : ${parts}. Dans le montage de référence (raquette de RA ${fa.example.ra}, ${fa.example.kg} kg), l'indice RCS atteint ${edges.join(', ')} à partir d'environ ${edgeX.map(Math.round).join(', ')} lb/in. Ces valeurs sont celles des fiches : ${fa.nAlignedAll} des ${fa.total} sont alignées sur une mesure du laboratoire TWU (${alignedList('fr')}).`,
+    `String stiffness by family, in lb/in, from minimum to maximum with the median: ${parts}. In the reference setup (racquet with an RA of ${fa.example.ra}, ${fa.example.kg} kg), the RCS index reaches ${edges.join(', ')} from about ${edgeX.map(Math.round).join(', ')} lb/in. These values are those of the product pages: ${fa.nAlignedAll} of the ${fa.total} are aligned on a measurement by the TWU lab (${alignedList('en')}).`,
   );
 
   const o: string[] = [];
   o.push(`<svg class="tsa-schema" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-labelledby="${id}"><title id="${id}">${esc(title)}</title>`);
   o.push(`<g font-family="${FONT}">`);
 
-  // Bande d'indice RCS du montage d'exemple (5 paliers publiés)
-  o.push(`<text x="${P0}" y="26" font-size="18" style="${STYLE.muted}">${T(`Indice RCS du montage d'exemple (RA${NB}${fa.example.ra}, ${fa.example.kg}${NB}kg)`, `RCS index of the example setup (RA${NB}${fa.example.ra}, ${fa.example.kg}${NB}kg)`)}</text>`);
+  // Bande d'indice RCS du montage de référence (5 paliers publiés)
+  o.push(`<text x="${P0}" y="26" font-size="18" style="${STYLE.muted}">${T(`Indice RCS du montage de référence (RA${NB}${fa.example.ra}, ${fa.example.kg}${NB}kg)`, `RCS index of the reference setup (RA${NB}${fa.example.ra}, ${fa.example.kg}${NB}kg)`)}</text>`);
   const bounds = [E0, ...edgeX, E1];
   const tints = ['var(--tsa-a1-soft)', 'var(--tsa-a1-soft)', 'var(--tsa-a2-soft)', 'var(--tsa-a2-soft)', 'var(--tsa-a4-soft)'];
   for (let i = 0; i < 5; i++) {
@@ -401,8 +403,8 @@ function famillesFigure(fa: Facts, lang: Lang): string {
   o.push(`</svg>`);
 
   const caption = T(
-    `Rigidité des fiches par famille de cordage, de la plus souple à la plus rigide : minimum, médiane et maximum. La bande du haut situe l'indice RCS d'un montage d'exemple (raquette de RA${NB}${fa.example.ra}, ${fa.example.kg}${NB}kg) selon la rigidité du cordage. Ces valeurs sont celles de nos fiches${NB}: ${fa.nAlignedAll} des ${fa.total} sont alignées sur une mesure du laboratoire TWU (${alignedList('fr')}), les autres ne sont pas des mesures TWU. Schéma Tennis String Advisor, d'après la base du site, état au ${AS_OF.fr}.`,
-    `Stiffness of the product pages by string family, softest to stiffest: minimum, median and maximum. The band at the top shows the RCS index of an example setup (racquet with an RA of${NB}${fa.example.ra}, ${fa.example.kg}${NB}kg) according to string stiffness. These values are the ones on our product pages: ${fa.nAlignedAll} of the ${fa.total} are aligned on a measurement by the TWU lab (${alignedList('en')}), the others are not TWU measurements. Chart by Tennis String Advisor, based on the site's database, as of ${AS_OF.en}.`,
+    `Rigidité des fiches par famille de cordage, de la plus souple à la plus rigide : minimum, médiane et maximum. La bande du haut situe l'indice RCS du montage de référence (raquette de RA${NB}${fa.example.ra}, ${fa.example.kg}${NB}kg) selon la rigidité du cordage. Ces valeurs sont celles de nos fiches${NB}: ${fa.nAlignedAll} des ${fa.total} sont alignées sur une mesure du laboratoire TWU (${alignedList('fr')}), les autres ne sont pas des mesures TWU. Schéma Tennis String Advisor, d'après la base du site, état au ${AS_OF.fr}.`,
+    `Stiffness of the product pages by string family, softest to stiffest: minimum, median and maximum. The band at the top shows the RCS index of the reference setup (racquet with an RA of${NB}${fa.example.ra}, ${fa.example.kg}${NB}kg) according to string stiffness. These values are the ones on our product pages: ${fa.nAlignedAll} of the ${fa.total} are aligned on a measurement by the TWU lab (${alignedList('en')}), the others are not TWU measurements. Chart by Tennis String Advisor, based on the site's database, as of ${AS_OF.en}.`,
   );
   return wrapFigure(o.join('\n'), caption);
 }
@@ -453,7 +455,7 @@ function expectations(fa: Facts, lang: Lang, kind: string): { re: RegExp; what: 
           { re: rx(`seuls ${mm.nAligned} de nos ${mm.n} multifilaments ont une rigidité alignée`), what: 'hybrides : multifilaments alignés sur une mesure TWU' },
           { re: rx(`un indice RCS de ${fa.soft3Rcs[0]} à ${fa.soft3Rcs[1]}, contre ${fa.topRcs} pour le plus rigide`), what: 'FAQ n° 1 : indices des trois plus souples et du plus rigide' },
           { re: rx(`cet écart vaut ${fa.gap.min} à ${fa.gap.max} points d'indice RCS`), what: 'Verdict express : écart entre le plus souple et le plus rigide' },
-          { re: rx(`avec un ${fa.topLabel} à 22 kg \\(indice ${fa.topRcs}\\)`), what: 'leviers : indice du polyester le plus rigide' },
+          { re: rx(`avec un ${fa.topLabel} à ${EXAMPLE.kg} kg \\(indice ${fa.topRcs}\\)`), what: 'leviers : indice du polyester le plus rigide' },
         ]
       : [
           { re: rx(`Our ${fa.nPolys} polys range from ${n(fa.min)} to ${n(fa.max)} lb/in \\(median ${n(fa.median)}\\)`), what: 'effectif, étendue et médiane des polyesters' },
@@ -464,7 +466,7 @@ function expectations(fa: Facts, lang: Lang, kind: string): { re: RegExp; what: 
           { re: rx(`only ${mm.nAligned} of our ${mm.n} multifilaments have a stiffness aligned`), what: 'hybrides : multifilaments alignés sur une mesure TWU' },
           { re: rx(`an RCS index of ${fa.soft3Rcs[0]} to ${fa.soft3Rcs[1]}, against ${fa.topRcs} for the stiffest`), what: 'FAQ n° 1 : indices des trois plus souples et du plus rigide' },
           { re: rx(`that gap is worth ${fa.gap.min} to ${fa.gap.max} RCS points`), what: 'short version : écart entre le plus souple et le plus rigide' },
-          { re: rx(`with ${fa.topLabel} at 22 kg \\(index ${fa.topRcs}\\)`), what: 'leviers : indice du polyester le plus rigide' },
+          { re: rx(`with ${fa.topLabel} at ${EXAMPLE.kg} kg \\(index ${fa.topRcs}\\)`), what: 'leviers : indice du polyester le plus rigide' },
         ];
   }
   const row = (word: string, f: ReturnType<typeof fam>) =>
