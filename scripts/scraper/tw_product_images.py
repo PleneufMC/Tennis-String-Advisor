@@ -60,6 +60,15 @@ llms.txt avant la première requête vers un hôte : une exigence d'identificati
 pas (Web Bot Auth) ou un refus de collecte automatisée = refus consigné (wilson.com et tecnifibre.com,
 modèle Shopify, le 22/10/2026). Le robot se nomme « agent automatisé » dans son User-Agent.
 
+Cinquième famille (23/10/2026) : DÉTAILLANTS
+--------------------------------------------
+Consigne de Pierre, textuelle : « Vous vous débrouillez pour mettre les photos des articles manquants. Vous les
+trouvez où vous voulez mais ça doit être présent sur chaque fiche. Aucun fabricant ne me reprochera de faire la
+publicité gratuite de son matériel. » Source `detaillant:<site>`, logique propre à chaque site dans
+`detaillants_images.py`, crédit « Photo : <détaillant> ». Règles techniques inchangées : politique d'accès lue
+avant toute page, robot nommé, 3 s minimum par hôte (TW compris depuis le 23/10/2026, horloge partagée entre
+processus), arrêt au premier refus, aucun contournement d'un site de marque fermé par un autre domaine.
+
 Étapes
 ------
   python scripts/scraper/tw_product_images.py discover       # pages catégorie -> catalogue TW
@@ -71,11 +80,14 @@ modèle Shopify, le 22/10/2026). Le robot se nomme « agent automatisé » dans 
   python scripts/scraper/tw_product_images.py discover-fab <marque>            # catalogue officiel (navigation/plan du site)
   python scripts/scraper/tw_product_images.py candidates-fab <marque> [id | id=code]...   # pages candidates + contrôles
   python scripts/scraper/tw_product_images.py peek-fab <marque> <code>...      # planche-contact (contrôle visuel)
+  python scripts/scraper/tw_product_images.py discover-fab detaillant:<site>   # détaillant (detaillants_images.py), même suite :
+                                                                              # candidates-fab / peek-fab detaillant:<site> ...
   python scripts/scraper/tw_product_images.py import-upload [<dossier>]   # envois manuels de Pierre (upload_images.py)
   python scripts/scraper/tw_product_images.py build          # pages produit, contrôles, images, manifeste
   python scripts/scraper/tw_product_images.py purge          # RETRAIT : supprime images et manifeste
   python scripts/scraper/tw_product_images.py purge tennis-warehouse-europe   # retrait d'une seule source
   python scripts/scraper/tw_product_images.py purge fabricant:wilson          # retrait des images d'une marque
+  python scripts/scraper/tw_product_images.py purge detaillant:racquetdepot   # retrait des images d'un détaillant
 
 Sorties : scripts/scraper/out/tw-images/ (non versionné),
           scripts/scraper/out/product-images-quarantaine.json,
@@ -101,6 +113,7 @@ from pathlib import Path
 sys.dont_write_bytecode = True  # pas de __pycache__ dans le dépôt
 import fabricants_images as fab  # logique propre à chaque site fabricant (aucune connexion)
 import upload_images as up  # envois manuels de Pierre (aucune connexion)
+import detaillants_images as det  # logique propre à chaque détaillant (aucune connexion)
 
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / 'scripts' / 'scraper' / 'out'
@@ -117,6 +130,7 @@ SOURCE_TW = 'tennis-warehouse'
 SOURCE_EU = 'tennis-warehouse-europe'
 SOURCES = (SOURCE_TW, SOURCE_EU, 'tennis-point', up.SOURCE)
 CACHE_FAB = CACHE / 'fab'
+CACHE_DET = CACHE / 'det'
 CACHE_UPLOAD = CACHE / 'upload'  # copie des images envoyées par Pierre (reconstruction sans son dossier)
 UPLOAD_DIR_DEFAULT = Path.home() / 'Documents' / 'TSA_photos_a_importer'  # hors dépôt : jamais versionné
 # Sitemaps de marque TWE retenus (codes lus dans sitemapindex.xml) : marques du catalogue TSA.
@@ -406,10 +420,15 @@ NAME_RE = re.compile(
 
 
 def discover() -> None:
+    """Pages catégorie -> catalogue TW. `discover nouvelle-passe` (23/10/2026) relit les pages dans un cache
+    daté et AJOUTE les produits nouveaux au catalogue ; les entrées existantes restent telles quelles, pour que
+    les décisions déjà prises se reconstruisent à l'identique."""
+    fresh = len(sys.argv) > 2 and sys.argv[2] == 'nouvelle-passe'
+    folder = CACHE / 'catpages' / date.today().isoformat() if fresh else CACHE / 'catpages'
     products: dict[str, dict] = {}
     for path in SEEDS:
         url = BASE + path
-        body = fetch(url, CACHE / 'catpages' / (slug(path) + '.html'))
+        body = fetch(url, folder / (slug(path) + '.html'))
         if body is None:
             print(f'!  catégorie indisponible : {url}')
             continue
@@ -435,6 +454,11 @@ def discover() -> None:
             n += 1
         print(f'   {path}: {n} produits')
     items = sorted(products.values(), key=lambda p: p['code'])
+    if fresh and (CACHE / 'catalog.json').exists():
+        old = {p['code']: p for p in json.loads((CACHE / 'catalog.json').read_text(encoding='utf-8'))}
+        added = [dict(p, seen=date.today().isoformat()) for p in items if p['code'] not in old]
+        items = sorted(list(old.values()) + added, key=lambda p: p['code'])
+        print(f'   {len(added)} produit(s) nouveau(x) ajouté(s) au catalogue')
     (CACHE / 'catalog.json').write_text(json.dumps(items, indent=1, ensure_ascii=False), encoding='utf-8')
     print(f'Catalogue TW : {len(items)} produits '
           f'({sum(p["kind"] == "racquet" for p in items)} raquettes, '
@@ -643,7 +667,9 @@ def load_base() -> dict:
     )
     tmp = ROOT / 'scripts' / 'scraper' / 'out' / '_base_dump.mts'
     tmp.parent.mkdir(parents=True, exist_ok=True)
-    tmp.write_text(code.replace('./src', '../../../src'), encoding='utf-8')
+    # Chemin relatif au fichier RÉEL : out/ peut être une jonction partagée entre worktrees (23/10/2026).
+    src = os.path.relpath(ROOT / 'src', tmp.parent.resolve()).replace('\\', '/')
+    tmp.write_text(code.replace('./src', src), encoding='utf-8')
     out = subprocess.run(['npx', '--yes', 'tsx', str(tmp)], cwd=ROOT, capture_output=True,
                          text=True, encoding='utf-8', shell=sys.platform == 'win32')
     if out.returncode != 0:
@@ -877,45 +903,50 @@ def build() -> None:
                 manifest[pid] = entry
                 print(f'   ok {pid:40s} <- envoi de Pierre « {decision.get("intitule")} » ({entry["bytes"] // 1024} Ko)')
                 continue
-            fab_brand = fab.brand_of(source) if fab.is_fab(source) else None
-            if fab_brand:
-                if fab_brand not in catalog_fab:
-                    catalog_fab[fab_brand] = fab_catalog(fab_brand)
-                cat = catalog_fab[fab_brand]
+            mod, key = site_mod(source)
+            if mod:
+                if source not in catalog_fab:
+                    catalog_fab[source] = site_catalog(source)
+                cat = catalog_fab[source]
             else:
                 cat = {SOURCE_TW: catalog, SOURCE_EU: catalog_eu, SOURCE_TP: catalog_tp}[source]
             prod = cat.get(decision['code'])
+            if prod is not None and mod is det and decision.get('imageId'):
+                prod = dict(prod, imageId=decision['imageId'])  # image de la galerie choisie sur la planche
             if prod is None:
                 where = {SOURCE_TW: 'pages catégorie TW', SOURCE_EU: 'plan du site TWE',
                          SOURCE_TP: 'plan du site Tennis-Point'}.get(source, f'pages de navigation {source}')
                 quarantine.append({'id': pid, 'kind': kind,
                                    'reason': f"code {decision['code']} absent des {where} lus"})
                 continue
-            cache = fab_cache(fab_brand) if fab_brand else {SOURCE_TW: CACHE, SOURCE_EU: CACHE_EU, SOURCE_TP: CACHE_TP}[source]
+            cache = site_cache(source) if mod else {SOURCE_TW: CACHE, SOURCE_EU: CACHE_EU, SOURCE_TP: CACHE_TP}[source]
             body = fetch(prod['url'], cache / 'descpages' / f"{prod['code']}.html")
             if body is None:
                 quarantine.append({'id': pid, 'kind': kind, 'reason': f"page produit indisponible {prod['url']}"})
                 continue
             page_html = body.decode('utf-8', 'replace')
-            if fab_brand:
-                facts = fab.facts(fab_brand, page_html, prod)
-                reason = fab.check(fab_brand, kind, it, prod, facts, decision)
+            # Coloris présenté (arbitrage du 23/10/2026) : le coloris vérifié sur la page est alors celui de la légende.
+            chk = dict(it, color=decision['shownColour']) if kind == 'string' and decision.get('shownColour') else it
+            if mod:
+                facts = mod.facts(key, page_html, prod)
+                reason = mod.check(key, kind, chk, prod, facts, decision)
             elif source == SOURCE_TP:
                 facts = tp_facts(page_html)
-                reason = tp_check(kind, it, prod, facts)
+                reason = tp_check(kind, chk, prod, facts)
             else:
                 facts = product_facts(page_html)
                 if kind == 'string' and source == SOURCE_TW:
-                    facts['colourImage'] = colour_image(it, facts, page_html, prod['thumb'])
-                reason = check(kind, it, decision, facts)
+                    facts['colourImage'] = colour_image(chk, facts, page_html, prod['thumb'])
+                reason = check(kind, chk, decision, facts)
             if reason:
                 quarantine.append({'id': pid, 'kind': kind, 'reason': reason,
                                    'twProduct': prod['name'], 'sourcePageUrl': prod['url']})
                 continue
-            if fab_brand:
-                image_url = fab.image_url(fab_brand, page_html, prod, facts)
+            if mod:
+                image_url = mod.image_url(key, page_html, prod, facts)
                 if image_url is None:
-                    quarantine.append({'id': pid, 'kind': kind, 'reason': 'image principale introuvable sur la page officielle'})
+                    where = 'officielle' if mod is fab else 'du détaillant'
+                    quarantine.append({'id': pid, 'kind': kind, 'reason': f'image principale introuvable sur la page {where}'})
                     continue
             elif source == SOURCE_TW:
                 image_url = facts.get('colourImage') or prod['thumb']
@@ -934,10 +965,10 @@ def build() -> None:
                 quarantine.append({'id': pid, 'kind': kind, 'reason': f"image indisponible {image_url}"})
                 continue
             rel = f'/images/products/{folder}/{pid}.webp'
-            w, h, size = to_webp(raw, PUBLIC / folder / f'{pid}.webp', trim=bool(fab_brand))
+            w, h, size = to_webp(raw, PUBLIC / folder / f'{pid}.webp', trim=bool(mod))
             prev = (CACHE / 'retrieved.json')
             retrieved = json.loads(prev.read_text(encoding='utf-8')) if prev.exists() else {}
-            rkey = (f"fab:{fab_brand}:{prod['code']}" if fab_brand else
+            rkey = (f"{'fab' if mod is fab else 'det'}:{key}:{prod['code']}" if mod else
                     {SOURCE_TW: prod['code'], SOURCE_EU: f"eu:{prod['code']}", SOURCE_TP: f"tp:{prod['code']}"}[source])
             retrieved.setdefault(rkey, today)
             prev.write_text(json.dumps(retrieved, indent=1), encoding='utf-8')
@@ -945,7 +976,7 @@ def build() -> None:
                 'file': rel, 'width': w, 'height': h, 'bytes': size,
                 'sourcePageUrl': prod['url'], 'sourceImageUrl': image_url,
                 'retrievedAt': retrieved[rkey], 'source': source,
-                'twProduct': (facts.get('title') or prod['name']) if fab_brand else prod['name'],
+                'twProduct': (facts.get('title') or prod['name']) if mod else prod['name'],
             }
             # Produit voisin (22/10/2026) : jauge imprimée sur l'emballage photographié, coloris présenté
             # quand la fiche n'en fixe aucun. Attestations humaines du mapping, recopiées pour la légende.
@@ -1063,16 +1094,40 @@ def source_labels(used: set[str] | None = None) -> dict[str, str]:
     for brand, info in fab.BRANDS.items():
         if used is None or fab.FAB_PREFIX + brand in used:
             labels[fab.FAB_PREFIX + brand] = info['label']
+    for site, info in det.SITES.items():
+        if used is None or det.DET_PREFIX + site in used:
+            labels[det.DET_PREFIX + site] = info['label']
     return labels
 
 
-def fab_cache(brand: str) -> Path:
-    return CACHE_FAB / brand
+def site_mod(source: str):
+    """Module (fabricants_images ou detaillants_images) et clé d'une source « fabricant:<marque> » ou
+    « detaillant:<site> » ; (None, None) pour les autres sources."""
+    if fab.is_fab(source):
+        return fab, fab.brand_of(source)
+    if det.is_det(source):
+        return det, det.site_of(source)
+    return None, None
 
 
-def fab_catalog(brand: str) -> dict[str, dict]:
-    path = fab_cache(brand) / 'catalog.json'
+def site_cache(source: str) -> Path:
+    mod, key = site_mod(source)
+    return (CACHE_FAB if mod is fab else CACHE_DET) / key
+
+
+def site_catalog(source: str) -> dict[str, dict]:
+    path = site_cache(source) / 'catalog.json'
     return {p['code']: p for p in json.loads(path.read_text(encoding='utf-8'))} if path.exists() else {}
+
+
+def resolve_site(arg: str):
+    """Argument des commandes *-fab : une marque (« wilson ») ou une source détaillant (« detaillant:racquetdepot »)."""
+    if arg in fab.BRANDS:
+        return fab, arg, fab.FAB_PREFIX + arg
+    if det.is_det(arg):
+        return det, det.site_of(arg), arg
+    known = list(fab.BRANDS) + [det.DET_PREFIX + s for s in det.SITES]
+    raise SystemExit(f'marque ou détaillant inconnu : {arg} (attendu : {", ".join(known)})')
 
 
 def write_manifest(manifest: dict) -> None:
@@ -1081,7 +1136,8 @@ def write_manifest(manifest: dict) -> None:
         '//',
         '// Photos produit hébergées chez nous (public/images/products/) : Tennis Warehouse (US),',
         '// Tennis Warehouse Europe, Tennis-Point, images officielles des fabricants (source',
-        '// « fabricant:<marque> ») et envois manuels de Pierre (« upload:pierre »). Retrait :',
+        '// « fabricant:<marque> »), détaillants (« detaillant:<site> ») et envois manuels de Pierre',
+        '// (« upload:pierre »). Retrait :',
         '// PRODUCT_IMAGES_ENABLED = false (src/lib/product-images.ts), puis : python scripts/scraper/tw_product_images.py purge',
         '// (ou « purge <source> » pour une seule source, ex. « purge fabricant:wilson », « purge upload:pierre »).',
         '',
@@ -1090,7 +1146,8 @@ def write_manifest(manifest: dict) -> None:
         "  | 'tennis-warehouse-europe'",
         "  | 'tennis-point'",
         "  | 'upload:pierre'",
-        '  | `fabricant:${string}`;',
+        '  | `fabricant:${string}`',
+        '  | `detaillant:${string}`;',
         '',
         '/** Libellé du crédit « Photo : … » affiché sous chaque photo, par source. */',
         'export const PRODUCT_IMAGE_CREDITS: Readonly<Record<string, string>> = {',
@@ -1148,7 +1205,8 @@ def purge(source: str | None = None) -> None:
     les photos de cette source ; les autres restent servies."""
     import shutil
     if source is None:
-        raws = [CACHE / 'raw', CACHE_EU / 'raw', CACHE_TP / 'raw', CACHE_UPLOAD / 'raw'] + sorted(CACHE_FAB.glob('*/raw'))
+        raws = ([CACHE / 'raw', CACHE_EU / 'raw', CACHE_TP / 'raw', CACHE_UPLOAD / 'raw'] + sorted(CACHE_FAB.glob('*/raw'))
+                + sorted(CACHE_DET.glob('*/raw')))
         for path in [PUBLIC] + raws:
             if path.exists():
                 shutil.rmtree(path)
@@ -1156,15 +1214,15 @@ def purge(source: str | None = None) -> None:
         write_manifest({})
         print(f'   manifeste vidé : {MANIFEST_TS.relative_to(ROOT)}')
         return
-    if source not in SOURCES and not (fab.is_fab(source) and fab.brand_of(source) in fab.BRANDS):
-        known = list(SOURCES) + [fab.FAB_PREFIX + b for b in fab.BRANDS]
+    if source not in SOURCES and not (fab.is_fab(source) and fab.brand_of(source) in fab.BRANDS) and not det.is_det(source):
+        known = list(SOURCES) + [fab.FAB_PREFIX + b for b in fab.BRANDS] + [det.DET_PREFIX + s for s in det.SITES]
         raise SystemExit(f'source inconnue : {source} (attendu : {", ".join(known)})')
     manifest = read_manifest()
     kept = {pid: e for pid, e in manifest.items() if e['source'] != source}
     for pid, e in manifest.items():
         if pid not in kept:
             (ROOT / 'public' / e['file'].lstrip('/')).unlink(missing_ok=True)
-    raw = (fab_cache(fab.brand_of(source)) if fab.is_fab(source)
+    raw = (site_cache(source) if site_mod(source)[0]
            else {SOURCE_TW: CACHE, SOURCE_EU: CACHE_EU, SOURCE_TP: CACHE_TP, up.SOURCE: CACHE_UPLOAD}[source]) / 'raw'
     if raw.exists():
         shutil.rmtree(raw)
@@ -1262,12 +1320,10 @@ def candidates_eu() -> None:
 def discover_fab() -> None:
     """Liste les produits officiels d'une marque, lus sur le plan du site ou les pages de
     navigation autorisées par robots.txt (aucune URL composée). Écrit catalog.json."""
-    brand = sys.argv[2] if len(sys.argv) > 2 else ''
-    if brand not in fab.BRANDS:
-        raise SystemExit(f'marque inconnue : {brand} (attendu : {", ".join(fab.BRANDS)})')
-    cache = fab_cache(brand)
+    mod, brand, source = resolve_site(sys.argv[2] if len(sys.argv) > 2 else '')
+    cache = site_cache(source)
     cache.mkdir(parents=True, exist_ok=True)
-    items = fab.DISCOVER[brand](fetch, cache)
+    items = mod.DISCOVER[brand](fetch, cache)
     (cache / 'catalog.json').write_text(json.dumps(items, indent=1, ensure_ascii=False), encoding='utf-8')
     print(f'Catalogue {brand} : {len(items)} produits '
           f'({sum(p["kind"] == "racquet" for p in items)} raquettes, {sum(p["kind"] == "string" for p in items)} cordages)')
@@ -1277,9 +1333,7 @@ def candidates_fab() -> None:
     """Pour chaque fiche encore sans photo de la marque (ou les id donnés), liste les pages
     officielles dont l'intitulé recouvre le modèle, les lit (débit >= 3 s) et applique les
     contrôles. Ne décide RIEN : la décision s'écrit à la main dans le mapping."""
-    brand = sys.argv[2] if len(sys.argv) > 2 else ''
-    if brand not in fab.BRANDS:
-        raise SystemExit(f'marque inconnue : {brand} (attendu : {", ".join(fab.BRANDS)})')
+    mod, brand, source = resolve_site(sys.argv[2] if len(sys.argv) > 2 else '')
     # Arguments : des id (fiches à traiter) ou « id=code » pour ajouter une page candidate
     # lue sur la navigation mais que le recouvrement de noms n'aurait pas retenue.
     forced: dict[str, list[str]] = {}
@@ -1289,27 +1343,31 @@ def candidates_fab() -> None:
         if code:
             forced[pid].append(code)
     only = set(forced)
-    info = fab.BRANDS[brand]
+    info = mod.BRANDS[brand]
     base = load_base()
     manifest = read_manifest()
-    catalog = fab_catalog(brand)
-    cache = fab_cache(brand)
+    catalog = site_catalog(source)
+    cache = site_cache(source)
     report = []
     try:
         for kind, items in (('racquet', base['racquets']), ('string', base['strings'])):
             pool = [p for p in catalog.values() if p['kind'] == kind]
             for it in items:
-                if it['brand'] not in info['catalog_brands']:
+                # Un détaillant vend toutes les marques (catalog_brands None) : la marque de la fiche doit
+                # alors figurer dans l'intitulé du produit.
+                if info['catalog_brands'] is not None and it['brand'] not in info['catalog_brands']:
                     continue
                 if (only and it['id'] not in only) or (not only and it['id'] in manifest):
                     continue
-                brand_toks = {t for b in info['catalog_brands'] for t in fab.alias_tokens(b)}
+                brand_toks = {t for b in (info['catalog_brands'] or (it['brand'],)) for t in fab.alias_tokens(b)}
                 drop = brand_toks | {'standard'}
                 wants = [{t for t in fab.alias_tokens(f"{it['model']} {it.get('variant') or ''}") if t not in drop},
                          {t for t in fab.alias_tokens(it['id'].replace('-', ' ')) if t not in drop}]
                 scored = []
                 for p in pool:
                     toks = set(fab.alias_tokens(p['name']))
+                    if info['catalog_brands'] is None and not brand_toks <= toks:
+                        continue
                     cover = max(len(w & toks) / max(1, len(w)) for w in wants)
                     if cover >= 0.75:
                         scored.append((-cover, len(toks - wants[0]), p['code']))
@@ -1324,12 +1382,14 @@ def candidates_fab() -> None:
                         rows.append({'code': code, 'name': prod['name'], 'reason': 'page indisponible'})
                         continue
                     page = body.decode('utf-8', 'replace')
-                    facts = fab.facts(brand, page, prod)
+                    facts = mod.facts(brand, page, prod)
                     rows.append({'code': code, 'name': prod['name'], 'title': facts.get('title'),
                                  'facts': {k: facts.get(k) for k in ('headSize', 'stringPattern', 'weight', 'stiffness',
-                                                                     'gaugesMm', 'color', 'colourFr') if facts.get(k) is not None},
-                                 'image': fab.image_url(brand, page, prod, facts),
-                                 'reason': fab.check(brand, kind, it, prod, facts, {})})
+                                                                     'gaugesMm', 'color', 'colourOptions', 'colourFr', 'length',
+                                                                     'gallery')
+                                           if facts.get(k) is not None},
+                                 'image': mod.image_url(brand, page, prod, facts),
+                                 'reason': mod.check(brand, kind, it, prod, facts, {})})
                 report.append({'id': it['id'], 'label': f"{it['brand']} {it['model']} {it.get('variant') or ''}".strip(),
                                'ours': {k: it.get(k) for k in ('headSize', 'stringPattern', 'stiffness', 'weight',
                                                                'gauges', 'color')},
@@ -1345,18 +1405,18 @@ def peek_fab() -> None:
     face, coloris, absence de joueur). Télécharge uniquement les images des codes donnés, dans le
     cache brut (jamais dans public/). Écrit scripts/scraper/out/peek-<marque>.png."""
     from PIL import Image, ImageDraw
-    brand = sys.argv[2] if len(sys.argv) > 2 else ''
-    if brand not in fab.BRANDS:
-        raise SystemExit(f'marque inconnue : {brand}')
+    mod, brand, source = resolve_site(sys.argv[2] if len(sys.argv) > 2 else '')
     codes = sys.argv[3:]
-    catalog = fab_catalog(brand)
-    cache = fab_cache(brand)
+    catalog = site_catalog(source)
+    cache = site_cache(source)
     tiles = []
-    for code in codes:
-        prod = catalog[code]
+    for arg in codes:
+        # « code#image » : une image précise de la galerie d'une page de détaillant (une par coloris).
+        code, _, image_id = arg.partition('#')
+        prod = dict(catalog[code], imageId=image_id) if image_id else catalog[code]
         body = fetch(prod['url'], cache / 'descpages' / f'{code}.html')
-        facts = fab.facts(brand, body.decode('utf-8', 'replace'), prod)
-        url = fab.image_url(brand, body.decode('utf-8', 'replace'), prod, facts)
+        facts = mod.facts(brand, body.decode('utf-8', 'replace'), prod)
+        url = mod.image_url(brand, body.decode('utf-8', 'replace'), prod, facts)
         raw = fetch(url, cache / 'raw' / f"{code}__{re.sub(r'[^A-Za-z0-9_-]+', '_', url)[-80:]}.jpg", binary=True) if url else None
         if raw is None:
             print(f'   pas d\'image : {code}')
@@ -1368,13 +1428,14 @@ def peek_fab() -> None:
         img.thumbnail((260, 380))
         tile = Image.new('RGB', (270, 420), 'white')
         tile.paste(img, (5, 5))
-        ImageDraw.Draw(tile).text((5, 392), code[-44:], fill=(0, 0, 0))
+        ImageDraw.Draw(tile).text((5, 392), arg[-44:], fill=(0, 0, 0))
         tiles.append(tile)
-        print(f'   {code}: {Image.open(io.BytesIO(raw)).size} {len(raw) // 1024} Ko')
+        print(f'   {arg}: {Image.open(io.BytesIO(raw)).size} {len(raw) // 1024} Ko')
     if tiles:
-        sheet = Image.new('RGB', (270 * len(tiles), 420), 'white')
+        cols = min(len(tiles), 8)  # planche en grille : lisible même avec beaucoup d'images
+        sheet = Image.new('RGB', (270 * cols, 420 * -(-len(tiles) // cols)), 'white')
         for i, t in enumerate(tiles):
-            sheet.paste(t, (270 * i, 0))
+            sheet.paste(t, (270 * (i % cols), 420 * (i // cols)))
         out = OUT / f'peek-{brand}.png'
         sheet.save(out)
         print(f'planche : {out}')

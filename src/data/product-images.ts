@@ -2,7 +2,8 @@
 //
 // Photos produit hébergées chez nous (public/images/products/) : Tennis Warehouse (US),
 // Tennis Warehouse Europe, Tennis-Point, images officielles des fabricants (source
-// « fabricant:<marque> ») et envois manuels de Pierre (« upload:pierre »). Retrait :
+// « fabricant:<marque> »), détaillants (« detaillant:<site> ») et envois manuels de Pierre
+// (« upload:pierre »). Retrait :
 // PRODUCT_IMAGES_ENABLED = false (src/lib/product-images.ts), puis : python scripts/scraper/tw_product_images.py purge
 // (ou « purge <source> » pour une seule source, ex. « purge fabricant:wilson », « purge upload:pierre »).
 
@@ -11,7 +12,8 @@ export type ProductImageSource =
   | 'tennis-warehouse-europe'
   | 'tennis-point'
   | 'upload:pierre'
-  | `fabricant:${string}`;
+  | `fabricant:${string}`
+  | `detaillant:${string}`;
 
 /** Libellé du crédit « Photo : … » affiché sous chaque photo, par source. */
 export const PRODUCT_IMAGE_CREDITS: Readonly<Record<string, string>> = {
