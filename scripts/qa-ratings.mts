@@ -1009,7 +1009,8 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     if (!e.twProduct) issues.push(`photo ${id} : intitulé du produit source absent (association non auditable)`);
     if (!/^\d{4}-\d{2}-\d{2}$/.test(e.retrievedAt)) issues.push(`photo ${id} : date de collecte invalide`);
     // Produit voisin (22/10/2026) : une autre jauge seulement si la fiche la liste ; un autre coloris
-    // seulement si la fiche n'en fixe aucun. La légende dit ce que la photo montre.
+    // seulement si la fiche n'en fixe aucun (aucune fiche raquette n'a de coloris). La légende dit ce
+    // que la photo montre.
     const str = stringById.get(id);
     if (e.shownGauge !== undefined) {
       const gauges = new Set((str?.gauges ?? []).flatMap((g) => g.split('/')));
@@ -1019,8 +1020,7 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
       }
     }
     if (e.shownColour !== undefined) {
-      if (!str) issues.push(`photo ${id} : « coloris présenté » sur une raquette`);
-      else if (str.color) issues.push(`photo ${id} : coloris présenté « ${e.shownColour} » alors que la fiche fixe « ${str.color} »`);
+      if (str?.color) issues.push(`photo ${id} : coloris présenté « ${e.shownColour} » alors que la fiche fixe « ${str.color} »`);
       else if (!e.shownColour.trim()) issues.push(`photo ${id} : coloris présenté vide`);
     }
     return issues;
@@ -1077,7 +1077,12 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
       ['jauge présentée absente de la fiche', entryIssues(multiGauge.id, { ...strEntry, shownGauge: '1.18' }, bCredits), 'absente de la fiche'],
       ['jauge présentée sur une raquette', entryIssues(racquetsDatabase[0].id, { ...synthetic('fabricant:babolat', racquetsDatabase[0].id), shownGauge: '1.25' }, bCredits), 'sur une raquette'],
       ['coloris présenté sur une fiche qui fixe un coloris', entryIssues(multiGauge.id, { ...strEntry, shownColour: 'Pink' }, bCredits), 'alors que la fiche fixe'],
+      ['coloris présenté vide (raquette)', entryIssues(racquetsDatabase[0].id, { ...synthetic('fabricant:babolat', racquetsDatabase[0].id), shownColour: ' ' }, bCredits), 'coloris présenté vide'],
     );
+    // Témoin : raquette (sans coloris de fiche) photographiée dans un des coloris de la page, avec la légende.
+    const racquetColour = entryIssues(racquetsDatabase[0].id, { ...synthetic('fabricant:babolat', racquetsDatabase[0].id), shownColour: 'Espresso Brown' }, bCredits);
+    if (racquetColour.length) fail(`photos produit : témoin « coloris présenté sur une raquette » refusé (${racquetColour.join(' ; ')})`);
+    else witnesses++;
     // Témoin : fiche sans coloris (aucune au catalogue aujourd'hui), le coloris présenté est admis.
     const blank = '__temoin-sans-coloris__';
     stringById.set(blank, { ...multiGauge, id: blank, color: undefined } as (typeof stringsDatabase)[number]);
@@ -1098,7 +1103,7 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     if (!captionIssues(fig.replace('jauge présentée', 'jauge')).length) fail('photos produit : garde-fou muet sur la légende FR retirée');
     if (failures.length === before) {
       ok(`photos produit : ${Object.keys(SOURCE_HOSTS).length} sources en liste blanche, ${witnesses} témoins acceptés, ${negatives.length + 1} tests négatifs détectés ` +
-        '(page ou image hors liste et crédit manquant pour chaque source, Head et Luxilon, Babolat hors FR/US, jauge ou coloris présentés hors règle, légende FR)');
+        '(page ou image hors liste et crédit manquant pour chaque source, Head et Luxilon, Babolat hors FR/US, jauge ou coloris présentés hors règle ou vides, légende FR)');
     }
   }
   for (const folder of ['racquets', 'strings']) {
