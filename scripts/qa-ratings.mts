@@ -1879,7 +1879,17 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     }
     return rows;
   };
-  const dossierRows = readRows(existsSync(AP.ALIGNMENT_DOSSIER) ? readFileSync(AP.ALIGNMENT_DOSSIER, 'utf8') : '');
+  // Plusieurs dossiers (veille du 10/10/2026, écarts de fiche du 23/10/2026) : numérotation continue, un numéro en double échoue.
+  const mergeDossiers = (texts: readonly string[]): { rows: Map<string, Row>; dup: string[] } => {
+    const rows = new Map<string, Row>();
+    const dup: string[] = [];
+    for (const t of texts) for (const [k, v] of readRows(t)) { if (rows.has(k)) dup.push(k); rows.set(k, v); }
+    return { rows, dup };
+  };
+  const dossiers = mergeDossiers(AP.ALIGNMENT_DOSSIERS.map((p) => (existsSync(p) ? readFileSync(p, 'utf8') : '')));
+  AP.ALIGNMENT_DOSSIERS.filter((p) => !existsSync(p)).forEach((p) => fail(`fiches alignées : dossier ${p} absent du dépôt`));
+  dossiers.dup.forEach((k) => fail(`fiches alignées : fait ${k} numéroté dans deux dossiers`));
+  const dossierRows = dossiers.rows;
   const checkAlignment = (items: readonly AItem[], prov: AProv, rows: Map<string, Row> = dossierRows): string[] => {
     const issues: string[] = [];
     const val = (it: AItem, f: string) => (f === 'gauges' ? it.gauges?.join(',') : it[f]);
@@ -1945,6 +1955,9 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     ['édition absente du nom (Pure Aero Team « Team »)', checkAlignment(setItem(races, 'babolat-pure-aero-team', { variant: 'Team' }), R0), 'n\'est pas dans le nom'],
     ['id public perdu (Clash 100 Pro)', checkAlignment(races.filter((x) => x.id !== 'wilson-clash-100-pro-v2'), R0), 'fiche absente du catalogue'],
     ['dossier absent du dépôt', checkAlignment(races, R0, new Map()), 'absent du dossier'],
+    ['fait numéroté dans deux dossiers', mergeDossiers(['| V01 | a | b | L0 | u | d | e | r | x | **confirmé** |', '| V01 | a | b | L0 | u | d | e | r | x | **confirmé** |']).dup, 'V01'],
+    ['RA tenu remis à la valeur du constructeur (CX 200 -> 65)', checkAlignment(setItem(races, 'dunlop-cx-200', { stiffness: 65 }), R0), 'dunlop-cx-200.stiffness : 65 ≠ 66'],
+    ['nom du cordage ramené à son ancienne graphie (Touch Multifiber)', checkAlignment(setItem(strs, 'kirschbaum-touch-multifiber', { model: 'Touch Multifiber' }), S0), 'kirschbaum-touch-multifiber.model'],
     ['1.30 retirée de la Poly Tour Strike', checkAlignment(setItem(strs, 'yonex-poly-tour-strike', { gauges: ['1.20', '1.25'] }), S0), 'yonex-poly-tour-strike.gauges'],
     ['1.35 réintroduite sur la RPM Team', checkAlignment(setItem(strs, 'babolat-rpm-team', { gauges: ['1.25', '1.30', '1.35'] }), S0), 'babolat-rpm-team.gauges'],
     ['surface qui importe la provenance', scanAlign([{ path: 'src/app/x.tsx', src: "import { RACQUET_ALIGNMENT } from '@/data/racquet-alignment-provenance';" }]), 'src/app/x.tsx'],
@@ -1958,8 +1971,8 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     const nFacts = [...Object.values(R0), ...Object.values(S0)].reduce(
       (n, a) => n + Object.values(a.changes).reduce((m, c) => m + c.facts.length, 0) + Object.values(a.held).reduce((m, h) => m + h.facts.length, 0), 0);
     const nRa = Object.values(R0).filter((a) => a.changes.stiffness).length;
-    ok(`fiches alignées : ${nR} raquettes en provenance (${changed} modifiées, ${nR - changed} tenues faute de preuve), ${Object.keys(S0).length} cordages (jauges, coloris), ` +
-      `${nFacts} faits retrouvés dans le dossier (niveau, valeur, statut), ${nRa} RA changés tous sur mesure L1, aucune baisse de RA, aucune surface ne lit la provenance, ${negatives.length} tests négatifs détectés`);
+    ok(`fiches alignées : ${nR} raquettes en provenance (${changed} modifiées, ${nR - changed} tenues faute de preuve), ${Object.keys(S0).length} cordages (nom, jauges, coloris), ` +
+      `${nFacts} faits retrouvés dans ${AP.ALIGNMENT_DOSSIERS.length} dossiers (niveau, valeur, statut ; ${dossierRows.size} faits, aucun numéro en double), ${nRa} RA changés tous sur mesure L1, aucune baisse de RA, aucune surface ne lit la provenance, ${negatives.length} tests négatifs détectés`);
   }
 }
 
@@ -2685,7 +2698,7 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     ['« prévention des blessures »', on(softMulti.id, { description: 'Réputé pour la prévention des blessures.' }), 'parle de santé'],
     ['confort promis sur le 2e polyester le plus rigide', on('babolat-rpm-team', { description: 'Polyester avec bon équilibre entre spin, contrôle et confort.' }), 'plus rigide que la médiane'],
     ['« le plus confortable des multifilaments » au-dessus de la médiane', on('tecnifibre-tgv', { description: 'PU400 technology : 400% d\'élasticité. Le plus confortable des multifilaments.' }), 'plus rigide que la médiane'],
-    ['« excellent toucher » au-dessus de la médiane', on('tecnifibre-xr3', { description: 'Multifilament avec âme en polyuréthane pour un excellent toucher.' }), 'plus rigide que la médiane'],
+    ['« excellent toucher » au-dessus de la médiane', on('wilson-nxt', { description: 'Multifilament avec âme en polyuréthane pour un excellent toucher.' }), 'plus rigide que la médiane'], // NXT 173,7 : XR3 (162,9) est devenu la médiane le 23/10/2026
     ['« sensation multifilament » sur un polyester durci', on('luxilon-element', { description: 'Multi-Mono technology : sensation multifilament dans structure monofilament.', stiffness: 232 }), 'plus rigide que la médiane'],
     ['douceur promise quand l\'alerte standard se déclenche (sous la médiane)', on(softMulti.id, alertingSoft), 'alerte bras standard'],
     ['rang de rigidité inexact (3e au lieu de 2e)', on('babolat-rpm-team', { description: 'Troisième polyester le plus rigide du catalogue.' }), 'rang de rigidité inexact'],
