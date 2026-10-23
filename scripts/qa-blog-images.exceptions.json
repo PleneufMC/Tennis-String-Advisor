@@ -41,9 +41,9 @@
     },
     {
       "fichier": "public/blog/tension-cordage-hiver.html",
-      "empreinte": "sha256:bf9abde42109c38868f6fb9e42112bd3e509a19327187449b54ecbfe69f0e1e0",
-      "depuis": "2026-10-10",
-      "motif": "Antérieur à la règle images du 10/10/2026 : couverture conforme, visuel de corps à créer (première mission de l’équipe éditoriale)"
+      "empreinte": "sha256:cd24cc47ba1440496164f276290bce0bcd1227e58588a06696034f557776e0e8",
+      "depuis": "2026-10-23",
+      "motif": "Antérieur à la règle images du 10/10/2026 : couverture conforme, visuel de corps à créer (première mission de l’équipe éditoriale) ; corrigé le 22/10/2026 (allégations de santé retirées du protocole, charte F7 v1.2, urgence d'exactitude ; visuel de corps toujours à créer) ; renouvelée le 23/10/2026 : dates de mise à jour (dateModified, sitemap) posées le 22/10/2026 par tsa-acquisition (PR #132) ; corps inchangé, visuel de corps toujours à créer"
     },
     {
       "fichier": "public/en/blog/best-polyester-tennis-strings-2026.html",
@@ -77,9 +77,9 @@
     },
     {
       "fichier": "public/en/blog/tennis-string-tension-cold-weather.html",
-      "empreinte": "sha256:454018158491e8a44c93131edda2294e7a6060d200c9c2c400f7989f4c004272",
-      "depuis": "2026-10-11",
-      "motif": "Antérieur à la règle images du 10/10/2026 : couverture conforme, visuel de corps à créer (première mission de l’équipe éditoriale) ; JSON-LD du <head> corrigé le 11/10/2026 (réponse n° 3 du FAQPage alignée sur le texte visible ; corps inchangé)"
+      "empreinte": "sha256:eb1386a0bde16a95b98428453ec998bdcd7bc3fcb255816da5b01dd257bdcebc",
+      "depuis": "2026-10-23",
+      "motif": "Antérieur à la règle images du 10/10/2026 : couverture conforme, visuel de corps à créer (première mission de l’équipe éditoriale) ; JSON-LD du <head> corrigé le 11/10/2026 (réponse n° 3 du FAQPage alignée sur le texte visible ; corps inchangé) ; corrigé le 22/10/2026 (allégations de santé retirées du protocole, charte F7 v1.2, urgence d'exactitude ; visuel de corps toujours à créer) ; outils EN décrits tels qu'ils sont, même jour ; renouvelée le 23/10/2026 : dates de mise à jour (dateModified, sitemap) posées le 22/10/2026 par tsa-acquisition (PR #132) ; corps inchangé, visuel de corps toujours à créer"
     }
   ]
 }

@@ -7,7 +7,7 @@
  * VRAI visuel dont chaque valeur est lue dans `src/data/` — jamais saisie :
  *
  *   1. « polyesters » : un point par polyester, placé à la rigidité de sa fiche ;
- *      zones à 200 et 240 lb/in (celles des sections 2 et 3 de l'article) ; seuils
+ *      repère des 15 plus souples à rigidité mesurée par TWU et zone à 240 lb/in (sections 2 et 3) ; seuils
  *      d'alerte du configurateur situés, pour le montage de référence de la charte
  *      (raquette de RA 64, 24 kg), à la rigidité où l'indice les atteint ; médiane.
  *   2. « familles » : minimum, médiane et maximum de chaque famille de cordage,
@@ -23,7 +23,8 @@
  *     légendes : C-4 du fact-check, jamais « les mesures TWU » en bloc) : statut `appliquee` de
  *     src/data/string-stiffness-provenance.ts, ou commentaire « Rigidité : TWU « … » » de la base pour
  *     les fiches Toroline antérieures à ce fichier — même définition que le † des tableaux ;
- *   - seule décision éditoriale posée ici : les zones « ≤ 200 » et « ≥ 240 lb/in » et le
+ *   - seule décision éditoriale posée ici : les « 15 plus souples » (parmi les fiches alignées TWU, décision P4
+ *     du 22/10/2026 : on ne classe en souplesse que des rigidités mesurées), la zone « ≥ 240 lb/in » et le
  *     montage de référence (RA 64, 24 kg), celui des tableaux de l'article. Les axes (160-290 et 80-300 lb/in)
  *     sont fixés ici : le script ÉCHOUE si une rigidité en sort (le Luxilon 4G est à 286,9 depuis le lot 3).
  *
@@ -62,7 +63,7 @@ type Lang = 'fr' | 'en';
 // montage de référence de la charte F7 (docs/redaction/CHARTE.md §2) : RA 64 (DEFAULT_RACQUET_RA, src/lib/racquet-scoring.ts),
 // 24 kg (REF_TENSION, scripts/qa-ratings.mts) ; les tableaux des articles l'utilisent, les cadres de RA 59 et 69 l'encadrent
 const EXAMPLE = { ra: 64, kg: 24 };
-const ZONE_SOFT_MAX = 200; // « les plus souples » : 200 lb/in ou moins (section 2)
+const SOFT_N = 15; // « les plus souples » (section 2) : les 15 plus souples des polyesters dont la rigidité de la fiche est une mesure TWU (P4)
 const ZONE_FIRM_MIN = 240; // « les plus fermes » : 240 lb/in ou plus (section 3)
 const AS_OF = { fr: '22 octobre 2026', en: 'October 22, 2026' }; // date de relevé affichée (F11) : à mettre à jour avec la base
 
@@ -147,7 +148,9 @@ export function computeFacts() {
   const edges = rcsBandEdges();
   const thrSens = stiffnessReaching(alert.sensitive);
   const thrStd = stiffnessReaching(alert.standard);
-  const soft = polys.filter((s) => s.stiffness <= ZONE_SOFT_MAX);
+  const measured = polys.filter(alignedOnTwu); // classement en souplesse : seulement les rigidités mesurées (P4)
+  const soft = measured.slice(0, SOFT_N);
+  if (soft.length < SOFT_N) throw new Error(`moins de ${SOFT_N} polyesters à rigidité mesurée`);
   const firm = polys.filter((s) => s.stiffness >= ZONE_FIRM_MIN);
   const families = FAMILY_ORDER.map((f) => {
     const v = all.filter((s) => s.type === f.type).map((s) => s.stiffness);
@@ -157,9 +160,10 @@ export function computeFacts() {
   }).sort((a, b) => a.med - b.med);
   const known = families.reduce((t, f) => t + f.n, 0);
   if (known !== all.length) throw new Error(`${all.length - known} cordage(s) hors des 5 familles : ajouter la famille au script`);
-  // chiffres cités dans le texte des articles (voir expectations) : trois plus souples, plus rigide, écart entre le plus souple et le plus rigide
+  // chiffres cités dans le texte des articles (voir expectations) : trois plus souples (mesurés), plus rigide, écart entre le plus souple et le plus rigide
   const softest = polys[0], stiffest = polys[polys.length - 1];
-  const soft3Rcs = polys.slice(0, 3).map(rcsOf);
+  if (!alignedOnTwu(softest) || !alignedOnTwu(stiffest)) throw new Error('le plus souple ou le plus rigide n\'est plus une mesure TWU : revoir l\'écart cité');
+  const soft3Rcs = measured.slice(0, 3).map(rcsOf);
   const gaps = [EXAMPLE.ra - 5, EXAMPLE.ra, EXAMPLE.ra + 5].map((ra) => calculateRCS(ra, stiffest.stiffness, EXAMPLE.kg) - calculateRCS(ra, softest.stiffness, EXAMPLE.kg));
   return {
     topLabel: label(stiffest),
@@ -172,9 +176,12 @@ export function computeFacts() {
     min: Math.min(...stiff),
     max: Math.max(...stiff),
     median: r1(median(stiff)),
+    measured,
+    nMeasured: measured.length,
     nSoft: soft.length,
+    softMin: soft[0].stiffness,
+    softMax: soft[soft.length - 1].stiffness,
     nFirm: firm.length,
-    nMid: polys.length - soft.length - firm.length,
     alert,
     edges,
     thrSens: r1(thrSens),
@@ -243,8 +250,8 @@ function polyestersFigure(fa: Facts, lang: Lang): string {
   if (top < 112) throw new Error(`pile de points trop haute (${top}) : revoir la géométrie`);
 
   const title = T(
-    `Répartition de la rigidité des ${fa.nPolys} polyesters du catalogue, de ${num(fa.min, 'fr')} à ${num(fa.max, 'fr')} lb/in, médiane ${num(fa.median, 'fr')} : ${fa.nSoft} à ${ZONE_SOFT_MAX} lb/in ou moins, ${fa.nFirm} à ${ZONE_FIRM_MIN} lb/in ou plus. Dans le montage de référence (raquette de RA ${fa.example.ra}, ${fa.example.kg} kg), l'indice atteint ${aSens} à partir d'environ ${Math.round(fa.thrSens)} lb/in (${fa.nSens} polyesters) et ${aStd} à partir d'environ ${Math.round(fa.thrStd)} lb/in (${fa.nStd} polyesters). ${fa.nAlignedPolys} polyesters, représentés par un point cerclé, ont une rigidité alignée sur une mesure du laboratoire TWU ; pour les autres, c'est la valeur de la fiche.`,
-    `Distribution of the stiffness of the ${fa.nPolys} polyesters in the catalogue, from ${num(fa.min, 'en')} to ${num(fa.max, 'en')} lb/in, median ${num(fa.median, 'en')}: ${fa.nSoft} at ${ZONE_SOFT_MAX} lb/in or less, ${fa.nFirm} at ${ZONE_FIRM_MIN} lb/in or more. In the reference setup (racquet with an RA of ${fa.example.ra}, ${fa.example.kg} kg), the index reaches ${aSens} from about ${Math.round(fa.thrSens)} lb/in (${fa.nSens} polyesters) and ${aStd} from about ${Math.round(fa.thrStd)} lb/in (${fa.nStd} polyesters). ${fa.nAlignedPolys} polyesters, drawn as outlined dots, have a stiffness aligned on a measurement by the TWU lab; for the others, it is the value on the product page.`,
+    `Répartition de la rigidité des ${fa.nPolys} polyesters du catalogue, de ${num(fa.min, 'fr')} à ${num(fa.max, 'fr')} lb/in, médiane ${num(fa.median, 'fr')}  ; les ${fa.nSoft} plus souples des ${fa.nMeasured} polyesters dont la rigidité de la fiche est une mesure TWU vont jusqu'à ${num(fa.softMax, 'fr')} lb/in ; ${fa.nFirm} sont à ${ZONE_FIRM_MIN} lb/in ou plus. Dans le montage de référence (raquette de RA ${fa.example.ra}, ${fa.example.kg} kg), l'indice atteint ${aSens} à partir d'environ ${Math.round(fa.thrSens)} lb/in (${fa.nSens} polyesters) et ${aStd} à partir d'environ ${Math.round(fa.thrStd)} lb/in (${fa.nStd} polyesters). ${fa.nAlignedPolys} polyesters, représentés par un point cerclé, ont une rigidité alignée sur une mesure du laboratoire TWU ; pour les autres, c'est la valeur de la fiche.`,
+    `Distribution of the stiffness of the ${fa.nPolys} polyesters in the catalogue, from ${num(fa.min, 'en')} to ${num(fa.max, 'en')} lb/in, median ${num(fa.median, 'en')}; the ${fa.nSoft} softest of the ${fa.nMeasured} polyesters whose stiffness is a TWU measurement go up to ${num(fa.softMax, 'en')} lb/in; ${fa.nFirm} are at ${ZONE_FIRM_MIN} lb/in or more. In the reference setup (racquet with an RA of ${fa.example.ra}, ${fa.example.kg} kg), the index reaches ${aSens} from about ${Math.round(fa.thrSens)} lb/in (${fa.nSens} polyesters) and ${aStd} from about ${Math.round(fa.thrStd)} lb/in (${fa.nStd} polyesters). ${fa.nAlignedPolys} polyesters, drawn as outlined dots, have a stiffness aligned on a measurement by the TWU lab; for the others, it is the value on the product page.`,
   );
 
   const o: string[] = [];
@@ -264,13 +271,13 @@ function polyestersFigure(fa: Facts, lang: Lang): string {
   }
   o.push(`<text x="${f1((X0 + X1) / 2)}" y="${Y_AXIS + 53}" font-size="18" text-anchor="middle" style="${STYLE.muted}">${T('Rigidité de la fiche (lb/in) · un point = un polyester', 'Stiffness on the product page (lb/in) · one dot = one polyester')}</text>`);
 
-  // Zones 200 et 240 (traits pointillés + effectifs)
-  for (const [v, side] of [[ZONE_SOFT_MAX, 'end'], [ZONE_FIRM_MIN, 'start']] as const) {
+  // Repère des plus souples mesurés et zone 240 (traits pointillés + effectifs)
+  for (const [v, side] of [[fa.softMax, 'end'], [ZONE_FIRM_MIN, 'start']] as const) {
     o.push(`<line x1="${f1(X(v))}" y1="60" x2="${f1(X(v))}" y2="${Y_AXIS}" style="stroke:var(--tsa-muted);stroke-width:1;fill:none;stroke-dasharray:5 4"/>`);
     const tx = side === 'end' ? X(v) - 8 : X(v) + 8;
     const n = side === 'end' ? fa.nSoft : fa.nFirm;
-    o.push(`<text x="${f1(tx)}" y="32" font-size="20" font-weight="600" text-anchor="${side}" fill="currentColor">${side === 'end' ? '≤' : '≥'}${NB}${v}${NB}lb/in</text>`);
-    o.push(`<text x="${f1(tx)}" y="54" font-size="18" text-anchor="${side}" style="${STYLE.muted}">${n}${NB}${T('polyesters', 'polys')}</text>`);
+    o.push(`<text x="${f1(tx)}" y="32" font-size="20" font-weight="600" text-anchor="${side}" fill="currentColor">${side === 'end' ? '≤' : '≥'}${NB}${num(v, lang)}${NB}lb/in</text>`);
+    o.push(`<text x="${f1(tx)}" y="54" font-size="18" text-anchor="${side}" style="${STYLE.muted}">${n}${NB}${side === 'end' ? T(`à rigidité mesurée`, `TWU-measured`) : T('polyesters', 'polys')}</text>`);
   }
 
   // Repères d'indice (seuils d'alerte) : pastilles + traits
@@ -444,27 +451,37 @@ function expectations(fa: Facts, lang: Lang, kind: string): { re: RegExp; what: 
   const fam = (t: string) => fa.families.find((f) => f.type === t)!;
   const mm = fam('Multifilament');
   const dot = (v: string) => v.replace(/\./g, '\\.'); // le point d'un nombre ou d'une phrase est littéral dans l'expression
+  // FAQ n° 1 (gabarit A-1) : les deux moins rigides des polyesters à rigidité mesurée, le polyester médian et le plus rigide, au montage de référence
+  const [p1, p2] = fa.measured;
+  const soft2 = rcsOf(p1) === rcsOf(p2) ? `${rcsOf(p1)}` : `${rcsOf(p1)} ${lang === 'fr' ? 'et' : 'and'} ${rcsOf(p2)}`;
+  const medRcs = calculateRCS(EXAMPLE.ra, fa.median, EXAMPLE.kg);
   if (kind === 'polyesters') {
     return lang === 'fr'
       ? [
           { re: rx(`Nos ${fa.nPolys} polyesters vont de ${n(fa.min)} à ${n(fa.max)} lb/in \\(médiane ${n(fa.median)}\\)`), what: 'effectif, étendue et médiane des polyesters' },
-          { re: rx(`Les ${fa.nSoft} polyesters les plus souples`), what: `effectif des ≤ ${ZONE_SOFT_MAX} lb/in` },
-          { re: rx(`Sur ${fa.nPolys}, ils sont ${fa.nSoft}\\.`), what: 'phrase « Sur N, ils sont n »' },
+          { re: rx(`Les ${fa.nSoft} plus souples des ${fa.nMeasured} polyesters à rigidité mesurée par TWU`), what: 'titre des plus souples (mesurés)' },
+          { re: rx(`Parmi nos ${fa.nPolys} polyesters, ${fa.nMeasured} ont une rigidité qui est une mesure TWU ; voici les ${fa.nSoft} plus souples, de ${n(fa.softMin)} à ${n(fa.softMax)} lb/in`), what: 'phrase des plus souples (mesurés)' },
           { re: rx(`${fa.nFirm} polyesters du catalogue sont à ${ZONE_FIRM_MIN} lb/in ou plus`), what: `effectif des ≥ ${ZONE_FIRM_MIN} lb/in` },
           { re: rx(`Les ${fa.nFirm} plus fermes`), what: 'titre des plus fermes' },
           { re: rx(`seuls ${mm.nAligned} de nos ${mm.n} multifilaments ont une rigidité alignée`), what: 'hybrides : multifilaments alignés sur une mesure TWU' },
-          { re: rx(`un indice RCS de ${fa.soft3Rcs[0]} à ${fa.soft3Rcs[1]}, contre ${fa.topRcs} pour le plus rigide`), what: 'FAQ n° 1 : indices des trois plus souples et du plus rigide' },
+          { re: rx(`donnent un indice de ${fa.soft3Rcs[0]} à ${fa.soft3Rcs[1]} au montage de référence`), what: 'Verdict express : indices des trois plus souples' },
+          { re: rx(dot(`les deux moins rigides des ${fa.nMeasured} polyesters dont la rigidité de la fiche est une mesure TWU, le ${label(p1)} et le ${label(p2)} \\(${n(p1.stiffness)} et ${n(p2.stiffness)} lb/in\\), donnent ${soft2}`)), what: 'FAQ n° 1 : les deux polyesters les moins rigides' },
+          { re: rx(dot(`Le polyester médian \\(${n(fa.median)} lb/in\\) donne ${medRcs}`)), what: 'FAQ n° 1 : polyester médian' },
+          { re: rx(dot(`Le plus rigide, le ${fa.topLabel} \\(${n(fa.max)} lb/in\\), donne ${fa.topRcs}`)), what: 'FAQ n° 1 : polyester le plus rigide' },
           { re: rx(`cet écart vaut ${fa.gap.min} à ${fa.gap.max} points d'indice RCS`), what: 'Verdict express : écart entre le plus souple et le plus rigide' },
           { re: rx(`avec un ${fa.topLabel} à ${EXAMPLE.kg} kg \\(indice ${fa.topRcs}\\)`), what: 'leviers : indice du polyester le plus rigide' },
         ]
       : [
           { re: rx(`Our ${fa.nPolys} polys range from ${n(fa.min)} to ${n(fa.max)} lb/in \\(median ${n(fa.median)}\\)`), what: 'effectif, étendue et médiane des polyesters' },
-          { re: rx(`The ${fa.nSoft} softest polys`), what: `effectif des ≤ ${ZONE_SOFT_MAX} lb/in` },
-          { re: rx(`Out of ${fa.nPolys}, there are ${fa.nSoft}\\.`), what: 'phrase « Out of N, there are n »' },
+          { re: rx(`The ${fa.nSoft} softest of the ${fa.nMeasured} polys with TWU-measured stiffness`), what: 'titre des plus souples (mesurés)' },
+          { re: rx(dot(`Of our ${fa.nPolys} polys, ${fa.nMeasured} have a stiffness that is a TWU measurement; here are the ${fa.nSoft} softest, from ${n(fa.softMin)} to ${n(fa.softMax)} lb/in`)), what: 'phrase des plus souples (mesurés)' },
           { re: rx(`${fa.nFirm} polys in the catalogue are at ${ZONE_FIRM_MIN} lb/in or more`), what: `effectif des ≥ ${ZONE_FIRM_MIN} lb/in` },
           { re: rx(`The ${fa.nFirm} firmest`), what: 'titre des plus fermes' },
           { re: rx(`only ${mm.nAligned} of our ${mm.n} multifilaments have a stiffness aligned`), what: 'hybrides : multifilaments alignés sur une mesure TWU' },
-          { re: rx(`an RCS index of ${fa.soft3Rcs[0]} to ${fa.soft3Rcs[1]}, against ${fa.topRcs} for the stiffest`), what: 'FAQ n° 1 : indices des trois plus souples et du plus rigide' },
+          { re: rx(`give an index of ${fa.soft3Rcs[0]} to ${fa.soft3Rcs[1]} in the reference setup`), what: 'Short version : indices des trois plus souples' },
+          { re: rx(dot(`the two least stiff of the ${fa.nMeasured} polys whose stiffness is a TWU measurement, ${label(p1)} and ${label(p2)} \\(${n(p1.stiffness)} and ${n(p2.stiffness)} lb/in\\), give ${soft2}`)), what: 'FAQ n° 1 : les deux polyesters les moins rigides' },
+          { re: rx(dot(`The median polyester \\(${n(fa.median)} lb/in\\) gives ${medRcs}`)), what: 'FAQ n° 1 : polyester médian' },
+          { re: rx(dot(`The stiffest, ${fa.topLabel} \\(${n(fa.max)} lb/in\\), gives ${fa.topRcs}`)), what: 'FAQ n° 1 : polyester le plus rigide' },
           { re: rx(`that gap is worth ${fa.gap.min} to ${fa.gap.max} RCS points`), what: 'short version : écart entre le plus souple et le plus rigide' },
           { re: rx(`with ${fa.topLabel} at ${EXAMPLE.kg} kg \\(index ${fa.topRcs}\\)`), what: 'leviers : indice du polyester le plus rigide' },
         ];
@@ -496,8 +513,8 @@ function main() {
   const fa = computeFacts();
 
   if (args.includes('--facts')) {
-    const { polys, ...rest } = fa;
-    console.log(JSON.stringify({ ...rest, polysSoft: polys.filter((s) => s.stiffness <= ZONE_SOFT_MAX).map((s) => `${label(s)} ${s.stiffness}`), polysFirm: polys.filter((s) => s.stiffness >= ZONE_FIRM_MIN).map((s) => `${label(s)} ${s.stiffness}`) }, null, 2));
+    const { polys, measured, ...rest } = fa;
+    console.log(JSON.stringify({ ...rest, polysSoft: measured.slice(0, SOFT_N).map((s) => `${label(s)} ${s.stiffness}`), polysFirm: polys.filter((s) => s.stiffness >= ZONE_FIRM_MIN).map((s) => `${label(s)} ${s.stiffness}`) }, null, 2));
     return;
   }
 
