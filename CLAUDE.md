@@ -1,11 +1,39 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.3.25
-> **Date** : 21 octobre 2026
+> **Version** : 2.3.26
+> **Date** : 23 octobre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
 > **Branche de référence** : `main` (seule branche longue ; la production Netlify en déploie)
 > **Repo** : https://github.com/PleneufMC/Tennis-String-Advisor.git
+
+**Changelog v2.3.25 → v2.3.26** — **Hybrides : un seul indice, celui que l'alerte lit, que le configurateur
+affiche et que le PDF imprime ; contrôle 21 ter** (décision (b)+(a) de l'orchestrateur du 22/10/2026, Pierre ayant délégué ; limite (4)
+de la v2.3.23 ; `tsa-core` ; **`[verrou: configurator/page.tsx]`** ; branche partie de la tête de la PR #130, `6d943a4`, non fusionnée :
+**à fusionner après #130**). **Constat** : pour un montage hybride, la page affichait un « RCS Moyen » calculé à part (moyenne de
+l'indice des montants, pris à la tension MOYENNE, et de celui des travers, deux arrondis) et le moteur alertait sur un autre indice
+(rigidités pondérées 60/40, tension moyenne) : écart d'au moins 1 point dans 27 à 30 % des montages hybrides, palier « Très Ferme »
+affiché sans alerte dans 0,03 à 0,45 % d'entre eux, « RCS Moyen 31,5 » à côté d'une alerte « indice 32 ». **Changé** : `advanced-rcs.ts`
+exporte `setupFirmnessIndex`, source unique de l'indice d'un montage. Sans travers, rien ne change. Hybride : le plus haut du 60/40 et du
+50/50 corrigé (chaque jeu de cordes à SA tension) ; la formule étant linéaire avant l'arrondi, c'est l'indice d'une rigidité égale à la
+moyenne des deux plus 0,1 × max(0, montants − travers), à la tension moyenne, arrondi une seule fois ; l'alerte lit cet indice. Le
+résultat porte `hybrid` : bornes (indices des montants seuls et des travers seuls, chacun à sa tension) et mention « estimation pour un
+hybride, entre X et Y », ou « au-dessus des montants seuls (X) et des travers seuls (Y) » quand des montants plus rigides, montés moins
+tendus que les travers, placent l'indice au-dessus des deux (0,17 % des hybrides à travers +2 kg ; l'indice n'est jamais ramené dans les
+bornes, ce serait baisser l'indice que l'alerte lit). Les sous-scores gardent le 60/40. **Page** : plus aucun `calculateRCS` ; `rcsData`
+lit `standardAdvancedRcs` ; « Indice RCS » remplace « RCS Principal », « RCS Travers » et « RCS Moyen » ; pour un hybride, lignes
+« Montants seuls (24 kg) », « Travers seuls (22 kg) » et la mention sous l'indice ; le palier, l'indice enregistré (`rcsScore`) et le
+`rcs_score` de `configurator_result_view` et `configurator_complete` lisent le même entier, affiché sans décimale (« 32 » au lieu de
+« 32.0 »). **PDF** : la mention s'imprime sous « Indice de fermete », coupée à la largeur de l'encart ; `recomputeRcs` compte le travers.
+**Mesure** (sorties brutes dans la PR) : grille du contrôle 5, sans travers, identique (alertes, indices, textes ; 7,12 % / 23,25 %) ;
+grille d'hybrides (129 raquettes, 170 cordages composants, hybrides prémontés exclus, montants de 18 à 28 kg, travers à −2, 0 et +2 kg,
+66,7 millions de montages pondérés) : **0 alerte disparue**, alertes ajoutées 0,22 à 0,41 % des hybrides (standard) et 1,07 à 1,60 %
+(bras sensible), toutes par l'indice ; 0 palier « Très Ferme » sans alerte ; indice = arrondi exact, calculé en entiers, du plus haut des
+deux formes sur tous les montages. **GA4 : rupture de série** (voir §2). **Non traité** : les hybrides prémontés (fiches de type
+« Hybrid », rigidité de la fiche) ; `calculateCompatibility` ignore toujours le travers ; les configurations déjà enregistrées gardent
+leur `rcsScore` de sauvegarde (le PDF le donne comme valeur historique). **Contrôles** de `audit:ratings` : 21 (e) (la page affiche
+l'indice du moteur, sans second calcul), 21 bis (d) (indice imprimé = indice du moteur = indice cité par l'alerte, cinquième PDF), 21 ter
+(grille d'hybrides et quatre montages construits, 13 tests négatifs) ; `audit:ratings` passe d'environ 7 à 34 s.
 
 **Changelog v2.3.24 → v2.3.25** — **Allégation de santé retirée du champ `proUsage` du Tecnifibre Triax** (audit des textes
 réécrits le 11/10, relevé du 21/10/2026 ; arbitrages délégués par Pierre à l'orchestrateur ; `tsa-core`). **Constat** :
@@ -1066,6 +1094,12 @@ corrigé dans la même PR.
   Sans la case, l'alerte est à 35 pour tous, comme avant. Limite : le PDF exporté depuis le compte ne connaît pas la case et applique le
   seuil standard ; sa méthodologie cite les deux seuils et dit lequel est appliqué (v2.3.24, contrôle 21 bis). Garde-fou : contrôle 21 de
   `audit:ratings`.
+- **Un seul indice par montage, hybrides compris** (22/10/2026) : celui du moteur (`setupFirmnessIndex`), que l'alerte bras lit, que le
+  configurateur affiche (avec, pour un hybride, les indices des montants seuls et des travers seuls et la mention « estimation pour un
+  hybride ») et que le PDF imprime ; plus de « RCS Moyen » calculé à part. Hybrides prémontés non traités. Garde-fou : contrôles 21, 21 bis
+  et 21 ter de `audit:ratings`. Les `rcsScore` enregistrés avant la mise en ligne gardent, pour un hybride, l'ancienne définition : les
+  moyennes « RCS moyen » des configurations enregistrées (panneau du configurateur, `/statistics`, `storage.getStats`) mêlent les deux
+  définitions tant que ces configurations existent ; aucune migration, aucune alerte ne lit ce champ.
 - Export PDF, thème sombre, i18n FR/EN livrés.
 - Photos produit Tennis Warehouse (29/09/2026), Tennis Warehouse Europe et
   sites officiels des fabricants (10/10/2026) : 65/129 raquettes, 60/179
@@ -1147,6 +1181,17 @@ abonnements sans objet** tant qu'elle dure. Le Payment Link FR ne transporte pas
 > au passage : `configurator_step` côté FR (il n'existait que côté EN, donc le
 > taux de complétion rapportait deux univers à un seul) et `arm_warning_shown`,
 > sans lequel le respect de la règle 2 n'est vérifiable que par lecture du code.
+
+> ⚠️ **RUPTURE DE SÉRIE — mise en ligne de l'indice unique des hybrides (PR du
+> 22/10/2026).** Pour un montage hybride, l'alerte lit désormais le plus haut du
+> 60/40 et du 50/50 corrigé : `arm_warning_shown` (profil standard) **monte
+> mécaniquement**, de 0,22 à 0,41 % des montages hybrides de la grille de mesure
+> selon l'écart de tension (+47 947 à +91 327 montages pondérés sur 22,2 millions
+> par écart), sans aucun changement de comportement des visiteurs. Le `rcs_score`
+> de `configurator_result_view` et `configurator_complete` devient l'indice du
+> moteur au lieu de l'arrondi du « RCS Moyen » : il change pour 28 à 40 % des
+> montages hybrides. Les montages sans travers ne bougent pas. Aucune comparaison
+> de ces trois événements entre avant et après la mise en ligne.
 
 | 8 | **Un seul événement clé dans GA4 — `purchase` — et rien ne l'émettait.** Corrigé le 13/09/2026 : l'admin affichait « Aucune donnée de flux détectée » depuis toujours, d'où les colonnes « Événements clés » et « Revenu total » à zéro sur les 159 lignes des exports, alors que la collecte fonctionne (onze événements actifs sur 28 jours). `purchase` est maintenant envoyé par le webhook via le Measurement Protocol (`src/lib/ga4.ts`), avec l'identifiant de session Stripe en `transaction_id`. ⚠️ Restent **six fonctions de tracking déclarées et jamais appelées** dans `public/js/analytics.js` — `trackBlogView`, `trackProductView`, `trackSignupStart`, `trackRCSCalculation`, `trackCatalogFilter`, `trackConfiguratorSelection` — confirmées mortes par leur absence des événements reçus par GA4. `blog_view` manque alors que le blog est le seul canal qui fonctionne. ⚠️ Ni `configurator_complete` ni `affiliate_click` ne sont marqués comme clés : aucun taux de conversion n'est donc lisible dans l'interface. ⚠️ Préalable découvert le 13/08 : deux implémentations analytics (React vs `public/js/analytics.js`) émettent les mêmes noms d'événements avec des paramètres incompatibles, et `configurator_complete` se répète à chaque changement de tension (compte les essais, pas les complétions). Unifier le schéma avant de marquer. | Aucune conversion mesurable ; les taux du §2 (53 %) et l'objectif §8 ne sont pas interprétables en l'état. |
 
@@ -1528,4 +1573,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.3.25 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.3.26 — Tennis String Advisor — « Mesurer avant d'affirmer. »*

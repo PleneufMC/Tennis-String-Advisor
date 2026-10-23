@@ -185,7 +185,7 @@
           </div>
           
           <div class="flex items-center gap-4">
-            <input type="range" id="cordageSlider" min="88" max="275" step="0.1" value="180" class="flex-1">
+            <input type="range" id="cordageSlider" min="88" max="286.9" step="0.1" value="180" class="flex-1">
             <div class="w-24 text-center">
               <span id="cordageValue" class="text-3xl font-bold text-green-600">180</span>
               <div class="text-xs text-gray-500">lb/in</div>
@@ -195,7 +195,7 @@
           <div class="flex justify-between text-xs text-gray-500 mt-2 px-1">
             <span>88 (Gut)</span>
             <span>180 (Multi)</span>
-            <span>275 (Stiff Poly)</span>
+            <span>286.9 (Stiff Poly)</span>
           </div>
           
           <div class="mt-4">
@@ -661,8 +661,10 @@
       }
       if (urlParams.has('cordage')) {
         const cordage = parseFloat(urlParams.get('cordage'));
-        if (cordage >= 88 && cordage <= 275) {
-          document.getElementById('cordageSlider').value = cordage;
+        // Bornes lues sur le curseur, qui couvre toute la base (contrôle de audit:ratings) : aucune recopiée ici.
+        const cordageSlider = document.getElementById('cordageSlider');
+        if (cordage >= Number(cordageSlider.min) && cordage <= Number(cordageSlider.max)) {
+          cordageSlider.value = cordage;
         }
       }
       if (urlParams.has('tension')) {
