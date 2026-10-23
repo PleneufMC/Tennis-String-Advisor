@@ -160,6 +160,8 @@ export interface PdfAdvancedAnalysis {
   overall: number | null;
   level: string;
   firmnessIndex: number;
+  /** Hybride seulement : mention du moteur imprimee sous l'indice (« estimation pour un hybride, entre X et Y »). */
+  hybridNote?: string;
   subScores: {
     power: number | null;
     control: number | null;
@@ -460,9 +462,12 @@ export async function exportConfigurationPdf(data: ConfigurationPdfData): Promis
   // ------------------------------------------------------- Verdict global
   if (data.advanced) {
     const a = data.advanced;
-    L.ensure(30);
+    // Hybride : l'indice est une estimation, jamais une mesure ; la mention du moteur le dit, sous l'indice (22/10/2026).
+    doc.setFontSize(8);
+    const noteLines = a.hybridNote ? doc.splitTextToSize(latin1(a.hybridNote), CONTENT_W - 90) : [];
+    L.ensure(30 + 4 * noteLines.length);
     doc.setFillColor(...LIGHT);
-    doc.roundedRect(MARGIN_X, L.y, CONTENT_W, 22, 2, 2, 'F');
+    doc.roundedRect(MARGIN_X, L.y, CONTENT_W, 22 + 4 * noteLines.length, 2, 2, 'F');
     L.y += 8.5;
     L.text(a.overall === null ? 'Score global : non disponible' : `Score global : ${a.overall}/100`, MARGIN_X + 4, {
       size: 13,
@@ -470,7 +475,12 @@ export async function exportConfigurationPdf(data: ConfigurationPdfData): Promis
       color: BRAND_GREEN,
     });
     L.text(`Indice de fermete : ${a.firmnessIndex}`, MARGIN_X + 86, { size: 9, color: GRAY });
+    for (const line of noteLines) {
+      L.y += 4;
+      L.text(String(line), MARGIN_X + 86, { size: 8, color: GRAY });
+    }
     L.y += 6;
+    doc.setFontSize(9); // largeur de coupe à la taille imprimée (la mention ci-dessus est en 8)
     const sumLines = doc.splitTextToSize(latin1(a.summary), CONTENT_W - 8);
     L.text(String(sumLines[0] ?? ''), MARGIN_X + 4, { size: 9, color: DARK });
     L.y += 10;

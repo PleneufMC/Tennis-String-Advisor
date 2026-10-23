@@ -86,8 +86,13 @@ export interface PlayerProfile {
 }
 
 export interface AdvancedRcsResult {
-  /** Indice de fermeté global (réutilise la formule RCS simple existante). */
+  /**
+   * Indice de fermeté du montage (formule RCS simple existante), hybride compris : cf. `setupFirmnessIndex`. C'est l'indice que
+   * l'alerte bras lit, que le configurateur affiche et que le PDF imprime.
+   */
   rcs: number;
+  /** Hybride seulement (`null` sinon) : bornes de l'estimation et mention à afficher à côté de l'indice. */
+  hybrid: HybridIndexBounds | null;
   /** Niveau de synthèse — `null` si un sous-score n'est pas calculable. */
   level: RcsLevel | null;
   /** Score global 0-100 — `null` si un sous-score n'est pas calculable. */
@@ -106,6 +111,16 @@ export interface AdvancedRcsResult {
   warnings: string[];
   /** Synthèse courte. */
   summary: string;
+}
+
+/** Bornes de l'indice d'un hybride (cf. `setupFirmnessIndex`). */
+export interface HybridIndexBounds {
+  /** Indice des montants seuls, à la tension des montants. */
+  mains: number;
+  /** Indice des travers seuls, à la tension des travers. */
+  crosses: number;
+  /** Mention affichée et imprimée à côté de l'indice : « estimation pour un hybride, entre X et Y ». */
+  note: string;
 }
 
 // =====================
@@ -154,6 +169,58 @@ export function rcsIndex(racquetStiffness: number, stringStiffness: number, tens
 function blend(main: number, cross: number | undefined): number {
   if (cross === undefined || Number.isNaN(cross)) return main;
   return main * 0.6 + cross * 0.4;
+}
+
+/** Entrées de l'indice d'un montage : un sous-ensemble de celles du moteur. */
+export type SetupFirmnessInput = Pick<
+  AdvancedRcsInput,
+  'racquetStiffness' | 'mainStringStiffness' | 'crossStringStiffness' | 'mainTension' | 'crossTension'
+>;
+
+/**
+ * Indice de fermeté d'un montage, hybride compris. SOURCE UNIQUE de l'indice que l'alerte bras lit (`calculateAdvancedRcs`), que
+ * le configurateur affiche et que le PDF imprime (22/10/2026). Sans travers, rien ne change : indice du cordage à la tension
+ * moyenne.
+ *
+ * Hybride (décision (b)+(a) de l'orchestrateur, 22/10/2026) : l'indice est le PLUS HAUT de deux estimations, pour qu'aucune ne
+ * fasse disparaître une alerte que l'autre déclenche :
+ *   - la pondération 60/40 des rigidités (montants dominants) à la tension moyenne, l'indice du moteur jusqu'ici ;
+ *   - la moyenne 50/50 des indices des montants et des travers, CHACUN À SA TENSION : le « RCS Moyen » que la page calculait à
+ *     part, corrigé (elle prenait les montants à la tension moyenne, soit 0,25 point de moins en moyenne aux tensions par défaut).
+ * La formule est linéaire avant l'arrondi : la moyenne des deux indices à leur tension est l'indice de la rigidité moyenne à la
+ * tension moyenne. Le plus haut des deux est donc l'indice d'une rigidité effective égale à la moyenne des deux rigidités plus
+ * 0,1 × (montants − travers) quand les montants sont plus rigides, à la tension moyenne. Un seul arrondi, celui de
+ * `calculateRCS` : le palier (`getStringRecommendation`) et le seuil d'alerte lisent le même entier.
+ *
+ * Bornes : indices des montants seuls et des travers seuls, chacun à sa tension. La mention dit « estimation » : aucune mesure
+ * n'existe pour un hybride. Le contrôle 21 ter de `audit:ratings` vérifie tout cela sur une grille d'hybrides.
+ */
+export function setupFirmnessIndex(input: SetupFirmnessInput): { rcs: number; hybrid: HybridIndexBounds | null } {
+  const { racquetStiffness, mainStringStiffness: main, crossStringStiffness: cross, mainTension } = input;
+  const crossTension = input.crossTension ?? mainTension;
+  const avgTension = (mainTension + crossTension) / 2;
+  if (cross === undefined || Number.isNaN(cross)) {
+    return { rcs: rcsIndex(racquetStiffness, main, avgTension), hybrid: null };
+  }
+  const rcs = rcsIndex(racquetStiffness, Math.max(blend(main, cross), (main + cross) / 2), avgTension);
+  const mains = rcsIndex(racquetStiffness, main, mainTension);
+  const crosses = rcsIndex(racquetStiffness, cross, crossTension);
+  return { rcs, hybrid: { mains, crosses, note: hybridIndexNote(rcs, mains, crosses) } };
+}
+
+/**
+ * Mention de l'indice d'un hybride : « entre X et Y » seulement quand c'est vrai. L'indice n'est jamais sous les deux bornes (il
+ * vaut au moins la moyenne 50/50). Il peut les dépasser quand des montants plus rigides sont montés moins tendus que les travers :
+ * le 60/40 à la tension moyenne excède alors l'indice de chaque cordage seul d'au plus 0,05 point par kg de tension de plus aux
+ * travers, avant arrondi, et l'arrondi peut en faire un point. La mention le dit au lieu d'un « entre » faux ; l'indice n'est
+ * jamais ramené dans les bornes, ce serait baisser l'indice que l'alerte lit (règle 2).
+ */
+function hybridIndexNote(rcs: number, mains: number, crosses: number): string {
+  const lo = Math.min(mains, crosses);
+  const hi = Math.max(mains, crosses);
+  if (rcs > hi) return `estimation pour un hybride, au-dessus des montants seuls (${mains}) et des travers seuls (${crosses})`;
+  if (lo === hi) return `estimation pour un hybride, montants seuls et travers seuls à ${lo}`;
+  return `estimation pour un hybride, entre ${lo} et ${hi}`;
 }
 
 /** Bonus/malus spin selon la famille de cordage (poly > synthétique > multi > boyau). */
@@ -213,7 +280,7 @@ export function calculateAdvancedRcs(input: AdvancedRcsInput): AdvancedRcsResult
   const crossTension = input.crossTension ?? mainTension;
   const avgTension = (mainTension + crossTension) / 2;
 
-  // Rigidité de cordage effective (pondérée hybride).
+  // Rigidité de cordage effective des sous-scores (pondérée hybride 60/40). L'indice, lui, vient de `setupFirmnessIndex`.
   const effStringStiffness = blend(mainStringStiffness, crossStringStiffness);
   const effGauge = blend(mainGaugeMm ?? 1.25, crossGaugeMm);
 
@@ -228,8 +295,9 @@ export function calculateAdvancedRcs(input: AdvancedRcsInput): AdvancedRcsResult
     return cross === undefined ? null : blend(main, cross);
   };
 
-  // Indice de fermeté global (socle, formule existante).
-  const rcs = rcsIndex(racquetStiffness, effStringStiffness, avgTension);
+  // Indice de fermeté du montage (socle, formule existante), hybride compris : celui que l'alerte bras lit plus bas. Les
+  // sous-scores gardent la pondération 60/40 ; pour un hybride, seuls l'indice et l'alerte qui le lit changent (22/10/2026).
+  const { rcs, hybrid } = setupFirmnessIndex(input);
 
   // --- Écarts normalisés (autour des centres "données réelles") ---
   // RA : 55-72. Centre = MÉDIANE MESURÉE (64) sur les 100 raquettes dont le RA
@@ -444,6 +512,7 @@ export function calculateAdvancedRcs(input: AdvancedRcsInput): AdvancedRcsResult
 
   return {
     rcs,
+    hybrid,
     level,
     overall,
     subScores: {
