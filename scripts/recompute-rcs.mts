@@ -25,9 +25,10 @@
  */
 
 import { existsSync, readFileSync } from 'node:fs';
-import { stringsDatabase, calculateRCS } from '../src/data/strings-database';
+import { stringsDatabase } from '../src/data/strings-database';
 import { racquetsDatabase } from '../src/data/racquets-database';
 import { effectiveRacquetRA } from '../src/lib/racquet-scoring';
+import { setupFirmnessIndex } from '../src/lib/advanced-rcs';
 
 /**
  * Charge `.env` (puis `.env.local`) sans dépendance externe.
@@ -76,15 +77,19 @@ function recompute(
 
   const ra = effectiveRacquetRA(racquet);
   const cross = crossStringId ? stringById.get(crossStringId) : undefined;
-  const tCross = crossTension ?? mainTension;
 
-  // Même logique que le configurateur : moyenne des deux emplacements quand
-  // le montage est hybride, sinon l'indice du cordage unique.
-  const avgTension = (mainTension + tCross) / 2;
-  const mainRcs = calculateRCS(ra, main.stiffness, avgTension);
-  if (!cross) return { value: mainRcs };
-  const crossRcs = calculateRCS(ra, cross.stiffness, tCross);
-  return { value: Math.round((mainRcs + crossRcs) / 2) };
+  // Même indice que le configurateur, l'alerte bras et le PDF : `setupFirmnessIndex` (22/10/2026). Sans travers, le
+  // cordage à la tension moyenne ; hybride, le plus haut du 60/40 et du 50/50 de chaque jeu à sa tension, un seul arrondi.
+  // L'ancien calcul (arrondi de la moyenne de deux indices, montants à la tension moyenne) n'est plus celui du site.
+  return {
+    value: setupFirmnessIndex({
+      racquetStiffness: ra,
+      mainStringStiffness: main.stiffness,
+      crossStringStiffness: cross?.stiffness,
+      mainTension,
+      crossTension: crossTension ?? mainTension,
+    }).rcs,
+  };
 }
 
 type Row = { id: string; before: number | null; after: number };

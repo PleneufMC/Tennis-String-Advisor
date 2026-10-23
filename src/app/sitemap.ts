@@ -60,10 +60,10 @@ const BLOG_ARTICLES: Array<{ slug: string; modified: string }> = [
   { slug: 'guide-tension-cordage-tennis.html', modified: '2026-10-21' },
   { slug: 'cordage-tennis-elbow.html', modified: '2026-10-23' },
   { slug: 'guide-materiel-tennis.html', modified: '2026-10-21' },
-  { slug: 'analyse-setups-atp-top-20.html', modified: '2025-12-21' },
+  { slug: 'analyse-setups-atp-top-20.html', modified: '2026-10-22' },
   { slug: 'nouveautes-equipement-tennis-2025-2026.html', modified: '2026-01-06' },
   { slug: 'cordage-terre-battue.html', modified: '2026-10-21' },
-  { slug: 'challengers-sinner-alcaraz-2026.html', modified: '2026-10-10' },
+  { slug: 'challengers-sinner-alcaraz-2026.html', modified: '2026-10-22' },
   { slug: 'actualite-materiel-tennis-2026-guerre-du-spin.html', modified: '2026-10-10' },
   { slug: 'cordage-mono-vs-multifilament.html', modified: '2026-10-21' },
   { slug: 'cordage-tennis-chaleur.html', modified: '2026-08-28' },
@@ -99,7 +99,7 @@ const EN_PAGES: Array<{ path: string; priority: number }> = [
 // Articles de blog anglais réellement présents dans `public/en/blog/*.html`.
 // Même règle de date que BLOG_ARTICLES (dateModified du JSON-LD de l'article).
 const EN_BLOG_ARTICLES: Array<{ slug: string; modified: string }> = [
-  { slug: 'challengers-sinner-alcaraz-2026.html', modified: '2026-10-10' },
+  { slug: 'challengers-sinner-alcaraz-2026.html', modified: '2026-10-22' },
   { slug: 'next-gen-tennis-racquets-fonseca-mensik-cobolli-jodar.html', modified: '2026-10-01' },
   // Guides evergreen adaptés du français (14/08/2026), appairés en hreflang
   // avec leur source FR.
