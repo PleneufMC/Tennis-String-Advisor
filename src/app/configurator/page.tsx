@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, useRef, type KeyboardEvent as ReactKeyboardEvent } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
-import { stringsDatabase, calculateRCS, getStringRecommendation, getStringById } from '@/data/strings-database';
+import { stringsDatabase, getStringRecommendation, getStringById } from '@/data/strings-database';
 import { racquetsDatabase, calculateCompatibility } from '@/data/racquets-database';
 import { ConfigurationStorage, SavedConfiguration } from '@/lib/storage';
 import {
@@ -173,49 +173,6 @@ export default function ConfiguratorPage() {
     [formData.crossString]
   );
 
-  // Calculate RCS and recommendations
-  const rcsData = useMemo(() => {
-    if (!selectedRacquet || !selectedMainString) return null;
-    
-    const avgTension = (formData.mainTension + formData.crossTension) / 2;
-
-    // RA effectif : source UNIQUE (cf. lib/racquet-scoring). Auparavant cette
-    // page utilisait `|| 65` ici et `?? 63` plus bas pour la MEME raquette.
-    const racquetRA = effectiveRacquetRA(selectedRacquet);
-
-    const mainRCS = calculateRCS(
-      racquetRA,
-      selectedMainString.stiffness,
-      avgTension
-    );
-
-    let crossRCS = mainRCS;
-    if (selectedCrossString) {
-      crossRCS = calculateRCS(
-        racquetRA,
-        selectedCrossString.stiffness,
-        formData.crossTension
-      );
-    }
-
-    const avgRCS = selectedCrossString ? (mainRCS + crossRCS) / 2 : mainRCS;
-    const recommendation = getStringRecommendation(avgRCS);
-    const compatibilityResult = calculateCompatibility(
-      selectedRacquet,
-      selectedMainString.stiffness,
-      avgTension
-    );
-    const compatibility = compatibilityResult.score;
-
-    return {
-      mainRCS,
-      crossRCS,
-      avgRCS,
-      recommendation,
-      compatibility
-    };
-  }, [selectedRacquet, selectedMainString, selectedCrossString, formData.mainTension, formData.crossTension]);
-
   // Statut Premium (l'analyse RCS avancée est réservée aux abonnés).
   const isPremium = useMemo(
     () => isPremiumActive(session?.user as any),
@@ -274,11 +231,29 @@ export default function ConfiguratorPage() {
     [advancedInput, armSensitive]
   );
 
-  // Même calcul pour le profil STANDARD, réservé à la mesure (événement GA4 ci-dessous) : il ne dépend jamais de la déclaration.
+  // Même calcul pour le profil STANDARD : il ne dépend jamais de la déclaration. Il pilote la mesure (événement GA4 ci-dessous) et
+  // fournit l'indice affiché (`rcsData`), que la déclaration ne change pas (contrôle 21).
   const standardAdvancedRcs: AdvancedRcsResult | null = useMemo(
     () => (advancedInput ? calculateAdvancedRcs({ ...advancedInput, profile: { armSensitive: false } }) : null),
     [advancedInput]
   );
+
+  // Indice affiché, palier et compatibilité. L'indice est CELUI DU MOTEUR, que l'alerte lit et cite (22/10/2026) : la page ne le
+  // recalcule plus. Elle affichait jusqu'ici un « RCS Moyen » calculé à part (moyenne des indices du montant, pris à la tension
+  // moyenne, et du travers), qui différait d'au moins 1 point de l'indice de l'alerte dans plus d'un hybride sur quatre : un même
+  // montage pouvait afficher « RCS Moyen 31,5 » et une alerte « indice 32 ». Le palier lit le même entier que le seuil d'alerte.
+  const rcsData = useMemo(() => {
+    if (!selectedRacquet || !selectedMainString || !standardAdvancedRcs) return null;
+    const { rcs, hybrid } = standardAdvancedRcs;
+    const avgTension = (formData.mainTension + formData.crossTension) / 2;
+    const compatibility = calculateCompatibility(selectedRacquet, selectedMainString.stiffness, avgTension).score;
+    return {
+      rcs,
+      hybrid,
+      recommendation: getStringRecommendation(rcs),
+      compatibility,
+    };
+  }, [selectedRacquet, selectedMainString, standardAdvancedRcs, formData.mainTension, formData.crossTension]);
 
   // Un avertissement bras a été AFFICHÉ. Sans cet événement, le respect de la
   // règle 2 n'est vérifiable que par lecture du code — ce qui est exactement
@@ -331,7 +306,7 @@ export default function ConfiguratorPage() {
     ].join('|');
     if (lastTrackedView.current !== viewSignature) {
       lastTrackedView.current = viewSignature;
-      trackConfiguratorResultView(rcsData.avgRCS);
+      trackConfiguratorResultView(rcsData.rcs);
     }
 
     // Signature SANS les tensions : ajuster la tension n'est pas aboutir une
@@ -339,7 +314,7 @@ export default function ConfiguratorPage() {
     const signature = [formData.racquet, formData.mainString, formData.crossString].join('|');
     if (lastTrackedConfig.current === signature) return;
     lastTrackedConfig.current = signature;
-    trackConfiguratorComplete(rcsData.avgRCS, rcsData.compatibility);
+    trackConfiguratorComplete(rcsData.rcs, rcsData.compatibility);
   }, [
     rcsData,
     selectedRacquet,
@@ -440,7 +415,7 @@ export default function ConfiguratorPage() {
       crossTension: formData.crossTension,
       rating: formData.rating,
       notes: formData.notes,
-      rcsScore: rcsData.avgRCS,
+      rcsScore: rcsData.rcs,
       compatibility: rcsData.compatibility,
     };
 
@@ -1309,36 +1284,44 @@ export default function ConfiguratorPage() {
                 📊 Analyse RCS en Temps Réel
               </h3>
               <div style={{ fontSize: '0.875rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                  <span style={{ color: 'var(--tint-blue-fg)' }}>RCS Principal:</span>
-                  <span style={{ fontWeight: 'bold', color: 'var(--tint-blue-fg)' }}>{rcsData.mainRCS.toFixed(1)}</span>
-                </div>
-                {selectedCrossString && (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                    <span style={{ color: 'var(--tint-blue-fg)' }}>RCS Travers:</span>
-                    <span style={{ fontWeight: 'bold', color: 'var(--tint-blue-fg)' }}>{rcsData.crossRCS.toFixed(1)}</span>
-                  </div>
+                {/* Hybride : bornes de l'estimation, indices des montants seuls et des travers seuls, chacun à sa tension. */}
+                {rcsData.hybrid && (
+                  <>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                      <span style={{ color: 'var(--tint-blue-fg)' }}>Montants seuls ({formData.mainTension} kg):</span>
+                      <span style={{ fontWeight: 'bold', color: 'var(--tint-blue-fg)' }}>{rcsData.hybrid.mains}</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                      <span style={{ color: 'var(--tint-blue-fg)' }}>Travers seuls ({formData.crossTension} kg):</span>
+                      <span style={{ fontWeight: 'bold', color: 'var(--tint-blue-fg)' }}>{rcsData.hybrid.crosses}</span>
+                    </div>
+                  </>
                 )}
-                <div style={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
-                  marginBottom: '0.75rem',
-                  paddingTop: '0.5rem',
-                  borderTop: '1px solid var(--surface-border)'
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  marginBottom: rcsData.hybrid ? '0.25rem' : '0.75rem',
+                  ...(rcsData.hybrid ? { paddingTop: '0.5rem', borderTop: '1px solid var(--surface-border)' } : {})
                 }}>
-                  <span style={{ color: 'var(--tint-blue-fg)', fontWeight: 'bold' }}>RCS Moyen:</span>
-                  <span style={{ 
-                    fontWeight: 'bold', 
+                  <span style={{ color: 'var(--tint-blue-fg)', fontWeight: 'bold' }}>Indice RCS:</span>
+                  <span style={{
+                    fontWeight: 'bold',
                     fontSize: '1.125rem',
-                    color: rcsData.avgRCS < 25 ? 'var(--state-good)' : rcsData.avgRCS < 30 ? 'var(--state-warn)' : 'var(--state-bad)'
+                    color: rcsData.rcs < 25 ? 'var(--state-good)' : rcsData.rcs < 30 ? 'var(--state-warn)' : 'var(--state-bad)'
                   }}>
-                    {rcsData.avgRCS.toFixed(1)}
+                    {rcsData.rcs}
                   </span>
                 </div>
+                {/* Mention du moteur : l'indice d'un hybride est une estimation, jamais une mesure. */}
+                {rcsData.hybrid && (
+                  <div style={{ fontSize: '0.75rem', color: 'var(--tint-blue-fg)', textAlign: 'right', marginBottom: '0.75rem' }}>
+                    {rcsData.hybrid.note}
+                  </div>
+                )}
                 {/* Annonce lue par les lecteurs d'ecran : reprend les valeurs
                     deja affichees, sans relire tout le panneau a chaque reglage. */}
                 <div className="sr-only" role="status" aria-live="polite">
-                  RCS moyen {rcsData.avgRCS.toFixed(1)}, {rcsData.recommendation.level}
+                  Indice RCS {rcsData.rcs}{rcsData.hybrid ? `, ${rcsData.hybrid.note}` : ''}, {rcsData.recommendation.level}
                 </div>
                 <div style={{
                   padding: '0.75rem',
@@ -1882,7 +1865,7 @@ export default function ConfiguratorPage() {
               </div>
               {rcsData && (
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-faint)' }}>
-                  RCS Moyen: {rcsData.avgRCS.toFixed(1)} | Compatibilité: {rcsData.compatibility.toFixed(0)}%
+                  Indice RCS: {rcsData.rcs} | Compatibilité: {rcsData.compatibility.toFixed(0)}%
                 </div>
               )}
             </div>
