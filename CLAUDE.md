@@ -1,13 +1,13 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.3.25
-> **Date** : 21 octobre 2026
+> **Version** : 2.3.26
+> **Date** : 23 octobre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
 > **Branche de référence** : `main` (seule branche longue ; la production Netlify en déploie)
 > **Repo** : https://github.com/PleneufMC/Tennis-String-Advisor.git
 
-**Changelog (numéro de version à fixer à la fusion)** — **Hybrides : un seul indice, celui que l'alerte lit, que le configurateur
+**Changelog v2.3.25 → v2.3.26** — **Hybrides : un seul indice, celui que l'alerte lit, que le configurateur
 affiche et que le PDF imprime ; contrôle 21 ter** (décision (b)+(a) de l'orchestrateur du 22/10/2026, Pierre ayant délégué ; limite (4)
 de la v2.3.23 ; `tsa-core` ; **`[verrou: configurator/page.tsx]`** ; branche partie de la tête de la PR #130, `6d943a4`, non fusionnée :
 **à fusionner après #130**). **Constat** : pour un montage hybride, la page affichait un « RCS Moyen » calculé à part (moyenne de
@@ -1097,7 +1097,9 @@ corrigé dans la même PR.
 - **Un seul indice par montage, hybrides compris** (22/10/2026) : celui du moteur (`setupFirmnessIndex`), que l'alerte bras lit, que le
   configurateur affiche (avec, pour un hybride, les indices des montants seuls et des travers seuls et la mention « estimation pour un
   hybride ») et que le PDF imprime ; plus de « RCS Moyen » calculé à part. Hybrides prémontés non traités. Garde-fou : contrôles 21, 21 bis
-  et 21 ter de `audit:ratings`.
+  et 21 ter de `audit:ratings`. Les `rcsScore` enregistrés avant la mise en ligne gardent, pour un hybride, l'ancienne définition : les
+  moyennes « RCS moyen » des configurations enregistrées (panneau du configurateur, `/statistics`, `storage.getStats`) mêlent les deux
+  définitions tant que ces configurations existent ; aucune migration, aucune alerte ne lit ce champ.
 - Export PDF, thème sombre, i18n FR/EN livrés.
 - Photos produit Tennis Warehouse (29/09/2026), Tennis Warehouse Europe et
   sites officiels des fabricants (10/10/2026) : 65/129 raquettes, 60/179
@@ -1571,4 +1573,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.3.25 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.3.26 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
