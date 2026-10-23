@@ -93,12 +93,29 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
     .sort((a, b) => a - b);
   const median = published[Math.floor(published.length / 2)];
 
+  // Écart JUSTIFIÉ, daté et motivé : la médiane exacte, pas une tolérance générale. Une exception devenue inutile fait échouer
+  // le contrôle (elle doit être retirée). 23/10/2026 : les hausses de RA sur mesure L1 (V8 Pro, Ripstick) portent la médiane de
+  // 64 à 65 ; la recaler élève l'indice des 29 raquettes sans RA (toutes juniors : +319 alertes standard, +841 bras sensible,
+  // +377 compatibilité sur 31 146 montages) et le « montage de référence RA 64 » de la charte F7 §2 : décision de l'orchestrateur.
+  const DEFAULT_RA_GAP: { median: number; date: string; why: string } | null = {
+    median: 65,
+    date: '2026-10-23',
+    why: 'médiane portée à 65 par les hausses L1 du 23/10 ; recalage de DEFAULT_RACQUET_RA et du montage de référence de la charte F7 soumis à l\'orchestrateur',
+  };
   if (DEFAULT_RACQUET_RA !== median) {
-    fail(
-      `DEFAULT_RACQUET_RA = ${DEFAULT_RACQUET_RA} alors que la médiane mesurée ` +
-        `des ${published.length} RA publiés est ${median}. Recaler la constante ` +
-        `(ou justifier l'écart) dans lib/racquet-scoring.ts.`
-    );
+    const tolerated = DEFAULT_RA_GAP !== null && median === DEFAULT_RA_GAP.median && Math.abs(median - DEFAULT_RACQUET_RA) === 1 &&
+      /^\d{4}-\d{2}-\d{2}$/.test(DEFAULT_RA_GAP.date) && DEFAULT_RA_GAP.why.trim().length > 0;
+    if (!tolerated) {
+      fail(
+        `DEFAULT_RACQUET_RA = ${DEFAULT_RACQUET_RA} alors que la médiane mesurée ` +
+          `des ${published.length} RA publiés est ${median}. Recaler la constante ` +
+          `(ou justifier l'écart) dans lib/racquet-scoring.ts.`
+      );
+    } else {
+      ok(`RA par défaut ${DEFAULT_RACQUET_RA}, médiane mesurée ${median} sur ${published.length} raquettes : écart d'un point justifié le ${DEFAULT_RA_GAP!.date} (${DEFAULT_RA_GAP!.why})`);
+    }
+  } else if (DEFAULT_RA_GAP !== null) {
+    fail(`écart justifié du ${DEFAULT_RA_GAP.date} devenu inutile (médiane ${median} = DEFAULT_RACQUET_RA) : le retirer`);
   } else {
     ok(`RA par défaut = médiane mesurée (${median}) sur ${published.length} raquettes`);
   }
