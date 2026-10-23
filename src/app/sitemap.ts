@@ -62,7 +62,7 @@ const BLOG_ARTICLES: Array<{ slug: string; modified: string }> = [
   { slug: 'guide-materiel-tennis.html', modified: '2026-10-22' },
   { slug: 'analyse-setups-atp-top-20.html', modified: '2025-12-21' },
   { slug: 'nouveautes-equipement-tennis-2025-2026.html', modified: '2026-01-06' },
-  { slug: 'cordage-terre-battue.html', modified: '2026-10-22' },
+  { slug: 'cordage-terre-battue.html', modified: '2026-10-23' },
   { slug: 'challengers-sinner-alcaraz-2026.html', modified: '2026-10-10' },
   { slug: 'actualite-materiel-tennis-2026-guerre-du-spin.html', modified: '2026-10-10' },
   { slug: 'cordage-mono-vs-multifilament.html', modified: '2026-10-22' },
