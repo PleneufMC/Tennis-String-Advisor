@@ -446,6 +446,15 @@ export const STRING_STIFFNESS_PROVENANCE: Readonly<Record<string, StringStiffnes
       'Recoupement indirect (copie locale du 29/09 de la fiche Tennis Warehouse « RPM Team 17/1.25 », non versionnée) : co-polyester monofilament octogonal, noir, « l\'un des plus fermes des cordages Babolat testés » ; l\'étiquette TWU « Nylon/Polyester » de la ligne 1.25 n\'est donc probablement pas fiable. ' +
       'Une erreur d\'identité ne peut produire qu\'une sur-alerte (règle 2).',
   },
+  // ---- 23/10/2026 : nom officiel rétabli, appariement strict établi (écarts de fiche, point 10 de l'avis du 23/10) ----------
+  'kirschbaum-touch-multifiber': {
+    status: 'appliquee', before: 160, rule: 'plus-rigide', appliedGauge: '1.25',
+    measures: [{ twu: 'Kirschbaum Touch Multifibre 17 (1.25)', gauge: '1.25', lbIn: 165.7 }, { twu: 'Kirschbaum Touch Multifibre 16', gauge: '1.30', lbIn: 161.7 }],
+    note:
+      'La fiche s\'appelait « Touch Multifiber » : l\'appariement strict ne trouvait aucune ligne. Le fabricant écrit « Touch Multifibre » (kirschbaum-shop.de, lu le 23/10/2026), comme TWU : nom rétabli, appariement établi sans exception au motif strict. ' +
+      'Règle C : 1.25 (165,7) ; 1.30 (161,7) est plus souple (sur-alerte assumée de 4 lb/in sur la jauge épaisse). Couverture partielle : 1.35 non mesurée ; valeur plancher (une jauge non mesurée peut être plus rigide), hausse établie dans son sens. ' +
+      'Série suspecte (inversion 1.25 (165,7) > 1.30 (161,7)) ; garde (A) satisfaite : le maximum (165,7) est contredit par une jauge plus épaisse mesurée plus souple, mais la plus rigide des mesures non contredites (161,7) reste ≥ 160, valeur actuelle.',
+  },
 
   // ---- Lot 3 : hausses établies mais NON appliquées -------------------------------------------------------------
   // Garde de série suspecte : la hausse ne repose que sur une mesure contredite par une jauge plus épaisse (voir l'en-tête).

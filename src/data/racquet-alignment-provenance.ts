@@ -10,9 +10,12 @@
  */
 
 export const ALIGNMENT_DOSSIER = 'docs/redaction/veille-2026-10-10-fiches-desynchronisees.md';
+/** Dossiers relus par le contrôle 14 bis : la veille du 10/10/2026, puis les écarts de fiche du 23/10/2026 (numérotation continue, V117 et
+ * suivants ; un numéro présent dans deux dossiers fait échouer le contrôle). */
+export const ALIGNMENT_DOSSIERS: readonly string[] = [ALIGNMENT_DOSSIER, 'docs/redaction/veille-2026-10-23-ecarts-de-fiche.md'];
 
 export type Fact = readonly [id: string, level: string, has: string];
-export type AlignedField = 'variant' | 'stiffness' | 'weight' | 'headSize' | 'stringPattern' | 'balance' | 'gauges' | 'color';
+export type AlignedField = 'variant' | 'model' | 'stiffness' | 'weight' | 'headSize' | 'stringPattern' | 'balance' | 'gauges' | 'color';
 export interface Change { before: string | number; after: string | number; facts: readonly Fact[] }
 export interface Held { value: string | number; facts: readonly Fact[]; why: string }
 export interface Alignment {
@@ -130,6 +133,16 @@ export const RACQUET_ALIGNMENT: Readonly<Record<string, Alignment>> = {
     changes: {},
     held: { stiffness: { value: 57, facts: [['V114', 'L1', '54'], ['V115', 'L2', '54']], why: 'mesure de la V3, autre génération que la fiche « v2 » : génération et autres champs de la V3 non établis' } },
   },
+  // Écarts de fiche du 23/10/2026 (dossier du 23/10, point 10 de l'avis d'Opus 5.5) : la mesure L1 établirait une BAISSE (66 -> 64).
+  'dunlop-cx-200': {
+    changes: {},
+    held: {
+      stiffness: {
+        value: 66, facts: [['V120', 'L0', '65'], ['V121', 'L1', '64']],
+        why: 'CX 200 2024 : mesure TWU 64 (L1), constructeur 65 (protocole non publié) ; la baisse 66 -> 64 retire des alertes : mesurée dans la PR, en attente de la revue tsa-measure (règle 2)',
+      },
+    },
+  },
   'wilson-clash-100l-v3': {
     changes: {},
     held: {
@@ -153,6 +166,13 @@ export const STRING_ALIGNMENT: Readonly<Record<string, Alignment>> = {
   },
   'tecnifibre-multifeel': {
     changes: { gauges: { before: '1.30', after: '1.25,1.30', facts: [['V102', 'L0', '1.25et1.30'], ['V105', 'L2', '1.25']] } },
+    held: {},
+  },
+  'kirschbaum-touch-multifiber': {
+    changes: {
+      model: { before: 'Touch Multifiber', after: 'Touch Multifibre', facts: [['V117', 'L0', 'TouchMultifibre']] },
+      gauges: { before: '1.30', after: '1.25,1.30,1.35', facts: [['V118', 'L0', '1.25,1.30und1.35mm']] },
+    },
     held: {},
   },
   'yonex-poly-tour-strike': {
