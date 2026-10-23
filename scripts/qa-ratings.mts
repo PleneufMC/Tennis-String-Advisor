@@ -552,6 +552,87 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
   }
 }
 
+// c) Le curseur de rigidité du calculateur EN couvre toute la base (22/10/2026). Plafonné à 275 lb/in, il ramenait Luxilon 4G
+//    (286,9), RPM Team (280,6) et Revenge (276) à 275 : indice affiché sous-estimé (4G à RA 64 et 24 kg : 37 au lieu de 38). Une
+//    rigidité choisie dans la liste ne doit jamais être rabotée par le curseur (règle 2 : l'indice ne baisse pas). Échoue si les
+//    bornes du curseur (min, max) n'encadrent pas toutes les rigidités de `src/data`, si une rigidité de la base n'est pas une
+//    valeur atteignable au pas du curseur, si le paramètre d'URL « cordage » est borné par des littéraux au lieu des bornes du
+//    curseur, si le libellé de la borne haute n'est pas la borne, ou si `CORDAGE_MIN` / `CORDAGE_MAX` d'un moteur statique
+//    n'encadrent pas la base. Bornes lues dans `src/data`, jamais recopiées ; tests négatifs sur des copies altérées.
+{
+  const before = failures.length;
+  const PAGE = 'public/en/rcs-calculator.html';
+  const ENGINES = ['public/js/rcs-calculator.js', 'public/js/rcs-calculator-en.js'];
+  const stiff = stringsDatabase.map((s) => s.stiffness);
+  const lo = Math.min(...stiff);
+  const hi = Math.max(...stiff);
+  const top = stringsDatabase.filter((s) => s.stiffness === hi).map((s) => s.id).join(', ');
+  const pageFindings = (html: string): string[] => {
+    const out: string[] = [];
+    const tag = /<input\b[^>]*\bid="cordageSlider"[^>]*>/.exec(html)?.[0];
+    if (!tag) return ['curseur : <input id="cordageSlider"> introuvable'];
+    const attr = (n: string): number => Number(new RegExp(`\\b${n}="([^"]*)"`).exec(tag)?.[1]);
+    const [min, max, step] = [attr('min'), attr('max'), attr('step')];
+    if (!(min <= lo)) out.push(`curseur : min ${min} au-dessus de la plus basse rigidité de la base (${lo})`);
+    if (!(max >= hi)) out.push(`curseur : max ${max} sous la plus haute rigidité de la base (${hi}, ${top}) : le curseur la ramène à ${max}, indice sous-estimé`);
+    if (!(step > 0)) out.push(`curseur : pas « ${step} » illisible`);
+    else {
+      const off = stringsDatabase.filter((s) => {
+        const k = (s.stiffness - min) / step;
+        return Math.abs(k - Math.round(k)) > 1e-6;
+      });
+      if (off.length > 0) out.push(`curseur : ${off.length} rigidités hors du pas ${step} depuis ${min} (ex. ${off[0].id} ${off[0].stiffness}) : le curseur les arrondit`);
+    }
+    if (/\bcordage\s*[<>]=?\s*\d/.test(html)) out.push("URL : le paramètre « cordage » est borné par des littéraux : lire les bornes du curseur (cordageSlider.min / .max)");
+    const labels = [...html.matchAll(/<span>([\d.]+) \(Stiff Poly\)<\/span>/g)].map((m) => Number(m[1]));
+    if (labels.length !== 1 || labels[0] !== max) out.push(`libellé : la borne haute affichée (${labels.join(', ') || 'absente'}) n'est pas le max du curseur (${max})`);
+    return out;
+  };
+  const engineFindings = (path: string, src: string): string[] => {
+    try {
+      const e = new Function('window', 'document', `${src}; return typeof RCS !== 'undefined' ? RCS : window.RCS;`)({}, { addEventListener() {} });
+      const out: string[] = [];
+      if (!(e.CORDAGE_MAX >= hi)) out.push(`${path} : CORDAGE_MAX ${e.CORDAGE_MAX} sous la plus haute rigidité de la base (${hi})`);
+      if (!(e.CORDAGE_MIN <= lo)) out.push(`${path} : CORDAGE_MIN ${e.CORDAGE_MIN} au-dessus de la plus basse rigidité de la base (${lo})`);
+      return out;
+    } catch (err) {
+      return [`${path} : moteur statique illisible (${(err as Error).message})`];
+    }
+  };
+  const html = readFileSync(PAGE, 'utf8');
+  const engineSrcs = ENGINES.map((p) => [p, readFileSync(p, 'utf8')] as const);
+  pageFindings(html).forEach((i) => fail(`calculateur EN : ${i}`));
+  engineSrcs.flatMap(([p, s]) => engineFindings(p, s)).forEach((i) => fail(`calculateur EN : ${i}`));
+  // Tests négatifs (copies altérées) et témoin positif.
+  const sub = (s: string, a: string, b: string): string | null => (s.includes(a) ? s.replace(a, b) : null);
+  const tagMax = /(<input\b[^>]*\bid="cordageSlider"[^>]*\bmax=")([^"]*)(")/;
+  const maxNow = tagMax.exec(html)?.[2] ?? '';
+  const PAGE_NEG: Array<[string, string | null, string]> = [
+    ['max remis à 275', html.replace(tagMax, '$1275$3'), 'sous la plus haute rigidité'],
+    ['pas de 1 lb/in', sub(html, 'step="0.1" value="180"', 'step="1" value="180"'), 'hors du pas'],
+    ['borne d\'URL recopiée', sub(html, 'cordage <= Number(cordageSlider.max)', 'cordage <= 275'), 'littéraux'],
+    ['libellé de la borne haute périmé', sub(html, `<span>${maxNow} (Stiff Poly)</span>`, '<span>275 (Stiff Poly)</span>'), 'libellé'],
+  ];
+  let detected = 0;
+  for (const [name, mutated, needle] of PAGE_NEG) {
+    if (mutated === null || mutated === html) fail(`calculateur EN : prémisse du test négatif « ${name} » fausse (motif absent de ${PAGE})`);
+    else if (pageFindings(mutated).some((i) => i.includes(needle))) detected++;
+    else fail(`calculateur EN : garde-fou muet sur « ${name} »`);
+  }
+  for (const [p, src] of engineSrcs) {
+    const mutated = src.replace(/(_c: \[54, 72, 63, 88, )[\d.]+(, 18, 30\])/, '$1275$2');
+    if (mutated === src) fail(`calculateur EN : prémisse du test négatif « CORDAGE_MAX remis à 275 » fausse (motif absent de ${p})`);
+    else if (engineFindings(p, mutated).some((i) => i.includes('CORDAGE_MAX'))) detected++;
+    else fail(`calculateur EN : garde-fou muet sur « CORDAGE_MAX remis à 275 » (${p})`);
+  }
+  const witness = sub(html, '// Bornes lues sur le curseur', '// Bornes lues sur le curseur (min, max)');
+  if (witness === null) fail(`calculateur EN : prémisse du témoin positif fausse (commentaire absent de ${PAGE})`);
+  else if (pageFindings(witness).length > 0) fail(`calculateur EN : témoin positif « commentaire reformulé » rejeté à tort`);
+  if (failures.length === before) {
+    ok(`calculateur EN : le curseur de rigidité couvre la base (${lo} à ${hi} lb/in, max ${hi} = ${top}), chaque rigidité au pas du curseur, borne d'URL lue sur le curseur, CORDAGE_MIN/MAX des deux moteurs statiques ; ${detected} tests négatifs détectés, 1 témoin positif accepté`);
+  }
+}
+
 // Seuils d'alerte bras du configurateur (`calculateAdvancedRcs`), sondés une fois pour les contrôles 9 et 20 : plus petit indice
 // qui déclenche l'alerte, sans second filet (aucune note de confort). Au 11/10/2026 : 32 pour un bras sensible, 35 sinon.
 const probeArmAlert = (armSensitive: boolean): number | null => {
@@ -3146,13 +3227,19 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
 //       passerait le premier test et laisserait l'alerte inatteignable) ; si le PDF ne le tire pas d'un paramètre de sa fonction ;
 //   (b) le VRAI moteur, sur la grille du contrôle 5, n'alerte pas dès l'indice 32 pour `armSensitive: true`, alerte avant 35 pour
 //       `false` autrement que par le second filet « confort » (seuils 55 et 45, inchangés), ne traite plus l'absence de profil comme
-//       `false`, laisse la déclaration modifier autre chose que l'alerte, ou change le texte des alertes ;
+//       `false`, laisse la déclaration modifier autre chose que l'alerte, ou si le texte d'une alerte ne dit plus sa cause réelle
+//       (indice au seuil, ou second filet « confort » sous le seuil), le seuil franchi, le profil appliqué, le risque de tennis elbow
+//       comme raison du seuil, l'action en effet sur l'indice (points à perdre exacts) et le renvoi vers un professionnel de santé,
+//       ou s'il promet un effet du matériel sur le bras (texte réécrit le 22/10/2026, charte F7 v1.2) ;
 //   (c) la déclaration atteint la mesure ou un stockage : second argument de `trackArmWarningShown` différent de false ; événement GA4
 //       piloté par un résultat qui dépend de la déclaration (un indice de 32 à 34 la révélerait par déduction) ; variable lue hors de
 //       ses usages autorisés (profil du moteur, case à cocher, tableaux de dépendances) ; champ « bras » dans la charge utile ou dans
 //       une configuration enregistrée ; localStorage, sessionStorage, cookie ou URL dans la page ;
 //   (d) le texte d'aide cite d'autres seuils que ceux du moteur (sondés), ne renvoie plus vers un professionnel de santé, promet une
-//       protection, ou ne dit plus que l'information n'est ni enregistrée ni envoyée.
+//       protection, ou ne dit plus que l'information n'est ni enregistrée ni envoyée ;
+//   (e) (22/10/2026) la page recalcule un indice (`calculateRCS`) au lieu d'afficher celui du moteur, que l'alerte lit et cite ; le
+//       palier, l'indice enregistré ou celui des événements GA4 lisent un autre nombre ; les bornes d'un hybride ne viennent pas du
+//       moteur ou sa mention d'estimation n'est plus affichée ; un montage sans travers reçoit des bornes d'hybride.
 // Chaque garde est rejouée sur des copies altérées de la page, du PDF, de l'enregistrement et du moteur ; des témoins positifs
 // prouvent que les reformulations inoffensives passent. Le comportement réel (case, alerte, GA4, réseau, clavier) se vérifie en
 // exécution, hors de ce script (Playwright, PR du 11/10/2026).
@@ -3468,6 +3555,53 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
         }
         if (!/bras/i.test(label) || !/coude/i.test(label) || !/épaule/i.test(label)) issues.push("libellé : le libellé ne nomme plus le bras, le coude et l'épaule");
       }
+
+      // (e) l'indice affiché est celui du moteur, que l'alerte lit et cite (22/10/2026) : aucun second calcul dans la page ; le palier,
+      //     l'indice enregistré et celui des événements GA4 lisent ce même entier ; la mention d'estimation d'un hybride est affichée.
+      const seen = { ret: null as ts.ObjectLiteralExpression | null, engine: new Map<string, string>(), calcRcs: [] as number[], note: false, payloadRcs: '', ga: [] as string[] };
+      const walkIdx = (n: ts.Node): void => {
+        if (ts.isCallExpression(n) && ts.isIdentifier(n.expression)) {
+          if (n.expression.text === 'calculateRCS') seen.calcRcs.push(lineOf(sf, n));
+          if (n.expression.text === 'trackConfiguratorResultView' || n.expression.text === 'trackConfiguratorComplete') seen.ga.push(`${n.expression.text}(${n.arguments[0]?.getText(sf) ?? ''})`);
+        }
+        // Propriétés du résultat du moteur (profil standard) déstructurées dans la page : nom de la propriété -> nom local.
+        if (ts.isVariableDeclaration(n) && n.initializer?.getText(sf) === 'standardAdvancedRcs' && ts.isObjectBindingPattern(n.name)) {
+          for (const el of n.name.elements) if (ts.isIdentifier(el.name)) seen.engine.set(el.propertyName ? el.propertyName.getText(sf) : el.name.text, el.name.text);
+        }
+        if (ts.isVariableDeclaration(n) && ts.isIdentifier(n.name) && n.name.text === 'rcsData' && n.initializer) {
+          const w = (m: ts.Node): void => {
+            if (ts.isReturnStatement(m) && m.expression && ts.isObjectLiteralExpression(m.expression)) seen.ret = m.expression;
+            ts.forEachChild(m, w);
+          };
+          w(n.initializer);
+        }
+        if (ts.isVariableDeclaration(n) && ts.isIdentifier(n.name) && n.name.text === 'payload' && n.initializer && ts.isObjectLiteralExpression(n.initializer)) {
+          const p = n.initializer.properties.find((q) => nameOf(q) === 'rcsScore');
+          const v = p ? valueOf(p) : null;
+          seen.payloadRcs = v ? v.getText(sf) : '';
+        }
+        if (ts.isJsxExpression(n) && n.expression?.getText(sf) === 'rcsData.hybrid.note') seen.note = true;
+        ts.forEachChild(n, walkIdx);
+      };
+      walkIdx(sf);
+      for (const l of seen.calcRcs) issues.push(`indice : la page recalcule un indice (calculateRCS, ligne ${l}) au lieu d'afficher celui du moteur, que l'alerte lit et cite`);
+      const ret = seen.ret;
+      const prop = (name: string): string => {
+        const p = ret?.properties.find((q) => nameOf(q) === name);
+        const v = p ? valueOf(p) : null;
+        return v ? v.getText(sf) : '';
+      };
+      const engRcs = seen.engine.get('rcs');
+      const engHybrid = seen.engine.get('hybrid');
+      if (!ret) issues.push("indice : rcsData ne renvoie plus d'objet lisible (indice, palier, bornes)");
+      else {
+        if (!engRcs || prop('rcs') !== engRcs) issues.push(`indice : l'indice affiché (rcsData.rcs = « ${prop('rcs') || 'absent'} ») ne vient pas du moteur (standardAdvancedRcs.rcs)`);
+        if (!engRcs || prop('recommendation') !== `getStringRecommendation(${engRcs})`) issues.push(`palier : le palier affiché lit « ${prop('recommendation') || 'absent'} » au lieu de l'indice du moteur : palier et seuil d'alerte doivent lire le même entier`);
+        if (!engHybrid || prop('hybrid') !== engHybrid) issues.push(`hybride : les bornes affichées (rcsData.hybrid = « ${prop('hybrid') || 'absent'} ») ne viennent pas du moteur`);
+      }
+      if (!seen.note) issues.push("hybride : la mention d'estimation du moteur ({rcsData.hybrid.note}) n'est plus affichée : l'indice d'un hybride serait présenté sans dire que c'est une estimation");
+      if (seen.payloadRcs !== 'rcsData.rcs') issues.push(`indice : l'indice enregistré (rcsScore: ${seen.payloadRcs || 'absent'}) n'est pas l'indice affiché (rcsData.rcs)`);
+      if (seen.ga.length !== 2 || seen.ga.some((g) => !g.endsWith('(rcsData.rcs)'))) issues.push(`GA4 : configurator_result_view et configurator_complete doivent envoyer l'indice affiché (rcsData.rcs) : ${seen.ga.join(', ') || 'aucun appel'}`);
       return [...new Set(issues)];
     };
 
@@ -3502,8 +3636,44 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     // --- (b) le VRAI moteur, sur la grille réelle -------------------------------------------------------------------
     type Calc = typeof calculateAdvancedRcs;
     const COMFORT_NET = { sensitive: 55, standard: 45 }; // second filet « confort » de calculateAdvancedRcs (advanced-rcs.ts, 11/10/2026)
-    const SENSITIVE_TEXT = /^Setup rigide \(indice (\d+)\) alors que votre profil est sensible du bras : baissez la tension de 1 à 2 kg(?: ou passez à un multifilament\/boyau sur le montant)? pour limiter le risque de tennis elbow\.$/;
-    const STANDARD_TEXT = /^Setup rigide \(indice (\d+)\) : surveillez votre bras, surtout en cas de jeu intensif\.$/;
+    // Textes de l'alerte (22/10/2026, charte F7 v1.2) : la cause réelle (indice au seuil ou au-delà / second filet « confort »
+    // sous le seuil), le seuil franchi, le profil appliqué, le risque nommé comme raison du seuil, l'action en effet sur l'indice,
+    // le renvoi vers un professionnel de santé. Chaque nombre cité est relu contre le résultat du moteur et les seuils sondés.
+    const INDEX_TEXT = /^Alerte bras : indice (\d+), seuil d'alerte de (\d+) (atteint|dépassé) \((bras sensible déclaré|profil standard)\), seuil fixé par le site pour le risque de tennis elbow\. Il faut (\d+) (points?) d'indice de moins pour repasser sous (\d+) : 1 kg de tension en moins retire 0,5 point, un cordage moins rigide aux montants( \(un multifilament ou un boyau, par exemple\))? l'abaisse aussi\. Douleur persistante : consultez un professionnel de santé\.$/;
+    const COMFORT_TEXT = /^Alerte bras : note de confort calculée du montage sous (\d+) sur 100( avant arrondi, affichée (\d+))? \((bras sensible déclaré|profil standard)\), second seuil d'alerte fixé par le site pour le risque de tennis elbow ; elle part de la note de confort de l'équipe, non mesurée, et l'indice \((\d+)\) reste sous le seuil de (\d+)\. Une tension plus basse ou un cordage mieux noté en confort relève cette note\. Douleur persistante : consultez un professionnel de santé\.$/;
+    // Une alerte ne promet jamais un effet du matériel sur le bras (charte F7) : « limiter / réduire / éviter le risque », protéger…
+    const ALERT_PROMISE = /limit|rédui|diminu|évit|prot[eéè]g|préserv|ménag|soulag|prévien|prévent/i;
+    // Relit une alerte bras du moteur : forme, cause, seuil, profil, points à perdre, incise réservée au montant polyester, mention
+    // de l'arrondi quand la note de confort AFFICHÉE (arrondie, `subScores.comfort`) vaut la limite citée ; renvoie le défaut ou null.
+    const readAlert = (w: string, profileSensitive: boolean, rcs: number, shownComfort: number | null, polyMains: boolean): string | null => {
+      const T = profileSensitive ? S : N;
+      const label = profileSensitive ? 'bras sensible déclaré' : 'profil standard';
+      const who = profileSensitive ? '« bras sensible »' : 'standard';
+      if (ALERT_PROMISE.test(w)) return `texte : l'alerte ${who} promet un effet sur le bras : « ${w.slice(0, 90)} »`;
+      if (rcs >= T) {
+        const m = INDEX_TEXT.exec(w);
+        if (!m) return `texte : l'alerte ${who} (indice au seuil) n'a plus sa forme (indice, seuil, profil, risque nommé, action sur l'indice, renvoi) : « ${w.slice(0, 90)} »`;
+        const [, idx, seuil, verb, prof, pts, word, sous, incise] = m;
+        const want = rcs - T + 1;
+        if (!!incise !== polyMains) return `texte : l'alerte ${who} ${incise ? 'propose' : 'ne propose plus'} « un multifilament ou un boyau » pour un montant ${polyMains ? 'polyester' : 'non polyester'} : « ${w.slice(0, 90)} »`;
+        if (Number(idx) !== rcs || Number(seuil) !== T || Number(sous) !== T || prof !== label || verb !== (rcs > T ? 'dépassé' : 'atteint') || Number(pts) !== want || word !== (want > 1 ? 'points' : 'point')) {
+          return `texte : l'alerte ${who} cite indice ${idx}, seuil ${seuil}/${sous}, « ${verb} », « ${prof} », ${pts} ${word} au lieu de indice ${rcs}, seuil ${T}, ${want} point(s), « ${label} »`;
+        }
+        return null;
+      }
+      const m = COMFORT_TEXT.exec(w);
+      if (!m) return `texte : l'alerte ${who} du second filet (indice ${rcs} sous ${T}) n'a plus sa forme (cause, seuil, profil, risque nommé, renvoi) : « ${w.slice(0, 90)} »`;
+      const [, limite, arrondi, affichee, prof, idx, seuil] = m;
+      const wantLimit = profileSensitive ? COMFORT_NET.sensitive : COMFORT_NET.standard;
+      const atLimit = shownComfort !== null && shownComfort >= wantLimit;
+      if (!!arrondi !== atLimit || (arrondi !== undefined && Number(affichee) !== shownComfort)) {
+        return `texte : l'alerte ${who} du second filet ${arrondi ? `dit « affichée ${affichee} »` : "ne dit pas l'arrondi"} alors que la note affichée vaut ${shownComfort} (limite ${wantLimit}) : « ${w.slice(0, 90)} »`;
+      }
+      if (Number(limite) !== wantLimit || prof !== label || Number(idx) !== rcs || Number(seuil) !== T) {
+        return `texte : l'alerte ${who} du second filet cite note < ${limite}, « ${prof} », indice ${idx}, seuil ${seuil} au lieu de note < ${wantLimit}, « ${label} », indice ${rcs}, seuil ${T}`;
+      }
+      return null;
+    };
     // La note de confort du résultat est arrondie : exactement à la limite, on ne tranche pas.
     const net = (c: number | null, limit: number): 'oui' | 'non' | 'incertain' => (c === null || c > limit ? 'non' : c < limit ? 'oui' : 'incertain');
     const checkEngine = (calc: Calc, stride: number, withBand: boolean) => {
@@ -3533,6 +3703,7 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
             const none = calc(base);
             const std = calc({ ...base, profile: { armSensitive: false } });
             const sen = calc({ ...base, profile: { armSensitive: true } });
+            if (std.hybrid) issues.add("hybride : un montage sans travers reçoit des bornes d'hybride (hybrid doit valoir null)");
             const [aNone, aStd, aSen] = [arm(none.warnings), arm(std.warnings), arm(sen.warnings)];
             n++;
             if (aStd.length > 0) stdAlerts++;
@@ -3547,12 +3718,12 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
             if (expStd !== 'incertain' && aStd.length > 0 !== (expStd === 'oui')) issues.add(`standard : ${aStd.length > 0 ? 'alerte à tort' : 'alerte manquante'} (${where} ; attendu dès l'indice ${N}, second filet confort < ${COMFORT_NET.standard})`);
             if (aSen.length > 1 || aStd.length > 1) issues.add("texte : plus d'une alerte bras pour un même montage");
             for (const w of aSen) {
-              const m = SENSITIVE_TEXT.exec(w);
-              if (!m || Number(m[1]) !== sen.rcs) issues.add(`texte : l'alerte « bras sensible » a changé : « ${w.slice(0, 90)} »`);
+              const bad = readAlert(w, true, sen.rcs, sen.subScores.comfort, fam === 'polyester');
+              if (bad) issues.add(bad);
             }
             for (const w of aStd) {
-              const m = STANDARD_TEXT.exec(w);
-              if (!m || Number(m[1]) !== std.rcs) issues.add(`texte : l'alerte standard a changé : « ${w.slice(0, 90)} »`);
+              const bad = readAlert(w, false, std.rcs, std.subScores.comfort, fam === 'polyester');
+              if (bad) issues.add(bad);
             }
             const b = band.get(std.rcs);
             if (b) {
@@ -3619,6 +3790,7 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     const STATE = 'const [armSensitive, setArmSensitive] = useState(false);';
     const CALL_SHOWN = 'calculateAdvancedRcs({ ...advancedInput, profile: { armSensitive } })';
     const GA_CALL = 'trackArmWarningShown(standardAdvancedRcs.rcs, false)';
+    const ENGINE_IDX = '    const { rcs, hybrid } = standardAdvancedRcs;\n';
     const PAGE_NEGATIVES: Mut[] = [
       edit('profil retiré de l\'appel affiché', 'profil : l\'appel de calculateAdvancedRcs de la page', CALL_SHOWN, 'calculateAdvancedRcs({ ...advancedInput })'),
       edit('armSensitive: false en dur dans l\'appel affiché', 'aucun appel relié à la case', CALL_SHOWN, 'calculateAdvancedRcs({ ...advancedInput, profile: { armSensitive: false } })'),
@@ -3639,7 +3811,7 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
         },
       },
       edit('événement GA4 supprimé', 'la page n\'appelle plus trackArmWarningShown', GA_CALL, 'void 0'),
-      edit('drapeau ajouté à la charge utile enregistrée', 'enregistrement : la charge utile enregistrée porte', 'rcsScore: rcsData.avgRCS,', 'rcsScore: rcsData.avgRCS,\n      armSensitive,'),
+      edit('drapeau ajouté à la charge utile enregistrée', 'enregistrement : la charge utile enregistrée porte', 'rcsScore: rcsData.rcs,', 'rcsScore: rcsData.rcs,\n      armSensitive,'),
       edit('drapeau écrit dans localStorage', 'stockage : « localStorage »', STATE, `${STATE}\n  useEffect(() => { window.localStorage.setItem('arm', String(armSensitive)); }, [armSensitive]);`),
       edit('drapeau dans l\'URL', 'stockage : « replaceState »', STATE, `${STATE}\n  useEffect(() => { window.history.replaceState(null, '', '?arm=' + String(armSensitive)); }, [armSensitive]);`),
       edit('drapeau lu hors des usages autorisés', 'utilisé hors de ses usages autorisés', STATE, `${STATE}\n  const leak = armSensitive ? 'oui' : 'non';\n  void leak;`),
@@ -3649,12 +3821,20 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
       edit('texte d\'aide : promesse de protection', 'allégation', "Active l'alerte bras", "Protège votre bras : active l'alerte bras"),
       edit('texte d\'aide : « ni enregistrée ni envoyée » retiré', 'ni enregistrée ni envoyée', " Cette information n'est ni enregistrée ni envoyée.", ''),
       edit('libellé : le coude n\'est plus nommé', 'libellé : le libellé ne nomme plus', 'ARM_SENSITIVE_LABEL = "Bras sensible ou douleur au coude / à l\'épaule";', 'ARM_SENSITIVE_LABEL = "Bras sensible ou douleur à l\'épaule";'),
+      // (e) l'indice du moteur est affiché, sans second calcul (22/10/2026)
+      edit('second calcul de l\'indice réintroduit (« RCS Moyen » de la page)', 'la page recalcule un indice', ENGINE_IDX, "    const { hybrid } = standardAdvancedRcs;\n    const rcs = (calculateRCS(effectiveRacquetRA(selectedRacquet), selectedMainString.stiffness, (formData.mainTension + formData.crossTension) / 2) + standardAdvancedRcs.rcs) / 2;\n"),
+      edit('palier lu sur un autre nombre que l\'indice affiché', 'palier : le palier affiché lit', 'recommendation: getStringRecommendation(rcs),', 'recommendation: getStringRecommendation(rcs - 0.5),'),
+      edit('bornes de l\'hybride hors du moteur', 'hybride : les bornes affichées', 'rcs,\n      hybrid,\n      recommendation', 'rcs,\n      hybrid: null,\n      recommendation'),
+      edit('mention d\'estimation de l\'hybride retirée', 'la mention d\'estimation du moteur', '{rcsData.hybrid.note}', '{null}'),
+      edit('indice enregistré différent de l\'indice affiché', 'l\'indice enregistré', 'rcsScore: rcsData.rcs,', 'rcsScore: Math.round(rcsData.compatibility),'),
+      edit('GA4 : configurator_result_view envoie un autre nombre', 'GA4 : configurator_result_view et configurator_complete', 'trackConfiguratorResultView(rcsData.rcs);', 'trackConfiguratorResultView(rcsData.compatibility);'),
     ];
     const PAGE_POSITIVES: Mut[] = [
       edit('libellé reformulé', '', 'ARM_SENSITIVE_LABEL = "Bras sensible ou douleur au coude / à l\'épaule";', 'ARM_SENSITIVE_LABEL = "Bras sensible, douleur au coude ou à l\'épaule";'),
       edit('aide reformulée, mêmes chiffres et mêmes engagements', '', HELP_32_35, "Alerte bras dès l'indice 32 pour vous, au lieu de 35 sinon."),
       edit('commentaire qui nomme localStorage et GA4', '', '// Déclaration du visiteur (bras sensible).', '// Déclaration du visiteur (bras sensible) : jamais de localStorage, de cookie ni de GA4.'),
       edit('état renommé dans le commentaire seulement', '', 'Elle ne sert qu\'au profil passé au moteur plus bas.', 'Elle ne sert qu\'au profil passé au moteur (armSensitive).'),
+      edit('palier commenté, même entier que l\'alerte', '', 'recommendation: getStringRecommendation(rcs),', 'recommendation: getStringRecommendation(rcs), // même entier que le seuil d\'alerte'),
     ];
     for (const m of PAGE_NEGATIVES) {
       const mutated = m.apply(pageSrc);
@@ -3705,8 +3885,23 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
         ['second filet « confort » du profil standard relevé (45 → 55)', 'comfort < 45', 'comfort < 55', 'standard :'],
         ['absence de profil traitée comme un bras sensible', 'profile?.armSensitive ?? false', 'profile?.armSensitive ?? true', 'défaut :'],
         ['alerte « bras sensible » supprimée', 'if (armRisk) {', 'if (armRisk && !armSensitive) {', 'sensible :'],
-        ['texte « bras sensible » adouci', 'baissez la tension de 1 à 2 kg', 'pensez à votre tension', 'texte :'],
-        ['la déclaration change l\'indice', 'const rcs = rcsIndex(racquetStiffness, effStringStiffness, avgTension);', 'const rcs = rcsIndex(racquetStiffness, effStringStiffness, avgTension) - (profile?.armSensitive ? 2 : 0);', 'profil :'],
+        // Textes (22/10/2026) : une alerte qui ne dit plus le risque, qui promet un effet, qui perd son renvoi, qui se trompe de
+        // cause, de profil ou de nombre de points est rejetée. Un test par alerte : indice (deux profils) et second filet.
+        ['alerte « indice » : le risque n\'est plus nommé', "`seuil fixé par le site pour le risque de tennis elbow. ` +", '', 'texte :'],
+        ['alerte « second filet » : le risque n\'est plus nommé', "`second seuil d'alerte fixé par le site pour le risque de tennis elbow ; ` +", "`second seuil d'alerte ; ` +", 'texte :'],
+        ['alerte : promesse d\'effet sur le bras réintroduite', " l'abaisse aussi. ${consulter}`", " l'abaisse aussi, pour limiter le risque de tennis elbow. ${consulter}`", 'texte :'],
+        ['alerte : renvoi vers un professionnel de santé retiré', "const consulter = 'Douleur persistante : consultez un professionnel de santé.';", "const consulter = '';", 'texte :'],
+        ['alerte « indice » : nombre de points à perdre faux', 'const points = rcs - seuil + 1;', 'const points = rcs - seuil;', 'texte :'],
+        ['alerte : second filet présenté comme un indice au seuil', 'if (rcs >= seuil) {', 'if (true) {', 'texte :'],
+        ['alerte « bras sensible » : profil non dit', "const profil = armSensitive ? 'bras sensible déclaré' : 'profil standard';", "const profil = armSensitive ? 'sensible' : 'profil standard';", 'texte :'],
+        ['alerte standard : profil non dit', "const profil = armSensitive ? 'bras sensible déclaré' : 'profil standard';", "const profil = armSensitive ? 'bras sensible déclaré' : 'standard';", 'texte :'],
+        ['alerte : seuil cité au lieu du seuil appliqué', 'const seuil = armSensitive ? ARM_ALERT_RCS.sensitive : ARM_ALERT_RCS.standard;', 'const seuil = ARM_ALERT_RCS.standard;', 'texte :'],
+        ['alerte « indice » : incise polyester inversée', "${isPoly ? ' (un multifilament ou un boyau, par exemple)' : ''}", "${isPoly ? '' : ' (un multifilament ou un boyau, par exemple)'}", 'texte :'],
+        ['alerte « second filet » : arrondi à la limite non dit', 'const arrondiALaLimite = comfort !== null && round(comfort) >= limite;', 'const arrondiALaLimite = false;', 'texte :'],
+        ['alerte « second filet » : la note éditoriale non mesurée n\'est plus nommée', "elle part de la note de confort de l'équipe, non mesurée, et ", '', 'texte :'],
+        ['alerte « second filet » : arrondi dit à tort', 'const arrondiALaLimite = comfort !== null && round(comfort) >= limite;', 'const arrondiALaLimite = comfort !== null;', 'texte :'],
+        ['la déclaration change l\'indice', 'const { rcs, hybrid } = setupFirmnessIndex(input);', 'const { rcs: rcs0, hybrid } = setupFirmnessIndex(input);\n  const rcs = rcs0 - (profile?.armSensitive ? 2 : 0);', 'profil :'],
+        ['bornes d\'hybride sur un montage sans travers', 'return { rcs: rcsIndex(racquetStiffness, main, avgTension), hybrid: null };', "return { rcs: rcsIndex(racquetStiffness, main, avgTension), hybrid: { mains: 0, crosses: 0, note: 'estimation' } };", 'hybride :'],
       ];
       for (const [name, find, replace, needle] of ENGINE_NEGATIVES) {
         const mutated = replaceFirst(engineSrc, find, replace);
@@ -3738,10 +3933,12 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
       const bandText = [...real.band].map(([idx, b]) => `${idx} : ${b.n} montages, ${b.sen} alertés (profil sensible), ${b.std} par le seul second filet (profil standard)`).join(' ; ');
       ok(
         `configurateur FR : le bras sensible se déclare (case à cocher reliée à profile.armSensitive, état initial false, en mémoire seulement ; PDF : paramètre de sa fonction) ; ` +
-          `moteur réel sur ${real.n} montages : alerte dès l'indice ${S} pour armSensitive: true, dès ${N} sinon, second filet confort inchangé (< ${COMFORT_NET.sensitive} / < ${COMFORT_NET.standard}), absence de profil = false, texte des alertes inchangé ; ` +
+          `moteur réel sur ${real.n} montages : alerte dès l'indice ${S} pour armSensitive: true, dès ${N} sinon, second filet confort inchangé (< ${COMFORT_NET.sensitive} / < ${COMFORT_NET.standard}), absence de profil = false, texte de chaque alerte relu (cause, indice, seuil, profil, risque nommé, points à perdre, incise polyester, arrondi de la note affichée, renvoi, aucune promesse) ; ` +
           `taux d'alerte standard ${rate(real.stdAlerts)} % -> sensible ${rate(real.senAlerts)} % ; bande ${bandText} ; ` +
           `GA4 : ${gaCallers} appel(s) de trackArmWarningShown, second argument false, événement piloté par le résultat du profil standard ; aucun stockage, URL ni cookie ; ` +
-          `texte d'aide : seuils ${S} et ${N} (sondés), professionnel de santé, « ni enregistrée ni envoyée » ; ${detected} tests négatifs détectés, ${accepted} témoins positifs acceptés`
+          `texte d'aide : seuils ${S} et ${N} (sondés), professionnel de santé, « ni enregistrée ni envoyée » ; ` +
+          `indice affiché = indice du moteur (aucun second calcul ; palier, enregistrement et GA4 sur le même entier ; bornes et mention d'estimation d'un hybride affichées) ; ` +
+          `${detected} tests négatifs détectés, ${accepted} témoins positifs acceptés`
       );
     }
   }
@@ -3761,7 +3958,11 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
 //   (c) la ligne manque dans le texte imprimé d'un PDF, y figure deux fois, sort de la méthodologie, cite d'autres seuils que ceux du
 //       moteur, annonce le mauvais profil, ne renvoie plus vers un professionnel de santé ou porte une allégation de protection ou un
 //       absolu (charte F7). Quatre PDF sont imprimés : export du compte, hybride, bras sensible déclaré, sans analyse avancée (la ligne
-//       est imprimée dans tous : les seuils sont un fait général, pas un résultat d'analyse).
+//       est imprimée dans tous : les seuils sont un fait général, pas un résultat d'analyse) ;
+//   (d) (22/10/2026) l'indice imprimé n'est pas celui du moteur (`setupFirmnessIndex`, l'indice que la page affiche et que l'alerte
+//       cite), y figure deux fois, ou diffère de l'indice cité par une alerte ; la mention d'estimation d'un hybride manque sous
+//       l'indice, diffère de celle du moteur ou s'imprime pour un montage sans travers ; `recomputeRcs` diffère du moteur. Un cinquième
+//       PDF, hybride avec bras sensible déclaré, porte une alerte que seul l'indice unique déclenche (60/40 : 31, indice : 32).
 // Chaque garde est rejouée sur des copies altérées (constantes, moteur, données, source d'impression, constructeur) ; des témoins positifs
 // prouvent qu'une reformulation inoffensive passe.
 {
@@ -3890,6 +4091,7 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
       { name: 'PDF hybride', cfg: { racquetId: 'wilson-blade-98-16x19-v9', mainStringId: 'luxilon-alu-power', crossStringId: 'babolat-rpm-blast' } },
       { name: 'PDF bras sensible déclaré', cfg: { racquetId: 'wilson-blade-98-16x19-v9', mainStringId: 'luxilon-alu-power' }, opt: { armSensitive: true } },
       { name: 'PDF sans analyse avancée (raquette et cordage introuvables)', cfg: { racquetId: 'raquette-inconnue', mainStringId: 'cordage-inconnu' } },
+      { name: 'PDF hybride, bras sensible déclaré (alerte par l\'indice du montage)', cfg: { racquetId: 'babolat-pure-aero-98', mainStringId: 'luxilon-alu-power', crossStringId: 'solinco-tour-bite', mainTension: 20, crossTension: 18, rcsScore: 31.5 }, opt: { armSensitive: true } },
     ];
     const digits = (t: string): number[] => [...t.matchAll(/\d+/g)].map((m) => Number(m[0]));
     const CLAIM21B = /prot[eéè]g|pr[eé]ven|soulag|gu[eé]ri|therap|thérap|m[eé]dical|traitement|sans (?:aucun )?(?:danger|risque)|\bid[eé]al|parfait|optimal|\bsûr\b|garanti/i;
@@ -3931,7 +4133,56 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     }
     runFindings(real).forEach((i) => fail(`PDF : ${i}`));
     const analysed = real.filter((r) => r.data.advanced !== undefined).length;
-    if (analysed !== 3 || real.length !== 4) fail(`PDF : ${analysed} PDF avec analyse avancée sur ${real.length} (attendu 3 sur 4) : le cas « sans analyse » ne l'est plus, relire le contrôle`);
+    if (analysed !== 4 || real.length !== 5) fail(`PDF : ${analysed} PDF avec analyse avancée sur ${real.length} (attendu 4 sur 5) : le cas « sans analyse » ne l'est plus, relire le contrôle`);
+
+    // --- (d) l'indice imprimé est celui du moteur, que la page affiche et que l'alerte cite (22/10/2026) ---------------------------
+    type Setup = (i: unknown) => { rcs: number; hybrid: { mains: number; crosses: number; note: string } | null };
+    const setupIndex = engineModule.setupFirmnessIndex as Setup | undefined;
+    const { recomputeRcs } = await import('../src/lib/pdf-configuration-data');
+    // L'indice que la page affiche pour la configuration du cas : `setupFirmnessIndex` sur les mêmes entrées.
+    const shownIndex = (c: PdfCase): ReturnType<Setup> | null => {
+      const cfg = { ...BASE_CFG, ...c.cfg } as Record<string, any>;
+      const racquet = racquetsDatabase.find((x) => x.id === cfg.racquetId);
+      const main = stringsModule.getStringById(cfg.mainStringId);
+      if (!setupIndex || !racquet || !main) return null;
+      return setupIndex({
+        racquetStiffness: effectiveRacquetRA(racquet),
+        mainStringStiffness: main.stiffness,
+        crossStringStiffness: stringsModule.getStringById(cfg.crossStringId)?.stiffness,
+        mainTension: cfg.mainTension,
+        crossTension: cfg.crossTension,
+      });
+    };
+    if (!setupIndex) fail('PDF : setupFirmnessIndex (indice du montage) n\'est plus exporté par advanced-rcs.ts');
+    const indexFindings = (r: Run): string[] => {
+      const want = shownIndex(r.c);
+      const a = r.data.advanced;
+      if (!want || !a) return [];
+      const out: string[] = [];
+      const name = r.c.name;
+      if (a.firmnessIndex !== want.rcs) out.push(`${name} : indice ${a.firmnessIndex} dans les données du PDF, ${want.rcs} pour le moteur (indice affiché par la page)`);
+      const idx = r.lines.map((l, i) => [l, i] as const).filter(([l]) => l.startsWith('Indice de fermete : '));
+      if (idx.length !== 1 || idx[0][0] !== `Indice de fermete : ${want.rcs}`) out.push(`${name} : indice imprimé « ${idx.map(([l]) => l).join(' | ') || 'absent'} » au lieu de « Indice de fermete : ${want.rcs} » (indice du moteur)`);
+      if (want.hybrid) {
+        if (a.hybridNote !== want.hybrid.note) out.push(`${name} : mention de l'hybride « ${a.hybridNote ?? 'absente'} » dans les données au lieu de celle du moteur « ${want.hybrid.note} »`);
+        else if (idx.length === 1 && r.lines[idx[0][1] + 1] !== want.hybrid.note) out.push(`${name} : mention de l'hybride non imprimée sous l'indice (ligne suivante : « ${r.lines[idx[0][1] + 1] ?? 'rien'} »)`);
+      } else if (a.hybridNote !== undefined || r.lines.some((l) => l.startsWith('estimation pour un hybride'))) {
+        out.push(`${name} : mention d'hybride pour un montage sans travers`);
+      }
+      for (const w of a.warnings as string[]) {
+        const m = /^Alerte bras : indice (\d+),/.exec(w);
+        if (m && Number(m[1]) !== want.rcs) out.push(`${name} : l'alerte cite l'indice ${m[1]}, le PDF imprime ${want.rcs}`);
+      }
+      const rec = recomputeRcs({ ...BASE_CFG, ...r.c.cfg } as never);
+      if (rec !== want.rcs) out.push(`${name} : recomputeRcs vaut ${rec}, le moteur ${want.rcs}`);
+      return out;
+    };
+    real.forEach((r) => indexFindings(r).forEach((i) => fail(`PDF : ${i}`)));
+    const hybridAlert = real.find((r) => r.c.name.startsWith('PDF hybride, bras sensible'));
+    const hybridWant = hybridAlert ? shownIndex(hybridAlert.c) : null;
+    if (!hybridAlert || !hybridWant || !(hybridAlert.data.advanced?.warnings as string[] | undefined)?.some((w) => w.startsWith(`Alerte bras : indice ${hybridWant.rcs},`)) || !hybridWant.hybrid?.note.includes(' entre ')) {
+      fail('PDF : le cas « hybride, bras sensible déclaré » n\'a pas l\'alerte que l\'indice du montage déclenche (indice 32, le 60/40 seul donnerait 31) ou sa mention « entre » : indice du moteur, ou contrôle, à relire');
+    }
 
     // --- Tests négatifs et témoins positifs -----------------------------------------------------------------------------
     let detected = 0;
@@ -4010,6 +4261,25 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     const reformatted = dataSrc.replace('sensitiveApplied: options.armSensitive === true,', 'sensitiveApplied: options.armSensitive === true, // profil réellement appliqué');
     if (builderFindings(reformatted).length > 0) fail(`PDF : témoin positif « commentaire ajouté dans le constructeur » rejeté à tort : ${builderFindings(reformatted).join(' ; ')}`);
     else accepted++;
+    // 4 bis. indice et mention imprimés (22/10/2026) : données altérées, puis source d'impression altérée
+    const idxDataMuts: Array<[string, (c: PdfCase, d: any) => void, string]> = [
+      ['indice des données décalé d\'un point (hybride)', (c, d) => { if (d.advanced && c.cfg.crossStringId) d.advanced.firmnessIndex -= 1; }, 'pour le moteur'],
+      ['mention de l\'hybride retirée des données', (_c, d) => { if (d.advanced) delete d.advanced.hybridNote; }, 'mention de l\'hybride'],
+      ['mention d\'hybride sur un montage sans travers', (c, d) => { if (d.advanced && !c.cfg.crossStringId) d.advanced.hybridNote = 'estimation pour un hybride, entre 30 et 34'; }, 'sans travers'],
+    ];
+    for (const [name, mut, needle] of idxDataMuts) expectDetected(name, (await runAll(exportConfigurationPdf as (d: unknown) => Promise<void>, mut)).flatMap(indexFindings), needle);
+    const idxExportMuts: Array<[string, string, string, string]> = [
+      ['exporteur : indice enregistré imprimé au lieu de l\'indice du moteur', 'L.text(`Indice de fermete : ${a.firmnessIndex}`', 'L.text(`Indice de fermete : ${data.rcsScore}`', 'indice imprimé'],
+      ['exporteur : mention de l\'hybride non imprimée', 'for (const line of noteLines) {', 'for (const line of [] as string[]) {', 'non imprimée'],
+    ];
+    for (const [name, find, replace, needle] of idxExportMuts) {
+      const mutated = replaceFirst(exportSrc, find, replace);
+      if (mutated === null) {
+        fail(`PDF : prémisse du test négatif « ${name} » fausse (motif absent de src/lib/pdf-export.ts)`);
+        continue;
+      }
+      expectDetected(name, (await runAll(loadModule(mutated).exportConfigurationPdf as (d: unknown) => Promise<void>)).flatMap(indexFindings), needle);
+    }
     // 5. constantes et moteur (modules rechargés depuis le texte)
     const engineDeps = { '@/data/strings-database': stringsModule };
     const loadEngine = (src: string): { calc: Calc; consts: { sensitive?: number; standard?: number } | undefined } => {
@@ -4056,8 +4326,284 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
       ok(
         `PDF : la méthodologie imprimée cite les deux seuils d'alerte bras (${N} en standard, ${S} pour un bras sensible), lus dans le moteur : ARM_ALERT_RCS = seuils sondés dans calculateAdvancedRcs, ` +
           `lus par le constructeur de données sans aucun littéral ; ligne imprimée une fois, dans la méthodologie, dans les ${real.length} PDF vérifiés ` +
-          `(${real.map((r) => r.c.name).join(', ')}), avec le profil réellement appliqué et le renvoi vers un professionnel de santé ; ${detected} tests négatifs détectés, ${accepted} témoins positifs acceptés`
+          `(${real.map((r) => r.c.name).join(', ')}), avec le profil réellement appliqué et le renvoi vers un professionnel de santé ; ` +
+          `indice imprimé = indice du moteur = indice cité par l'alerte = recomputeRcs, mention d'estimation imprimée sous l'indice des hybrides et seulement eux ; ` +
+          `${detected} tests négatifs détectés, ${accepted} témoins positifs acceptés`
       );
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 21 ter. HYBRIDES : UN SEUL INDICE, celui que l'alerte lit, que la page affiche et que le PDF imprime (22/10/2026)
+// ---------------------------------------------------------------------------
+// Constat : pour un hybride, la page affichait un « RCS Moyen » (moyenne des indices des montants, pris à la tension MOYENNE, et des
+// travers) et le moteur alertait sur un autre indice (rigidités pondérées 60/40, tension moyenne) : écart d'au moins 1 point dans 27 à
+// 30 % des montages hybrides, palier « Très Ferme » affiché sans alerte. Décision (b)+(a) de l'orchestrateur : un indice unique, le plus
+// haut du 60/40 et du 50/50 corrigé (chaque jeu de cordes à SA tension), calculé par `setupFirmnessIndex`. Ce bloc échoue si, sur une
+// grille d'hybrides (raquettes regroupées par RA effectif et poids ≥ 300 g, chaque groupe compté pour son nombre de raquettes ; couples
+// ordonnés de cordages distincts, hybrides prémontés exclus ; montants à 18, 24 et 28 kg ; travers à −2, 0 et +2 kg) et sur quatre
+// montages construits :
+//   (a) l'indice n'est pas l'arrondi EXACT (demi vers le haut, comme `calculateRCS`) du plus haut du 60/40 et du 50/50 de chaque jeu à
+//       sa tension, calculé en entiers ; s'il diffère de la forme équivalente (moyenne des rigidités + 0,1 × max(0, montants −
+//       travers), à la tension moyenne) ; si la déclaration « bras sensible » le change ;
+//   (b) les bornes ne sont pas les indices des montants seuls et des travers seuls, chacun à sa tension, ou l'indice passe sous les deux ;
+//   (c) la mention ne dit pas « estimation », parle de mesure, dit « entre » avec d'autres nombres que les bornes, ou ne dit pas que
+//       l'indice dépasse les deux bornes quand il les dépasse (montants plus rigides montés moins tendus que les travers) ;
+//   (d) une alerte manque : indice au seuil (sondés : 35 standard, 32 bras sensible) sans alerte, palier « Très Ferme » sans alerte
+//       standard ; ou une alerte cite un autre indice ;
+//   (e) un montage sans travers reçoit des bornes, ou un autre indice que celui de son cordage à la tension moyenne.
+// Le calcul exact reproduit la formule de `calculateRCS` (gain 2, décalage −27) : il est d'abord comparé à `calculateRCS` sur chaque
+// cordage, et le contrôle échoue si la formule change. Les tests négatifs rejouent les gardes sur des copies altérées du moteur (un
+// montage sur 41 de la grille, plus les montages construits).
+{
+  const before21t = failures.length;
+  const S = ARM_ALERT_SENSITIVE;
+  const N = ARM_ALERT_STANDARD;
+  if (S === null || N === null) {
+    fail("hybrides : seuils d'alerte bras introuvables dans calculateAdvancedRcs (sonde muette)");
+  } else {
+    type Calc = typeof calculateAdvancedRcs;
+    // Valeur exacte : raw = 2 × 30 × (RA/70 × 0,4 + s/220 × 0,4 + t/24 × 0,2) − 27 = 12 RA/35 + 6 s/55 + t/2 − 27. Multipliée par
+    // 38 500, elle est entière pour un RA entier, une rigidité au dixième (s100 = 100 × s) et une somme de deux tensions entières (t2).
+    const D = 38500;
+    const K = (ra: number, s100: number, t2: number): number => 13200 * ra + 42 * s100 + 9625 * t2 - 1039500;
+    const roundExact = (num: number): number => Math.floor((2 * num + D) / (2 * D));
+    const groups = new Map<string, { ra: number; weight: number | undefined; head: number | undefined; n: number }>();
+    for (const r of racquetsDatabase) {
+      const ra = effectiveRacquetRA(r);
+      const k = `${ra}|${!!(r.weight && r.weight >= 300)}`;
+      const g = groups.get(k);
+      if (g) g.n++;
+      else groups.set(k, { ra, weight: r.weight, head: r.headSize, n: 1 });
+    }
+    const comps = stringsDatabase.filter((s) => s.type !== 'Hybrid');
+    let formulaOk = true;
+    for (const s of stringsDatabase) {
+      if (Math.abs(s.stiffness * 10 - Math.round(s.stiffness * 10)) > 1e-9) {
+        formulaOk = false;
+        fail(`hybrides : rigidité de ${s.id} (${s.stiffness}) au-delà du dixième : le calcul exact du contrôle 21 ter ne la représente pas, le relire`);
+      }
+      for (const g of groups.values()) {
+        for (let t2 = 36; t2 <= 60; t2++) {
+          if (formulaOk && calculateRCS(g.ra, s.stiffness, t2 / 2) !== roundExact(K(g.ra, Math.round(s.stiffness * 10) * 10, t2))) {
+            formulaOk = false;
+            fail(`hybrides : calculateRCS(${g.ra}, ${s.stiffness}, ${t2 / 2}) ≠ calcul exact du contrôle 21 ter : la formule de l'indice a changé, relire ce contrôle`);
+          }
+        }
+      }
+    }
+    const ratingsOf = (s: (typeof stringsDatabase)[number]) => ({ control: s.control, comfort: s.comfort, spin: s.spin, power: s.power, durability: s.durability });
+    const isArm = (w: string): boolean => /bras|elbow/i.test(w);
+    const noteIssue = (note: string, rcs: number, mains: number, crosses: number): string | null => {
+      const lo = Math.min(mains, crosses);
+      const hi = Math.max(mains, crosses);
+      if (!/estimation/i.test(note)) return `« ${note} » ne dit pas que l'indice est une estimation`;
+      if (/mesur/i.test(note)) return `« ${note} » parle de mesure`;
+      const nums = (note.match(/\d+/g) ?? []).map(Number);
+      const between = /entre (\d+) et (\d+)/.exec(note);
+      if (rcs > hi) {
+        if (between || !/au-dessus|dépasse|supérieur/i.test(note)) return `« ${note} » ne dit pas que l'indice ${rcs} dépasse les deux bornes (${mains}, ${crosses})`;
+        if (!nums.includes(mains) || !nums.includes(crosses)) return `« ${note} » ne donne pas les deux bornes ${mains} et ${crosses}`;
+        return null;
+      }
+      if (lo === hi) return nums.includes(lo) && (!between || (Number(between[1]) === lo && Number(between[2]) === hi)) ? null : `« ${note} » ne donne pas la borne ${lo}`;
+      if (!between || Number(between[1]) !== lo || Number(between[2]) !== hi) return `« ${note} » au lieu de « entre ${lo} et ${hi} »`;
+      return null;
+    };
+    // Montages construits (rigidités hors catalogue) : chaque forme de la mention, dont l'indice au-dessus des deux bornes.
+    const PROBES = [
+      { what: 'au-dessus de deux bornes égales', ra: 57, m: 228.6, x: 218.3, mT: 18, xT: 20 },
+      { what: 'au-dessus de deux bornes différentes', ra: 64, m: 205.5, x: 151.5, mT: 18, xT: 28 },
+      { what: 'entre les bornes', ra: 64, m: 230, x: 160, mT: 24, xT: 22 },
+      { what: 'bornes égales à l\'indice', ra: 64, m: 200, x: 200.5, mT: 24, xT: 24 },
+    ];
+    const MAINS_T = [18, 24, 28];
+    const OFFSETS = [-2, 0, 2];
+    const checkHybrids = (calc: Calc, stride: number) => {
+      const issues = new Map<string, string>();
+      const add = (cat: string, msg: string): void => {
+        if (!issues.has(cat)) issues.set(cat, `${cat} ${msg}`);
+      };
+      const tally = { n: 0, std: 0, sen: 0, entre: 0, egal: 0, dessus: 0, probes: new Set<string>() };
+      // Entrées du moteur précalculées par cordage ; le lieu d'un défaut n'est écrit qu'en cas de défaut.
+      type Comp = { id: string; stiffness: number; family: ReturnType<typeof stringTypeToFamily>; ratings: ReturnType<typeof ratingsOf>; s100: number };
+      const noteMemo = new Map<string, string | null>();
+      const tresFerme: boolean[] = [];
+      const one = (ra: number, weight: number | undefined, head: number | undefined, m: Comp, x: Comp, mT: number, xT: number, w: number, probe: string | null): void => {
+        const input = {
+          racquetStiffness: ra, racquetWeight: weight, racquetHeadSize: head,
+          mainStringStiffness: m.stiffness, mainStringFamily: m.family, mainRatings: m.ratings,
+          crossStringStiffness: x.stiffness, crossStringFamily: x.family, crossRatings: x.ratings,
+          mainTension: mT, crossTension: xT,
+        };
+        const std = calc({ ...input, profile: { armSensitive: false } });
+        const sen = calc({ ...input, profile: { armSensitive: true } });
+        const where = (): string => `(${probe ? `montage construit, ${probe} : ` : ''}RA ${ra}, montants ${m.id} ${m.stiffness} à ${mT} kg, travers ${x.id} ${x.stiffness} à ${xT} kg)`;
+        const rcs = std.rcs;
+        const h = std.hybrid;
+        tally.n += w;
+        if (sen.rcs !== rcs || h?.mains !== sen.hybrid?.mains || h?.crosses !== sen.hybrid?.crosses || h?.note !== sen.hybrid?.note) add('indice :', `la déclaration « bras sensible » change l'indice ou les bornes ${where()}`);
+        const exact = roundExact(Math.max(K(ra, (6 * m.s100 + 4 * x.s100) / 10, mT + xT), K(ra, (5 * m.s100 + 5 * x.s100) / 10, mT + xT)));
+        if (rcs !== exact) add('indice :', `${rcs} au lieu de ${exact}, arrondi exact du plus haut du 60/40 et du 50/50 de chaque jeu à sa tension ${where()}`);
+        const equiv = calculateRCS(ra, (m.stiffness + x.stiffness) / 2 + 0.1 * Math.max(0, m.stiffness - x.stiffness), (mT + xT) / 2);
+        if (rcs !== equiv) add('indice (forme équivalente) :', `${rcs} au lieu de ${equiv} (moyenne + 0,1 × max(0, montants − travers), à la tension moyenne) ${where()}`);
+        const bm = calculateRCS(ra, m.stiffness, mT);
+        const bx = calculateRCS(ra, x.stiffness, xT);
+        if (!h) add('bornes :', `hybride sans bornes ni mention ${where()}`);
+        else {
+          if (h.mains !== bm || h.crosses !== bx) add('bornes :', `${h.mains} / ${h.crosses} au lieu de ${bm} / ${bx}, indices des montants seuls et des travers seuls à leur tension ${where()}`);
+          if (rcs < Math.min(bm, bx)) add('bornes :', `indice ${rcs} sous les deux bornes ${bm} et ${bx} ${where()}`);
+          const key = `${rcs}|${bm}|${bx}|${h.note}`;
+          let bad = noteMemo.get(key);
+          if (bad === undefined) {
+            bad = noteIssue(h.note, rcs, bm, bx);
+            noteMemo.set(key, bad);
+          }
+          if (bad) add('mention :', `${bad} ${where()}`);
+          if (rcs > Math.max(bm, bx)) tally.dessus += w;
+          else if (bm === bx) tally.egal += w;
+          else tally.entre += w;
+        }
+        const aStd = std.warnings.filter(isArm);
+        const aSen = sen.warnings.filter(isArm);
+        if (aStd.length > 0) tally.std += w;
+        if (aSen.length > 0) tally.sen += w;
+        if (rcs >= N && aStd.length === 0) add('alerte :', `indice ${rcs} sans alerte standard (seuil ${N}) ${where()}`);
+        if (rcs >= S && aSen.length === 0) add('alerte :', `indice ${rcs} sans alerte bras sensible (seuil ${S}) ${where()}`);
+        const tf = (tresFerme[rcs] ??= getStringRecommendation(rcs).level === 'Très Ferme');
+        if (tf && aStd.length === 0) add('palier :', `« Très Ferme » (indice ${rcs}) sans alerte standard ${where()}`);
+        for (const a of aStd.length + aSen.length > 0 ? [...aStd, ...aSen] : []) {
+          const cited = /^Alerte bras : indice (\d+),/.exec(a) ?? /l'indice \((\d+)\)/.exec(a);
+          if (!cited || Number(cited[1]) !== rcs) add('alerte :', `l'alerte cite l'indice ${cited?.[1] ?? '(aucun)'} au lieu de ${rcs} ${where()}`);
+        }
+        if (probe) tally.probes.add(probe);
+      };
+      const toComp = (st: { id: string; stiffness: number; type: string; control?: number; comfort?: number; spin?: number; power?: number; durability?: number }): Comp => ({
+        id: st.id,
+        stiffness: st.stiffness,
+        family: stringTypeToFamily(st.type),
+        ratings: { control: st.control, comfort: st.comfort, spin: st.spin, power: st.power, durability: st.durability },
+        s100: Math.round(st.stiffness * 10) * 10,
+      });
+      const compsX = comps.map(toComp);
+      let seen = 0;
+      for (const g of groups.values()) {
+        for (const m of compsX) {
+          for (const x of compsX) {
+            if (m.id === x.id) continue;
+            for (const mT of MAINS_T) {
+              for (const off of OFFSETS) {
+                if (seen++ % stride !== 0) continue;
+                one(g.ra, g.weight, g.head, m, x, mT, mT + off, g.n, null);
+              }
+            }
+          }
+        }
+      }
+      const fake = (id: string, stiffness: number) => toComp({ id, stiffness, type: 'Polyester', control: 8, comfort: 7, spin: 8, power: 7, durability: 8 });
+      for (const p of PROBES) one(p.ra, 300, 100, fake('montants', p.m), fake('travers', p.x), p.mT, p.xT, 0, p.what);
+      // (e) sans travers : aucune borne, indice du cordage à la tension moyenne
+      for (const g of groups.values()) {
+        for (const m of compsX) {
+          for (const mT of MAINS_T) {
+            if (seen++ % stride !== 0) continue;
+            const o = calc({ racquetStiffness: g.ra, racquetWeight: g.weight, racquetHeadSize: g.head, mainStringStiffness: m.stiffness, mainStringFamily: m.family, mainRatings: m.ratings, mainTension: mT, crossTension: mT - 2 });
+            if (o.hybrid) add('sans travers :', `bornes d'hybride sur ${m.id} seul (RA ${g.ra}, ${mT} / ${mT - 2} kg)`);
+            if (o.rcs !== calculateRCS(g.ra, m.stiffness, mT - 1)) add('sans travers :', `indice ${o.rcs} au lieu de ${calculateRCS(g.ra, m.stiffness, mT - 1)} pour ${m.id} seul (RA ${g.ra}, ${mT} / ${mT - 2} kg)`);
+          }
+        }
+      }
+      return { issues: [...issues.values()], tally };
+    };
+
+    if (formulaOk) {
+      const t0 = Date.now();
+      const real = checkHybrids(calculateAdvancedRcs, 1);
+      real.issues.forEach((i) => fail(`hybrides : ${i}`));
+      if (real.tally.probes.size !== PROBES.length) fail(`hybrides : ${real.tally.probes.size} montages construits vérifiés sur ${PROBES.length}`);
+      if (real.tally.dessus === 0 || real.tally.entre === 0 || real.tally.egal === 0) fail(`hybrides : la grille n'exerce plus chaque forme de la mention (entre ${real.tally.entre}, bornes égales ${real.tally.egal}, au-dessus ${real.tally.dessus}) : relire le contrôle`);
+      const realMs = Date.now() - t0;
+
+      // --- Tests négatifs (moteur rechargé depuis son source) et témoins positifs --------------------------------------
+      const engineSrc = readFileSync('src/lib/advanced-rcs.ts', 'utf8').replace(/\r\n/g, '\n');
+      const stringsModule = await import('../src/data/strings-database');
+      const loadEngine = (src: string): Calc => {
+        const js = ts.transpileModule(src, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 } }).outputText;
+        const mod: { exports: Record<string, unknown> } = { exports: {} };
+        new Function('exports', 'require', 'module', js)(
+          mod.exports,
+          (id: string) => {
+            if (id === '@/data/strings-database') return stringsModule;
+            throw new Error(`require inattendu : ${id}`);
+          },
+          mod
+        );
+        return mod.exports.calculateAdvancedRcs as Calc;
+      };
+      const STRIDE = 41;
+      let detected = 0;
+      let accepted = 0;
+      const copyIssues = checkHybrids(loadEngine(engineSrc), STRIDE).issues;
+      if (copyIssues.length > 0) fail(`hybrides : le moteur rechargé depuis son source (instrument des tests négatifs) ne passe pas son propre contrôle : ${copyIssues.join(' ; ')}`);
+      const IDX = 'const rcs = rcsIndex(racquetStiffness, Math.max(blend(main, cross), (main + cross) / 2), avgTension);';
+      const NOTE = '`estimation pour un hybride, entre ${lo} et ${hi}`';
+      const NEGATIVES: Array<[string, string, string, string]> = [
+        ['60/40 seul (l\'indice du moteur d\'avant)', IDX, 'const rcs = rcsIndex(racquetStiffness, blend(main, cross), avgTension);', 'indice :'],
+        ['50/50 seul', IDX, 'const rcs = rcsIndex(racquetStiffness, (main + cross) / 2, avgTension);', 'indice :'],
+        ['50/50 de la page d\'avant (montants à la tension moyenne, deux arrondis)', IDX, 'const rcs = Math.max(rcsIndex(racquetStiffness, blend(main, cross), avgTension), Math.round((rcsIndex(racquetStiffness, main, avgTension) + rcsIndex(racquetStiffness, cross, crossTension)) / 2));', 'indice :'],
+        ['la déclaration change l\'indice d\'un hybride', 'const { rcs, hybrid } = setupFirmnessIndex(input);', 'const { rcs: rcs0, hybrid } = setupFirmnessIndex(input);\n  const rcs = rcs0 + (profile?.armSensitive && input.crossStringStiffness !== undefined ? 1 : 0);', 'indice :'],
+        ['borne des montants à la tension moyenne', 'const mains = rcsIndex(racquetStiffness, main, mainTension);', 'const mains = rcsIndex(racquetStiffness, main, avgTension);', 'bornes :'],
+        ['hybride sans bornes ni mention', 'return { rcs, hybrid: { mains, crosses, note: hybridIndexNote(rcs, mains, crosses) } };', 'return { rcs, hybrid: null };', 'bornes :'],
+        ['bornes inversées dans la mention', NOTE, '`estimation pour un hybride, entre ${hi} et ${lo}`', 'mention :'],
+        ['mention sans « estimation »', NOTE, '`hybride, entre ${lo} et ${hi}`', 'mention :'],
+        ['mention qui parle de mesure', NOTE, '`indice mesuré pour un hybride, entre ${lo} et ${hi}`', 'mention :'],
+        ['« au-dessus » non dit (« entre » ou bornes égales à la place)', '  if (rcs > hi) return `estimation pour un hybride, au-dessus des montants seuls (${mains}) et des travers seuls (${crosses})`;\n', '', 'mention :'],
+        ['alerte « bras sensible » qui lit encore le 60/40', '? rcs >= 32 ||', '? rcsIndex(racquetStiffness, effStringStiffness, avgTension) >= 32 ||', 'alerte :'],
+        ['alerte standard qui lit encore le 60/40', ': rcs >= 35 ||', ': rcsIndex(racquetStiffness, effStringStiffness, avgTension) >= 35 ||', 'alerte :'],
+        ['bornes sur un montage sans travers', 'return { rcs: rcsIndex(racquetStiffness, main, avgTension), hybrid: null };', "return { rcs: rcsIndex(racquetStiffness, main, avgTension), hybrid: { mains: 0, crosses: 0, note: 'estimation' } };", 'sans travers :'],
+      ];
+      const POSITIVES: Array<[string, string, string]> = [
+        ['mention reformulée, mêmes bornes', NOTE, '`estimation pour un hybride : entre ${lo} et ${hi}`'],
+        ['commentaire du moteur reformulé', "Mention de l'indice d'un hybride", "Mention de l'indice d'un montage hybride"],
+      ];
+      for (const [name, find, replace, needle] of NEGATIVES) {
+        const i = engineSrc.indexOf(find);
+        if (i < 0) {
+          fail(`hybrides : prémisse du test négatif « ${name} » fausse (motif absent de src/lib/advanced-rcs.ts)`);
+          continue;
+        }
+        let issues: string[] = [];
+        try {
+          issues = checkHybrids(loadEngine(engineSrc.slice(0, i) + replace + engineSrc.slice(i + find.length)), STRIDE).issues;
+        } catch (e) {
+          fail(`hybrides : moteur altéré « ${name} » illisible (${(e as Error).message}) : le test doit échouer bruyamment`);
+          continue;
+        }
+        if (issues.some((x) => x.startsWith(needle))) detected++;
+        else fail(`hybrides : garde-fou muet sur « ${name} » (motif attendu « ${needle} »${issues.length ? `, trouvé : ${issues[0].slice(0, 90)}` : ''})`);
+      }
+      for (const [name, find, replace] of POSITIVES) {
+        const i = engineSrc.indexOf(find);
+        if (i < 0) {
+          fail(`hybrides : prémisse du témoin positif « ${name} » fausse (motif absent de src/lib/advanced-rcs.ts)`);
+          continue;
+        }
+        const found = checkHybrids(loadEngine(engineSrc.slice(0, i) + replace + engineSrc.slice(i + find.length)), STRIDE).issues;
+        if (found.length > 0) fail(`hybrides : témoin positif « ${name} » rejeté à tort : ${found.join(' ; ')}`);
+        else accepted++;
+      }
+
+      if (failures.length === before21t) {
+        const t = real.tally;
+        const pc = (k: number) => ((100 * k) / t.n).toFixed(2);
+        ok(
+          `hybrides : un seul indice sur ${t.n} montages hybrides (${groups.size} groupes pour ${racquetsDatabase.length} raquettes, ${comps.length} cordages hors hybrides prémontés, montants à ${MAINS_T.join('/')} kg, travers à ${OFFSETS.map((o) => (o > 0 ? `+${o}` : `${o}`)).join('/')} kg) et ${PROBES.length} montages construits : ` +
+            `indice = arrondi exact du plus haut du 60/40 et du 50/50 de chaque jeu à sa tension = forme équivalente (moyenne + 0,1 × max(0, montants − travers)) ; bornes = montants seuls et travers seuls à leur tension ; ` +
+            `mention « estimation » (entre les bornes ${t.entre}, bornes égales ${t.egal}, au-dessus des deux bornes ${t.dessus}) ; alerte dès l'indice ${N} (standard, ${pc(t.std)} % de la grille) et ${S} (bras sensible, ${pc(t.sen)} %), aucun palier « Très Ferme » sans alerte, alerte qui cite l'indice ; ` +
+            `sans travers : aucune borne ; ${detected} tests négatifs détectés, ${accepted} témoins positifs acceptés (grille réelle en ${(realMs / 1000).toFixed(1)} s)`
+        );
+      }
     }
   }
 }
