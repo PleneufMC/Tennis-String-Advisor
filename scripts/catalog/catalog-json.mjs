@@ -12,8 +12,8 @@
  * Règles :
  *   - aucune valeur comblée : un champ absent du TS vaut `null` dans le JSON ;
  *   - aucune provenance testeurs : seuls `racquetsDatabase` et `stringsDatabase`
- *     sont sérialisés ; des fichiers *tester-ratings*, seuls les identifiants des
- *     cordages harmonisés sont lus (par `rating-basis.mjs`), pour la nature des notes ;
+ *     sont sérialisés ; seuls les identifiants des cordages harmonisés et des cordages
+ *     à note reprise sont lus (par `rating-basis.mjs`), pour la nature des notes ;
  *   - les notes /10 des cordages portent leur nature (`rating_basis`, libellés et
  *     mention dans `meta`), comme sur toutes les surfaces (décision de Pierre du
  *     10/10/2026 : « garder les notes et les étiqueter partout ») ;
@@ -76,7 +76,7 @@ export function toEnString(s) {
     power: n(s.power),
     versatility: n(s.versatility),
     innovation: n(s.innovation),
-    // Nature des notes ci-dessus : 'editorial', 'harmonised' ou 'none', par la fonction des fiches EN ; jamais la provenance.
+    // Nature des notes ci-dessus : 'editorial', 'harmonised', 'third_party' ou 'none', par la fonction des fiches EN ; jamais la provenance.
     rating_basis: ratingBasisOf(s),
     tension_min: n(s.recommendedTension?.min),
     tension_max: n(s.recommendedTension?.max),

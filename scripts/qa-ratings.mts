@@ -2063,7 +2063,7 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
 // ---------------------------------------------------------------------------
 // 18. NATURE DES NOTES DE CORDAGE — ÉTIQUETÉE SUR CHAQUE SURFACE FRANÇAISE
 //     (principe décidé par Pierre le 10/10/2026 : « garder les notes et les étiqueter partout » ;
-//      formulation des libellés et de la mention proposée par l'orchestrateur, pas encore validée)
+//      formulation des libellés et de la mention tranchée par Opus 5.5 le 23/10/2026, délégation de l'orchestrateur)
 // ---------------------------------------------------------------------------
 // Les notes /10 des cordages ne sont pas des mesures (PR #103 : 12 notes sur 1 182 viennent
 // de Tennis Warehouse, l'origine de 1 062 est inconnue). Elles s'affichent donc avec leur
@@ -2097,20 +2097,28 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
   const { default: React } = await import('react');
   (globalThis as { React?: unknown }).React ??= React; // JSX « classique » sous tsx (Next : runtime automatique)
   const { renderToStaticMarkup } = await import('react-dom/server');
-  type Nature = 'editorial' | 'harmonized' | 'none';
+  type Nature = 'editorial' | 'harmonized' | 'third_party' | 'none';
   // Les cinq notes affichées (comme côté EN) : « sans note » = aucune des cinq n'est publiée.
   const FIELDS5 = ['control', 'comfort', 'spin', 'power', 'durability'] as const;
   const EXPECT: Readonly<Record<Nature, string>> = {
-    editorial: 'Appréciation éditoriale TSA',
-    harmonized: 'Appréciation éditoriale TSA, harmonisée avec des avis de testeurs',
+    editorial: "Note de l'équipe TSA, non mesurée",
+    harmonized: "Moyenne de la note de l'équipe TSA et d'avis de testeurs publiés, non mesurée",
+    third_party: "Note reprise, en tout ou en partie, d'un test publié par un revendeur, non mesurée",
     none: 'Non publié',
   };
   const NOTICE =
-    "Appréciation de l'équipe, non mesurée en laboratoire. La rigidité (lb/in) est la donnée du cordage utilisée par le RCS.";
-  const PROPOSED = 'formulation proposée le 10/10/2026, pas encore validée par Pierre : la changer ici ET dans src/lib/string-rating-nature.ts, en connaissance de cause';
+    "Notes /10 non mesurées : la nature de chaque note est indiquée à côté. L'indice RCS n'utilise que la rigidité (lb/in) ; l'alerte bras peut aussi se déclencher sur la note de confort.";
+  const OVERALL = 'Moyenne de quatre notes non mesurées : performance, contrôle, confort, durabilité';
+  const PROPOSED = 'formulation tranchée par Opus 5.5 le 23/10/2026 : la changer ici ET dans src/lib/string-rating-nature.ts, sur nouvel arbitrage';
 
-  // (a) textes figés (formulation proposée, à valider), sans chaîne de testeurs ni Tennis Warehouse, sans « rigidité mesurée ».
-  for (const k of ['editorial', 'harmonized', 'none'] as const) {
+  // (a) textes figés, sans chaîne de testeurs ni revendeur nommé, sans « rigidité mesurée », et jamais « mesurée » sans négation :
+  //     aucune note /10 n'est une mesure.
+  if (N.STRING_OVERALL_RATING_LABEL !== OVERALL) fail(`nature des notes : libellé de la note globale = « ${N.STRING_OVERALL_RATING_LABEL} » (${PROPOSED})`);
+  const affirmsMeasure = (t: string) => /(?<!non )mesur/i.test(t);
+  for (const t of [...Object.values(N.STRING_RATING_LABELS), N.STRING_RATINGS_NOTICE, N.STRING_OVERALL_RATING_LABEL]) {
+    if (affirmsMeasure(t)) fail(`nature des notes : « ${t} » présente une note comme mesurée`);
+  }
+  for (const k of ['editorial', 'harmonized', 'third_party', 'none'] as const) {
     if (N.STRING_RATING_LABELS[k] !== EXPECT[k]) fail(`nature des notes : libellé « ${k} » = « ${N.STRING_RATING_LABELS[k]} », « ${EXPECT[k]} » attendu (${PROPOSED})`);
   }
   if (N.STRING_RATINGS_NOTICE !== NOTICE) {
@@ -2125,11 +2133,23 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     fail('nature des notes : la mention affirme que la rigidité est mesurée — faux tant que le chantier C2 (réappariement TWU sur (modèle, jauge), PR #105) n’a pas couvert le catalogue (règle 3) ; adapter ce contrôle à ce moment-là');
   }
 
-  // (b) la nature se déduit des notes publiées et de la liste des 18.
+  // (b) la nature se déduit des notes publiées, de la liste des 18 et de la provenance : `third_party` dès qu'une note affichée est
+  //     `tw` ou `harmonisee+tw`. La liste dérivée lue par les surfaces doit être exactement ce recalcul (dans les deux sens).
   const harmonizedIds = new Set(Object.keys(STRING_TESTER_RATINGS));
+  const { STRING_RATINGS_PROVENANCE: PROV } = await import('../src/data/string-ratings-provenance');
+  const { THIRD_PARTY_RATED_STRING_IDS } = await import('../src/data/string-ratings-third-party');
+  const recomputeThirdParty = (prov: typeof PROV): string[] =>
+    Object.entries(prov).filter(([, e]) => FIELDS5.some((f) => e.fields[f] === 'tw' || e.fields[f] === 'harmonisee+tw')).map(([id]) => id).sort();
+  const thirdPartyIds = new Set(recomputeThirdParty(PROV));
+  const thirdPartyListFindings = (list: readonly string[], prov: typeof PROV): string[] => {
+    const want = recomputeThirdParty(prov);
+    const got = [...list].sort();
+    return want.join() === got.join() ? [] : [`liste des notes reprises [${got.join(', ')}] ≠ recalcul depuis la provenance [${want.join(', ')}]`];
+  };
+  for (const msg of thirdPartyListFindings(THIRD_PARTY_RATED_STRING_IDS, PROV)) fail(`nature des notes : ${msg}`);
   const expectedNature = (s: (typeof stringsDatabase)[number]): Nature =>
-    FIELDS5.every((f) => s[f] === undefined) ? 'none' : harmonizedIds.has(s.id) ? 'harmonized' : 'editorial';
-  const natureCount: Record<Nature, number> = { editorial: 0, harmonized: 0, none: 0 };
+    FIELDS5.every((f) => s[f] === undefined) ? 'none' : thirdPartyIds.has(s.id) ? 'third_party' : harmonizedIds.has(s.id) ? 'harmonized' : 'editorial';
+  const natureCount: Record<Nature, number> = { editorial: 0, harmonized: 0, third_party: 0, none: 0 };
   for (const s of stringsDatabase) {
     const n = N.stringRatingNature(s);
     natureCount[n]++;
@@ -2139,10 +2159,11 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
   }
   for (const id of harmonizedIds) {
     const s = stringsDatabase.find((x) => x.id === id);
-    if (s && N.stringRatingNature(s) !== 'harmonized') fail(`nature des notes : ${id} (18 harmonisés) n’est pas classé « harmonized »`);
+    if (s && !thirdPartyIds.has(id) && N.stringRatingNature(s) !== 'harmonized') fail(`nature des notes : ${id} (18 harmonisés) n’est pas classé « harmonized »`);
   }
-  if (natureCount.harmonized !== harmonizedIds.size) fail(`nature des notes : ${natureCount.harmonized} fiches harmonisées pour ${harmonizedIds.size} en provenance`);
-  if (natureCount.editorial + natureCount.harmonized + natureCount.none !== stringsDatabase.length) fail('nature des notes : une fiche sans nature');
+  const harmonizedOnly = [...harmonizedIds].filter((id) => !thirdPartyIds.has(id)).length;
+  if (natureCount.harmonized !== harmonizedOnly) fail(`nature des notes : ${natureCount.harmonized} fiches harmonisées pour ${harmonizedOnly} en provenance (hors notes reprises)`);
+  if (natureCount.editorial + natureCount.harmonized + natureCount.third_party + natureCount.none !== stringsDatabase.length) fail('nature des notes : une fiche sans nature');
   // Sémantique sur des fiches synthétiques (le catalogue actuel est « tout ou rien » et ne l'éprouve pas) : chacune des
   // cinq notes affichées suffit à faire « une note » ; performance, polyvalence et innovation n'en font pas une à elles
   // seules (elles ne s'affichent pas seules) ; un identifiant harmonisé sans note reste « sans note ».
@@ -2222,13 +2243,16 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
   for (const file of srcTs) for (const msg of undeclaredFindings(file, readFileSync(file, 'utf8'))) fail(`nature des notes : ${msg}`);
 
   // (d) exécution : fiche et carte (pleine, compacte) de CHAQUE cordage, rendues côté serveur.
-  const labelTag = (n: Nature) => `>${EXPECT[n]}<`;
+  // Texte tel que React l'écrit dans le HTML (l'apostrophe des libellés devient &#x27;).
+  const htmlText = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#x27;');
+  const labelTag = (n: Nature) => `>${htmlText(EXPECT[n])}<`;
+  const RATED = ['editorial', 'harmonized', 'third_party'] as const;
   // (i) notes affichées par surface : une fiche sans note dit « Non publié » autant de fois, sans barre, zéro ni NaN.
   const NONE_LINES: Readonly<Record<string, number>> = { fiche: 5, carte: 5, 'carte compacte': 4 };
   const renderFindings = (surface: string, id: string, html: string, nature: Nature): string[] => {
     const found: string[] = [];
     if (nature === 'none') {
-      if (html.includes('data-rating-nature=') || html.includes('Appréciation')) found.push(`${surface} ${id} : étiquette affichée pour un cordage sans note`);
+      if (html.includes('data-rating-nature=') || RATED.some((k) => html.includes(htmlText(EXPECT[k])))) found.push(`${surface} ${id} : étiquette affichée pour un cordage sans note`);
       if (!html.includes('Non publié')) found.push(`${surface} ${id} : « Non publié » absent`);
       const missing = (html.match(/Non publié(?!e)/g) ?? []).length;
       if (missing < (NONE_LINES[surface] ?? 1)) found.push(`${surface} ${id} : ${missing} « Non publié » pour ${NONE_LINES[surface]} notes absentes`);
@@ -2238,7 +2262,7 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     if (!html.includes(`data-rating-nature="${nature}"`) || !html.includes(labelTag(nature))) {
       found.push(`${surface} ${id} : étiquette « ${EXPECT[nature]} » absente alors que des notes sont rendues`);
     }
-    for (const other of ['editorial', 'harmonized'] as const) {
+    for (const other of RATED) {
       if (other !== nature && html.includes(labelTag(other))) found.push(`${surface} ${id} : étiquette d’une autre nature (« ${EXPECT[other]} »)`);
     }
     return found;
@@ -2248,6 +2272,10 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
   let renders = 0;
   let sample: { fiche: string; id: string } | null = null;
   let sampleNone: { fiche: string; card: string; id: string } | null = null;
+  let sampleOverall: { card: string; id: string } | null = null;
+  // Note globale ★ de la carte : dérivée, elle porte son libellé si (et seulement si) elle s'affiche.
+  const overallFindings = (id: string, card: string, shown: boolean): string[] =>
+    shown === (card.includes('data-overall-rating-label') && card.includes(htmlText(OVERALL))) ? [] : [`carte ${id} : note globale ${shown ? 'sans' : 'absente mais avec'} son libellé`];
   const renderBad: string[] = [];
   for (const s of stringsDatabase) {
     const n = N.stringRatingNature(s);
@@ -2259,6 +2287,9 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     if (n !== 'none' && !fiche.includes('data-rating-notice="full"')) renderBad.push(`fiche ${s.id} : mention absente sous « Notes de jeu »`);
     if (n === 'harmonized' && !sample) sample = { fiche, id: s.id };
     if (n === 'none' && !sampleNone) sampleNone = { fiche, card, id: s.id };
+    const overallShown = s.performance !== undefined && s.control !== undefined && s.comfort !== undefined && s.durability !== undefined;
+    renderBad.push(...overallFindings(s.id, card, overallShown));
+    if (overallShown && !sampleOverall) sampleOverall = { card, id: s.id };
   }
   if (renderBad.length > 0) fail(`nature des notes : ${renderBad.length} défaut(s) de rendu serveur (fiche, carte pleine, carte compacte), par exemple : ${renderBad.slice(0, 3).join(' | ')}`);
 
@@ -2324,6 +2355,8 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     ['PDF montant éditorial', editorialCross.id, null, 'editorial', null],
   ];
   if (noneString) pdfCases.push(['PDF cordage sans note', noneString.id, null, 'none', null]);
+  const thirdPartyString = stringsDatabase.find((s) => N.stringRatingNature(s) === 'third_party');
+  if (thirdPartyString) pdfCases.push(['PDF montant à note reprise d’un revendeur', thirdPartyString.id, null, 'third_party', null]);
   const pdfRuns: Array<{ data: Awaited<ReturnType<typeof pdfFor>>['data']; text: string }> = [];
   for (const [name, main, cross, nm, nc] of pdfCases) {
     const run = await pdfFor(main, cross);
@@ -2346,7 +2379,7 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
   for (const msg of layoutFindings(layoutSource)) fail(`nature des notes : ${msg}`);
 
   // (h) même nature en FR (ce module) et dans l'export catalog.json lu par les pages EN (public/js/rating-labels.js).
-  const EN_OF: Readonly<Record<Nature, string>> = { editorial: 'editorial', harmonized: 'harmonised', none: 'none' };
+  const EN_OF: Readonly<Record<Nature, string>> = { editorial: 'editorial', harmonized: 'harmonised', third_party: 'third_party', none: 'none' };
   type ExportRow = { id: string; rating_basis?: string };
   const natureMismatch = (rows: readonly ExportRow[]): string[] =>
     stringsDatabase.flatMap((s) => {
@@ -2367,8 +2400,8 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     ['étiquette retirée du PDF (données)', surfaceFindings('src/lib/pdf-configuration-data.ts', srcOf('src/lib/pdf-configuration-data.ts').replace(/\bstringRatingLabel\(/g, 'noop('))],
     ['étiquette citée en commentaire seulement', surfaceFindings('src/app/statistics/page.tsx', srcOf('src/app/statistics/page.tsx').replace(/<StringRatingLabel\b/g, '// <StringRatingLabel').replace(/STRING_RATING_LABELS\[/g, '// STRING_RATING_LABELS['))],
     ['surface non déclarée', undeclaredFindings('src/app/top/page.tsx', "import { stringsDatabase } from '@/data/strings-database';\nexport default () => stringsDatabase.map((s) => s.control.toFixed(1));")],
-    ['fiche rendue sans étiquette', sample ? renderFindings('fiche', sample.id, sample.fiche.split(EXPECT.harmonized).join(''), 'harmonized') : []],
-    ['fiche rendue avec l’étiquette d’une autre nature', sample ? renderFindings('fiche', sample.id, sample.fiche.split(EXPECT.harmonized).join(EXPECT.editorial), 'harmonized') : []],
+    ['fiche rendue sans étiquette', sample ? renderFindings('fiche', sample.id, sample.fiche.split(htmlText(EXPECT.harmonized)).join(''), 'harmonized') : []],
+    ['fiche rendue avec l’étiquette d’une autre nature', sample ? renderFindings('fiche', sample.id, sample.fiche.split(htmlText(EXPECT.harmonized)).join(htmlText(EXPECT.editorial)), 'harmonized') : []],
     ['étiquette sur un cordage sans note', renderFindings('carte', 'sans-note', `<p data-rating-nature="editorial">${EXPECT.editorial}</p>Non publié`, 'none')],
     ['PDF imprimé sans étiquette', pdfFindings('PDF', pdfRuns[0].data, pdfRuns[0].text.split(EXPECT.harmonized).join(''), 'harmonized', null)],
     ['PDF imprimé sans mention', pdfFindings('PDF', pdfRuns[0].data, pdfRuns[0].text.split(NOTICE).join(''), 'harmonized', null)],
@@ -2381,13 +2414,18 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     ['export EN sans nature', natureMismatch(exportRows.map(({ id }) => ({ id })))],
     ['fiche sans note rendue avec une barre à zéro', sampleNone ? renderFindings('fiche', sampleNone.id, sampleNone.fiche.replace('Non publié', '<div role="img" aria-label="Contrôle : 0 sur 10"></div>'), 'none') : []],
     ['carte sans note avec une note globale NaN', sampleNone ? renderFindings('carte', sampleNone.id, `${sampleNone.card}<span>NaN</span>`, 'none') : []],
+    ['export EN : Triax (note reprise) exporté « editorial »', natureMismatch(exportRows.map((r) => (r.id === 'tecnifibre-triax' ? { ...r, rating_basis: 'editorial' } : r)))],
+    ['liste des notes reprises sans Triax', thirdPartyListFindings(THIRD_PARTY_RATED_STRING_IDS.filter((id) => id !== 'tecnifibre-triax'), PROV)],
+    ['note `tw` ajoutée à une fiche hors liste', thirdPartyListFindings(THIRD_PARTY_RATED_STRING_IDS, { ...PROV, 'luxilon-original': { ...PROV['luxilon-original'], fields: { ...PROV['luxilon-original'].fields, control: 'tw' } } })],
+    ['libellé affirmant une note mesurée', affirmsMeasure('Note de l’équipe TSA, mesurée en laboratoire') ? ['mesurée'] : []],
+    ['carte : note globale sans son libellé', sampleOverall ? overallFindings(sampleOverall.id, sampleOverall.card.split(htmlText(OVERALL)).join(''), true) : []],
     ['PDF sans note : zéro imprimé', noneString ? pdfFindings('PDF', pdfRuns[3].data, pdfRuns[3].text.replace('non publie', '0.0/10'), 'none', null) : []],
   ];
   for (const [name, hits] of planted) if (hits.length === 0) fail(`nature des notes : garde-fou muet sur « ${name} »`);
 
   if (failures.length === before) {
-    ok(`nature des notes : ${stringsDatabase.length} cordages = ${natureCount.harmonized} harmonisés + ${natureCount.editorial} à note éditoriale + ${natureCount.none} sans note ; ` +
-      `textes figés (formulation proposée, à valider par Pierre ; aucune chaîne de testeurs, ni TW, ni « rigidité mesurée ») ; description du catalogue sans promesse de note ; ${Object.keys(SURFACES).length} surfaces déclarées portent l’étiquette ` +
+    ok(`nature des notes : ${stringsDatabase.length} cordages = ${natureCount.harmonized} harmonisés + ${natureCount.third_party} à note reprise d’un revendeur (liste = recalcul depuis la provenance) + ${natureCount.editorial} de l’équipe + ${natureCount.none} sans note ; ` +
+      `textes figés (formulation tranchée par Opus 5.5 ; aucune chaîne de testeurs ni revendeur nommé, jamais « mesurée » sans négation) ; note globale ★ libellée sur chaque carte qui l’affiche ; description du catalogue sans promesse de note ; ${Object.keys(SURFACES).length} surfaces déclarées portent l’étiquette ` +
       `et aucune surface de ${srcTs.length} fichiers src/ n’est restée hors liste ; ${renders} rendus serveur (fiche + carte pleine + carte compacte) étiquetés selon la nature ; ` +
       `${pdfCases.length} PDF vérifiés (données et texte imprimé) ; même nature en FR et dans l’export EN (${exportRows.length} cordages) ; ` +
       `${natureCount.none} sans note : « Non publié » à chaque note, ni barre, ni zéro, ni NaN (fiche, cartes, PDF) ; ${planted.length} tests négatifs détectés`);
