@@ -1,15 +1,16 @@
 // FICHIER GÉNÉRÉ par scripts/scraper/tw_product_images.py — ne pas éditer à la main.
 //
 // Photos produit hébergées chez nous (public/images/products/) : Tennis Warehouse (US),
-// Tennis Warehouse Europe, Tennis-Point et images officielles des fabricants
-// (source « fabricant:<marque> »). Retrait : PRODUCT_IMAGES_ENABLED = false
-// (src/lib/product-images.ts), puis : python scripts/scraper/tw_product_images.py purge
-// (ou « purge <source> » pour une seule source, ex. « purge fabricant:wilson »).
+// Tennis Warehouse Europe, Tennis-Point, images officielles des fabricants (source
+// « fabricant:<marque> ») et envois manuels de Pierre (« upload:pierre »). Retrait :
+// PRODUCT_IMAGES_ENABLED = false (src/lib/product-images.ts), puis : python scripts/scraper/tw_product_images.py purge
+// (ou « purge <source> » pour une seule source, ex. « purge fabricant:wilson », « purge upload:pierre »).
 
 export type ProductImageSource =
   | 'tennis-warehouse'
   | 'tennis-warehouse-europe'
   | 'tennis-point'
+  | 'upload:pierre'
   | `fabricant:${string}`;
 
 /** Libellé du crédit « Photo : … » affiché sous chaque photo, par source. */
@@ -17,10 +18,14 @@ export const PRODUCT_IMAGE_CREDITS: Readonly<Record<string, string>> = {
   "tennis-warehouse": "Tennis Warehouse",
   "tennis-warehouse-europe": "Tennis Warehouse Europe",
   "tennis-point": "Tennis-Point",
+  "upload:pierre": "envoi de Pierre",
   "fabricant:wilson": "Wilson",
   "fabricant:babolat": "Babolat",
   "fabricant:tecnifibre": "Tecnifibre",
   "fabricant:yonex": "Yonex",
+  "fabricant:solinco": "Solinco",
+  "fabricant:dunlop": "Dunlop",
+  "fabricant:kirschbaum": "Kirschbaum",
 };
 
 export interface ProductImageEntry {
@@ -37,6 +42,8 @@ export interface ProductImageEntry {
   shownGauge?: string;
   /** Coloris présenté par la photo, quand la fiche n'en fixe aucun : légende « coloris présenté ». */
   shownColour?: string;
+  /** Crédit propre à l'image (envoi manuel de Pierre : la source réelle) ; à défaut, le libellé de la source. */
+  credit?: string;
 }
 
 export const PRODUCT_IMAGES: Readonly<Record<string, ProductImageEntry>> = {
@@ -63,6 +70,7 @@ export const PRODUCT_IMAGES: Readonly<Record<string, ProductImageEntry>> = {
   "babolat-synthetic-gut": { file: "/images/products/strings/babolat-synthetic-gut.webp", width: 600, height: 800, sourcePageUrl: "https://www.tennis-warehouse.com/Babolat_Synthetic_Gut_17_125_String/descpageACBAB-BSGSS17.html", sourceImageUrl: "https://img.tennis-warehouse.com/watermark/rs.php?path=BSGSS17-WH-1.jpg", retrievedAt: "2026-09-29", source: "tennis-warehouse", twProduct: "Babolat Synthetic Gut 17/1.25 String" },
   "babolat-touch-vs": { file: "/images/products/strings/babolat-touch-vs.webp", width: 600, height: 800, sourcePageUrl: "https://www.tennis-warehouse.com/Babolat_Touch_VS_Natural_Gut_17_125_String/descpageACBAB-BTG17.html", sourceImageUrl: "https://img.tennis-warehouse.com/watermark/rs.php?path=BTG17-1.jpg&nw=612", retrievedAt: "2026-09-29", source: "tennis-warehouse", twProduct: "Babolat Touch VS Natural Gut 17/1.25 String" },
   "babolat-xcel": { file: "/images/products/strings/babolat-xcel.webp", width: 600, height: 658, sourcePageUrl: "https://www.babolat.com/fr/xcel-12m/241110.html", sourceImageUrl: "https://media.babolat.com/image/upload/f_auto,q_auto,c_pad,w_1008,h_1008/v1724935233/Product_Media/2024/Tennis/Strings/241110-XCEL_12M-128-1-Pack_recto.png", retrievedAt: "2026-10-10", source: "fabricant:babolat", twProduct: "Xcel 12M" },
+  "dunlop-cx-200": { file: "/images/products/racquets/dunlop-cx-200.webp", width: 315, height: 799, sourcePageUrl: "https://us.dunlopsports.com/dunlop/tennis/rackets/cx-series/cx-200-tennis-racket/CX200-24.html", sourceImageUrl: "https://us.dunlopsports.com/on/demandware.static/-/Sites-masterCatalog_DunlopSports/default/dw82244c94/images/large/DT24_10349668-70_CX200_1.jpg", retrievedAt: "2026-10-22", source: "fabricant:dunlop", twProduct: "CX 200 Tennis Racket" },
   "dunlop-cx-200-tour-18x20": { file: "/images/products/racquets/dunlop-cx-200-tour-18x20.webp", width: 344, height: 800, sourcePageUrl: "https://www.tennis-warehouse.com/Dunlop_CX_200_Tour_18x20/descpageRCDUNLOP-DCX2T8.html", sourceImageUrl: "https://img.tennis-warehouse.com/watermark/rs.php?path=DCX2T8-thumb.jpg&nw=612", retrievedAt: "2026-09-29", source: "tennis-warehouse", twProduct: "Dunlop CX 200 Tour 18x20 Racquet" },
   "dunlop-sx-300": { file: "/images/products/racquets/dunlop-sx-300.webp", width: 344, height: 800, sourcePageUrl: "https://www.tennis-warehouse.com/Dunlop_SX_300/descpageRCDUNLOP-DSX3R.html", sourceImageUrl: "https://img.tennis-warehouse.com/watermark/rs.php?path=DSX3R-thumb.jpg&nw=612", retrievedAt: "2026-09-29", source: "tennis-warehouse", twProduct: "Dunlop SX 300 Racquet 2025" },
   "head-boom-pro-2024": { file: "/images/products/racquets/head-boom-pro-2024.webp", width: 344, height: 800, sourcePageUrl: "https://www.tennis-warehouse.com/Head_Boom_Pro_2026/descpageRCHEAD-HBOOP6.html", sourceImageUrl: "https://img.tennis-warehouse.com/watermark/rs.php?path=HBOOP6-thumb.jpg&nw=612", retrievedAt: "2026-10-10", source: "tennis-warehouse", twProduct: "Head Boom Pro 2026 Racquet" },
@@ -88,6 +96,7 @@ export const PRODUCT_IMAGES: Readonly<Record<string, ProductImageEntry>> = {
   "head-speed-legend-pro": { file: "/images/products/racquets/head-speed-legend-pro.webp", width: 344, height: 800, sourcePageUrl: "https://www.tennis-warehouse.com/Head_Speed_Pro_Legend_2025/descpageRCHEAD-HSPPL5.html", sourceImageUrl: "https://img.tennis-warehouse.com/watermark/rs.php?path=HSPPL5-thumb.jpg&nw=612", retrievedAt: "2026-09-29", source: "tennis-warehouse", twProduct: "Head Speed Pro Legend 2025 Racquet" },
   "head-titanium-tis6": { file: "/images/products/racquets/head-titanium-tis6.webp", width: 344, height: 800, sourcePageUrl: "https://www.tennis-warehouse.com/Head_Titanium_TiS6_Strung/descpageRCHEAD-TIS6.html", sourceImageUrl: "https://img.tennis-warehouse.com/watermark/rs.php?path=TIS6-thumb.jpg&nw=612", retrievedAt: "2026-09-29", source: "tennis-warehouse", twProduct: "Head Titanium Ti.S6 Strung Racquet" },
   "isospeed-control-classic": { file: "/images/products/strings/isospeed-control-classic.webp", width: 600, height: 800, sourcePageUrl: "https://www.tennis-warehouse.com/ISOSPEED_Control_Classic_16_130_String/descpageACISO-ISOCC16.html", sourceImageUrl: "https://img.tennis-warehouse.com/watermark/rs.php?path=ISOCC16-1.jpg&nw=612", retrievedAt: "2026-09-29", source: "tennis-warehouse", twProduct: "ISOSPEED Control Classic 16/1.30 String" },
+  "kirschbaum-touch-multifiber": { file: "/images/products/strings/kirschbaum-touch-multifiber.webp", width: 492, height: 600, sourcePageUrl: "https://www.kirschbaum-shop.de/Polyamid-Darmsaiten/Sets-Polyamid-Darmsaiten/Touch-Multifibre-12-Meter-Set.html", sourceImageUrl: "https://www.kirschbaum-shop.de/out/pictures/generated/product/1/800_600_100/touchmultifibre_set.jpg", retrievedAt: "2026-10-22", source: "fabricant:kirschbaum", twProduct: "Kirschbaum strings and grips | Touch Multifibre - 12 Meter Set | Kirschbaum Online Shop" },
   "luxilon-4g": { file: "/images/products/strings/luxilon-4g.webp", width: 600, height: 800, sourcePageUrl: "https://www.tennis-warehouse.com/Luxilon_4G_16L_125_String/descpageACWILSON-LUX4G125.html", sourceImageUrl: "https://img.tennis-warehouse.com/watermark/rs.php?path=LUX4G125-1.jpg&nw=612", retrievedAt: "2026-09-29", source: "tennis-warehouse", twProduct: "Luxilon 4G 16L/1.25 String" },
   "luxilon-4g-rough": { file: "/images/products/strings/luxilon-4g-rough.webp", width: 600, height: 800, sourcePageUrl: "https://www.tennis-warehouse.com/Luxilon_4G_Rough_16L_125_String/descpageACWILSON-LUX4GR125.html", sourceImageUrl: "https://img.tennis-warehouse.com/watermark/rs.php?path=LUX4GR125-1.jpg&nw=612", retrievedAt: "2026-09-29", source: "tennis-warehouse", twProduct: "Luxilon 4G Rough 16L/1.25 String" },
   "luxilon-4g-soft": { file: "/images/products/strings/luxilon-4g-soft.webp", width: 600, height: 800, sourcePageUrl: "https://www.tennis-warehouse.com/Luxilon_4G_Soft_16_125_String/descpageACWILSON-LUX4GS16.html", sourceImageUrl: "https://img.tennis-warehouse.com/watermark/rs.php?path=LUX4GS16-1.jpg&nw=612", retrievedAt: "2026-09-29", source: "tennis-warehouse", twProduct: "Luxilon 4G Soft 16/1.25 String" },
@@ -99,6 +108,7 @@ export const PRODUCT_IMAGES: Readonly<Record<string, ProductImageEntry>> = {
   "luxilon-natural-gut": { file: "/images/products/strings/luxilon-natural-gut.webp", width: 600, height: 800, sourcePageUrl: "https://www.tennis-warehouse.com/Luxilon_Natural_Gut_16L_125_String/descpageACWILSON-LNAT16L.html", sourceImageUrl: "https://img.tennis-warehouse.com/watermark/rs.php?path=LNAT16L-1.jpg&nw=612", retrievedAt: "2026-09-29", source: "tennis-warehouse", twProduct: "Luxilon Natural Gut 16L/1.25 String" },
   "prince-synthetic-gut": { file: "/images/products/strings/prince-synthetic-gut.webp", width: 600, height: 800, sourcePageUrl: "https://www.tennis-warehouse.com/Prince_Synthetic_Gut_17_125_Duraflex_String/descpageACTWABG-S17.html", sourceImageUrl: "https://img.tennis-warehouse.com/watermark/rs.php?path=S17-WH-1.jpg", retrievedAt: "2026-09-29", source: "tennis-warehouse", twProduct: "Prince Synthetic Gut 17/1.25 Duraflex String" },
   "solinco-barb-wire": { file: "/images/products/strings/solinco-barb-wire.webp", width: 450, height: 600, sourcePageUrl: "https://www.tennis-warehouse.com/Solinco_Barb_Wire_16L125_String/descpageACSOLINCO-SBW16LB.html", sourceImageUrl: "https://img.tennis-warehouse.com/watermark/rs.php?path=SBW16LB-BK-1.jpg&nw=612", retrievedAt: "2026-09-29", source: "tennis-warehouse", twProduct: "Solinco Barb Wire 16L/1.25 String" },
+  "solinco-confidential": { file: "/images/products/strings/solinco-confidential.webp", width: 600, height: 715, sourcePageUrl: "https://solincosports.com/equipment/confidential/", sourceImageUrl: "https://solincosports.com/wp-content/uploads/2021/03/20231114_SOL_Confidential_Set_BGR_GRY_1-1-1200x1200.jpg", retrievedAt: "2026-10-22", source: "fabricant:solinco", twProduct: "Confidential – Solinco®", shownGauge: "1.30" },
   "solinco-hyper-g": { file: "/images/products/strings/solinco-hyper-g.webp", width: 600, height: 800, sourcePageUrl: "https://www.tennis-warehouse.com/Solinco_Hyper-G_16L_125_String/descpageACSOLINCO-SHG16LG.html", sourceImageUrl: "https://img.tennis-warehouse.com/watermark/rs.php?path=SHG16LG-GN-1.jpg&nw=612", retrievedAt: "2026-09-29", source: "tennis-warehouse", twProduct: "Solinco Hyper-G 16L/1.25 String" },
   "solinco-hyper-g-soft": { file: "/images/products/strings/solinco-hyper-g-soft.webp", width: 600, height: 800, sourcePageUrl: "https://www.tennis-warehouse.com/Solinco_Hyper-G_Soft_16L_125_String/descpageACSOLINCO-SHGS6LG.html", sourceImageUrl: "https://img.tennis-warehouse.com/watermark/rs.php?path=SHGS6LG-GN-1.jpg&nw=612", retrievedAt: "2026-09-29", source: "tennis-warehouse", twProduct: "Solinco Hyper-G Soft 16L/1.25 String" },
   "solinco-mach-10": { file: "/images/products/strings/solinco-mach-10.webp", width: 600, height: 800, sourcePageUrl: "https://www.tennis-warehouse.com/Solinco_Mach-10_16L_125_String/descpageACSOLINCO-SM1025B.html", sourceImageUrl: "https://img.tennis-warehouse.com/watermark/rs.php?path=SM1025B-BL-1.jpg&nw=612", retrievedAt: "2026-09-29", source: "tennis-warehouse", twProduct: "Solinco Mach-10 16L/1.25 String" },
