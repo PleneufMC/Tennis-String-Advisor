@@ -444,6 +444,11 @@ function expectations(fa: Facts, lang: Lang, kind: string): { re: RegExp; what: 
   const fam = (t: string) => fa.families.find((f) => f.type === t)!;
   const mm = fam('Multifilament');
   const dot = (v: string) => v.replace(/\./g, '\\.'); // le point d'un nombre ou d'une phrase est littéral dans l'expression
+  // FAQ n° 1 (gabarit A-1) : les deux polyesters les moins rigides, le polyester médian et le plus rigide, au montage de référence
+  const [p1, p2] = fa.polys;
+  const soft2 = rcsOf(p1) === rcsOf(p2) ? `${rcsOf(p1)}` : `${rcsOf(p1)} ${lang === 'fr' ? 'et' : 'and'} ${rcsOf(p2)}`;
+  const twu2 = alignedOnTwu(p1) && alignedOnTwu(p2) ? (lang === 'fr' ? ', mesures TWU' : ', TWU measurements') : '';
+  const medRcs = calculateRCS(EXAMPLE.ra, fa.median, EXAMPLE.kg);
   if (kind === 'polyesters') {
     return lang === 'fr'
       ? [
@@ -453,7 +458,10 @@ function expectations(fa: Facts, lang: Lang, kind: string): { re: RegExp; what: 
           { re: rx(`${fa.nFirm} polyesters du catalogue sont à ${ZONE_FIRM_MIN} lb/in ou plus`), what: `effectif des ≥ ${ZONE_FIRM_MIN} lb/in` },
           { re: rx(`Les ${fa.nFirm} plus fermes`), what: 'titre des plus fermes' },
           { re: rx(`seuls ${mm.nAligned} de nos ${mm.n} multifilaments ont une rigidité alignée`), what: 'hybrides : multifilaments alignés sur une mesure TWU' },
-          { re: rx(`un indice RCS de ${fa.soft3Rcs[0]} à ${fa.soft3Rcs[1]}, contre ${fa.topRcs} pour le plus rigide`), what: 'FAQ n° 1 : indices des trois plus souples et du plus rigide' },
+          { re: rx(`donnent un indice de ${fa.soft3Rcs[0]} à ${fa.soft3Rcs[1]} au montage de référence`), what: 'Verdict express : indices des trois plus souples' },
+          { re: rx(dot(`les deux moins rigides de nos ${fa.nPolys} polyesters, le ${label(p1)} et le ${label(p2)} \\(${n(p1.stiffness)} et ${n(p2.stiffness)} lb/in${twu2}\\), donnent ${soft2}`)), what: 'FAQ n° 1 : les deux polyesters les moins rigides' },
+          { re: rx(dot(`Le polyester médian \\(${n(fa.median)} lb/in\\) donne ${medRcs}`)), what: 'FAQ n° 1 : polyester médian' },
+          { re: rx(dot(`Le plus rigide, le ${fa.topLabel} \\(${n(fa.max)} lb/in\\), donne ${fa.topRcs}`)), what: 'FAQ n° 1 : polyester le plus rigide' },
           { re: rx(`cet écart vaut ${fa.gap.min} à ${fa.gap.max} points d'indice RCS`), what: 'Verdict express : écart entre le plus souple et le plus rigide' },
           { re: rx(`avec un ${fa.topLabel} à ${EXAMPLE.kg} kg \\(indice ${fa.topRcs}\\)`), what: 'leviers : indice du polyester le plus rigide' },
         ]
@@ -464,7 +472,10 @@ function expectations(fa: Facts, lang: Lang, kind: string): { re: RegExp; what: 
           { re: rx(`${fa.nFirm} polys in the catalogue are at ${ZONE_FIRM_MIN} lb/in or more`), what: `effectif des ≥ ${ZONE_FIRM_MIN} lb/in` },
           { re: rx(`The ${fa.nFirm} firmest`), what: 'titre des plus fermes' },
           { re: rx(`only ${mm.nAligned} of our ${mm.n} multifilaments have a stiffness aligned`), what: 'hybrides : multifilaments alignés sur une mesure TWU' },
-          { re: rx(`an RCS index of ${fa.soft3Rcs[0]} to ${fa.soft3Rcs[1]}, against ${fa.topRcs} for the stiffest`), what: 'FAQ n° 1 : indices des trois plus souples et du plus rigide' },
+          { re: rx(`give an index of ${fa.soft3Rcs[0]} to ${fa.soft3Rcs[1]} in the reference setup`), what: 'Short version : indices des trois plus souples' },
+          { re: rx(dot(`the two least stiff of our ${fa.nPolys} polys, ${label(p1)} and ${label(p2)} \\(${n(p1.stiffness)} and ${n(p2.stiffness)} lb/in${twu2}\\), give ${soft2}`)), what: 'FAQ n° 1 : les deux polyesters les moins rigides' },
+          { re: rx(dot(`The median polyester \\(${n(fa.median)} lb/in\\) gives ${medRcs}`)), what: 'FAQ n° 1 : polyester médian' },
+          { re: rx(dot(`The stiffest, ${fa.topLabel} \\(${n(fa.max)} lb/in\\), gives ${fa.topRcs}`)), what: 'FAQ n° 1 : polyester le plus rigide' },
           { re: rx(`that gap is worth ${fa.gap.min} to ${fa.gap.max} RCS points`), what: 'short version : écart entre le plus souple et le plus rigide' },
           { re: rx(`with ${fa.topLabel} at ${EXAMPLE.kg} kg \\(index ${fa.topRcs}\\)`), what: 'leviers : indice du polyester le plus rigide' },
         ];
