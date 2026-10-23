@@ -1,6 +1,6 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.3.27
+> **Version** : 2.3.28
 > **Date** : 23 octobre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
@@ -22,6 +22,25 @@ sensible, −34 `calculateCompatibility`, −22 palier « Très Ferme », 0 ajou
 `tsa-measure` (règle 2). **Contrôle 14 bis** : relit `ALIGNMENT_DOSSIERS` (veille du 10/10 et `docs/redaction/veille-2026-10-23-ecarts-de-fiche.md`,
 faits V117 à V122), échoue sur un numéro en double ou un dossier absent ; champ `model` alignable ; 3 tests négatifs ajoutés (20). Le
 témoin « excellent toucher » du contrôle 19 passe de XR3, devenue la médiane, à NXT (173,7).
+
+**Changelog v2.3.27 → v2.3.28** — **Photos produit, lot du 22/10/2026 : 12 images officielles,
+légende du produit voisin, politique d'accès lue avant toute requête** (demande de Pierre du 22/10/2026 : « rajouter toutes
+les photos de raquettes et cordages manquantes » ; sources bornées par l'orchestrateur ; `tsa-core`). **Couverture** 65 → **74/129
+raquettes**, 60 → **63/179 cordages**, **137 fiches EN sur 308** : Wilson 6 (Blade Feel Comp Jr 25, Burn V6 100LS, Clash 100 Pro V3,
+US Open Jr 21/23/25), Yonex 2 (EZONE 105, avec la légende « coloris présenté : Espresso Brown » ; VCORE 98 Tour), Tecnifibre 3 (Tempo
+285 V2, TGV, Multifeel), Babolat 1 (RPM Team), toutes de fiches alignées le 10/10 ou à caractéristiques identiques. **Quarantaines
+datées** : Pure Strike 100 16x20 (contre-vérification du 23/10 : génération de la fiche non établie, RA ± 3 non discriminante, même
+règle que TF40 305 et FX 500 2026), T-Fight 315S (seule vue entière au code article du 305S), 6 cordages Wilson de la collection officielle (jauge 1,32, coloris, montages hybrides
+différents), Dynamix VP (noir seulement). **Produit voisin** : une photo d'une autre jauge de la fiche porte la légende « jauge présentée :
+1,25 mm » (FR) / « gauge shown » (EN) ; un autre coloris n'est admis que sur une fiche sans coloris (« coloris présenté » / « colour shown », toute fiche raquette) ; une raquette
+voisine, jamais. **Accès** : `fetch` lit robots.txt (règles appliquées à chaque URL), agents.md et llms.txt avant la première requête ;
+User-Agent « automated agent ». **Incident** : agents.md et llms.txt de wilson.com et tecnifibre.com (modèle Shopify) exigent
+« Web Bot Auth » pour les requêtes serveur ; lus après la collecte du lot (consigne reçue en cours de lot) : hôtes consignés, plus
+aucune requête ; leurs 9 photos du lot **restent en place jusqu'à leur remplacement** par une image équivalente d'une
+source dont la politique d'accès le permet (décision de Pierre du 23/10/2026). **Contrôle 12** :
+liste blanche page/image par source (Babolat FR et US), témoins et tests négatifs par source, Head et Luxilon refusés, règles du produit
+voisin, indépendant des photos présentes ; `purge fabricant:<marque>` testée sur les 4 marques (audit vert, manifeste et images
+identiques après reconstruction).
 
 **Changelog v2.3.25 → v2.3.26** — **Hybrides : un seul indice, celui que l'alerte lit, que le configurateur
 affiche et que le PDF imprime ; contrôle 21 ter** (décision (b)+(a) de l'orchestrateur du 22/10/2026, Pierre ayant délégué ; limite (4)
@@ -1118,8 +1137,8 @@ corrigé dans la même PR.
   définitions tant que ces configurations existent ; aucune migration, aucune alerte ne lit ce champ.
 - Export PDF, thème sombre, i18n FR/EN livrés.
 - Photos produit Tennis Warehouse (29/09/2026), Tennis Warehouse Europe et
-  sites officiels des fabricants (10/10/2026) : 65/129 raquettes, 60/179
-  cordages, hébergées chez nous, FR (125 fiches EN sur 310 comprises) ;
+  sites officiels des fabricants (10/10 et 22/10/2026) : 74/129 raquettes, 63/179
+  cordages, hébergées chez nous, FR (137 fiches EN sur 308 comprises) ;
   drapeau `PRODUCT_IMAGES_ENABLED` et commande `purge` (globale ou par source,
   ex. `purge fabricant:wilson`) pour le retrait ; associations vérifiées par
   script (tamis, plan de cordage, RA, poids, jauge, coloris), quarantaine sinon,
@@ -1128,7 +1147,9 @@ corrigé dans la même PR.
   Pierre du 10/10/2026, en connaissance du risque. Tennis-Point : collecte
   refusée (429), aucune photo. Fabricants : head.com (429) et luxilon.com (403)
   ont refusé le robot, wilson.com, babolat.com, tecnifibre.com et yonex.com
-  l'ont accepté (14 photos).
+  l'ont accepté (14 photos le 10/10, 12 le 22/10) ; depuis le 22/10, wilson.com et
+  tecnifibre.com sont consignés (agents.md : Web Bot Auth exigé, non fourni) ;
+  leurs photos restent en place jusqu'à leur remplacement (Pierre, 23/10/2026).
 - Notes de raquette (décision de Pierre du 10/10/2026) : **aucune note déduite
   des caractéristiques** n'est affichée, nulle part (comparateur, configurateur,
   PDF Premium, FR et EN). Raquette évaluée : « Avis de testeurs (synthèse) »,
@@ -1589,4 +1610,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.3.27 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.3.28 — Tennis String Advisor — « Mesurer avant d'affirmer. »*

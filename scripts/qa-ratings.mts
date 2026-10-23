@@ -1060,24 +1060,56 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
 {
   const before = failures.length;
   const { PRODUCT_IMAGES, PRODUCT_IMAGE_CREDITS } = await import('../src/data/product-images');
-  const SOURCE_HOSTS: Record<string, { page: string; image: string }> = {
-    'tennis-warehouse': { page: 'https://www.tennis-warehouse.com/', image: 'https://img.tennis-warehouse.com/' },
-    'tennis-warehouse-europe': { page: 'https://www.tenniswarehouse-europe.com/', image: 'https://img.tenniswarehouse-europe.com/' },
-    'tennis-point': { page: 'https://www.tennis-point.fr/products/', image: 'https://cdn.shopify.com/s/files/1/0638/1885/8538/' },
-    'fabricant:wilson': { page: 'https://www.wilson.com/en-us/products/', image: 'https://www.wilson.com/cdn/shop/files/' },
-    'fabricant:babolat': { page: 'https://www.babolat.com/fr/', image: 'https://media.babolat.com/image/upload/' },
-    'fabricant:tecnifibre': { page: 'https://www.tecnifibre.com/products/', image: 'https://cdn.shopify.com/s/files/1/0907/5425/3144/files/' },
-    'fabricant:yonex': { page: 'https://www.yonex.com/tennis/', image: 'https://www.yonex.com/media/catalog/product/' },
+  // Liste blanche : pour chaque source, les préfixes de page et d'image admis. Une source absente
+  // (Head et Luxilon, fermés au robot, ou tout revendeur sans décision de Pierre) est refusée.
+  // Babolat : site FR et, depuis le 22/10/2026, site US (produit absent du site FR).
+  const SOURCE_HOSTS: Record<string, { pages: string[]; images: string[] }> = {
+    'tennis-warehouse': { pages: ['https://www.tennis-warehouse.com/'], images: ['https://img.tennis-warehouse.com/'] },
+    'tennis-warehouse-europe': { pages: ['https://www.tenniswarehouse-europe.com/'], images: ['https://img.tenniswarehouse-europe.com/'] },
+    'tennis-point': { pages: ['https://www.tennis-point.fr/products/'], images: ['https://cdn.shopify.com/s/files/1/0638/1885/8538/'] },
+    'fabricant:wilson': { pages: ['https://www.wilson.com/en-us/products/'], images: ['https://www.wilson.com/cdn/shop/files/'] },
+    'fabricant:babolat': { pages: ['https://www.babolat.com/fr/', 'https://www.babolat.com/us/'], images: ['https://media.babolat.com/image/upload/'] },
+    'fabricant:tecnifibre': { pages: ['https://www.tecnifibre.com/products/'], images: ['https://cdn.shopify.com/s/files/1/0907/5425/3144/files/'] },
+    'fabricant:yonex': { pages: ['https://www.yonex.com/tennis/'], images: ['https://www.yonex.com/media/catalog/product/'] },
   };
   // Hôtes d'images de toutes les sources : jamais appelés par l'application ni par les fiches EN.
   const IMAGE_HOSTS_RE = /img\.tennis-?warehouse(-europe)?\.com|cdn\.shopify\.com\/s\/files|wilson\.com\/cdn\/shop|media\.babolat\.com|yonex\.com\/media\/catalog/;
   const { existsSync, readdirSync, statSync } = await import('node:fs');
   const racquetIds = new Set(racquetsDatabase.map((r) => r.id));
-  const stringIds = new Set(stringsDatabase.map((s) => s.id));
+  const stringById = new Map(stringsDatabase.map((s) => [s.id, s]));
+  type PhotoEntry = (typeof PRODUCT_IMAGES)[string];
+  // Contrôles d'une entrée (provenance, crédit, légende de produit voisin), rejoués plus bas sur des
+  // copies altérées : un garde-fou muet fait échouer l'audit.
+  const entryIssues = (id: string, e: PhotoEntry, credits: Readonly<Record<string, string>>): string[] => {
+    const issues: string[] = [];
+    const hosts = SOURCE_HOSTS[e.source];
+    if (!hosts) return [`photo ${id} : source inattendue ${e.source}`];
+    if (!credits[e.source]) issues.push(`photo ${id} : aucun libellé de crédit pour la source ${e.source}`);
+    if (!hosts.pages.some((h) => e.sourcePageUrl.startsWith(h))) issues.push(`photo ${id} : page source invalide pour ${e.source}`);
+    if (!hosts.images.some((h) => e.sourceImageUrl.startsWith(h))) issues.push(`photo ${id} : image source invalide pour ${e.source}`);
+    if (!e.twProduct) issues.push(`photo ${id} : intitulé du produit source absent (association non auditable)`);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(e.retrievedAt)) issues.push(`photo ${id} : date de collecte invalide`);
+    // Produit voisin (22/10/2026) : une autre jauge seulement si la fiche la liste ; un autre coloris
+    // seulement si la fiche n'en fixe aucun (aucune fiche raquette n'a de coloris). La légende dit ce
+    // que la photo montre.
+    const str = stringById.get(id);
+    if (e.shownGauge !== undefined) {
+      const gauges = new Set((str?.gauges ?? []).flatMap((g) => g.split('/')));
+      if (!str) issues.push(`photo ${id} : « jauge présentée » sur une raquette`);
+      else if (!/^\d\.\d{2}$/.test(e.shownGauge) || !gauges.has(e.shownGauge)) {
+        issues.push(`photo ${id} : jauge présentée ${e.shownGauge} absente de la fiche (${(str.gauges ?? []).join(', ')})`);
+      }
+    }
+    if (e.shownColour !== undefined) {
+      if (str?.color) issues.push(`photo ${id} : coloris présenté « ${e.shownColour} » alors que la fiche fixe « ${str.color} »`);
+      else if (!e.shownColour.trim()) issues.push(`photo ${id} : coloris présenté vide`);
+    }
+    return issues;
+  };
   let bytes = 0;
   const listed = new Set<string>();
   for (const [id, e] of Object.entries(PRODUCT_IMAGES)) {
-    const folder = racquetIds.has(id) ? 'racquets' : stringIds.has(id) ? 'strings' : null;
+    const folder = racquetIds.has(id) ? 'racquets' : stringById.has(id) ? 'strings' : null;
     if (!folder) { fail(`photo ${id} : aucun produit de ce nom dans la base`); continue; }
     if (e.file !== `/images/products/${folder}/${id}.webp`) fail(`photo ${id} : chemin inattendu ${e.file}`);
     const disk = `public${e.file}`;
@@ -1086,13 +1118,74 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     const size = statSync(disk).size;
     bytes += size;
     if (size > 120_000) fail(`photo ${id} : ${Math.round(size / 1024)} Ko (> 120 Ko)`);
-    const hosts = SOURCE_HOSTS[e.source];
-    if (!hosts) { fail(`photo ${id} : source inattendue ${e.source}`); continue; }
-    if (!PRODUCT_IMAGE_CREDITS[e.source]) fail(`photo ${id} : aucun libellé de crédit pour la source ${e.source}`);
-    if (!e.sourcePageUrl.startsWith(hosts.page)) fail(`photo ${id} : page source invalide pour ${e.source}`);
-    if (!e.sourceImageUrl.startsWith(hosts.image)) fail(`photo ${id} : image source invalide pour ${e.source}`);
-    if (!e.twProduct) fail(`photo ${id} : intitulé du produit source absent (association non auditable)`);
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(e.retrievedAt)) fail(`photo ${id} : date de collecte invalide`);
+    entryIssues(id, e, PRODUCT_IMAGE_CREDITS).forEach(fail);
+  }
+  // Tests négatifs, un jeu par source de la liste blanche : une entrée témoin (réelle si la source a des
+  // photos) doit passer, puis être refusée avec une page ou une image hors de la liste, et sans crédit.
+  {
+    const negatives: Array<[string, string[], string]> = [];
+    let witnesses = 0;
+    const multiGauge = stringsDatabase.find((s) => (s.gauges ?? []).length > 1 && s.color)!;
+    // Entrée témoin construite depuis la liste blanche : le contrôle ne dépend pas des photos présentes
+    // (une source purgée doit laisser l'audit vert).
+    const synthetic = (source: string, id: string): PhotoEntry => ({
+      file: `/images/products/${racquetIds.has(id) ? 'racquets' : 'strings'}/${id}.webp`, width: 1, height: 1, retrievedAt: '2026-10-22', source,
+      sourcePageUrl: `${SOURCE_HOSTS[source].pages[0]}temoin`, sourceImageUrl: `${SOURCE_HOSTS[source].images[0]}temoin.jpg`, twProduct: 'témoin',
+    } as PhotoEntry);
+    for (const source of Object.keys(SOURCE_HOSTS)) {
+      const real = Object.entries(PRODUCT_IMAGES).find(([, e]) => e.source === source);
+      const [id, base] = real ?? [multiGauge.id, synthetic(source, multiGauge.id)];
+      const credits: Record<string, string> = { ...PRODUCT_IMAGE_CREDITS, [source]: PRODUCT_IMAGE_CREDITS[source] ?? 'Témoin' };
+      const witness = entryIssues(id, base, credits);
+      if (witness.length) fail(`photos produit : témoin de la source ${source} refusé (${witness.join(' ; ')})`);
+      else witnesses++;
+      const noCredit = Object.fromEntries(Object.entries(credits).filter(([k]) => k !== source));
+      negatives.push(
+        [`${source} : page hors liste blanche`, entryIssues(id, { ...base, sourcePageUrl: 'https://www.exemple-revendeur.test/produit' }, credits), 'page source invalide'],
+        [`${source} : image hors liste blanche`, entryIssues(id, { ...base, sourceImageUrl: 'https://cdn.exemple-revendeur.test/image.jpg' }, credits), 'image source invalide'],
+        [`${source} : crédit manquant`, entryIssues(id, base, noCredit), 'aucun libellé de crédit'],
+      );
+    }
+    const bId = multiGauge.id;
+    const bEntry = synthetic('fabricant:babolat', bId);
+    const strEntry = bEntry;
+    // Crédits du témoin : la table générée ne liste que les sources présentes au manifeste (purge comprise).
+    const bCredits = { ...PRODUCT_IMAGE_CREDITS, 'fabricant:babolat': 'Babolat' };
+    negatives.push(
+      ['Luxilon fermé (403) présenté comme source', entryIssues(bId, { ...bEntry, source: 'fabricant:luxilon', sourcePageUrl: 'https://www.luxilon.com/en-us/product/x' }, { ...PRODUCT_IMAGE_CREDITS, 'fabricant:luxilon': 'Luxilon' }), 'source inattendue'],
+      ['Head fermé (429) présenté comme source', entryIssues(bId, { ...bEntry, source: 'fabricant:head', sourcePageUrl: 'https://www.head.com/x' }, { ...PRODUCT_IMAGE_CREDITS, 'fabricant:head': 'Head' }), 'source inattendue'],
+      ['Babolat : site d’un autre pays que FR et US', entryIssues(bId, { ...bEntry, sourcePageUrl: 'https://www.babolat.com/de/x/101576.html' }, bCredits), 'page source invalide'],
+      ['jauge présentée absente de la fiche', entryIssues(multiGauge.id, { ...strEntry, shownGauge: '1.18' }, bCredits), 'absente de la fiche'],
+      ['jauge présentée sur une raquette', entryIssues(racquetsDatabase[0].id, { ...synthetic('fabricant:babolat', racquetsDatabase[0].id), shownGauge: '1.25' }, bCredits), 'sur une raquette'],
+      ['coloris présenté sur une fiche qui fixe un coloris', entryIssues(multiGauge.id, { ...strEntry, shownColour: 'Pink' }, bCredits), 'alors que la fiche fixe'],
+      ['coloris présenté vide (raquette)', entryIssues(racquetsDatabase[0].id, { ...synthetic('fabricant:babolat', racquetsDatabase[0].id), shownColour: ' ' }, bCredits), 'coloris présenté vide'],
+    );
+    // Témoin : raquette (sans coloris de fiche) photographiée dans un des coloris de la page, avec la légende.
+    const racquetColour = entryIssues(racquetsDatabase[0].id, { ...synthetic('fabricant:babolat', racquetsDatabase[0].id), shownColour: 'Espresso Brown' }, bCredits);
+    if (racquetColour.length) fail(`photos produit : témoin « coloris présenté sur une raquette » refusé (${racquetColour.join(' ; ')})`);
+    else witnesses++;
+    // Témoin : fiche sans coloris (aucune au catalogue aujourd'hui), le coloris présenté est admis.
+    const blank = '__temoin-sans-coloris__';
+    stringById.set(blank, { ...multiGauge, id: blank, color: undefined } as (typeof stringsDatabase)[number]);
+    const accepted = entryIssues(blank, { ...strEntry, shownColour: 'Black' }, bCredits);
+    stringById.delete(blank);
+    if (accepted.length) fail(`photos produit : témoin « coloris présenté sur une fiche sans coloris » refusé (${accepted.join(' ; ')})`);
+    else witnesses++;
+    for (const [name, found, needle] of negatives) {
+      if (!found.some((i) => i.includes(needle))) fail(`photos produit : garde-fou muet sur « ${name} » (${needle})`);
+    }
+    // Légende FR : le composant lit les deux champs et les annonce tels quels.
+    const captionIssues = (src: string): string[] => [
+      ...(/image\.shownGauge\s*&&[^\n]*jauge présentée : \{image\.shownGauge/.test(src) ? [] : ['légende « jauge présentée » absente du composant FR']),
+      ...(/image\.shownColour\s*&&[^\n]*coloris présenté : \{image\.shownColour\}/.test(src) ? [] : ['légende « coloris présenté » absente du composant FR']),
+    ];
+    const fig = readFileSync('src/components/product/product-image.tsx', 'utf8');
+    captionIssues(fig).forEach((i) => fail(`photos produit : ${i}`));
+    if (!captionIssues(fig.replace('jauge présentée', 'jauge')).length) fail('photos produit : garde-fou muet sur la légende FR retirée');
+    if (failures.length === before) {
+      ok(`photos produit : ${Object.keys(SOURCE_HOSTS).length} sources en liste blanche, ${witnesses} témoins acceptés, ${negatives.length + 1} tests négatifs détectés ` +
+        '(page ou image hors liste et crédit manquant pour chaque source, Head et Luxilon, Babolat hors FR/US, jauge ou coloris présentés hors règle ou vides, légende FR)');
+    }
   }
   for (const folder of ['racquets', 'strings']) {
     const dir = `public/images/products/${folder}`;
@@ -1125,11 +1218,12 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     const { images } = await loadProductImages(process.cwd());
     const { racquets: enR, strings: enS } = buildCatalog(racquetsDatabase, stringsDatabase);
     let shown = 0;
+    let captioned = 0;
     let illustrated = 0;
     for (const [kind, list, render] of [['racquets', enR, racquetPage], ['strings', enS, stringPage]] as const) {
       for (const item of list as Array<{ id: string }>) {
         const html: string = (render as (x: unknown, i: unknown) => string)(item, images);
-        const expected = (images as Record<string, { file: string }>)[item.id];
+        const expected = (images as Record<string, { file: string; shownGauge?: string; shownColour?: string }>)[item.id];
         const ld = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].map((m) => m[1]).join('\n');
         if (/"image"|\/images\/products\//.test(ld)) fail(`fiche EN ${kind}/${item.id} : photo propagée dans le JSON-LD`);
         if (/og:image/.test(html)) fail(`fiche EN ${kind}/${item.id} : og:image présent`);
@@ -1138,13 +1232,15 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
           const credit = (PRODUCT_IMAGE_CREDITS as Record<string, string>)[(expected as unknown as { source: string }).source];
           if (!html.includes(`<img src="${expected.file}"`)) fail(`fiche EN ${kind}/${item.id} : photo validée non affichée`);
           else if (!credit || !html.includes(`Photo: ${credit}`)) fail(`fiche EN ${kind}/${item.id} : crédit « Photo: ${credit} » absent`);
-          else shown++;
+          else if (expected.shownGauge && !html.includes(`gauge shown: ${expected.shownGauge} mm`)) fail(`fiche EN ${kind}/${item.id} : légende « gauge shown » absente`);
+          else if (expected.shownColour && !html.includes(`colour shown: ${expected.shownColour}`)) fail(`fiche EN ${kind}/${item.id} : légende « colour shown » absente`);
+          else { shown++; if (expected.shownGauge || expected.shownColour) captioned++; }
         } else if (!html.includes('data-product-image="illustration"')) {
           fail(`fiche EN ${kind}/${item.id} : ni photo ni illustration`);
         } else illustrated++;
       }
     }
-    ok(`fiches EN : ${shown} photo(s) affichée(s), ${illustrated} illustration(s), aucune photo en JSON-LD/og:image`);
+    ok(`fiches EN : ${shown} photo(s) affichée(s) dont ${captioned} avec la légende du produit voisin, ${illustrated} illustration(s), aucune photo en JSON-LD/og:image`);
   }
   if (failures.length === before) {
     const n = Object.keys(PRODUCT_IMAGES).length;

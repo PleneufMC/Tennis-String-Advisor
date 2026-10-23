@@ -17,6 +17,10 @@ aucun contournement ; l'adaptateur Luxilon est écrit mais NON TESTÉ au-delà d
 première requête, et `out/refused-hosts.json` empêche toute nouvelle requête vers ces hôtes
 tant que la ligne n'est pas retirée à la main.
 
+Lot du 22/10/2026 : cordages Wilson (collection « wilson-tennis-string » ; jamais la collection
+Luxilon de wilson.com, Luxilon restant fermé), pages du site Babolat US pour un produit absent du site
+FR (code « us-<id> »), poids Yonex « 315g » sans espace, contrôle strict des montages hybrides.
+
 Ce module ne contient QUE la logique propre à chaque site (découverte des pages,
 lecture des caractéristiques, choix de l'image). Il n'ouvre aucune connexion : les
 requêtes passent par `tw_product_images.fetch` (cache disque, débit >= 3 s par hôte,
@@ -132,10 +136,29 @@ WILSON_COLLECTIONS = [
     '/en-us/collections/tennis-roger-federer',
     '/en-us/collections/tennis-us-open',
 ]
+# Cordages Wilson (22/10/2026) : collection « wilson-tennis-string » lue dans le menu de navigation.
+# La collection voisine « luxilon-tennis-string » n'est JAMAIS lue : luxilon.com a refusé le robot
+# (403) et Luxilon reste fermé, y compris par un autre domaine du groupe.
+WILSON_STRING_COLLECTIONS = ['/en-us/collections/wilson-tennis-string']
 
 
 def discover_wilson(fetch, cache) -> list[dict]:
     products: dict[str, dict] = {}
+    for path in WILSON_STRING_COLLECTIONS:
+        body = fetch(WILSON_BASE + path, cache / 'catpages' / (re.sub(r'[^A-Za-z0-9]+', '_', path + '_1') + '.html'))
+        # Le JSON-LD (ItemList) d'une page de collection liste toute la collection : une page suffit.
+        for prod in ld_products((body or b'').decode('utf-8', 'replace')):
+            u = prod.get('url') or ''
+            m = re.match(r'https://www\.wilson\.com/en-us/products/([a-z0-9-]+)$', u)
+            if not m or 'tennis-string' not in m.group(1) or 'luxilon' in m.group(1):
+                continue
+            img = prod.get('image')
+            if isinstance(img, list):
+                img = img[0] if img else None
+            if img and img.startswith('//'):
+                img = 'https:' + img
+            products.setdefault(m.group(1), {'code': m.group(1), 'kind': 'string', 'url': u,
+                                             'name': html.unescape(prod.get('name', '')), 'thumb': img})
     for path in WILSON_COLLECTIONS:
         page_no = 1
         while page_no <= 6:
@@ -181,6 +204,19 @@ def facts_wilson(page: str, prod: dict) -> dict:
     m = re.search(r'Stiffness\s*(?:\(RA\))?\s*:?\s*(\d{2})(?!\d)', text)
     if m:
         facts['stiffness'] = int(m.group(1))
+    if prod.get('kind') == 'string':
+        # Tableau « Product details » : « Gauge 16 … MM 1.32 », parfois inversé (« Gauge 1.30 … MM 16 ») ;
+        # seules les valeurs en millimètres comptent (« 1.3 » = 1,30 mm), les calibres US sont ignorés.
+        m = re.search(r'Product details table Gauge (\S+) Gender \S+ MM (\S+)', text)
+        if m:
+            facts['gaugesMm'] = [f'{float(v):.2f}' for v in re.findall(r'\d\.\d{1,2}', f'{m.group(1)} {m.group(2)}')]
+        # Coloris vendus : boutons radio « Color » du sélecteur de variante (une valeur par coloris).
+        opts = sorted({html.unescape(v).strip() for v in
+                       re.findall(r'<input[^>]*?name="Color-[^"]*"[^>]*?value="([^"]+)"', page, flags=re.S)})
+        if opts:
+            facts['colourOptions'] = opts
+            if len(opts) == 1:
+                facts['color'] = opts[0]
     facts['title'] = prod.get('name')
     return facts
 
@@ -306,7 +342,27 @@ def discover_babolat(fetch, cache) -> list[dict]:
                 for u, slug, pid in re.findall(r'href="(/fr/([a-z0-9.\-]+)/(\d{5,8})\.html)[^"]*"', page.decode('utf-8', 'replace')):
                     products.setdefault(pid, {'code': pid, 'kind': 'racquet', 'url': BABOLAT_BASE + u,
                                               'name': slug.replace('-', ' '), 'thumb': None})
+    # Site US (22/10/2026) : il vend des raquettes que le site FR ne liste plus (Pure Strike adultes Gen4).
+    # Pages de catégorie lues dans le plan du site US des catégories (sitemap_2-category.xml, déclaré
+    # par robots.txt) ; code préfixé « us- » pour ne jamais se confondre avec une page FR.
+    for path in BABOLAT_US_RACQUET_PAGES:
+        page = fetch(BABOLAT_BASE + path, cache / 'catpages' / (re.sub(r'[^A-Za-z0-9]+', '_', path) + '.html'))
+        for prod in ld_products((page or b'').decode('utf-8', 'replace')):
+            m = re.match(r'https://www\.babolat\.com/us/([a-z0-9.\-]+)/(?:\d{3,4}-)?(\d{5,8})\.html$', prod.get('@id', ''))
+            if m and re.search(r'unstrung|junior', m.group(1)) and not re.search(r'^rh\d*-|backpack|bag|mini', m.group(1)):  # cadres non cordés et juniors ; ni sacs ni accessoires
+                products.setdefault('us-' + m.group(2), {'code': 'us-' + m.group(2), 'kind': 'racquet', 'url': prod['@id'],
+                                                         'name': html.unescape(prod.get('name', '')), 'thumb': None})
     return sorted(products.values(), key=lambda p: p['code'])
+
+
+# Ordre voulu : un produit listé par plusieurs pages garde l'URL de la PREMIÈRE (les pages de collection
+# publient l'URL de variante « 3018-101576 », la page « adults » l'URL maître « 101576 ») ; c'est cette
+# URL que le collecteur lit et que le manifeste cite.
+BABOLAT_US_RACQUET_PAGES = [
+    '/us/tennis/collections/pure-strike.html', '/us/tennis/collections/pure-aero.html',
+    '/us/tennis/collections/pure-drive.html',
+    '/us/tennis/racquets/adults.html', '/us/tennis/racquets/juniors-kids.html',
+]
 
 
 def facts_babolat(page: str, prod: dict) -> dict:
@@ -322,6 +378,20 @@ def facts_babolat(page: str, prod: dict) -> dict:
     if m:
         facts['weight'] = int(m.group(1))
     m = re.search(r'Rigidité \(RA\) (\d{2})', text)
+    if m:
+        facts['stiffness'] = int(m.group(1))
+    # Pages du site US (22/10/2026) : « Head Size 645 cm² / 100 in² », « Weight (unstrung) 305 g »,
+    # « Stringing Pattern 16/20 », « Stiffness (RA) 65 +/ - 3 ».
+    m = re.search(r'Head Size (\d{3}) cm² / (\d{2,3}) in²', text)
+    if m:
+        facts['headSize'] = float(m.group(2))
+    m = re.search(r'Stringing Pattern (\d+)/(\d+)', text)
+    if m:
+        facts['stringPattern'] = f'{m.group(1)}x{m.group(2)}'
+    m = re.search(r'Weight \(unstrung\) (\d{3}) g', text)
+    if m:
+        facts['weight'] = int(m.group(1))
+    m = re.search(r'Stiffness \(RA\) (\d{2})', text)
     if m:
         facts['stiffness'] = int(m.group(1))
     prods = [p for p in ld_products(page) if p.get('sku') or p.get('mpn')]
@@ -461,7 +531,8 @@ def facts_yonex(page: str, prod: dict) -> dict:
     m = re.search(r'Stringing Pattern (\d+) x (\d+)', text)
     if m:
         facts['stringPattern'] = f'{m.group(1)}x{m.group(2)}'
-    m = re.search(r'Weight (\d{3}) g', text)
+    # « Weight 275 g » ou « Weight 315g / 11.1oz » (VCORE 98 Tour, 22/10/2026) : l'espace est facultative.
+    m = re.search(r'Weight (\d{3}) ?g\b', text)
     if m and prod.get('kind') == 'racquet':
         facts['weight'] = int(m.group(1))
     m = re.search(r'Color\(s\) ([A-Za-z ,/&-]{2,80}?) (?:Recommended|Stringing|Made|Item|Material|Grip|Length|Gauge)', text)
@@ -553,7 +624,13 @@ def check(brand: str, kind: str, item: dict, prod: dict, fct: dict, decision: di
         return 'jauge illisible sur la page officielle'
     ours_g = {round(float(g), 2) for gs in item.get('gauges', []) for g in gs.split('/') if re.match(r'^\d\.\d+$', g)}
     page_g = {round(float(g), 2) for g in shown}
-    if len(shown) > 1:
+    pairs = [gs for gs in item.get('gauges', []) if '/' in gs]
+    if pairs:
+        # Hybride (22/10/2026) : la page doit publier les jauges d'un des montages de la fiche, ni plus
+        # ni moins (« 1.25/1.25 » contre « 1.25/1.30 », ou une seule jauge lisible : quarantaine).
+        if not any({round(float(g), 2) for g in p.split('/')} == page_g for p in pairs):
+            return f"jauges du montage officiel ({'/'.join(shown)} mm) != fiche ({', '.join(item.get('gauges', []))})"
+    elif len(shown) > 1:
         # page multi-jauges : une même photo sert toutes les jauges, la fiche ne doit pas en annoncer
         # une que le produit officiel n'a pas
         if not ours_g <= page_g:
