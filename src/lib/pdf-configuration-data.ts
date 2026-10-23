@@ -27,12 +27,13 @@
  */
 
 import { racquetsDatabase, calculateCompatibility } from '@/data/racquets-database';
-import { getStringById, calculateRCS } from '@/data/strings-database';
+import { getStringById } from '@/data/strings-database';
 import {
   ARM_ALERT_RCS,
   calculateAdvancedRcs,
   stringTypeToFamily,
   parseGaugeMm,
+  setupFirmnessIndex,
 } from '@/lib/advanced-rcs';
 import {
   effectiveRacquetRA,
@@ -230,7 +231,9 @@ export function buildConfigurationPdfData(
     advanced = {
       overall: result.overall,
       level: result.level === null ? 'Non disponible' : LEVEL_LABEL[result.level] ?? result.level,
+      // Indice du moteur, celui que l'alerte cite et que le configurateur affiche ; mention d'estimation pour un hybride.
       firmnessIndex: result.rcs,
+      hybridNote: result.hybrid ? result.hybrid.note : undefined,
       subScores: result.subScores,
       recommendations: result.recommendations,
       warnings: result.warnings,
@@ -317,6 +320,12 @@ export function recomputeRcs(config: StoredConfiguration): number | null {
   const racquet = racquetsDatabase.find((r) => r.id === config.racquetId);
   const mainString = getStringById(config.mainStringId);
   if (!racquet || !mainString) return null;
-  const avgTension = (config.mainTension + config.crossTension) / 2;
-  return calculateRCS(effectiveRacquetRA(racquet), mainString.stiffness, avgTension);
+  // Même indice que le moteur, hybride compris (il ignorait le travers jusqu'au 22/10/2026).
+  return setupFirmnessIndex({
+    racquetStiffness: effectiveRacquetRA(racquet),
+    mainStringStiffness: mainString.stiffness,
+    crossStringStiffness: getStringById(config.crossStringId)?.stiffness,
+    mainTension: config.mainTension,
+    crossTension: config.crossTension,
+  }).rcs;
 }
