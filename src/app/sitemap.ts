@@ -56,15 +56,15 @@ const BLOG_ARTICLES: Array<{ slug: string; modified: string }> = [
   // Comparatif Gravity MP vs Tour retiré le 10/10/2026 (décision de Pierre) :
   // 301 vers le classement 2026, cf. redirects() de next.config.js.
   { slug: 'plan-de-cordage-tennis.html', modified: '2026-10-22' },
-  { slug: 'jauge-cordage-tennis.html', modified: '2026-06-01' },
-  { slug: 'guide-tension-cordage-tennis.html', modified: '2026-10-21' },
+  { slug: 'jauge-cordage-tennis.html', modified: '2026-10-23' },
+  { slug: 'guide-tension-cordage-tennis.html', modified: '2026-10-23' },
   { slug: 'cordage-tennis-elbow.html', modified: '2026-10-23' },
   { slug: 'guide-materiel-tennis.html', modified: '2026-10-22' },
   { slug: 'analyse-setups-atp-top-20.html', modified: '2026-10-22' },
-  { slug: 'nouveautes-equipement-tennis-2025-2026.html', modified: '2026-01-06' },
+  { slug: 'nouveautes-equipement-tennis-2025-2026.html', modified: '2026-10-23' },
   { slug: 'cordage-terre-battue.html', modified: '2026-10-23' },
   { slug: 'challengers-sinner-alcaraz-2026.html', modified: '2026-10-22' },
-  { slug: 'actualite-materiel-tennis-2026-guerre-du-spin.html', modified: '2026-10-10' },
+  { slug: 'actualite-materiel-tennis-2026-guerre-du-spin.html', modified: '2026-10-23' },
   { slug: 'cordage-mono-vs-multifilament.html', modified: '2026-10-23' },
   { slug: 'cordage-tennis-chaleur.html', modified: '2026-10-23' },
   { slug: 'tension-cordage-hiver.html', modified: '2026-10-22' },
@@ -100,13 +100,13 @@ const EN_PAGES: Array<{ path: string; priority: number }> = [
 // Même règle de date que BLOG_ARTICLES (dateModified du JSON-LD de l'article).
 const EN_BLOG_ARTICLES: Array<{ slug: string; modified: string }> = [
   { slug: 'challengers-sinner-alcaraz-2026.html', modified: '2026-10-22' },
-  { slug: 'next-gen-tennis-racquets-fonseca-mensik-cobolli-jodar.html', modified: '2026-10-01' },
+  { slug: 'next-gen-tennis-racquets-fonseca-mensik-cobolli-jodar.html', modified: '2026-10-23' },
   // Guides evergreen adaptés du français (14/08/2026), appairés en hreflang
   // avec leur source FR.
-  { slug: 'tennis-string-gauge.html', modified: '2026-08-14' },
+  { slug: 'tennis-string-gauge.html', modified: '2026-10-23' },
   { slug: 'tennis-string-pattern.html', modified: '2026-10-23' },
   { slug: 'polyester-vs-multifilament-strings.html', modified: '2026-10-23' },
-  { slug: 'tennis-string-tension-guide.html', modified: '2026-10-22' },
+  { slug: 'tennis-string-tension-guide.html', modified: '2026-10-23' },
   // Article chaleur (28/08/2026), appairé en hreflang avec
   // /blog/cordage-tennis-chaleur.html.
   { slug: 'tennis-strings-heat-tension.html', modified: '2026-10-22' },
