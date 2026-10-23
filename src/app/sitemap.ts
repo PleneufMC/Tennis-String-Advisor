@@ -75,7 +75,7 @@ const BLOG_ARTICLES: Array<{ slug: string; modified: string }> = [
   // Classement polyester 2026 (09/10/2026), appairé en hreflang.
   { slug: 'meilleur-cordage-polyester-2026.html', modified: '2026-10-10' },
   // Meilleures raquettes 2026 par profil (09/10/2026), appairé en hreflang.
-  { slug: 'meilleures-raquettes-tennis-2026.html', modified: '2026-10-22' },
+  { slug: 'meilleures-raquettes-tennis-2026.html', modified: '2026-10-23' },
   // Polyester et tennis elbow, tri par rigidité (09/10/2026), appairé en hreflang.
   { slug: 'cordage-polyester-tennis-elbow.html', modified: '2026-10-10' },
 ];
@@ -122,7 +122,7 @@ const EN_BLOG_ARTICLES: Array<{ slug: string; modified: string }> = [
   // Adapté du FR cordage-tennis-elbow (09/10/2026), réécrit sur le catalogue, appairé en hreflang.
   { slug: 'best-tennis-strings-for-tennis-elbow.html', modified: '2026-10-10' },
   // Adapté du FR meilleures-raquettes-tennis-2026 (09/10/2026), appairé en hreflang.
-  { slug: 'best-tennis-racquets-2026.html', modified: '2026-10-22' },
+  { slug: 'best-tennis-racquets-2026.html', modified: '2026-10-23' },
   // Adapté du FR cordage-polyester-tennis-elbow (09/10/2026), appairé en hreflang.
   { slug: 'polyester-strings-tennis-elbow.html', modified: '2026-10-10' },
 ];
