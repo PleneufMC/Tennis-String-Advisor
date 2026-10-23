@@ -7,6 +7,15 @@
 > **Branche de référence** : `main` (seule branche longue ; la production Netlify en déploie)
 > **Repo** : https://github.com/PleneufMC/Tennis-String-Advisor.git
 
+**Changelog (numéro de version à fixer à la fusion)** — **Tableau des paliers du §1 : la colonne « Lecture » qualifie l'indice, plus
+un public de santé** (avis Opus 5.5 du 23/10/2026, points 7, 8 et 3 ; PR « Pierre seul éditeur », `tsa-core`). **Constat** : la
+colonne associait des paliers à des publics (« < 20 : Bras sensibles, débutants », « > 35 : Risque tennis elbow ») : les rédacteurs
+la recopiaient en avis conditionnés par un état de santé (relevé E-h2, article next gen). Bornes alignées sur `getStringRecommendation`,
+indice entier : < 20, 20-24, 25-29, 30-34, dès 35 (alerte pour tous les profils), et l'alerte dès 32 pour un bras déclaré sensible.
+**Dans la même PR, à fusionner par Pierre seul** : premier paragraphe du §1 de `docs/redaction/CHARTE.md` (v1.3 : plus de « prévention
+du tennis elbow »), ligne 108 du prompt `tsa-redacteur` (verdicts selon le jeu et le montage, jamais selon un état de santé) et règle de
+slug du prompt `tsa-acquisition` (aucun nouveau slug qui recommande un matériel pour un état de santé). Aucun code, aucune donnée.
+
 **Changelog v2.3.25 → v2.3.26** — **Hybrides : un seul indice, celui que l'alerte lit, que le configurateur
 affiche et que le PDF imprime ; contrôle 21 ter** (décision (b)+(a) de l'orchestrateur du 22/10/2026, Pierre ayant délégué ; limite (4)
 de la v2.3.23 ; `tsa-core` ; **`[verrou: configurator/page.tsx]`** ; branche partie de la tête de la PR #130, `6d943a4`, non fusionnée :
@@ -1043,13 +1052,16 @@ sa **sensibilité au bras**. Le cœur métier est le **RCS** (Recommandation
 Confort Score) : un indice de fermeté du setup qui signale un risque de tennis
 elbow.
 
-| RCS | Niveau | Lecture |
+| RCS (indice entier) | Niveau | Lecture |
 |---|---|---|
-| < 20 | Très confortable | Bras sensibles, débutants |
-| 20-25 | Confortable | Joueurs récréatifs |
-| 25-30 | Standard | Joueurs avancés |
-| 30-35 | Ferme | Contrôle maximal |
-| > 35 | Très ferme | Risque tennis elbow |
+| < 20 | Très confortable | Indice très bas |
+| 20-24 | Confortable | Indice bas |
+| 25-29 | Standard | Indice intermédiaire |
+| 30-34 | Ferme | Indice haut ; dès 32, alerte bras si le bras est déclaré sensible |
+| dès 35 | Très ferme | Alerte bras pour tous les profils (seuil fixé pour le risque de tennis elbow) |
+
+Les paliers sont qualifiés par l'indice seul, jamais par un public : aucun palier n'est « pour » un bras sensible,
+un débutant ou un joueur avancé (charte F7 ; avis Opus 5.5 du 23/10/2026, point 7).
 
 **Stack** : Next.js 14 (App Router), TypeScript strict, Tailwind,
 Prisma + Supabase (PostgreSQL), NextAuth (Google OAuth + email), Stripe Payment
