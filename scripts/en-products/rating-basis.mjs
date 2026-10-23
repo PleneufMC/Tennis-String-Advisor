@@ -19,6 +19,10 @@
  * que `stringPage(s)` reste appelable sans contexte (audit:ratings l'appelle
  * ainsi) et donne toujours le même libellé.
  *
+ * D2 (23/10/2026) : la liste des cordages dont la note de confort a été recalée sur la
+ * rigidité mesurée est lue de la même façon dans src/data/comfort-recalibration.ts
+ * (identifiants seulement) ; leur libellé porte la mention RATING_LABELS.RECALIBRATED.
+ *
  * La provenance détaillée (chaînes de testeurs, pondérations, décalages
  * d'ancrage, revues Tennis Warehouse) n'est JAMAIS lue ici : seuls les
  * identifiants du tableau STRING_TESTER_RATINGS le sont (charte F5, F6).
@@ -37,8 +41,35 @@ export const RATING_LABELS = nodeRequire('../../public/js/rating-labels.js');
 
 export const BASIS_JSON_PATH = 'public/data/string-rating-basis.json';
 export const TESTER_RATINGS_TS = 'src/data/tester-ratings.ts';
+export const COMFORT_RECALIBRATION_TS = 'src/data/comfort-recalibration.ts';
 
 const cache = new Map();
+const recalCache = new Map();
+
+/** Exportation `name` d'un module TypeScript de src/data SANS import, lue par transpilation isolée (module `vm`). */
+function readTsExport(repoRoot, file, name) {
+  const requireFromRepo = createRequire(path.join(repoRoot, 'package.json'));
+  const ts = requireFromRepo('typescript');
+  const src = readFileSync(path.join(repoRoot, file), 'utf8');
+  const js = ts.transpileModule(src, {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 },
+    fileName: file,
+  }).outputText;
+  if (/^\s*import\s|\brequire\(/m.test(js)) throw new Error(`${file} importe un autre module : lecteur à adapter`);
+  const sandbox = { exports: {} };
+  vm.runInNewContext(js, sandbox, { filename: file, timeout: 5000 });
+  const value = sandbox.exports[name];
+  if (!value || typeof value !== 'object') throw new Error(`${file} : ${name} introuvable après transpilation`);
+  return value;
+}
+
+/** Identifiants des cordages dont la note de confort a été recalée (D2), lus dans le TypeScript ; échec bruyant sinon. */
+export function recalibratedStringIds(repoRoot = defaultRoot) {
+  if (recalCache.has(repoRoot)) return recalCache.get(repoRoot);
+  const set = new Set(Object.keys(readTsExport(repoRoot, COMFORT_RECALIBRATION_TS, 'COMFORT_RECALIBRATED')));
+  recalCache.set(repoRoot, set);
+  return set;
+}
 
 /** Identifiants des cordages harmonisés (Set), lus dans le TypeScript ; échec bruyant sinon. */
 export function harmonisedStringIds(repoRoot = defaultRoot) {
@@ -69,6 +100,11 @@ export function ratingBasisOf(s, repoRoot = defaultRoot) {
   return RATING_LABELS.basisOf(s, harmonisedStringIds(repoRoot));
 }
 
+/** Libellé complet d'une ligne du catalogue : nature des notes, plus la mention D2 si la note de confort a été recalée. */
+export function ratingLabelOf(s, repoRoot = defaultRoot) {
+  return RATING_LABELS.labelOf(s, harmonisedStringIds(repoRoot), recalibratedStringIds(repoRoot));
+}
+
 /**
  * Contenu de public/data/string-rating-basis.json, lu par les pages dynamiques
  * (public/js/rating-labels.js). Déterministe : pas d'horodatage, ids triés.
@@ -83,6 +119,12 @@ export function buildBasisFile(strings, repoRoot = defaultRoot) {
     if (!s) throw new Error(`cordage harmonisé absent du catalogue : ${id} (src/data/tester-ratings.ts)`);
     if (!RATING_LABELS.hasRating(s)) throw new Error(`cordage harmonisé sans aucune note publiée : ${id}`);
   }
+  const recalibrated = [...recalibratedStringIds(repoRoot)].sort();
+  for (const id of recalibrated) {
+    const s = byId.get(id);
+    if (!s) throw new Error(`cordage recalé (D2) absent du catalogue : ${id} (${COMFORT_RECALIBRATION_TS})`);
+    if (s.comfort === null || s.comfort === undefined) throw new Error(`cordage recalé (D2) sans note de confort : ${id}`);
+  }
   const payload = {
     meta: {
       schema_version: 1,
@@ -92,6 +134,8 @@ export function buildBasisFile(strings, repoRoot = defaultRoot) {
       count: ids.length,
     },
     harmonised: ids,
+    // D2 (23/10/2026) : cordages dont la note de confort a été recalée sur la rigidité mesurée (src/data/comfort-recalibration.ts).
+    comfort_recalibrated: recalibrated,
   };
   return `${JSON.stringify(payload)}\n`;
 }

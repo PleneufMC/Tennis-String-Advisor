@@ -49,6 +49,7 @@ import {
   type HarmonizedField,
   type TesterCriterion,
 } from '../src/data/tester-ratings';
+import { COMFORT_RECALIBRATED, COMFORT_RECALIBRATION_RULE } from '../src/data/comfort-recalibration';
 import { calculateAdvancedRcs, stringTypeToFamily } from '../src/lib/advanced-rcs';
 import {
   DEFAULT_RACQUET_RA,
@@ -1173,7 +1174,8 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     const avg = crit.reduce((a, c) => a + e.raw20[c], 0) / crit.length;
     if (Math.abs(avg - e.docxAverage20) > 0.005) fail(`notes testeurs : ${id} moyenne source ${avg} ≠ ${e.docxAverage20}`);
     for (const f of fields) {
-      const expected = harmonizedRating(e, f);
+      // D2 (23/10/2026) : note de confort recalée, la composante éditoriale est la valeur recalée (méthode, étape 4).
+      const expected = harmonizedRating(e, f, f === 'comfort' ? COMFORT_RECALIBRATED[id]?.editorialAfter : undefined);
       if (s[f] !== expected) fail(`notes testeurs : ${id}.${f} = ${s[f]} au catalogue, ${expected} attendu par la provenance`);
     }
   }
@@ -1236,6 +1238,8 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
       const comps: Array<[Field, boolean, string | null]> = [];
       for (const f of published) {
         const harm = !!tester && HARM.includes(f);
+        // D2 (23/10/2026) : la note de confort recalée vient de la droite de comfort-recalibration.ts, plus d'une comparaison à TW.
+        if (f === 'comfort' && Object.prototype.hasOwnProperty.call(COMFORT_RECALIBRATED, s.id)) { comps.push([f, harm, 'recalee-twu']); continue; }
         const v = harm ? tester.before10[f as HarmonizedField] : s[f];
         if (v === undefined) { comps.push([f, harm, null]); continue; }
         const cats = P.FIELD_TO_TW[f];
@@ -1259,7 +1263,7 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
       }
       const systematic = comps.filter(([, , c]) => c === 'identique').length >= P.MIN_IDENTICAL_FOR_TW;
       for (const [f, harm, c] of comps) {
-        const base = c === null ? null : c === 'identique' && systematic ? 'tw' : `inconnue:${c}`;
+        const base = c === null ? null : c === 'recalee-twu' ? c : c === 'identique' && systematic ? 'tw' : `inconnue:${c}`;
         const expected = base === null ? 'testeurs' : harm ? `harmonisee+${base}` : base;
         if (e.fields[f] !== expected) issues.push(`${s.id}.${f} : « ${e.fields[f]} » enregistré, « ${expected} » recalculé depuis les données`);
       }
@@ -1308,7 +1312,7 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     const codes = Object.values(P.STRING_RATINGS_PROVENANCE).flatMap((e) => Object.values(e.fields)) as string[];
     const n = (re: RegExp) => codes.filter((c) => re.test(c)).length;
     ok(`provenance des notes : ${Object.keys(P.STRING_RATINGS_PROVENANCE).length} cordages, ${codes.length} notes publiées décrites ` +
-      `(${n(/^tw$/)} reprises TW établies, ${n(/^harmonisee\+/)} harmonisées, ${n(/^testeurs$/)} testeurs seuls, ${n(/^inconnue:/)} de source inconnue), ` +
+      `(${n(/^tw$/)} reprises TW établies, ${n(/^harmonisee\+/)} harmonisées, ${n(/^testeurs$/)} testeurs seuls, ${n(/^inconnue:/)} de source inconnue, ${n(/recalee-twu$/)} notes de confort recalées sur la rigidité mesurée, D2), ` +
       `${Object.keys(P.TW_REVIEWS).length} revues TW, recalcul identique, aucune surface du site ne lit la provenance, ${negatives.length} tests négatifs détectés`);
   }
 }
@@ -2079,6 +2083,11 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
   for (const k of ['editorial', 'harmonized', 'none'] as const) {
     if (N.STRING_RATING_LABELS[k] !== EXPECT[k]) fail(`nature des notes : libellé « ${k} » = « ${N.STRING_RATING_LABELS[k]} », « ${EXPECT[k]} » attendu (${PROPOSED})`);
   }
+  // Mention D2 (23/10/2026) : texte figé, et TWU n'y est que la source de la mesure de rigidité (« rigidité mesurée (TWU) »).
+  const D2_LABEL = 'note de confort recalée sur la rigidité mesurée (TWU)';
+  if (N.COMFORT_RECALIBRATED_LABEL !== D2_LABEL || COMFORT_RECALIBRATION_RULE.label !== D2_LABEL) {
+    fail(`nature des notes : mention D2 « ${N.COMFORT_RECALIBRATED_LABEL} », « ${D2_LABEL} » attendue`);
+  }
   if (N.STRING_RATINGS_NOTICE !== NOTICE) {
     fail(`nature des notes : la mention a changé — « ${N.STRING_RATINGS_NOTICE} » (${PROPOSED})`);
   }
@@ -2101,7 +2110,10 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     natureCount[n]++;
     if (n !== expectedNature(s)) fail(`nature des notes : ${s.id} classé « ${n} », « ${expectedNature(s)} » attendu`);
     const label = N.stringRatingLabel(s);
-    if ((n === 'none') !== (label === null) || (label !== null && label !== EXPECT[n])) fail(`nature des notes : ${s.id} (${n}) porte l’étiquette « ${label} »`);
+    // D2 (23/10/2026) : une note de confort recalée sur la rigidité mesurée ajoute sa mention à l'étiquette, partout.
+    const recal = n !== 'none' && s.comfort !== undefined && Object.prototype.hasOwnProperty.call(COMFORT_RECALIBRATED, s.id);
+    const wantLabel = n === 'none' ? null : recal ? `${EXPECT[n]} ; ${D2_LABEL}` : EXPECT[n];
+    if (label !== wantLabel) fail(`nature des notes : ${s.id} (${n}) porte l’étiquette « ${label} », « ${wantLabel} » attendue`);
   }
   for (const id of harmonizedIds) {
     const s = stringsDatabase.find((x) => x.id === id);
@@ -2188,16 +2200,18 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
   for (const file of srcTs) for (const msg of undeclaredFindings(file, readFileSync(file, 'utf8'))) fail(`nature des notes : ${msg}`);
 
   // (d) exécution : fiche et carte (pleine, compacte) de CHAQUE cordage, rendues côté serveur.
-  const labelTag = (n: Nature) => `>${EXPECT[n]}<`;
-  const renderFindings = (surface: string, id: string, html: string, nature: Nature): string[] => {
+  // D2 (23/10/2026) : l'étiquette d'une note de confort recalée porte en plus la mention, sur chaque surface rendue.
+  const labelTag = (n: Nature, recal = false) => `>${EXPECT[n]}${recal ? ` ; ${D2_LABEL}` : ''}<`;
+  const isRecal = (s: (typeof stringsDatabase)[number]) => Object.prototype.hasOwnProperty.call(COMFORT_RECALIBRATED, s.id);
+  const renderFindings = (surface: string, id: string, html: string, nature: Nature, recal = false): string[] => {
     const found: string[] = [];
     if (nature === 'none') {
       if (html.includes('data-rating-nature=') || html.includes('Appréciation')) found.push(`${surface} ${id} : étiquette affichée pour un cordage sans note`);
       if (!html.includes('Non publié')) found.push(`${surface} ${id} : « Non publié » absent`);
       return found;
     }
-    if (!html.includes(`data-rating-nature="${nature}"`) || !html.includes(labelTag(nature))) {
-      found.push(`${surface} ${id} : étiquette « ${EXPECT[nature]} » absente alors que des notes sont rendues`);
+    if (!html.includes(`data-rating-nature="${nature}"`) || !html.includes(labelTag(nature, recal))) {
+      found.push(`${surface} ${id} : étiquette « ${EXPECT[nature]}${recal ? ` ; ${D2_LABEL}` : ''} » absente alors que des notes sont rendues`);
     }
     for (const other of ['editorial', 'harmonized'] as const) {
       if (other !== nature && html.includes(labelTag(other))) found.push(`${surface} ${id} : étiquette d’une autre nature (« ${EXPECT[other]} »)`);
@@ -2215,7 +2229,8 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     const card = renderToStaticMarkup(React.createElement(StringCard, { string: s }));
     const compact = renderToStaticMarkup(React.createElement(StringCard, { string: s, compact: true }));
     renders += 3;
-    renderBad.push(...renderFindings('fiche', s.id, fiche, n), ...renderFindings('carte', s.id, card, n), ...renderFindings('carte compacte', s.id, compact, n));
+    const rc = isRecal(s);
+    renderBad.push(...renderFindings('fiche', s.id, fiche, n, rc), ...renderFindings('carte', s.id, card, n, rc), ...renderFindings('carte compacte', s.id, compact, n, rc));
     if (n !== 'none' && !fiche.includes('data-rating-notice="full"')) renderBad.push(`fiche ${s.id} : mention absente sous « Notes de jeu »`);
     if (n === 'harmonized' && !sample) sample = { fiche, id: s.id };
   }
@@ -4508,6 +4523,295 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
             `sans travers : aucune borne ; ${detected} tests négatifs détectés, ${accepted} témoins positifs acceptés (grille réelle en ${(realMs / 1000).toFixed(1)} s)`
         );
       }
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 22. D2 RESTREINT : NOTES DE CONFORT RECALÉES SUR LA RIGIDITÉ MESURÉE (TWU), 23/10/2026
+// ---------------------------------------------------------------------------
+// Décision : avis d'Opus 5.5 du 23/10/2026, point 1, option (c). Une note de confort qui dépasse de plus de 1,0 point la droite
+// L2 de sa famille est ramenée sur la droite, seulement si la mesure TWU de la fiche est au moins la médiane de rigidité de la
+// famille ; pour une note harmonisée avec des avis de testeurs, seule la composante éditoriale est ramenée, puis la moyenne avec
+// l'avis recalé est refaite (`harmonizedRating`). Jamais une note ne monte, aucun seuil ne bouge. Ce bloc échoue si :
+//   (a) une entrée de `comfort-recalibration.ts` ne respecte pas la règle (mesure TWU de la fiche, écart à la droite, médiane,
+//       nouvelle note = droite arrondie, ou moyenne refaite pour une note harmonisée ; note d'avant = note harmonisée d'avant) ;
+//       ou si la note du catalogue n'est pas la nouvelle note, ou si une note monte ou ne bouge pas ;
+//   (b) les droites ou les médianes figées ne sont pas celles du catalogue d'AVANT D2, reconstruit depuis l'instantané de
+//       référence du 23/10/2026 (`data/reference/second-filet-2026-10-23.json`) en y remettant les notes d'avant ;
+//   (c) la sélection n'est pas complète : une fiche de l'instantané relève de la règle sans être dans la table, ou l'inverse ;
+//   (d) D2 fait disparaître une alerte bras (grille du contrôle 5, moteur réel, deux profils : catalogue d'avant contre catalogue
+//       courant), ou les libellés ne portent pas la mention (FR : contrôle 18 ; EN : `rating-labels.js`, audit:string-labels).
+// Les tests négatifs rejouent ces gardes sur des copies altérées de la table, de la règle et du catalogue.
+{
+  const before22 = failures.length;
+  const REF22 = 'data/reference/second-filet-2026-10-23.json';
+  type Rule = typeof COMFORT_RECALIBRATION_RULE;
+  type Table = Readonly<Record<string, (typeof COMFORT_RECALIBRATED)[string]>>;
+  type RefString = { type: string; stiffness: number; twu: number | null; comfort: number | null };
+  type RefRacquet = { ra: number; weight: number | null };
+  type Ref = { strings: Record<string, RefString>; racquets: Record<string, RefRacquet> };
+  const FAMILIES = ['Polyester', 'Multifilament'] as const;
+  const rnd1 = (x: number) => Math.floor(x * 10 + 0.5) / 10;
+  const median = (v: number[]) => { const s = [...v].sort((a, b) => a - b); const n = s.length; return n % 2 ? s[(n - 1) / 2] : (s[n / 2 - 1] + s[n / 2]) / 2; };
+  const slopeOf = (xs: number[], ys: number[]) => {
+    const mx = xs.reduce((a, b) => a + b, 0) / xs.length;
+    const my = ys.reduce((a, b) => a + b, 0) / ys.length;
+    let sxy = 0;
+    let sxx = 0;
+    xs.forEach((x, i) => { sxy += (x - mx) * (ys[i] - my); sxx += (x - mx) ** 2; });
+    return sxy / sxx;
+  };
+  let ref: Ref | null = null;
+  try {
+    ref = JSON.parse(readFileSync(REF22, 'utf8')) as Ref;
+  } catch (e) {
+    fail(`D2 : instantané de référence ${REF22} illisible (${(e as Error).message})`);
+  }
+  type Cat = readonly (typeof stringsDatabase)[number][];
+  const checkD2 = (table: Table, rule: Rule, catalog: Cat, refStrings: Record<string, RefString>) => {
+    const issues: string[] = [];
+    const lineOf = (fam: keyof Rule['lines'], twu: number) => rule.lines[fam].intercept + rule.lines[fam].slope * twu;
+    // (a) chaque entrée
+    for (const [id, e] of Object.entries(table)) {
+      const s = catalog.find((x) => x.id === id);
+      if (!s) { issues.push(`${id} : dans la table D2, absent du catalogue`); continue; }
+      if (s.type !== e.family) issues.push(`${id} : famille ${s.type} au catalogue, ${e.family} dans la table`);
+      const tab = s.stiffnessByGauge ? Object.values(s.stiffnessByGauge) : [];
+      const twu = tab.length > 0 ? Math.max(...tab) : null;
+      if (twu !== e.twu) issues.push(`${id} : mesure TWU ${twu} au catalogue (la plus rigide des jauges mesurées), ${e.twu} dans la table`);
+      const line = lineOf(e.family, e.twu);
+      if (!(e.before - line > rule.tolerance + 1e-9)) issues.push(`${id} : note d'avant ${e.before} à moins de ${rule.tolerance} de la droite (${line.toFixed(3)}) : hors règle`);
+      if (!(e.twu >= rule.medians[e.family])) issues.push(`${id} : mesure TWU ${e.twu} sous la médiane des ${e.family} (${rule.medians[e.family]}) : hors règle (D2 restreint)`);
+      const tester = STRING_TESTER_RATINGS[id];
+      let want: number;
+      if (tester) {
+        if (e.editorialBefore !== tester.before10.comfort) issues.push(`${id} : composante éditoriale d'avant ${e.editorialBefore}, ${tester.before10.comfort} dans tester-ratings.ts`);
+        const edWant = Math.min(tester.before10.comfort ?? Infinity, rnd1(line));
+        if (e.editorialAfter !== edWant) issues.push(`${id} : composante éditoriale recalée ${e.editorialAfter}, ${edWant} attendue (droite arrondie, jamais au-dessus de l'ancienne)`);
+        if (e.before !== harmonizedRating(tester, 'comfort')) issues.push(`${id} : note d'avant ${e.before}, ${harmonizedRating(tester, 'comfort')} = note harmonisée d'avant`);
+        want = harmonizedRating(tester, 'comfort', edWant);
+      } else {
+        if (e.editorialBefore !== undefined || e.editorialAfter !== undefined) issues.push(`${id} : composante éditoriale renseignée pour une note qui n'est pas harmonisée`);
+        want = rnd1(line);
+      }
+      if (e.after !== want) issues.push(`${id} : nouvelle note ${e.after}, ${want} attendue par la règle${tester ? ' (moyenne refaite avec l\'avis des testeurs)' : ' (droite arrondie au dixième)'}`);
+      if (!(e.after < e.before)) issues.push(`${id} : note ${e.before} -> ${e.after} : une note D2 ne fait que baisser`);
+      if (s.comfort !== e.after) issues.push(`${id} : note de confort ${s.comfort} au catalogue, ${e.after} attendue (table D2)`);
+    }
+    // (b) droites et médianes, recalculées sur le catalogue d'AVANT D2 (instantané, notes d'avant remises) ; (c) sélection complète
+    const pre = Object.entries(refStrings).map(([id, r]) => ({ id, ...r, comfort: table[id] ? table[id].before : r.comfort }));
+    const excluded: string[] = [];
+    for (const fam of FAMILIES) {
+      const all = pre.filter((r) => r.type === fam);
+      const rated = all.filter((r) => r.comfort !== null);
+      const withT = rated.filter((r) => r.twu !== null);
+      const slope = slopeOf(rated.map((r) => r.stiffness), rated.map((r) => r.comfort as number));
+      const intercept = withT.reduce((a, r) => a + (r.comfort as number), 0) / withT.length - slope * (withT.reduce((a, r) => a + (r.twu as number), 0) / withT.length);
+      if (Math.abs(slope - rule.lines[fam].slope) > 1e-9 || Math.abs(intercept - rule.lines[fam].intercept) > 1e-9) {
+        issues.push(`droite ${fam} figée ${rule.lines[fam].intercept} + ${rule.lines[fam].slope} × TWU, ${intercept} + ${slope} × TWU recalculée sur le catalogue d'avant D2`);
+      }
+      const med = median(all.map((r) => r.stiffness));
+      if (med !== rule.medians[fam]) issues.push(`médiane ${fam} figée ${rule.medians[fam]}, ${med} recalculée`);
+      for (const r of withT) {
+        const over = (r.comfort as number) - lineOf(fam, r.twu as number) > rule.tolerance + 1e-9;
+        const sel = over && (r.twu as number) >= rule.medians[fam];
+        if (over && !sel) excluded.push(r.id);
+        if (sel !== Object.prototype.hasOwnProperty.call(table, r.id)) issues.push(`${r.id} : ${sel ? 'relève de D2 mais absente de la table' : 'dans la table mais hors règle'}`);
+      }
+    }
+    for (const id of Object.keys(table)) if (!(id in refStrings)) issues.push(`${id} : absent de l'instantané de référence`);
+    return { issues, excluded };
+  };
+  // (d) alertes : catalogue d'avant D2 contre catalogue courant, moteur réel, grille du contrôle 5.
+  const isArm22 = (w: string) => /bras|elbow/i.test(w);
+  const alertsDelta = (comfortBefore: (s: (typeof stringsDatabase)[number]) => number | undefined, catalog: Cat) => {
+    const out = { std: { added: 0, gone: 0 }, sen: { added: 0, gone: 0 }, n: 0 };
+    for (const r of racquetsDatabase) {
+      const ra = effectiveRacquetRA(r);
+      for (const s of catalog) {
+        const c0 = comfortBefore(s);
+        if (c0 === s.comfort) continue; // même note : mêmes alertes
+        for (const t of TENSIONS) {
+          for (const [k, armSensitive] of [['std', false], ['sen', true]] as const) {
+            const base = { racquetStiffness: ra, racquetWeight: r.weight, racquetHeadSize: r.headSize, mainStringStiffness: s.stiffness, mainStringFamily: stringTypeToFamily(s.type), mainTension: t, profile: { armSensitive } };
+            const a0 = calculateAdvancedRcs({ ...base, mainRatings: { comfort: c0 } }).warnings.some(isArm22);
+            const a1 = calculateAdvancedRcs({ ...base, mainRatings: { comfort: s.comfort } }).warnings.some(isArm22);
+            if (a0 && !a1) out[k].gone++;
+            if (!a0 && a1) out[k].added++;
+          }
+          out.n++;
+        }
+      }
+    }
+    return out;
+  };
+  if (ref) {
+    const refStrings = ref.strings;
+    const real = checkD2(COMFORT_RECALIBRATED, COMFORT_RECALIBRATION_RULE, stringsDatabase, refStrings);
+    real.issues.forEach((i) => fail(`D2 : ${i}`));
+    const delta = alertsDelta((s) => COMFORT_RECALIBRATED[s.id]?.before ?? s.comfort, stringsDatabase);
+    if (delta.std.gone + delta.sen.gone > 0) fail(`D2 : ${delta.std.gone} alerte(s) standard et ${delta.sen.gone} bras sensible disparue(s) : une note D2 ne doit que baisser`);
+    // Libellé EN : la mention de la règle est celle de public/js/rating-labels.js (contrat mot pour mot : audit:string-labels).
+    const { createRequire } = await import('node:module');
+    const EN = createRequire(import.meta.url)('../public/js/rating-labels.js') as { RECALIBRATED?: string; labelOf?: (s: unknown, h: unknown, r: unknown) => string };
+    if (EN.RECALIBRATED !== COMFORT_RECALIBRATION_RULE.labelEn) fail(`D2 : mention EN « ${EN.RECALIBRATED} » dans rating-labels.js, « ${COMFORT_RECALIBRATION_RULE.labelEn} » dans la règle`);
+    const recalIds = new Set(Object.keys(COMFORT_RECALIBRATED));
+    const harmIds = new Set(Object.keys(STRING_TESTER_RATINGS));
+    for (const s of stringsDatabase) {
+      const lab = EN.labelOf ? EN.labelOf({ id: s.id, comfort: s.comfort ?? null, control: s.control ?? null, spin: s.spin ?? null, power: s.power ?? null, durability: s.durability ?? null }, harmIds, recalIds) : '';
+      if (recalIds.has(s.id) !== lab.endsWith(`; ${COMFORT_RECALIBRATION_RULE.labelEn}`)) fail(`D2 : libellé EN de ${s.id} « ${lab} » (mention attendue sur les fiches recalées et elles seules)`);
+    }
+    // Tests négatifs : chaque altération DOIT être détectée.
+    let detected = 0;
+    const T = COMFORT_RECALIBRATED;
+    const withEntry = (id: string, patch: Record<string, unknown>) => ({ ...T, [id]: { ...T[id], ...patch } }) as Table;
+    const withCatalog = (id: string, comfort: number) => stringsDatabase.map((s) => (s.id === id ? { ...s, comfort } : s));
+    const iso = stringsDatabase.find((s) => s.id === 'isospeed-cream');
+    const negatives: Array<[string, () => string[], string]> = [
+      ['note D2 relevée dans la table (Revenge 5,4 -> 7,0)', () => checkD2(withEntry('babolat-revenge', { after: 7.0 }), COMFORT_RECALIBRATION_RULE, stringsDatabase, refStrings).issues, 'babolat-revenge'],
+      ['note harmonisée écrasée par la droite (4G 5,3 -> 5,0, sans la moyenne testeurs)', () => checkD2(withEntry('luxilon-4g', { after: 5.0 }), COMFORT_RECALIBRATION_RULE, stringsDatabase, refStrings).issues, 'moyenne refaite'],
+      ['composante éditoriale d\'avant fausse (Mach-10 8 -> 9)', () => checkD2(withEntry('solinco-mach-10', { editorialBefore: 9 }), COMFORT_RECALIBRATION_RULE, stringsDatabase, refStrings).issues, 'composante éditoriale d\'avant'],
+      ['fiche souple ajoutée (Isospeed Cream, sous la médiane)', () => checkD2({ ...T, 'isospeed-cream': { family: 'Polyester', twu: 177.7, before: iso?.comfort ?? 9.5, after: 8.4 } }, COMFORT_RECALIBRATION_RULE, stringsDatabase, refStrings).issues, 'sous la médiane'],
+      ['fiche retirée de la table (TGV)', () => { const { ['tecnifibre-tgv']: _gone, ...rest } = T; void _gone; return checkD2(rest, COMFORT_RECALIBRATION_RULE, stringsDatabase, refStrings).issues; }, 'droite Multifilament'],
+      ['tolérance abaissée à 0,5 sans appliquer la règle', () => checkD2(T, { ...COMFORT_RECALIBRATION_RULE, tolerance: 0.5 } as unknown as Rule, stringsDatabase, refStrings).issues, 'relève de D2 mais absente'],
+      ['pente de la droite polyester modifiée', () => checkD2(T, { ...COMFORT_RECALIBRATION_RULE, lines: { ...COMFORT_RECALIBRATION_RULE.lines, Polyester: { ...COMFORT_RECALIBRATION_RULE.lines.Polyester, slope: -0.03 } } } as unknown as Rule, stringsDatabase, refStrings).issues, 'droite Polyester'],
+      ['médiane multifilament modifiée', () => checkD2(T, { ...COMFORT_RECALIBRATION_RULE, medians: { ...COMFORT_RECALIBRATION_RULE.medians, Multifilament: 170 } } as unknown as Rule, stringsDatabase, refStrings).issues, 'médiane Multifilament'],
+      ['note du catalogue remise à sa valeur d\'avant (Revenge 7)', () => checkD2(T, COMFORT_RECALIBRATION_RULE, withCatalog('babolat-revenge', 7), refStrings).issues, 'au catalogue, 5.4 attendue'],
+      ['note du catalogue harmonisée écrasée (Mach-10 7,0)', () => checkD2(T, COMFORT_RECALIBRATION_RULE, withCatalog('solinco-mach-10', 7.0), refStrings).issues, 'au catalogue, 8.3 attendue'],
+      ['D2 qui relève une note (Razor Code 7,5 -> 9,0 : alertes disparues)', () => { const d = alertsDelta((s) => (s.id === 'tecnifibre-razor-code' ? 6.4 : s.comfort), withCatalog('tecnifibre-razor-code', 9.0)); return d.std.gone + d.sen.gone > 0 ? ['alerte(s) disparue(s)'] : []; }, 'disparue'],
+    ];
+    for (const [name, run, needle] of negatives) {
+      let found: string[] = [];
+      try {
+        found = run();
+      } catch (e) {
+        fail(`D2 : test négatif « ${name} » inexécutable (${(e as Error).message})`);
+        continue;
+      }
+      if (found.some((i) => i.includes(needle))) detected++;
+      else fail(`D2 : garde-fou muet sur « ${name} » (motif attendu « ${needle} »${found.length ? `, trouvé : ${found[0].slice(0, 90)}` : ''})`);
+    }
+    // Témoin positif : la table réordonnée passe.
+    const reordered = Object.fromEntries(Object.entries(T).reverse()) as Table;
+    const witness = checkD2(reordered, COMFORT_RECALIBRATION_RULE, stringsDatabase, refStrings).issues;
+    if (witness.length > 0) fail(`D2 : témoin positif « table réordonnée » rejeté à tort : ${witness[0]}`);
+    if (failures.length === before22) {
+      const lines = Object.entries(T).map(([id, e]) => `${id} ${e.before} -> ${e.after}${e.editorialAfter !== undefined ? ` (éditoriale ${e.editorialBefore} -> ${e.editorialAfter})` : ''}`).join(', ');
+      ok(
+        `D2 : ${Object.keys(T).length} notes de confort recalées sur la rigidité mesurée (${lines}) ; droites L2 et médianes recalculées sur le catalogue d'avant D2 ; ` +
+          `sélection complète (écartées par la médiane : ${real.excluded.join(', ')}) ; alertes de la grille du contrôle 5 : 0 disparue, ` +
+          `+${delta.std.added} standard et +${delta.sen.added} bras sensible ajoutées ; mention FR et EN sur les fiches recalées et elles seules ; ${detected} tests négatifs détectés, 1 témoin positif accepté`
+      );
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 23. SECOND FILET : AUCUNE NOTE DE CONFORT NE MONTE, AUCUNE ALERTE NE DISPARAÎT (référence du 23/10/2026)
+// ---------------------------------------------------------------------------
+// Garde-fou asymétrique (avis d'Opus 5.5 du 23/10/2026, point 6) : le second filet « confort » de l'alerte bras lit une note
+// éditoriale, non mesurée ; elle peut descendre (D2), jamais monter sans mesure et sans GO. Plus généralement, une alerte bras ne
+// disparaît pas en silence (règle 2). Référence : `data/reference/second-filet-2026-10-23.json` (rigidité, mesure TWU, note de
+// confort de chaque cordage ; RA effectif et poids de chaque raquette ; `scripts/scraper/reference-second-filet.mts`). Ce bloc
+// échoue si, par rapport à la référence : une note de confort monte, disparaît, ou apparaît sur une fiche « Non publié » (valeur
+// comblée) ; une fiche ou une raquette disparaît ; ou une alerte bras de la grille du contrôle 5 disparaît (moteur réel, deux
+// profils, mêmes entrées que la référence sauf les données changées). Exceptions : liste explicite, datée, motivée, avec le GO de
+// Pierre ; vide à ce jour ; une exception inutilisée échoue. Tests négatifs sur des copies altérées du catalogue.
+{
+  const before23 = failures.length;
+  const REF23 = 'data/reference/second-filet-2026-10-23.json';
+  const EXCEPTIONS23: ReadonlyArray<{ id: string; date: string; motive: string; go: string }> = [];
+  type RefS = { type: string; stiffness: number; twu: number | null; comfort: number | null };
+  type RefR = { ra: number; weight: number | null };
+  let ref: { strings: Record<string, RefS>; racquets: Record<string, RefR> } | null = null;
+  try {
+    ref = JSON.parse(readFileSync(REF23, 'utf8'));
+  } catch (e) {
+    fail(`second filet : référence ${REF23} illisible (${(e as Error).message})`);
+  }
+  type CurS = { id: string; type: string; stiffness: number; comfort: number | null };
+  type CurR = { id: string; ra: number; weight: number | null };
+  const isArm23 = (w: string) => /bras|elbow/i.test(w);
+  const check23 = (strings: readonly CurS[], racquets: readonly CurR[]) => {
+    const issues: string[] = [];
+    const used = new Set<string>();
+    const excepted = (id: string) => { const hit = EXCEPTIONS23.some((x) => x.id === id); if (hit) used.add(id); return hit; };
+    const sById = new Map(strings.map((s) => [s.id, s]));
+    const rById = new Map(racquets.map((r) => [r.id, r]));
+    for (const [id, r] of Object.entries(ref!.strings)) {
+      const s = sById.get(id);
+      if (!s) { if (!excepted(id)) issues.push(`${id} : fiche retirée depuis la référence (ses alertes disparaissent)`); continue; }
+      if (r.comfort !== null && s.comfort === null && !excepted(id)) issues.push(`${id} : note de confort retirée (${r.comfort} -> non publiée) : le second filet de la fiche disparaît`);
+      if (r.comfort !== null && s.comfort !== null && s.comfort > r.comfort + 1e-9 && !excepted(id)) issues.push(`${id} : note de confort relevée (${r.comfort} -> ${s.comfort}) sans mesure ni GO`);
+      if (r.comfort === null && s.comfort !== null && !excepted(id)) issues.push(`${id} : note de confort créée (${s.comfort}) sur une fiche « Non publié » : valeur comblée`);
+    }
+    for (const id of Object.keys(ref!.racquets)) if (!rById.has(id) && !excepted(id)) issues.push(`${id} : raquette retirée depuis la référence (ses alertes disparaissent)`);
+    let gone = 0;
+    let added = 0;
+    let example = '';
+    for (const [rid, r0] of Object.entries(ref!.racquets)) {
+      const r1 = rById.get(rid);
+      if (!r1) continue;
+      for (const [sid, s0] of Object.entries(ref!.strings)) {
+        const s1 = sById.get(sid);
+        if (!s1) continue;
+        if (r0.ra === r1.ra && r0.weight === r1.weight && s0.stiffness === s1.stiffness && s0.comfort === s1.comfort && s0.type === s1.type) continue;
+        for (const t of TENSIONS) {
+          for (const armSensitive of [false, true]) {
+            const inp = (r: RefR | CurR, s: RefS | CurS) => ({
+              racquetStiffness: r.ra, racquetWeight: r.weight ?? undefined, mainStringStiffness: s.stiffness, mainStringFamily: stringTypeToFamily(s.type),
+              mainRatings: { comfort: s.comfort ?? undefined }, mainTension: t, profile: { armSensitive },
+            });
+            const a0 = calculateAdvancedRcs(inp(r0, s0)).warnings.some(isArm23);
+            const a1 = calculateAdvancedRcs(inp(r1, s1)).warnings.some(isArm23);
+            if (a0 && !a1 && !excepted(sid) && !excepted(rid)) { gone++; if (!example) example = `${rid} + ${sid} à ${t} kg (${armSensitive ? 'bras sensible' : 'standard'})`; }
+            if (!a0 && a1) added++;
+          }
+        }
+      }
+    }
+    if (gone > 0) issues.push(`${gone} alerte(s) bras disparue(s) depuis la référence, par exemple ${example}`);
+    for (const x of EXCEPTIONS23) if (!used.has(x.id)) issues.push(`exception inutilisée : ${x.id} (${x.date})`);
+    return { issues, gone, added };
+  };
+  if (ref) {
+    const curS: CurS[] = stringsDatabase.map((s) => ({ id: s.id, type: s.type, stiffness: s.stiffness, comfort: s.comfort ?? null }));
+    const curR: CurR[] = racquetsDatabase.map((r) => ({ id: r.id, ra: effectiveRacquetRA(r), weight: r.weight ?? null }));
+    const real = check23(curS, curR);
+    real.issues.forEach((i) => fail(`second filet : ${i}`));
+    const mod = (id: string, patch: Partial<CurS>) => curS.map((s) => (s.id === id ? { ...s, ...patch } : s));
+    const aRacquet = curR.find((r) => r.ra === 66)!;
+    const negatives: Array<[string, () => string[], string]> = [
+      ['note de confort relevée (Revenge 5,4 -> 7,0)', () => check23(mod('babolat-revenge', { comfort: 7.0 }), curR).issues, 'note de confort relevée'],
+      ['note relevée : alertes disparues (Revenge 5,4 -> 7,0)', () => check23(mod('babolat-revenge', { comfort: 7.0 }), curR).issues, 'alerte(s) bras disparue(s)'],
+      ['note de confort retirée (Revenge)', () => check23(mod('babolat-revenge', { comfort: null }), curR).issues, 'note de confort retirée'],
+      ['note créée sur une fiche « Non publié » (O-Toro)', () => check23(mod(curS.find((s) => s.comfort === null)!.id, { comfort: 7 }), curR).issues, 'note de confort créée'],
+      ['rigidité baissée (4G 286,9 -> 265)', () => check23(mod('luxilon-4g', { stiffness: 265 }), curR).issues, 'alerte(s) bras disparue(s)'],
+      ['fiche retirée (4G)', () => check23(curS.filter((s) => s.id !== 'luxilon-4g'), curR).issues, 'fiche retirée'],
+      [`RA baissé (${aRacquet.id} 66 -> 60)`, () => check23(curS, curR.map((r) => (r.id === aRacquet.id ? { ...r, ra: 60 } : r))).issues, 'alerte(s) bras disparue(s)'],
+      ['raquette retirée', () => check23(curS, curR.filter((r) => r.id !== aRacquet.id)).issues, 'raquette retirée'],
+    ];
+    let detected = 0;
+    for (const [name, run, needle] of negatives) {
+      const found = run();
+      if (found.some((i) => i.includes(needle))) detected++;
+      else fail(`second filet : garde-fou muet sur « ${name} » (motif attendu « ${needle} »${found.length ? `, trouvé : ${found[0].slice(0, 90)}` : ''})`);
+    }
+    // Témoins positifs : une note qui descend encore, une rigidité qui monte (seulement des alertes ajoutées).
+    const lower = check23(mod('babolat-revenge', { comfort: 5.0 }), curR);
+    const stiffer = check23(mod('luxilon-alu-power', { stiffness: 240 }), curR);
+    let accepted = 0;
+    if (lower.issues.length > 0 || lower.added === 0) fail(`second filet : témoin positif « note qui descend » rejeté ou sans effet (${lower.issues[0] ?? `${lower.added} ajoutée`})`);
+    else accepted++;
+    if (stiffer.issues.length > 0 || stiffer.added === 0) fail(`second filet : témoin positif « rigidité qui monte » rejeté ou sans effet (${stiffer.issues[0] ?? `${stiffer.added} ajoutée`})`);
+    else accepted++;
+    if (failures.length === before23) {
+      ok(
+        `second filet : par rapport à la référence du 23/10/2026 (${Object.keys(ref.strings).length} cordages, ${Object.keys(ref.racquets).length} raquettes), aucune note de confort ` +
+          `relevée, retirée ni créée, aucune fiche ni raquette retirée, 0 alerte bras disparue (${real.added} ajoutée(s)) ; aucune exception ; ` +
+          `${detected} tests négatifs détectés, ${accepted} témoins positifs acceptés`
+      );
     }
   }
 }

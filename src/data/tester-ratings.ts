@@ -11,7 +11,9 @@
  *      produits communs (`ANCHOR_SHIFT`), borné à [0, 10] ;
  *   2. note publiée = moyenne (ancienne note /10, note docx recalée), arrondie
  *      au dixième ; ancienne note absente -> note docx recalée seule ;
- *   3. critères docx sans champ (TOU, CST, TEN, VAL) : conservés ici, non affichés.
+ *   3. critères docx sans champ (TOU, CST, TEN, VAL) : conservés ici, non affichés ;
+ *   4. D2 (23/10/2026) : quand la note de confort a été recalée sur la rigidité mesurée (`comfort-recalibration.ts`),
+ *      l'ancienne note éditoriale est remplacée par sa valeur recalée avant la moyenne ; `before10` garde l'ancienne.
  * Contrôle : `npm run audit:ratings` recalcule chaque note publiée depuis ce fichier.
  */
 
@@ -50,10 +52,13 @@ export interface TesterRatingsEntry {
 
 const round1 = (v: number) => Math.round(v * 10 + 1e-9) / 10;
 
-/** Note publiée attendue pour un champ, recalculée depuis la provenance. */
-export function harmonizedRating(entry: TesterRatingsEntry, field: HarmonizedField): number {
+/**
+ * Note publiée attendue pour un champ, recalculée depuis la provenance. `editorial` remplace l'ancienne note quand elle a
+ * été recalée (D2, étape 4 de la méthode) ; sans elle, l'ancienne note `before10` est la composante éditoriale.
+ */
+export function harmonizedRating(entry: TesterRatingsEntry, field: HarmonizedField, editorial?: number): number {
   const recal = Math.min(10, Math.max(0, entry.raw20[FIELD_TO_CRITERION[field]] / 2 + ANCHOR_SHIFT[field]));
-  const before = entry.before10[field];
+  const before = editorial ?? entry.before10[field];
   return round1(before === undefined ? recal : (before + recal) / 2);
 }
 

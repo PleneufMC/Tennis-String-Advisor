@@ -416,7 +416,7 @@
             </div>`;
       }
       return `
-            <p class="text-xs font-medium text-gray-700 dark:text-gray-300 mb-3" data-rating-basis="${basis}">${TSARatingLabels.LABEL[basis]}</p>
+            <p class="text-xs font-medium text-gray-700 dark:text-gray-300 mb-3" data-rating-basis="${basis}">${TSARatingLabels.label(string)}</p>
             <div class="space-y-3 mb-4">${ratingBar('Spin', string.spin)}${ratingBar('Control', string.control)}${ratingBar('Comfort', string.comfort)}${ratingBar('Durability', string.durability)}
             </div>`;
     }
