@@ -3131,238 +3131,6 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
 }
 
 // ---------------------------------------------------------------------------
-// 20 bis. NOTES /10 SANS VALEUR COMBLÉE — configurateur et catalogue EN (23/10/2026)
-// Décision (avis d'Opus 5.5 du 23/10/2026, AH §2 et §3 ; tsa-acquisition, propriétaire de public/en) : une note /10 ou un prix
-// absents ne sont jamais remplacés par un nombre, ni pour choisir, ni pour trier, ni pour filtrer, ni pour afficher (règle 3).
-// (a) Aucun `|| <nombre>` ni `?? <nombre>` sur un champ de note (comfort, spin, control, durability, power) dans public/ (HTML
-//     et JS, blog compris), ni dans pickBestString du configurateur EN, ni dans la barre de note du catalogue EN (ratingBar).
-// (b) pickBestString du configurateur EN, évalué tel quel avec chaque critère de la page, le tirage du top 3 forcé sur ses
-//     trois rangs : un cordage sans note injecté en tête du catalogue n'est jamais choisi ; le cordage choisi a l'une des trois
-//     meilleures notes du critère (recalcul indépendant) ; sur une liste où une note comblée à 5 le placerait en tête, il
-//     n'est pas choisi non plus ; sans aucun candidat noté : aucun cordage et « No rated string matches these criteria. ».
-// (c) La raison d'un cordage choisi par une note nomme la nature de SA note (TSARatingLabels.label du cordage choisi) ; tout appel de
-//     pickBestString passe par ratedStringView, sauf dans la branche de la douleur déclarée (remplacée par la PR #148 :
-//     cordage le moins rigide, contrôle 22).
-// (d) Catalogue EN : tris par prix et par note avec les fiches sans prix ou sans note en fin de liste dans les deux sens ;
-//     prix maximal : un prix absent ne passe pas (comme filterStrings en FR) ; phrase des filtres « … the ratings out of 10
-//     shown on each card (not measured). ».
-{
-  const before20b = failures.length;
-  const CONF20B = 'public/en/configurator.html';
-  const CAT20B = 'public/en/strings.html';
-  const NUM_FALLBACK = /(?:\|\||\?\?)\s*-?\d/;
-  const FIELD_FALLBACK = /\b(?:comfort|spin|control|durability|power)\b\)?\s*(?:\|\||\?\?)\s*-?\d/;
-  const NO_RATED = 'No rated string matches these criteria.';
-  const CARD_SENTENCE = 'The spin, control, comfort and durability filters and sort options use the ratings out of 10 shown on each card (not measured). ';
-  let conf20b = '';
-  let cat20b = '';
-  try {
-    conf20b = readFileSync(CONF20B, 'utf8').replace(/\r\n/g, '\n');
-    cat20b = readFileSync(CAT20B, 'utf8').replace(/\r\n/g, '\n');
-  } catch (e) {
-    fail(`notes sans valeur comblée (EN) : fichier illisible (${(e as Error).message})`);
-  }
-  if (conf20b && cat20b) {
-    const strings20b: any[] = buildCatalog(racquetsDatabase, stringsDatabase).strings;
-    const slice20b = (src: string, start: string, end: string): string | null => {
-      const i = src.indexOf(start);
-      const j = i < 0 ? -1 : src.indexOf(end, i + start.length);
-      return i < 0 || j < 0 ? null : src.slice(i, j + end.length);
-    };
-    // Fonction seule ; stringPickNote est déclarée par l'évaluation : le contrôle tourne aussi sur une page qui ne la
-    // déclare pas (main avant cette PR).
-    const pickerOf = (html: string) => slice20b(html, 'function pickBestString(criteria) {', "return picked;\n    }\n");
-    const reasonOf = (html: string) => slice20b(html, 'function ratedStringView(s, criterion) {', '\n    }\n');
-    const barOf = (html: string) => slice20b(html, 'function ratingBar(label, value) {', '\n    }\n');
-    const filterOf = (html: string) => slice20b(html, 'function filterStrings() {', '\n      renderStrings();\n    }\n');
-    const criteriaOf = (html: string): any[] =>
-      [...html.matchAll(/stringCriteria = (\{[^{}]*\});/g)].map((m) => new Function(`return (${m[1]});`)());
-    const KEYS: Array<[string, string]> = [['preferComfort', 'comfort'], ['preferSpin', 'spin'], ['preferControl', 'control']];
-    const unrated = (type: string) => ({ id: 'test-sans-note', brand: 'Test', model: 'Unrated', type, stiffness: 200, spin: null, control: null, comfort: null, power: null, durability: null, price_eur: null });
-    const rated = (id: string, type: string, v: number) => ({ id, brand: 'Test', model: id, type, stiffness: 150, spin: v, control: v, comfort: v, power: v, durability: v, price_eur: 10 });
-
-    // (a) Repli numérique sur un champ de note, partout dans public/, et dans les deux fonctions qui manipulent une note anonyme.
-    const scanFallbacks = (file: string, src: string): string[] =>
-      src
-        .split('\n')
-        .map((l, i) => [l, i + 1] as [string, number])
-        .filter(([l]) => FIELD_FALLBACK.test(l))
-        .map(([l, n]) => `${file}:${n} : note /10 remplacée par un nombre (« ${l.trim().slice(0, 100)} »)`);
-    const walk20b = (d: string): string[] =>
-      readdirSync(d).flatMap((n) => (statSync(`${d}/${n}`).isDirectory() ? walk20b(`${d}/${n}`) : [`${d}/${n}`]));
-    const publicFiles = walk20b('public').filter((f) => /\.(?:html|js|mjs)$/.test(f));
-    for (const f of publicFiles) scanFallbacks(f, readFileSync(f, 'utf8')).forEach((m) => fail(m));
-    const bodyIssues = (html: string, catHtml: string): string[] => {
-      const out: string[] = [];
-      const picker = pickerOf(html);
-      const bar = barOf(catHtml);
-      if (picker === null) out.push(`${CONF20B} : pickBestString introuvable, relire le contrôle 20 bis`);
-      else if (NUM_FALLBACK.test(picker)) out.push(`${CONF20B} : pickBestString remplace une valeur absente par un nombre`);
-      if (bar === null) out.push(`${CAT20B} : ratingBar introuvable, relire le contrôle 20 bis`);
-      else if (NUM_FALLBACK.test(bar)) out.push(`${CAT20B} : ratingBar remplace une note absente par un nombre`);
-      return out;
-    };
-
-    // (b) pickBestString évalué tel quel ; (c) raison et appels.
-    let picks20b = 0;
-    const pickerIssues = (html: string): string[] => {
-      const out: string[] = [];
-      const add = (m: string) => { if (out.length < 10) out.push(`${CONF20B} : ${m}`); };
-      const picker = pickerOf(html);
-      if (picker === null) return [`${CONF20B} : pickBestString introuvable, relire le contrôle 20 bis`];
-      const criteria = criteriaOf(html);
-      if (criteria.length < 5) add(`${criteria.length} critères de cordage seulement, relire le contrôle 20 bis`);
-      const run = (db: any[], crit: any, k: number) => {
-        const M = Object.create(Math);
-        M.random = () => k;
-        const api = new Function('stringsDB', 'console', 'Math', `let stringPickNote = null;\n${picker}\nreturn { picked: pickBestString(${JSON.stringify(crit)}), note: stringPickNote };`)(
-          db, { log() {} }, M);
-        return api as { picked: any; note: string | null };
-      };
-      for (const crit of criteria) {
-        const keys = KEYS.filter(([flag]) => crit[flag]).map(([, key]) => key);
-        if (keys.length === 0) continue;
-        const key = keys[keys.length - 1];
-        const type = crit.types?.[0] ?? 'Polyester';
-        const typed = strings20b.filter((s) => !crit.types || crit.types.some((t: string) => String(s.type ?? '').toLowerCase().includes(t.toLowerCase())));
-        const ratedVals = typed.filter((s) => keys.every((x) => typeof s[x] === 'number')).map((s) => s[key]).sort((a, b) => b - a);
-        const third = ratedVals[Math.min(2, ratedVals.length - 1)];
-        for (const k of [0, 0.34, 0.67, 0.99]) {
-          const real = run([unrated(type), ...strings20b], crit, k);
-          picks20b++;
-          if (!real.picked) add(`critère ${JSON.stringify(crit)} : aucun cordage choisi sur le catalogue`);
-          else if (real.picked.id === 'test-sans-note') add(`critère ${JSON.stringify(crit)} : le cordage sans note injecté en tête est choisi`);
-          else if (!keys.every((x) => typeof real.picked[x] === 'number') || real.picked[key] < third) {
-            add(`critère ${JSON.stringify(crit)} : ${real.picked.id} (${key} ${real.picked[key]}) n'est pas parmi les trois meilleures notes (${ratedVals.slice(0, 3).join(', ')})`);
-          }
-          const low = run([unrated(type), rated('test-note-4', type, 4), rated('test-note-3', type, 3)], crit, k);
-          if (!low.picked || low.picked.id === 'test-sans-note') add(`critère ${JSON.stringify(crit)} : liste où une note comblée à 5 passerait en tête, choisi ${low.picked?.id ?? 'aucun'}`);
-        }
-        const none = run([unrated(type)], crit, 0);
-        if (none.picked || none.note !== NO_RATED) add(`critère ${JSON.stringify(crit)} : sans candidat noté, choisi ${none.picked?.id ?? 'aucun'}, note « ${none.note} »`);
-      }
-      const reason = reasonOf(html);
-      if (reason === null) add('ratedStringView introuvable, relire le contrôle 20 bis');
-      else {
-        // Libellé témoin propre à chaque cordage : la raison doit porter celui du cordage choisi, tel que label(s) le rend.
-        const labels = { label: (s: any) => `nature de ${s.id}` };
-        const view = new Function('stringView', 'TSARatingLabels', `${reason}\nreturn ratedStringView;`)((s: any, r: string) => (s ? { reason: r } : null), labels);
-        for (const s of strings20b.filter((x) => typeof x.comfort === 'number').slice(0, 20)) {
-          const want = `Criterion (nature de ${s.id}).`;
-          if (view(s, 'Criterion')?.reason !== want) { add(`raison : « ${view(s, 'Criterion')?.reason} » au lieu de « ${want} »`); break; }
-        }
-        if (view(null, 'Criterion') !== null) add('raison : un cordage absent produit une fiche');
-      }
-      const painStart = html.indexOf('// PRIORITY 2');
-      const painEnd = html.indexOf('// PRIORITY 3', painStart);
-      const outsidePain = painStart < 0 || painEnd < 0 ? html : html.slice(0, painStart) + html.slice(painEnd);
-      const calls = [...outsidePain.matchAll(/(\w+)\(pickBestString\(/g)].map((m) => m[1]);
-      if (calls.length === 0) add('aucun appel de pickBestString trouvé, relire le contrôle 20 bis');
-      const bad = calls.filter((c) => c !== 'ratedStringView');
-      if (bad.length > 0) add(`${bad.length} cordage(s) choisi(s) par une note sans nature dans la raison (${bad.join(', ')}(pickBestString(…)))`);
-      if (!/showGenerateError\(!string && stringPickNote\b/.test(html)) add('la note « No rated string… » n\'est plus affichée quand aucun cordage noté ne reste');
-      return out;
-    };
-
-    // (d) Catalogue EN : filterStrings évalué tel quel sur le catalogue, chaque tri et le prix maximal.
-    let sorts20b = 0;
-    const catalogIssues = (html: string): string[] => {
-      const out: string[] = [];
-      const add = (m: string) => { if (out.length < 10) out.push(`${CAT20B} : ${m}`); };
-      if (!html.includes(`ratingNote.textContent = '${CARD_SENTENCE}' + TSARatingLabels.NOTE;`)) add('phrase des filtres et des tris absente ou modifiée');
-      if (/TSA editorial ratings out of 10/.test(html)) add('phrase « TSA editorial ratings out of 10 » encore présente');
-      const src = filterOf(html);
-      if (src === null) return [...out, `${CAT20B} : filterStrings introuvable, relire le contrôle 20 bis`];
-      const run = (values: Record<string, string>) => {
-        const doc = { getElementById: (id: string) => ({ value: values[id] ?? '' }) };
-        return new Function('document', 'allStrings', 'updateActiveFilters', 'renderStrings', `let filteredStrings = [];\n${src}\nfilterStrings();\nreturn filteredStrings;`)(
-          doc, strings20b, () => {}, () => {}) as any[];
-      };
-      const SORTS: Array<[string, string, number]> = [
-        ['price-asc', 'price_eur', 1], ['price-desc', 'price_eur', -1], ['spin-desc', 'spin', -1],
-        ['control-desc', 'control', -1], ['comfort-desc', 'comfort', -1], ['durability-desc', 'durability', -1],
-      ];
-      for (const [sort, field, dir] of SORTS) {
-        sorts20b++;
-        const list = run({ sortFilter: sort });
-        const firstAbsent = list.findIndex((s) => typeof s[field] !== 'number');
-        const present = firstAbsent < 0 ? list : list.slice(0, firstAbsent);
-        if (list.slice(present.length).some((s) => typeof s[field] === 'number')) add(`tri ${sort} : une fiche sans ${field} n'est pas en fin de liste`);
-        if (present.some((s, i) => i > 0 && dir * (s[field] - present[i - 1][field]) < 0)) add(`tri ${sort} : ordre faux sur les fiches renseignées`);
-        if (list.length !== strings20b.length) add(`tri ${sort} : ${list.length} fiches au lieu de ${strings20b.length}`);
-      }
-      const capped = run({ sortFilter: 'brand', priceFilter: '20' });
-      if (capped.some((s) => typeof s.price_eur !== 'number' || s.price_eur > 20)) add('prix maximal 20 € : une fiche sans prix ou plus chère passe le filtre');
-      return out;
-    };
-
-    bodyIssues(conf20b, cat20b).forEach((m) => fail(m));
-    pickerIssues(conf20b).forEach((m) => fail(m));
-    catalogIssues(cat20b).forEach((m) => fail(m));
-    const realPicks = picks20b;
-    const realSorts = sorts20b;
-    const ratedCriteria = criteriaOf(conf20b).filter((c) => KEYS.some(([flag]) => c[flag])).length;
-    const absentPrices = strings20b.filter((s) => typeof s.price_eur !== 'number').length;
-    const absentRatings = strings20b.filter((s) => typeof s.comfort !== 'number').length;
-
-    // Tests négatifs : chaque altération doit être détectée ; témoins positifs : chaque variante neutre doit être acceptée.
-    let detected20b = 0;
-    let accepted20b = 0;
-    const once = (s: string, find: string, rep: string): string | null => (s.includes(find) ? s.replace(find, () => rep) : null);
-    const NEG: Array<[string, 'conf' | 'cat', Array<[string, string]>]> = [
-      ['note comblée à 5 rétablie dans pickBestString', 'conf', [
-        ["const rated = candidates.filter(s => typeof s[key] === 'number');", 'const rated = candidates;'],
-        ['candidates = rated.sort((a, b) => b[key] - a[key]);', 'candidates = rated.sort((a, b) => (b[key] || 5) - (a[key] || 5));'],
-      ]],
-      ['cordages sans note gardés (lus comme 0)', 'conf', [["const rated = candidates.filter(s => typeof s[key] === 'number');", 'const rated = candidates;']]],
-      ['note « aucun cordage noté » jamais posée', 'conf', [["if (candidates.length > 0 && rated.length === 0) stringPickNote = 'No rated string matches these criteria.';", '']]],
-      ['raison sans la nature de la note', 'conf', [["return stringView(s, s ? criterion + ' (' + TSARatingLabels.label(s) + ').' : '');", "return stringView(s, s ? criterion + '.' : '');"]]],
-      ['cordage choisi par une note sans ratedStringView', 'conf', [["string = ratedStringView(pickBestString(stringCriteria), 'One of the polyester strings with the highest control rating in the catalog');", "string = stringView(pickBestString(stringCriteria), 'One of the polyester strings with the highest control rating in the catalog.');"]]],
-      ['tri prix croissant : prix absent lu comme 0', 'cat', [["case 'price-asc': return absentLast(a.price_eur, b.price_eur, 1);", "case 'price-asc': return a.price_eur - b.price_eur;"]]],
-      ['tri confort : note absente lue comme 0 (en tête si croissant)', 'cat', [["case 'comfort-desc': return absentLast(a.comfort, b.comfort, -1);", "case 'comfort-desc': return (a.comfort ?? 0) - (b.comfort ?? 0);"]]],
-      ['prix maximal : prix absent accepté', 'cat', [["if (maxPrice && !(typeof string.price_eur === 'number' && string.price_eur <= parseInt(maxPrice))) return false;", 'if (maxPrice && string.price_eur > parseInt(maxPrice)) return false;']]],
-      ['barre de note : note absente comblée à 0', 'cat', [["${typeof value === 'number' ? `<div class=\"rating-fill ${getRatingColor(value)}\" style=\"width: ${value * 10}%\"></div>` : ''}", '<div class="rating-fill ${getRatingColor(value)}" style="width: ${(value ?? 0) * 10}%"></div>']]],
-      ['phrase « TSA editorial ratings » rétablie', 'cat', [[CARD_SENTENCE, 'The spin, control, comfort and durability filters and sort options use TSA editorial ratings out of 10. ']]],
-    ];
-    for (const [name, target, edits] of NEG) {
-      let m: string | null = target === 'conf' ? conf20b : cat20b;
-      for (const [find, rep] of edits) m = m === null ? null : once(m, find, rep);
-      if (m === null) { fail(`notes sans valeur comblée : prémisse du test négatif « ${name} » fausse (motif absent)`); continue; }
-      const found = target === 'conf' ? [...bodyIssues(m, cat20b), ...pickerIssues(m)] : [...bodyIssues(conf20b, m), ...catalogIssues(m)];
-      if (found.length > 0) detected20b++;
-      else fail(`notes sans valeur comblée : garde-fou muet sur « ${name} »`);
-    }
-    // Balayage : un repli sur un champ de note ajouté à un fichier de public/js doit être vu ; une note lue sans repli ou un
-    // repli sur un compteur ne le sont pas.
-    if (scanFallbacks('public/js/x.js', 'const c = (s.comfort ?? 0) * 10;').length > 0) detected20b++;
-    else fail('notes sans valeur comblée : garde-fou muet sur « repli ?? 0 sur comfort dans public/js »');
-    if (scanFallbacks('public/js/x.js', "const c = typeof s.comfort === 'number' ? s.comfort : null;\nconst n = profile.count || 0;").length === 0) accepted20b++;
-    else fail('notes sans valeur comblée : témoin positif « note lue sans repli, compteur à 0 » rejeté à tort');
-    const POS: Array<[string, 'conf' | 'cat', string, string]> = [
-      ['raison reformulée', 'conf', "'One of the polyester strings with the highest control rating in the catalog'", "'A polyester string among the three best control ratings in the catalog'"],
-      ['comparateur « absent en fin » écrit autrement', 'cat', 'if (!hasX || !hasY) return hasX === hasY ? 0 : (hasX ? -1 : 1);', 'if (!hasX || !hasY) return Number(hasY) - Number(hasX);'],
-    ];
-    for (const [name, target, find, rep] of POS) {
-      const m = once(target === 'conf' ? conf20b : cat20b, find, rep);
-      if (m === null) { fail(`notes sans valeur comblée : prémisse du témoin positif « ${name} » fausse (motif absent)`); continue; }
-      const found = target === 'conf' ? [...bodyIssues(m, cat20b), ...pickerIssues(m)] : [...bodyIssues(conf20b, m), ...catalogIssues(m)];
-      if (found.length === 0) accepted20b++;
-      else fail(`notes sans valeur comblée : témoin positif « ${name} » rejeté à tort : ${found[0]}`);
-    }
-
-    if (failures.length === before20b) {
-      ok(
-        `notes sans valeur comblée (EN) : aucun repli numérique sur une note dans ${publicFiles.length} fichiers de public/, ni dans pickBestString ni ratingBar ; ` +
-          `configurateur : pickBestString évalué tel quel (${ratedCriteria} critères de la page triés par une note, ${realPicks} tirages forcés sur le catalogue), cordage sans note injecté en tête jamais choisi, ` +
-          `choix parmi les trois meilleures notes, « ${NO_RATED} » sans candidat noté, raison avec la nature de la note ; ` +
-          `catalogue : ${realSorts} tris évalués tels quels sur ${strings20b.length} fiches, ${absentPrices} fiches sans prix et ${absentRatings} sans note en fin de liste, prix maximal sans fiche non chiffrée, phrase des filtres à jour ; ` +
-          `${detected20b} tests négatifs détectés, ${accepted20b} témoins positifs acceptés`
-      );
-    }
-  }
-}
-
-// ---------------------------------------------------------------------------
 // 21. CONFIGURATEUR FR — le bras sensible se DÉCLARE (case facultative), sans rien enregistrer ni envoyer
 //     (décision de l'orchestrateur du 11/10/2026, règle 2 ; suite de la PR #122)
 // ---------------------------------------------------------------------------
@@ -4088,6 +3856,238 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
           `texte d'aide : seuils ${S} et ${N} (sondés), professionnel de santé, « ni enregistrée ni envoyée » ; ` +
           `indice affiché = indice du moteur (aucun second calcul ; palier, enregistrement et GA4 sur le même entier ; bornes et mention d'estimation d'un hybride affichées) ; ` +
           `${detected} tests négatifs détectés, ${accepted} témoins positifs acceptés`
+      );
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 21 quinquies. NOTES /10 SANS VALEUR COMBLÉE — configurateur et catalogue EN (23/10/2026)
+// Décision (avis d'Opus 5.5 du 23/10/2026, AH §2 et §3 ; tsa-acquisition, propriétaire de public/en) : une note /10 ou un prix
+// absents ne sont jamais remplacés par un nombre, ni pour choisir, ni pour trier, ni pour filtrer, ni pour afficher (règle 3).
+// (a) Aucun `|| <nombre>` ni `?? <nombre>` sur un champ de note (comfort, spin, control, durability, power) dans public/ (HTML
+//     et JS, blog compris), ni dans pickBestString du configurateur EN, ni dans la barre de note du catalogue EN (ratingBar).
+// (b) pickBestString du configurateur EN, évalué tel quel avec chaque critère de la page, le tirage du top 3 forcé sur ses
+//     trois rangs : un cordage sans note injecté en tête du catalogue n'est jamais choisi ; le cordage choisi a l'une des trois
+//     meilleures notes du critère (recalcul indépendant) ; sur une liste où une note comblée à 5 le placerait en tête, il
+//     n'est pas choisi non plus ; sans aucun candidat noté : aucun cordage et « No rated string matches these criteria. ».
+// (c) La raison d'un cordage choisi par une note nomme la nature de SA note (TSARatingLabels.label du cordage choisi) ; tout appel de
+//     pickBestString passe par ratedStringView, sauf dans la branche de la douleur déclarée (remplacée par la PR #148 :
+//     cordage le moins rigide, contrôle 22).
+// (d) Catalogue EN : tris par prix et par note avec les fiches sans prix ou sans note en fin de liste dans les deux sens ;
+//     prix maximal : un prix absent ne passe pas (comme filterStrings en FR) ; phrase des filtres « … the ratings out of 10
+//     shown on each card (not measured). ».
+{
+  const beforeQ5 = failures.length;
+  const CONFQ5 = 'public/en/configurator.html';
+  const CATQ5 = 'public/en/strings.html';
+  const NUM_FALLBACK = /(?:\|\||\?\?)\s*-?\d/;
+  const FIELD_FALLBACK = /\b(?:comfort|spin|control|durability|power)\b\)?\s*(?:\|\||\?\?)\s*-?\d/;
+  const NO_RATED = 'No rated string matches these criteria.';
+  const CARD_SENTENCE = 'The spin, control, comfort and durability filters and sort options use the ratings out of 10 shown on each card (not measured). ';
+  let confQ5 = '';
+  let catQ5 = '';
+  try {
+    confQ5 = readFileSync(CONFQ5, 'utf8').replace(/\r\n/g, '\n');
+    catQ5 = readFileSync(CATQ5, 'utf8').replace(/\r\n/g, '\n');
+  } catch (e) {
+    fail(`notes sans valeur comblée (EN) : fichier illisible (${(e as Error).message})`);
+  }
+  if (confQ5 && catQ5) {
+    const stringsQ5: any[] = buildCatalog(racquetsDatabase, stringsDatabase).strings;
+    const sliceQ5 = (src: string, start: string, end: string): string | null => {
+      const i = src.indexOf(start);
+      const j = i < 0 ? -1 : src.indexOf(end, i + start.length);
+      return i < 0 || j < 0 ? null : src.slice(i, j + end.length);
+    };
+    // Fonction seule ; stringPickNote est déclarée par l'évaluation : le contrôle tourne aussi sur une page qui ne la
+    // déclare pas (main avant cette PR).
+    const pickerOf = (html: string) => sliceQ5(html, 'function pickBestString(criteria) {', "return picked;\n    }\n");
+    const reasonOf = (html: string) => sliceQ5(html, 'function ratedStringView(s, criterion) {', '\n    }\n');
+    const barOf = (html: string) => sliceQ5(html, 'function ratingBar(label, value) {', '\n    }\n');
+    const filterOf = (html: string) => sliceQ5(html, 'function filterStrings() {', '\n      renderStrings();\n    }\n');
+    const criteriaOf = (html: string): any[] =>
+      [...html.matchAll(/stringCriteria = (\{[^{}]*\});/g)].map((m) => new Function(`return (${m[1]});`)());
+    const KEYS: Array<[string, string]> = [['preferComfort', 'comfort'], ['preferSpin', 'spin'], ['preferControl', 'control']];
+    const unrated = (type: string) => ({ id: 'test-sans-note', brand: 'Test', model: 'Unrated', type, stiffness: 200, spin: null, control: null, comfort: null, power: null, durability: null, price_eur: null });
+    const rated = (id: string, type: string, v: number) => ({ id, brand: 'Test', model: id, type, stiffness: 150, spin: v, control: v, comfort: v, power: v, durability: v, price_eur: 10 });
+
+    // (a) Repli numérique sur un champ de note, partout dans public/, et dans les deux fonctions qui manipulent une note anonyme.
+    const scanFallbacks = (file: string, src: string): string[] =>
+      src
+        .split('\n')
+        .map((l, i) => [l, i + 1] as [string, number])
+        .filter(([l]) => FIELD_FALLBACK.test(l))
+        .map(([l, n]) => `${file}:${n} : note /10 remplacée par un nombre (« ${l.trim().slice(0, 100)} »)`);
+    const walkQ5 = (d: string): string[] =>
+      readdirSync(d).flatMap((n) => (statSync(`${d}/${n}`).isDirectory() ? walkQ5(`${d}/${n}`) : [`${d}/${n}`]));
+    const publicFiles = walkQ5('public').filter((f) => /\.(?:html|js|mjs)$/.test(f));
+    for (const f of publicFiles) scanFallbacks(f, readFileSync(f, 'utf8')).forEach((m) => fail(m));
+    const bodyIssues = (html: string, catHtml: string): string[] => {
+      const out: string[] = [];
+      const picker = pickerOf(html);
+      const bar = barOf(catHtml);
+      if (picker === null) out.push(`${CONFQ5} : pickBestString introuvable, relire le contrôle 21 quinquies`);
+      else if (NUM_FALLBACK.test(picker)) out.push(`${CONFQ5} : pickBestString remplace une valeur absente par un nombre`);
+      if (bar === null) out.push(`${CATQ5} : ratingBar introuvable, relire le contrôle 21 quinquies`);
+      else if (NUM_FALLBACK.test(bar)) out.push(`${CATQ5} : ratingBar remplace une note absente par un nombre`);
+      return out;
+    };
+
+    // (b) pickBestString évalué tel quel ; (c) raison et appels.
+    let picksQ5 = 0;
+    const pickerIssues = (html: string): string[] => {
+      const out: string[] = [];
+      const add = (m: string) => { if (out.length < 10) out.push(`${CONFQ5} : ${m}`); };
+      const picker = pickerOf(html);
+      if (picker === null) return [`${CONFQ5} : pickBestString introuvable, relire le contrôle 21 quinquies`];
+      const criteria = criteriaOf(html);
+      if (criteria.length < 5) add(`${criteria.length} critères de cordage seulement, relire le contrôle 21 quinquies`);
+      const run = (db: any[], crit: any, k: number) => {
+        const M = Object.create(Math);
+        M.random = () => k;
+        const api = new Function('stringsDB', 'console', 'Math', `let stringPickNote = null;\n${picker}\nreturn { picked: pickBestString(${JSON.stringify(crit)}), note: stringPickNote };`)(
+          db, { log() {} }, M);
+        return api as { picked: any; note: string | null };
+      };
+      for (const crit of criteria) {
+        const keys = KEYS.filter(([flag]) => crit[flag]).map(([, key]) => key);
+        if (keys.length === 0) continue;
+        const key = keys[keys.length - 1];
+        const type = crit.types?.[0] ?? 'Polyester';
+        const typed = stringsQ5.filter((s) => !crit.types || crit.types.some((t: string) => String(s.type ?? '').toLowerCase().includes(t.toLowerCase())));
+        const ratedVals = typed.filter((s) => keys.every((x) => typeof s[x] === 'number')).map((s) => s[key]).sort((a, b) => b - a);
+        const third = ratedVals[Math.min(2, ratedVals.length - 1)];
+        for (const k of [0, 0.34, 0.67, 0.99]) {
+          const real = run([unrated(type), ...stringsQ5], crit, k);
+          picksQ5++;
+          if (!real.picked) add(`critère ${JSON.stringify(crit)} : aucun cordage choisi sur le catalogue`);
+          else if (real.picked.id === 'test-sans-note') add(`critère ${JSON.stringify(crit)} : le cordage sans note injecté en tête est choisi`);
+          else if (!keys.every((x) => typeof real.picked[x] === 'number') || real.picked[key] < third) {
+            add(`critère ${JSON.stringify(crit)} : ${real.picked.id} (${key} ${real.picked[key]}) n'est pas parmi les trois meilleures notes (${ratedVals.slice(0, 3).join(', ')})`);
+          }
+          const low = run([unrated(type), rated('test-note-4', type, 4), rated('test-note-3', type, 3)], crit, k);
+          if (!low.picked || low.picked.id === 'test-sans-note') add(`critère ${JSON.stringify(crit)} : liste où une note comblée à 5 passerait en tête, choisi ${low.picked?.id ?? 'aucun'}`);
+        }
+        const none = run([unrated(type)], crit, 0);
+        if (none.picked || none.note !== NO_RATED) add(`critère ${JSON.stringify(crit)} : sans candidat noté, choisi ${none.picked?.id ?? 'aucun'}, note « ${none.note} »`);
+      }
+      const reason = reasonOf(html);
+      if (reason === null) add('ratedStringView introuvable, relire le contrôle 21 quinquies');
+      else {
+        // Libellé témoin propre à chaque cordage : la raison doit porter celui du cordage choisi, tel que label(s) le rend.
+        const labels = { label: (s: any) => `nature de ${s.id}` };
+        const view = new Function('stringView', 'TSARatingLabels', `${reason}\nreturn ratedStringView;`)((s: any, r: string) => (s ? { reason: r } : null), labels);
+        for (const s of stringsQ5.filter((x) => typeof x.comfort === 'number').slice(0, 20)) {
+          const want = `Criterion (nature de ${s.id}).`;
+          if (view(s, 'Criterion')?.reason !== want) { add(`raison : « ${view(s, 'Criterion')?.reason} » au lieu de « ${want} »`); break; }
+        }
+        if (view(null, 'Criterion') !== null) add('raison : un cordage absent produit une fiche');
+      }
+      const painStart = html.indexOf('// PRIORITY 2');
+      const painEnd = html.indexOf('// PRIORITY 3', painStart);
+      const outsidePain = painStart < 0 || painEnd < 0 ? html : html.slice(0, painStart) + html.slice(painEnd);
+      const calls = [...outsidePain.matchAll(/(\w+)\(pickBestString\(/g)].map((m) => m[1]);
+      if (calls.length === 0) add('aucun appel de pickBestString trouvé, relire le contrôle 21 quinquies');
+      const bad = calls.filter((c) => c !== 'ratedStringView');
+      if (bad.length > 0) add(`${bad.length} cordage(s) choisi(s) par une note sans nature dans la raison (${bad.join(', ')}(pickBestString(…)))`);
+      if (!/showGenerateError\(!string && stringPickNote\b/.test(html)) add('la note « No rated string… » n\'est plus affichée quand aucun cordage noté ne reste');
+      return out;
+    };
+
+    // (d) Catalogue EN : filterStrings évalué tel quel sur le catalogue, chaque tri et le prix maximal.
+    let sortsQ5 = 0;
+    const catalogIssues = (html: string): string[] => {
+      const out: string[] = [];
+      const add = (m: string) => { if (out.length < 10) out.push(`${CATQ5} : ${m}`); };
+      if (!html.includes(`ratingNote.textContent = '${CARD_SENTENCE}' + TSARatingLabels.NOTE;`)) add('phrase des filtres et des tris absente ou modifiée');
+      if (/TSA editorial ratings out of 10/.test(html)) add('phrase « TSA editorial ratings out of 10 » encore présente');
+      const src = filterOf(html);
+      if (src === null) return [...out, `${CATQ5} : filterStrings introuvable, relire le contrôle 21 quinquies`];
+      const run = (values: Record<string, string>) => {
+        const doc = { getElementById: (id: string) => ({ value: values[id] ?? '' }) };
+        return new Function('document', 'allStrings', 'updateActiveFilters', 'renderStrings', `let filteredStrings = [];\n${src}\nfilterStrings();\nreturn filteredStrings;`)(
+          doc, stringsQ5, () => {}, () => {}) as any[];
+      };
+      const SORTS: Array<[string, string, number]> = [
+        ['price-asc', 'price_eur', 1], ['price-desc', 'price_eur', -1], ['spin-desc', 'spin', -1],
+        ['control-desc', 'control', -1], ['comfort-desc', 'comfort', -1], ['durability-desc', 'durability', -1],
+      ];
+      for (const [sort, field, dir] of SORTS) {
+        sortsQ5++;
+        const list = run({ sortFilter: sort });
+        const firstAbsent = list.findIndex((s) => typeof s[field] !== 'number');
+        const present = firstAbsent < 0 ? list : list.slice(0, firstAbsent);
+        if (list.slice(present.length).some((s) => typeof s[field] === 'number')) add(`tri ${sort} : une fiche sans ${field} n'est pas en fin de liste`);
+        if (present.some((s, i) => i > 0 && dir * (s[field] - present[i - 1][field]) < 0)) add(`tri ${sort} : ordre faux sur les fiches renseignées`);
+        if (list.length !== stringsQ5.length) add(`tri ${sort} : ${list.length} fiches au lieu de ${stringsQ5.length}`);
+      }
+      const capped = run({ sortFilter: 'brand', priceFilter: '20' });
+      if (capped.some((s) => typeof s.price_eur !== 'number' || s.price_eur > 20)) add('prix maximal 20 € : une fiche sans prix ou plus chère passe le filtre');
+      return out;
+    };
+
+    bodyIssues(confQ5, catQ5).forEach((m) => fail(m));
+    pickerIssues(confQ5).forEach((m) => fail(m));
+    catalogIssues(catQ5).forEach((m) => fail(m));
+    const realPicks = picksQ5;
+    const realSorts = sortsQ5;
+    const ratedCriteria = criteriaOf(confQ5).filter((c) => KEYS.some(([flag]) => c[flag])).length;
+    const absentPrices = stringsQ5.filter((s) => typeof s.price_eur !== 'number').length;
+    const absentRatings = stringsQ5.filter((s) => typeof s.comfort !== 'number').length;
+
+    // Tests négatifs : chaque altération doit être détectée ; témoins positifs : chaque variante neutre doit être acceptée.
+    let detectedQ5 = 0;
+    let acceptedQ5 = 0;
+    const once = (s: string, find: string, rep: string): string | null => (s.includes(find) ? s.replace(find, () => rep) : null);
+    const NEG: Array<[string, 'conf' | 'cat', Array<[string, string]>]> = [
+      ['note comblée à 5 rétablie dans pickBestString', 'conf', [
+        ["const rated = candidates.filter(s => typeof s[key] === 'number');", 'const rated = candidates;'],
+        ['candidates = rated.sort((a, b) => b[key] - a[key]);', 'candidates = rated.sort((a, b) => (b[key] || 5) - (a[key] || 5));'],
+      ]],
+      ['cordages sans note gardés (lus comme 0)', 'conf', [["const rated = candidates.filter(s => typeof s[key] === 'number');", 'const rated = candidates;']]],
+      ['note « aucun cordage noté » jamais posée', 'conf', [["if (candidates.length > 0 && rated.length === 0) stringPickNote = 'No rated string matches these criteria.';", '']]],
+      ['raison sans la nature de la note', 'conf', [["return stringView(s, s ? criterion + ' (' + TSARatingLabels.label(s) + ').' : '');", "return stringView(s, s ? criterion + '.' : '');"]]],
+      ['cordage choisi par une note sans ratedStringView', 'conf', [["string = ratedStringView(pickBestString(stringCriteria), 'One of the polyester strings with the highest control rating in the catalog');", "string = stringView(pickBestString(stringCriteria), 'One of the polyester strings with the highest control rating in the catalog.');"]]],
+      ['tri prix croissant : prix absent lu comme 0', 'cat', [["case 'price-asc': return absentLast(a.price_eur, b.price_eur, 1);", "case 'price-asc': return a.price_eur - b.price_eur;"]]],
+      ['tri confort : note absente lue comme 0 (en tête si croissant)', 'cat', [["case 'comfort-desc': return absentLast(a.comfort, b.comfort, -1);", "case 'comfort-desc': return (a.comfort ?? 0) - (b.comfort ?? 0);"]]],
+      ['prix maximal : prix absent accepté', 'cat', [["if (maxPrice && !(typeof string.price_eur === 'number' && string.price_eur <= parseInt(maxPrice))) return false;", 'if (maxPrice && string.price_eur > parseInt(maxPrice)) return false;']]],
+      ['barre de note : note absente comblée à 0', 'cat', [["${typeof value === 'number' ? `<div class=\"rating-fill ${getRatingColor(value)}\" style=\"width: ${value * 10}%\"></div>` : ''}", '<div class="rating-fill ${getRatingColor(value)}" style="width: ${(value ?? 0) * 10}%"></div>']]],
+      ['phrase « TSA editorial ratings » rétablie', 'cat', [[CARD_SENTENCE, 'The spin, control, comfort and durability filters and sort options use TSA editorial ratings out of 10. ']]],
+    ];
+    for (const [name, target, edits] of NEG) {
+      let m: string | null = target === 'conf' ? confQ5 : catQ5;
+      for (const [find, rep] of edits) m = m === null ? null : once(m, find, rep);
+      if (m === null) { fail(`notes sans valeur comblée : prémisse du test négatif « ${name} » fausse (motif absent)`); continue; }
+      const found = target === 'conf' ? [...bodyIssues(m, catQ5), ...pickerIssues(m)] : [...bodyIssues(confQ5, m), ...catalogIssues(m)];
+      if (found.length > 0) detectedQ5++;
+      else fail(`notes sans valeur comblée : garde-fou muet sur « ${name} »`);
+    }
+    // Balayage : un repli sur un champ de note ajouté à un fichier de public/js doit être vu ; une note lue sans repli ou un
+    // repli sur un compteur ne le sont pas.
+    if (scanFallbacks('public/js/x.js', 'const c = (s.comfort ?? 0) * 10;').length > 0) detectedQ5++;
+    else fail('notes sans valeur comblée : garde-fou muet sur « repli ?? 0 sur comfort dans public/js »');
+    if (scanFallbacks('public/js/x.js', "const c = typeof s.comfort === 'number' ? s.comfort : null;\nconst n = profile.count || 0;").length === 0) acceptedQ5++;
+    else fail('notes sans valeur comblée : témoin positif « note lue sans repli, compteur à 0 » rejeté à tort');
+    const POS: Array<[string, 'conf' | 'cat', string, string]> = [
+      ['raison reformulée', 'conf', "'One of the polyester strings with the highest control rating in the catalog'", "'A polyester string among the three best control ratings in the catalog'"],
+      ['comparateur « absent en fin » écrit autrement', 'cat', 'if (!hasX || !hasY) return hasX === hasY ? 0 : (hasX ? -1 : 1);', 'if (!hasX || !hasY) return Number(hasY) - Number(hasX);'],
+    ];
+    for (const [name, target, find, rep] of POS) {
+      const m = once(target === 'conf' ? confQ5 : catQ5, find, rep);
+      if (m === null) { fail(`notes sans valeur comblée : prémisse du témoin positif « ${name} » fausse (motif absent)`); continue; }
+      const found = target === 'conf' ? [...bodyIssues(m, catQ5), ...pickerIssues(m)] : [...bodyIssues(confQ5, m), ...catalogIssues(m)];
+      if (found.length === 0) acceptedQ5++;
+      else fail(`notes sans valeur comblée : témoin positif « ${name} » rejeté à tort : ${found[0]}`);
+    }
+
+    if (failures.length === beforeQ5) {
+      ok(
+        `notes sans valeur comblée (EN) : aucun repli numérique sur une note dans ${publicFiles.length} fichiers de public/, ni dans pickBestString ni ratingBar ; ` +
+          `configurateur : pickBestString évalué tel quel (${ratedCriteria} critères de la page triés par une note, ${realPicks} tirages forcés sur le catalogue), cordage sans note injecté en tête jamais choisi, ` +
+          `choix parmi les trois meilleures notes, « ${NO_RATED} » sans candidat noté, raison avec la nature de la note ; ` +
+          `catalogue : ${realSorts} tris évalués tels quels sur ${stringsQ5.length} fiches, ${absentPrices} fiches sans prix et ${absentRatings} sans note en fin de liste, prix maximal sans fiche non chiffrée, phrase des filtres à jour ; ` +
+          `${detectedQ5} tests négatifs détectés, ${acceptedQ5} témoins positifs acceptés`
       );
     }
   }
