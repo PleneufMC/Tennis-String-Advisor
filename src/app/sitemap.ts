@@ -65,7 +65,7 @@ const BLOG_ARTICLES: Array<{ slug: string; modified: string }> = [
   { slug: 'cordage-terre-battue.html', modified: '2026-10-23' },
   { slug: 'challengers-sinner-alcaraz-2026.html', modified: '2026-10-22' },
   { slug: 'actualite-materiel-tennis-2026-guerre-du-spin.html', modified: '2026-10-10' },
-  { slug: 'cordage-mono-vs-multifilament.html', modified: '2026-10-22' },
+  { slug: 'cordage-mono-vs-multifilament.html', modified: '2026-10-23' },
   { slug: 'cordage-tennis-chaleur.html', modified: '2026-08-28' },
   { slug: 'tension-cordage-hiver.html', modified: '2026-10-01' },
   { slug: 'raquette-point-fort-ou-point-faible.html', modified: '2026-08-27' },
@@ -105,7 +105,7 @@ const EN_BLOG_ARTICLES: Array<{ slug: string; modified: string }> = [
   // avec leur source FR.
   { slug: 'tennis-string-gauge.html', modified: '2026-08-14' },
   { slug: 'tennis-string-pattern.html', modified: '2026-08-14' },
-  { slug: 'polyester-vs-multifilament-strings.html', modified: '2026-10-22' },
+  { slug: 'polyester-vs-multifilament-strings.html', modified: '2026-10-23' },
   { slug: 'tennis-string-tension-guide.html', modified: '2026-10-22' },
   // Article chaleur (28/08/2026), appairé en hreflang avec
   // /blog/cordage-tennis-chaleur.html.
