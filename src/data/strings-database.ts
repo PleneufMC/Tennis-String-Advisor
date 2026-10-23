@@ -186,7 +186,8 @@ export const stringsDatabase: TennisString[] = [
     model: "Champion's Choice",
     type: 'Hybrid',
     gauges: ['1.25/1.30'],
-    stiffness: 165,
+    // Hybride prémonté (23/10/2026) : rigidité DÉRIVÉE de ses deux cordages, composition publiée (boyau Wilson + ALU Power Rough), ordre au choix ; remplace 165, sans source. Composition, sources et règle : src/data/prepacked-hybrids.ts.
+    stiffness: 178,
     performance: 8.5,
     control: 9.0,
     comfort: 9.0,
@@ -1819,8 +1820,9 @@ export const stringsDatabase: TennisString[] = [
     brand: 'Babolat',
     model: 'Hybrid RPM Blast + VS Touch',
     type: 'Hybrid',
-    gauges: ['1.25/1.30', '1.30/1.30'],
-    stiffness: 168,
+    gauges: ['1.25/1.30'],
+    // Hybride prémonté (23/10/2026) : rigidité DÉRIVÉE de ses deux cordages, composition publiée par Babolat (RPM Blast + Touch VS), ordre au choix ; remplace 168, sans source. Composition, sources et règle : src/data/prepacked-hybrids.ts.
+    stiffness: 180.8,
     performance: 10,
     control: 9,
     comfort: 8.5,
@@ -1829,7 +1831,7 @@ export const stringsDatabase: TennisString[] = [
     power: 8.5,
     recommendedTension: { min: 22, max: 26 },
     price: { europe: 35, usa: 40 },
-    description: 'Combo hybride ultime : RPM Blast en montants pour le spin, VS Touch en travers pour le confort et la puissance.',
+    description: 'Hybride Babolat : RPM Blast 1.25 et boyau Touch VS 1.30. Babolat conseille le Touch VS en travers et l\'autorise en montants.',
     proUsage: 'Roger Federer',
     color: 'Black/Natural'
   },
@@ -1839,7 +1841,8 @@ export const stringsDatabase: TennisString[] = [
     model: 'Hybrid RPM Blast + Xcel',
     type: 'Hybrid',
     gauges: ['1.25/1.25', '1.25/1.30'],
-    stiffness: 192,
+    // Hybride prémonté (23/10/2026) : rigidité DÉRIVÉE de ses deux cordages, set introuvable chez Babolat, composition de la fiche (RPM Blast + Xcel), les deux sens ; remplace 192, sans source. Composition, sources et règle : src/data/prepacked-hybrids.ts.
+    stiffness: 206,
     performance: 9,
     control: 8.5,
     comfort: 8,
@@ -2427,6 +2430,7 @@ export const stringsDatabase: TennisString[] = [
     model: 'Gravity Hybrid',
     type: 'Hybrid',
     gauges: ['1.25/1.30'],
+    // Hybride prémonté (23/10/2026) : composition non publiée (deux co-polyesters non nommés ; la fiche disait « poly + multi ») : rigidité de fiche sans source, conservée pour le calcul et l'alerte, hors classements. src/data/prepacked-hybrids.ts.
     stiffness: 178,
     performance: 9,
     control: 8.5,
@@ -2436,7 +2440,7 @@ export const stringsDatabase: TennisString[] = [
     power: 8.5,
     recommendedTension: { min: 22, max: 26 },
     price: { europe: 22, usa: 25 },
-    description: 'Set hybride Gravity poly + multi.',
+    description: 'Set hybride Head Gravity : deux co-polyesters, montants à arêtes et travers fins et ronds.',
     color: 'Teal/White'
   },
   {
@@ -2891,7 +2895,8 @@ export const stringsDatabase: TennisString[] = [
     model: 'Hybrid Razor Code + X-One',
     type: 'Hybrid',
     gauges: ['1.25/1.24', '1.30/1.30'],
-    stiffness: 180,
+    // Hybride prémonté (23/10/2026) : rigidité DÉRIVÉE de ses deux cordages, set introuvable sur les pages ouvertes, composition de la fiche (Razor Code + X-One Biphase), les deux sens ; remplace 180, sans source. Composition, sources et règle : src/data/prepacked-hybrids.ts.
+    stiffness: 212.5,
     performance: 9.5,
     control: 8.5,
     comfort: 9,
@@ -2900,7 +2905,7 @@ export const stringsDatabase: TennisString[] = [
     power: 8.5,
     recommendedTension: { min: 22, max: 26 },
     price: { europe: 22, usa: 25 },
-    description: 'Set hybride officiel : Razor Code en montants, X-One Biphase en travers.',
+    description: 'Set hybride : Razor Code en montants, X-One Biphase en travers.',
     color: 'White/Red'
   },
   {
@@ -2909,7 +2914,8 @@ export const stringsDatabase: TennisString[] = [
     model: 'Hybrid Ice Code + NRG2',
     type: 'Hybrid',
     gauges: ['1.25/1.24'],
-    stiffness: 172,
+    // Hybride prémonté (23/10/2026) : rigidité DÉRIVÉE de ses deux cordages, set introuvable sur les pages ouvertes, composition de la fiche (Ice Code + NRG2), les deux sens ; remplace 172, sans source. Composition, sources et règle : src/data/prepacked-hybrids.ts.
+    stiffness: 198.4,
     performance: 9,
     control: 8.5,
     comfort: 9.5,
@@ -2918,7 +2924,7 @@ export const stringsDatabase: TennisString[] = [
     power: 9,
     recommendedTension: { min: 22, max: 26 },
     price: { europe: 22, usa: 25 },
-    description: 'Set hybride : Ice Code pour le spin, NRG2 pour le confort et la puissance.',
+    description: 'Set hybride : Ice Code pour le spin, NRG2 pour la puissance.',
     color: 'Ice Blue/Natural'
   },
   {
@@ -2983,7 +2989,8 @@ export const stringsDatabase: TennisString[] = [
     model: 'Champions Choice Duo',
     type: 'Hybrid',
     gauges: ['1.25/1.30'],
-    stiffness: 158,
+    // Hybride prémonté (23/10/2026) : rigidité DÉRIVÉE de ses deux cordages, composition publiée (boyau Wilson + ALU Power Rough ; la fiche disait Element + boyau), ordre au choix ; remplace 158, sans source. Composition, sources et règle : src/data/prepacked-hybrids.ts.
+    stiffness: 178,
     performance: 9.5,
     control: 8.5,
     comfort: 9,
@@ -2992,7 +2999,7 @@ export const stringsDatabase: TennisString[] = [
     power: 9,
     recommendedTension: { min: 23, max: 27 },
     price: { europe: 32, usa: 36 },
-    description: 'Version alternative du Champions Choice avec Luxilon Element et Natural Gut.',
+    description: 'Boyau naturel Wilson et Luxilon ALU Power Rough, montants et travers au choix : la composition du Champion\'s Choice.',
     color: 'Bronze/Natural'
   },
   {
@@ -3077,7 +3084,8 @@ export const stringsDatabase: TennisString[] = [
     model: 'Duo Control',
     type: 'Hybrid',
     gauges: ['1.25/1.30'],
-    stiffness: 188,
+    // Hybride prémonté (23/10/2026) : rigidité DÉRIVÉE de ses deux cordages, composition publiée (4G Rough + NXT Control ; la fiche disait Element + NXT), ordre au choix ; remplace 188, sans source. Composition, sources et règle : src/data/prepacked-hybrids.ts.
+    stiffness: 222,
     performance: 8.5,
     control: 8.5,
     comfort: 8,
@@ -3086,7 +3094,7 @@ export const stringsDatabase: TennisString[] = [
     power: 8,
     recommendedTension: { min: 22, max: 27 },
     price: { europe: 18, usa: 20 },
-    description: 'Set hybride Luxilon Element (montants) + Wilson NXT (travers) pour équilibre parfait.',
+    description: 'Set hybride Luxilon 4G Rough 1.25 et Wilson NXT Control 16, montants et travers au choix.',
     color: 'Bronze/Natural'
   },
   {
@@ -3094,8 +3102,9 @@ export const stringsDatabase: TennisString[] = [
     brand: 'Wilson',
     model: 'Duo Power',
     type: 'Hybrid',
-    gauges: ['1.25/1.25'],
-    stiffness: 175,
+    gauges: ['1.25/1.30'],
+    // Hybride prémonté (23/10/2026) : rigidité DÉRIVÉE de ses deux cordages, composition publiée par deux revendeurs (ALU Power + NXT Power), ordre au choix ; remplace 175, sans source. Composition, sources et règle : src/data/prepacked-hybrids.ts.
+    stiffness: 196,
     performance: 8.5,
     control: 8,
     comfort: 8.5,
@@ -3104,7 +3113,7 @@ export const stringsDatabase: TennisString[] = [
     power: 9,
     recommendedTension: { min: 22, max: 27 },
     price: { europe: 20, usa: 22 },
-    description: 'Set hybride orienté puissance avec confort.',
+    description: 'Set hybride Luxilon ALU Power 1.25 et Wilson NXT Power 1.30, montants et travers au choix.',
     color: 'Silver/Natural'
   },
   {
