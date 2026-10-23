@@ -31,6 +31,7 @@
  */
 import type { TennisString } from '@/data/strings-database';
 import { STRING_TESTER_RATINGS } from '@/data/tester-ratings';
+import { COMFORT_RECALIBRATED, COMFORT_RECALIBRATION_RULE } from '@/data/comfort-recalibration';
 
 export type StringRatingNature = 'editorial' | 'harmonized' | 'none';
 
@@ -63,10 +64,27 @@ export function stringRatingNature(string: RatedString): StringRatingNature {
   return Object.prototype.hasOwnProperty.call(STRING_TESTER_RATINGS, string.id) ? 'harmonized' : 'editorial';
 }
 
-/** Étiquette à afficher près des notes de ce cordage, ou `null` s'il n'en a aucune (rien à étiqueter). */
+/**
+ * Mention ajoutée à l'étiquette d'un cordage dont la note de confort a été recalée sur la rigidité mesurée (D2 du 23/10/2026,
+ * `comfort-recalibration.ts`). Elle cite TWU comme source de la MESURE DE RIGIDITÉ, pas des notes : les notes restent une
+ * appréciation de l'équipe. Contrôles 18 et 22 de `npm run audit:ratings`.
+ */
+export const COMFORT_RECALIBRATED_LABEL: string = COMFORT_RECALIBRATION_RULE.label;
+
+/** Vrai si la note de confort de ce cordage a été recalée sur la rigidité mesurée (D2). */
+export function isComfortRecalibrated(string: Pick<TennisString, 'id'>): boolean {
+  return Object.prototype.hasOwnProperty.call(COMFORT_RECALIBRATED, string.id);
+}
+
+/**
+ * Étiquette à afficher près des notes de ce cordage, ou `null` s'il n'en a aucune (rien à étiqueter). Note de confort recalée
+ * (D2) : l'étiquette porte en plus la mention, partout où les notes s'affichent.
+ */
 export function stringRatingLabel(string: RatedString): string | null {
   const nature = stringRatingNature(string);
-  return nature === 'none' ? null : STRING_RATING_LABELS[nature];
+  if (nature === 'none') return null;
+  const label = STRING_RATING_LABELS[nature];
+  return isComfortRecalibrated(string) ? `${label} ; ${COMFORT_RECALIBRATED_LABEL}` : label;
 }
 
 /** Natures distinctes d'une liste de cordages qui portent des notes (`none` écarté). */

@@ -43,6 +43,10 @@
  *     occurrence = étiquetage FR pas encore fusionné, contrôle inactif (AVERT) ; (b) aucune
  *     surface (fiches et pages EN, public/js, src/) n'affirme que la rigidité est « la
  *     grandeur mesurée » : pas assuré pour les 181 fiches.
+ *  2 bis. D2 (23/10/2026) — les cordages dont la note de confort a été recalée sur la rigidité
+ *     mesurée (src/data/comfort-recalibration.ts) portent, en plus du libellé de leur nature,
+ *     la mention CONTRACT.recalibrated, mot pour mot ; les autres ne la portent pas. La liste
+ *     lue par le générateur est celle de string-rating-basis.json (« comfort_recalibrated »).
  *  8. TESTS NÉGATIFS — chaque garde-fou est éprouvé sur une altération qui DOIT échouer
  *     (libellé retiré, faux libellé, libellé placé après les notes, note modifiée, note
  *     dans une meta, aggregateRating, note hors bloc, page sans libellés, liste
@@ -61,7 +65,7 @@ import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 import { buildCatalog, loadTsCatalog } from './catalog/catalog-json.mjs';
 import { loadProductImages } from './catalog/product-images.mjs';
-import { BASIS_JSON_PATH, RATING_LABELS, TESTER_RATINGS_TS, harmonisedStringIds } from './en-products/rating-basis.mjs';
+import { BASIS_JSON_PATH, COMFORT_RECALIBRATION_TS, RATING_LABELS, TESTER_RATINGS_TS, harmonisedStringIds, recalibratedStringIds } from './en-products/rating-basis.mjs';
 import { stringPage } from './en-products/build-en-product-pages.mjs';
 
 const ROOT = process.cwd();
@@ -76,6 +80,8 @@ const CONTRACT = {
   editorial: 'TSA editorial rating',
   harmonised: 'TSA editorial rating, harmonised with tester reviews',
   none: 'Not published',
+  // D2 du 23/10/2026 : mention ajoutée au libellé des cordages dont la note de confort a été recalée sur la rigidité mesurée.
+  recalibrated: 'comfort rating recalibrated on measured stiffness (TWU)',
   note: 'Team assessment, not laboratory-measured. Stiffness (lb/in) is the string data the RCS uses.',
   // Même mention en français, pour l'étiquetage des surfaces FR (agent FR) : sert au seul contrôle de dérive.
   noteFr: "Appréciation de l'équipe, non mesurée en laboratoire. La rigidité (lb/in) est la donnée du cordage utilisée par le RCS.",
@@ -180,7 +186,7 @@ function ratingsSection(html) {
   return { start, end, html: html.slice(start, end) };
 }
 
-function ficheProblems(html, { id, row, expected }) {
+function ficheProblems(html, { id, row, expected, recal = false }) {
   const problems = [];
   const sec = ratingsSection(html);
   if (!sec) return [`${id} : bloc « Playing ratings (out of 10) » introuvable`];
@@ -193,7 +199,8 @@ function ficheProblems(html, { id, row, expected }) {
     const [, basis, inner] = basisTags[0];
     if (basis !== expected) problems.push(`${id} : nature « ${basis} » affichée, « ${expected} » attendue (liste des harmonisés, notes publiées)`);
     const shown = textOf(inner);
-    if (shown !== CONTRACT[basis]) problems.push(`${id} : libellé « ${shown} », « ${CONTRACT[basis]} » attendu`);
+    const want = recal && expected !== 'none' ? `${CONTRACT[basis]}; ${CONTRACT.recalibrated}` : CONTRACT[basis];
+    if (shown !== want) problems.push(`${id} : libellé « ${shown} », « ${want} » attendu`);
   }
   if (expected === 'none') {
     if (bars.length > 0) problems.push(`${id} : ${bars.length} note(s) affichée(s) pour un cordage sans note publiée`);
@@ -243,9 +250,11 @@ function frMetadataProblems(src) {
   return problems;
 }
 
-function basisFileProblems(json, expectedIds) {
+function basisFileProblems(json, expectedIds, expectedRecalibrated = [...recalibratedStringIds(ROOT)]) {
   const problems = [];
   if (!json || !Array.isArray(json.harmonised)) return [`${BASIS_JSON_PATH} : format inattendu`];
+  const recal = Array.isArray(json.comfort_recalibrated) ? [...json.comfort_recalibrated].sort().join() : null;
+  if (recal !== [...expectedRecalibrated].sort().join()) problems.push(`${BASIS_JSON_PATH} : « comfort_recalibrated » = ${recal ?? 'absent'}, ${[...expectedRecalibrated].sort().join()} attendu (${COMFORT_RECALIBRATION_TS})`);
   const got = [...json.harmonised].sort();
   const want = [...expectedIds].sort();
   for (const id of want) if (!got.includes(id)) problems.push(`${BASIS_JSON_PATH} : « ${id} » (harmonisé) absent`);
@@ -265,6 +274,7 @@ function labelsContractProblems(labels) {
   for (const k of ['editorial', 'harmonised', 'none']) {
     if (labels.LABEL[k] !== CONTRACT[k]) problems.push(`${LABELS_JS} : libellé « ${k} » = « ${labels.LABEL[k]} », « ${CONTRACT[k]} » attendu`);
   }
+  if (labels.RECALIBRATED !== CONTRACT.recalibrated) problems.push(`${LABELS_JS} : mention D2 = « ${labels.RECALIBRATED} », « ${CONTRACT.recalibrated} » attendue`);
   if (labels.NOTE !== CONTRACT.note) problems.push(`${LABELS_JS} : mention courte = « ${labels.NOTE} », « ${CONTRACT.note} » attendue`);
   if (labels.NOTE_FIELDS.join() !== NOTE_FIELDS.join()) problems.push(`${LABELS_JS} : NOTE_FIELDS = ${labels.NOTE_FIELDS.join()}, ${NOTE_FIELDS.join()} attendu`);
   // Les pages lisent l'URL ; le générateur écrit le chemin : les deux doivent désigner le même fichier.
@@ -315,7 +325,7 @@ process.stdout.write('QA nature des notes des cordages (EN)\n');
 {
   const problems = labelsContractProblems(RATING_LABELS);
   if (problems.length) problems.forEach(fail);
-  else ok('libellés : les trois libellés et la mention courte sont conformes, mot pour mot, aux libellés de référence arrêtés le 10/10/2026 (principe décidé par Pierre)');
+  else ok('libellés : les trois libellés, la mention D2 et la mention courte sont conformes, mot pour mot, aux libellés de référence arrêtés le 10/10/2026 (principe décidé par Pierre)');
 }
 
 // 2. Cordages harmonisés ----------------------------------------------------
@@ -359,6 +369,19 @@ let fromFile = null;
 // 3. Fiches -----------------------------------------------------------------
 const harmonised = new Set(fromGenerator);
 const expectedOf = (r) => (!hasRating(r) ? 'none' : harmonised.has(r.id) ? 'harmonised' : 'editorial');
+// D2 : mention attendue sur une fiche recalée qui affiche une note de confort.
+const recalibratedIds = recalibratedStringIds(ROOT);
+const recalOf = (r) => recalibratedIds.has(r.id) && r.comfort !== null && r.comfort !== undefined && hasRating(r);
+{
+  const before = failures;
+  for (const id of recalibratedIds) {
+    const r = rowById.get(id);
+    if (!r) fail(`cordage recalé (D2) « ${id} » absent du catalogue`);
+    else if (!recalOf(r)) fail(`cordage recalé (D2) « ${id} » sans note de confort publiée`);
+  }
+  if (recalibratedIds.size === 0) fail(`${COMFORT_RECALIBRATION_TS} : aucune fiche recalée lue (format du fichier modifié ?)`);
+  if (failures === before) ok(`D2 : ${recalibratedIds.size} cordages à note de confort recalée, tous au catalogue avec une note de confort ; mention « ${CONTRACT.recalibrated} » attendue sur eux seuls`);
+}
 const { images } = await loadProductImages(ROOT);
 const rendered = new Map(rows.map((r) => [r.id, stringPage(r, images)]));
 {
@@ -371,7 +394,7 @@ const rendered = new Map(rows.map((r) => [r.id, stringPage(r, images)]));
     census[expected]++;
     if (expected !== 'none') notes += NOTE_FIELDS.length;
     const html = rendered.get(r.id);
-    ficheProblems(html, { id: r.id, row: r, expected }).forEach(fail);
+    ficheProblems(html, { id: r.id, row: r, expected, recal: recalOf(r) }).forEach(fail);
     const file = path.join(ROOT, FICHES_DIR, `${r.id}.html`);
     if (existsSync(file)) {
       onDisk++;
@@ -492,7 +515,9 @@ const walkSrc = (dir) =>
     process.stdout.write(`\nNON CONFORME — ${failures} échec(s), ${warnings} avertissement(s)\n`);
     process.exit(1);
   }
-  const ctx = (r) => ({ id: r.id, row: r, expected: expectedOf(r) });
+  const ctx = (r) => ({ id: r.id, row: r, expected: expectedOf(r), recal: recalOf(r) });
+  const R = rows.find((r) => recalOf(r));
+  const rHtml = R ? rendered.get(R.id) : null;
   // Une altération qui ne trouve pas sa cible ne prouverait rien : elle échoue bruyamment.
   const swap = (text, pattern, replacement) => {
     const hit = typeof pattern === 'string' ? text.includes(pattern) : pattern.test(text);
@@ -546,6 +571,11 @@ const walkSrc = (dir) =>
     ['cordage non harmonisé dans la liste', () => basisFileProblems({ harmonised: [...fromGenerator, E.id] }, fromGenerator)],
     ['note dans la meta FR', () => frMetadataProblems(swap(frSource, 'Calculez le RCS de ce cordage avec votre raquette.`', 'Contrôle ${string.control}/10. Calculez le RCS de ce cordage avec votre raquette.`'))],
     ["note dans la meta d'une page FR construite", () => metadataProblems(swap(frBuilt ?? FR_PAGE_SAMPLE, /(<meta name="description" content=")/, '$1Contrôle 9/10. '), 'page FR')],
+    ['mention D2 retirée d\'une fiche recalée', () => ficheProblems(inSection(rHtml, (s) => swap(s, `; ${CONTRACT.recalibrated}`, '')), ctx(R))],
+    ['mention D2 sur une fiche non recalée', () => ficheProblems(inSection(eHtml, (s) => swap(s, `>${CONTRACT.editorial}<`, `>${CONTRACT.editorial}; ${CONTRACT.recalibrated}<`)), ctx(E))],
+    ['mention D2 reformulée', () => ficheProblems(inSection(rHtml, (s) => swap(s, CONTRACT.recalibrated, 'comfort rating measured (TWU)')), ctx(R))],
+    ['liste des recalées absente du fichier', () => basisFileProblems({ harmonised: fromGenerator }, fromGenerator)],
+    ['mention D2 du contrat modifiée', () => labelsContractProblems({ ...RATING_LABELS, RECALIBRATED: 'comfort rating measured by TWU' })],
     ['libellé du contrat modifié', () => labelsContractProblems({ ...RATING_LABELS, LABEL: { ...RATING_LABELS.LABEL, harmonised: 'TSA rating, harmonised' } })],
     ['URL de la liste des harmonisés ≠ fichier généré', () => labelsContractProblems({ ...RATING_LABELS, BASIS_URL: '/data/harmonised.json' })],
     [
