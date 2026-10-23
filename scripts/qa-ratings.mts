@@ -4513,6 +4513,116 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
 }
 
 // ---------------------------------------------------------------------------
+// 22. HYBRIDES PRÉMONTÉS : composition du set et rigidité dérivée (23/10/2026)
+// ---------------------------------------------------------------------------
+// src/data/prepacked-hybrids.ts consigne, pour chaque fiche de type « Hybrid », la composition du set et sa source (point 9 de l'avis
+// d'Opus 5.5 du 23/10/2026). Échoue si : (a) une fiche « Hybrid » n'y figure pas, ou une entrée ne désigne aucune fiche « Hybrid » ;
+// (b) un composant manque, est lui-même un hybride ou figure deux fois ; (c) la rigidité d'un set à composition connue n'est pas le plus
+// haut de sa valeur d'avant et de la valeur dérivée de ses composants, recalculée, ou, sur une grille de RA et de tensions, l'indice de
+// la fiche est SOUS celui que le moteur (`setupFirmnessIndex`) donne aux deux cordages montés à la même tension (le plus haut des sens
+// permis) ; (d) un set à composition non publiée a bougé, nomme des composants ou entre dans les classements ; (e) une source n'a pas
+// d'URL https, de niveau, de date ou d'extrait de 1 à 40 mots, une composition « publiée » n'a aucune source, une composition « fiche »
+// en cite une ; (f) les jauges consignées ne sont pas celles de la fiche ; (g) la fiche FR ne marque pas la rigidité dérivée « estimé »
+// ou n'affiche pas la mention, ou la mention ne dit pas « dérivée » avec les deux cordages, ou « composition non publiée … sans source ».
+{
+  const before22 = failures.length;
+  const PH = await import('../src/data/prepacked-hybrids');
+  const { setupFirmnessIndex, rcsIndex } = await import('../src/lib/advanced-rcs');
+  type PEntry = (typeof PH.PREPACKED_HYBRIDS)[string];
+  type PItem = { id: string; type: string; stiffness: number; gauges: string[]; brand: string; model: string };
+  const PAGE_22 = 'src/app/tennis-strings/[slug]/page.tsx';
+  const RAS_22 = [55, 58, 61, 64, 66, 68, 70, 72];
+  const TENS_22 = [18, 20, 22, 24, 26, 28];
+  let above22 = 0;
+  const checkPrepacked = (items: readonly PItem[], table: Readonly<Record<string, PEntry>>, pageSrc: string): string[] => {
+    const issues: string[] = [];
+    const byId = new Map(items.map((x) => [x.id, x]));
+    const label = (x: string) => (byId.get(x) ? `${byId.get(x)!.brand} ${byId.get(x)!.model}` : x);
+    for (const s of items) if (s.type === 'Hybrid' && !table[s.id]) issues.push(`${s.id} : fiche « Hybrid » sans composition consignée`);
+    for (const [id, e] of Object.entries(table)) {
+      const s = byId.get(id);
+      if (!s || s.type !== 'Hybrid') { issues.push(`${id} : entrée qui ne désigne aucune fiche « Hybrid »`); continue; }
+      for (const src of e.sources) {
+        if (!/^https:\/\/\S+$/.test(src.url)) issues.push(`${id} : source sans URL https`);
+        if (!['L0', 'L2', 'L3'].includes(src.level)) issues.push(`${id} : niveau de source « ${src.level} »`);
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(src.read)) issues.push(`${id} : date de lecture absente`);
+        const words = src.excerpt.trim().split(/\s+/).filter(Boolean).length;
+        if (words === 0 || words > 40) issues.push(`${id} : extrait de ${words} mots (1 à 40)`);
+      }
+      if (e.composition === 'publiee' && e.sources.length === 0) issues.push(`${id} : composition « publiée » sans source`);
+      if (e.composition === 'fiche' && e.sources.length > 0) issues.push(`${id} : composition « fiche » qui cite une source`);
+      if (!e.note.trim()) issues.push(`${id} : motif absent`);
+      if (e.gauges && e.gauges.join(',') !== s.gauges.join(',')) issues.push(`${id} : jauges ${s.gauges.join(', ')} ≠ ${e.gauges.join(', ')} consignées`);
+      const notice = PH.prepackedHybridNotice(id, label) ?? '';
+      if (e.composition === 'non-publiee') {
+        if (e.components !== null) issues.push(`${id} : composition non publiée mais composants nommés`);
+        if (s.stiffness !== e.before) issues.push(`${id} : rigidité ${s.stiffness} ≠ ${e.before} (composition non publiée : valeur de fiche conservée)`);
+        if (PH.isStiffnessRankable(s)) issues.push(`${id} : composition non publiée mais classable`);
+        if (!/composition non publiée/i.test(notice) || !/sans source/.test(notice)) issues.push(`${id} : mention « composition non publiée, rigidité de fiche sans source » absente`);
+        continue;
+      }
+      if (!e.components) { issues.push(`${id} : composants absents`); continue; }
+      const [a, b] = e.components;
+      const ca = byId.get(a), cb = byId.get(b);
+      if (!ca || !cb) { issues.push(`${id} : composant ${!ca ? a : b} absent du catalogue`); continue; }
+      if (a === b) issues.push(`${id} : deux fois le même composant`);
+      if (ca.type === 'Hybrid' || cb.type === 'Hybrid') issues.push(`${id} : un composant est lui-même un hybride`);
+      const derived = PH.prepackedHybridStiffness(ca.stiffness, cb.stiffness, e.orderFixed);
+      const expected = Math.max(e.before, derived);
+      if (Math.abs(s.stiffness - expected) > 1e-9) issues.push(`${id} : rigidité ${s.stiffness} ≠ ${expected} (plus haut de ${e.before} et de la valeur dérivée de ${a} ${ca.stiffness} et ${b} ${cb.stiffness})`);
+      const orders: [number, number][] = e.orderFixed ? [[ca.stiffness, cb.stiffness]] : [[ca.stiffness, cb.stiffness], [cb.stiffness, ca.stiffness]];
+      grid: for (const ra of RAS_22) for (const t of TENS_22) {
+        const eng = Math.max(...orders.map(([m, c]) => setupFirmnessIndex({ racquetStiffness: ra, mainStringStiffness: m, crossStringStiffness: c, mainTension: t, crossTension: t }).rcs));
+        const mine = rcsIndex(ra, s.stiffness, t);
+        if (mine < eng) { issues.push(`${id} : indice ${mine} sous ${eng}, celui du moteur pour ${a} et ${b} à RA ${ra}, ${t} kg`); break grid; }
+        if (mine > eng) above22++;
+      }
+      if (PH.isStiffnessRankable(s) !== (e.composition === 'publiee')) issues.push(`${id} : classable alors que la composition n'est pas publiée, ou l'inverse`);
+      if (!/dérivée/.test(notice) || !notice.includes(label(a)) || !notice.includes(label(b))) issues.push(`${id} : mention sans « dérivée » ou sans les deux cordages`);
+    }
+    if (!/prepackedHybridNotice\(/.test(pageSrc) || !/data-testid="prepacked-hybrid-notice"/.test(pageSrc)) issues.push('fiche FR : la mention des hybrides prémontés n\'est pas affichée');
+    if (!/estimated:\s*Boolean\(PREPACKED_HYBRIDS\[string\.id\]\?\.components\)/.test(pageSrc)) issues.push('fiche FR : rigidité dérivée non marquée « estimé »');
+    return issues;
+  };
+  const items22 = stringsDatabase as unknown as PItem[];
+  const T0 = PH.PREPACKED_HYBRIDS;
+  const page22 = existsSync(PAGE_22) ? readFileSync(PAGE_22, 'utf8') : '';
+  checkPrepacked(items22, T0, page22).forEach((i) => fail(`hybrides prémontés : ${i}`));
+  const nAbove = above22;
+  const set22 = (id: string, patch: Partial<PItem>) => items22.map((x) => (x.id === id ? { ...x, ...patch } : x));
+  const with22 = (id: string, patch: Partial<PEntry>) => ({ ...T0, [id]: { ...T0[id], ...patch } });
+  const without22 = Object.fromEntries(Object.entries(T0).filter(([k]) => k !== 'wilson-duo-power'));
+  const src22 = T0['wilson-duo-control'].sources[0];
+  const neg22: Array<[string, string[], string]> = [
+    ['fiche « Hybrid » sans entrée', checkPrepacked(items22, without22, page22), 'wilson-duo-power : fiche « Hybrid » sans composition'],
+    ['rigidité dérivée non appliquée (Duo Control 188)', checkPrepacked(set22('wilson-duo-control', { stiffness: 188 }), T0, page22), 'wilson-duo-control : rigidité 188 ≠ 222'],
+    ['baisse sous la valeur d\'avant', checkPrepacked(items22, with22('wilson-duo-power', { before: 230 }), page22), 'wilson-duo-power : rigidité 196 ≠ 230'],
+    ['sens défavorable fixé à tort (Ice Code + NRG2)', checkPrepacked(items22, with22('tecnifibre-hybrid-ice-code-nrg2', { orderFixed: true, components: ['tecnifibre-nrg2', 'tecnifibre-ice-code'] }), page22), 'tecnifibre-hybrid-ice-code-nrg2 : rigidité 198.4 ≠ 192.6'],
+    ['composant absent', checkPrepacked(items22, with22('wilson-duo-control', { components: ['x-inexistant', 'wilson-nxt-control'] }), page22), 'composant x-inexistant absent'],
+    ['composant hybride', checkPrepacked(items22, with22('wilson-duo-control', { components: ['wilson-duo-power', 'wilson-nxt-control'] }), page22), 'lui-même un hybride'],
+    ['composition non publiée qui bouge', checkPrepacked(set22('head-gravity-hybrid', { stiffness: 190 }), T0, page22), 'valeur de fiche conservée'],
+    ['composition non publiée qui nomme des composants', checkPrepacked(items22, with22('head-gravity-hybrid', { components: ['head-lynx', 'head-hawk'] }), page22), 'composants nommés'],
+    ['source sans URL https', checkPrepacked(items22, with22('wilson-duo-control', { sources: [{ ...src22, url: 'tennis-warehouse.com/x' }] }), page22), 'sans URL https'],
+    ['extrait de plus de 40 mots', checkPrepacked(items22, with22('wilson-duo-control', { sources: [{ ...src22, excerpt: 'mot '.repeat(41) }] }), page22), 'extrait de 41 mots'],
+    ['composition publiée sans source', checkPrepacked(items22, with22('wilson-duo-control', { sources: [] }), page22), 'publiée » sans source'],
+    ['composition de fiche qui cite une source', checkPrepacked(items22, with22('tecnifibre-hybrid-ice-code-nrg2', { sources: [src22] }), page22), 'composition « fiche » qui cite'],
+    ['jauges ramenées à 1.25/1.25 (Duo Power)', checkPrepacked(set22('wilson-duo-power', { gauges: ['1.25/1.25'] }), T0, page22), 'wilson-duo-power : jauges'],
+    ['fiche FR sans mention', checkPrepacked(items22, T0, page22.replace(/data-testid="prepacked-hybrid-notice"/g, '')), 'mention des hybrides prémontés n\'est pas affichée'],
+    ['fiche FR sans « estimé »', checkPrepacked(items22, T0, page22.replace(/estimated:\s*Boolean\(PREPACKED_HYBRIDS\[string\.id\]\?\.components\)/, 'estimated: false')), 'non marquée « estimé »'],
+  ];
+  for (const [name, found, needle] of neg22) {
+    if (!found.some((i) => i.includes(needle))) fail(`hybrides prémontés : garde-fou muet sur « ${name} » (${needle})`);
+  }
+  if (failures.length === before22) {
+    const v = Object.values(T0);
+    const n = (c: string) => v.filter((e) => e.composition === c).length;
+    ok(`hybrides prémontés : ${v.length} fiches « Hybrid » consignées (${n('publiee')} à composition publiée, ${n('fiche')} à composition de fiche, set introuvable, ${n('non-publiee')} non publiée : valeur conservée, hors classements) ; ` +
+      `rigidité = plus haut de la valeur d'avant et de la valeur dérivée des deux cordages, recalculée ; indice de la fiche jamais sous celui du moteur pour les deux cordages à la même tension (${RAS_22.length} RA × ${TENS_22.length} tensions ; ${nAbove} montage(s) au-dessus, par l'arrondi au dixième supérieur) ; ` +
+      `sources (URL, niveau, date, extrait), jauges et mention de la fiche FR vérifiées ; ${neg22.length} tests négatifs détectés`);
+  }
+}
+
+// ---------------------------------------------------------------------------
 console.log('--- audit notation raquettes/cordages ---');
 notes.forEach((n) => console.log(n));
 if (failures.length > 0) {
