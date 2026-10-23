@@ -49,7 +49,7 @@ import {
   type HarmonizedField,
   type TesterCriterion,
 } from '../src/data/tester-ratings';
-import { calculateAdvancedRcs, stringTypeToFamily, ARM_ALERT_RCS } from '../src/lib/advanced-rcs';
+import { calculateAdvancedRcs, stringTypeToFamily } from '../src/lib/advanced-rcs';
 import {
   DEFAULT_RACQUET_RA,
   RA_RANGE,
@@ -4252,6 +4252,287 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
 }
 
 // ---------------------------------------------------------------------------
+// 21 quater. CONFIGURATEUR EN — douleur déclarée : la tension affichée est CALCULÉE, sous le seuil d'alerte bras sensible (23/10/2026)
+// Décision (avis d'Opus 5.5 du 23/10/2026, point 5 ; tsa-acquisition, propriétaire de public/en) : le conseil « 21-23 kg »
+// pour un bras sensible, sans aucune source, est retiré. La page dit à la place jusqu'à quelle tension N l'indice du montage
+// qu'elle propose reste sous le seuil d'alerte bras sensible, et montre l'indice à cette tension.
+// (a) Le bloc <seuil-bras-sensible> de public/en/configurator.html, évalué TEL QUEL avec le moteur statique EN, donne sur
+//     toutes les raquettes à RA connu × tous les cordages du catalogue (catalog.json, buildCatalog) la même N qu'un recalcul
+//     indépendant par calculateRCS (src/data), sur la plage du curseur de tension de rcs-calculator.html : indice à N sous le
+//     seuil, à N + un pas au seuil ou au-dessus ; « toute la plage » et « aucune tension » exacts ; la valeur et la phrase
+//     affichées portent les indices du recalcul ; seuil = ARM_ALERT_SENSITIVE (sondé dans calculateAdvancedRcs) = HEALTH_ALERT_SENSITIVE_RCS du moteur EN ;
+//     cordage proposé = le moins rigide du catalogue, sa rigidité de fiche citée (le statut « mesure TWU » n'est pas lisible
+//     par une surface : provenance et table par jauge leur sont fermées par les garde-fous de tsa-core).
+// (b) Les montages que la branche peut proposer (raquettes de RA ≤ son plafond × cordage le moins rigide) passent sous le seuil.
+// (c) Plus aucune tension fixe pour une douleur déclarée : la branche n'écrit aucune tension en dur et ne trie plus par note
+//     de confort ; aucune chaîne des pages EN hors blog ni de public/js ne met une tension fixe à côté d'un bras sensible ou
+//     d'une douleur.
+{
+  const beforeQ21 = failures.length;
+  const PAGEQ21 = 'public/en/configurator.html';
+  const ENGINEQ21 = 'public/js/rcs-calculator-en.js';
+  const CALCQ21 = 'public/en/rcs-calculator.html';
+  let pageQ21 = '';
+  let engineSrcQ21 = '';
+  let calcHtmlQ21 = '';
+  try {
+    pageQ21 = readFileSync(PAGEQ21, 'utf8').replace(/\r\n/g, '\n');
+    engineSrcQ21 = readFileSync(ENGINEQ21, 'utf8').replace(/\r\n/g, '\n');
+    calcHtmlQ21 = readFileSync(CALCQ21, 'utf8');
+  } catch (e) {
+    fail(`seuil bras sensible (configurateur EN) : fichier illisible (${(e as Error).message})`);
+  }
+  if (pageQ21 && engineSrcQ21 && calcHtmlQ21) {
+    const loadEngineQ21 = (src: string): any =>
+      new Function('window', 'document', `${src}; return typeof RCS !== 'undefined' ? RCS : window.RCS;`)({}, { addEventListener() {} });
+    const OPENQ21 = '// <seuil-bras-sensible>';
+    const CLOSEQ21 = '// </seuil-bras-sensible>';
+    const blockOfQ21 = (html: string): string | null => {
+      const i = html.indexOf(OPENQ21);
+      const j = html.indexOf(CLOSEQ21);
+      if (i < 0 || j < i || html.indexOf(OPENQ21, i + 1) >= 0) return null;
+      return html.slice(i, j);
+    };
+    const BRANCH_OPEN = "if (currentSelections.physical === 'bras' || currentSelections.physical === 'epaule') {";
+    const branchOfQ21 = (html: string): string | null => {
+      const i = html.indexOf(BRANCH_OPEN);
+      const j = html.indexOf('// PRIORITY 3', i);
+      return i < 0 || j < 0 ? null : html.slice(i, j);
+    };
+    const catalogQ21: any = buildCatalog(racquetsDatabase, stringsDatabase);
+    const racqQ21: any[] = catalogQ21.racquets.filter((r: any) => typeof r.stiffness === 'number');
+    const strQ21: any[] = catalogQ21.strings.filter((s: any) => typeof s.stiffness === 'number');
+    const SQ21 = ARM_ALERT_SENSITIVE;
+    const sliderQ21 = /id="tensionSlider"[^>]*min="([\d.]+)"[^>]*max="([\d.]+)"[^>]*step="([\d.]+)"/.exec(calcHtmlQ21);
+    const RANGEQ21 = sliderQ21 ? { min: Number(sliderQ21[1]), max: Number(sliderQ21[2]), step: Number(sliderQ21[3]) } : null;
+    if (!RANGEQ21) fail(`${CALCQ21} : curseur de tension introuvable, relire le contrôle 21 quater`);
+    const tallyQ21 = { combos: 0, mid: 0, whole: 0, none: 0, proposals: 0 };
+
+    // (a) et (b) : le bloc de la page contre le recalcul indépendant ; renvoie les écarts (vide = conforme).
+    const checkPageQ21 = (html: string, engine: any, count = false): string[] => {
+      const issues: string[] = [];
+      const add = (m: string) => { if (issues.length < 12) issues.push(m); };
+      const block = blockOfQ21(html);
+      if (block === null) return ['bloc <seuil-bras-sensible> absent ou en double dans la page'];
+      let api: any;
+      try {
+        api = new Function(`${block}\nreturn { SENSITIVE_TENSION_RANGE, pickLowestStiffnessString, sensitiveTensionLimit, sensitiveTension };`)();
+      } catch (e) {
+        return [`bloc illisible (${(e as Error).message})`];
+      }
+      if (engine.HEALTH_ALERT_SENSITIVE_RCS !== SQ21) add(`seuil : HEALTH_ALERT_SENSITIVE_RCS du moteur EN (${engine.HEALTH_ALERT_SENSITIVE_RCS}) ≠ seuil bras sensible sondé dans calculateAdvancedRcs (${SQ21})`);
+      const R = api.SENSITIVE_TENSION_RANGE;
+      if (!RANGEQ21 || R.min !== RANGEQ21.min || R.max !== RANGEQ21.max || R.step !== RANGEQ21.step) {
+        add(`plage : la page raisonne sur ${JSON.stringify(R)}, le curseur du calculateur RCS sur ${JSON.stringify(RANGEQ21)}`);
+      }
+      const ref = RANGEQ21 ?? R;
+      const steps = Math.round((ref.max - ref.min) / ref.step);
+      for (const r of racqQ21) {
+        for (const s of strQ21) {
+          const idx = (t: number) => calculateRCS(r.stiffness, s.stiffness, t);
+          let refN: number | null = null;
+          let blocked = false;
+          let prev = -Infinity;
+          for (let i = 0; i <= steps; i++) {
+            const t = ref.min + i * ref.step;
+            const x = idx(t);
+            if (x < prev) add(`recalcul : indice non monotone en tension (${r.id} × ${s.id} à ${t} kg)`);
+            prev = x;
+            if (!blocked && x < SQ21) refN = t;
+            else blocked = true;
+          }
+          const L = api.sensitiveTensionLimit(engine, r.stiffness, s.stiffness);
+          if (count) tallyQ21.combos++;
+          if (L.n !== refN) { add(`tension : ${r.id} × ${s.id}, la page dit N = ${L.n}, le recalcul N = ${refN}`); continue; }
+          if (L.threshold !== SQ21) add(`seuil : la page compare à ${L.threshold} au lieu de ${SQ21}`);
+          const out = api.sensitiveTension(engine, r.stiffness, s.stiffness);
+          const shown = engine.calculate(r.stiffness, s.stiffness, out.numValue).rcs;
+          if (shown !== idx(out.numValue)) add(`indice montré : ${shown} au lieu de ${idx(out.numValue)} (${r.id} × ${s.id} à ${out.numValue} kg)`);
+          if (!String(out.title).includes(`(${SQ21})`) || !String(out.reason).includes(`(index ${SQ21})`)) add(`texte : le seuil ${SQ21} n'est pas cité (${r.id} × ${s.id})`);
+          if (refN === null) {
+            if (count) tallyQ21.none++;
+            if (!L.none || idx(ref.min) < SQ21) add(`aucune tension : cas mal établi (${r.id} × ${s.id})`);
+            if (out.value !== `None from ${ref.min} to ${ref.max} kg` || out.numValue !== ref.min || !out.reason.includes(`it is ${idx(ref.min)} at ${ref.min} kg`)) {
+              add(`texte « aucune tension » faux : ${r.id} × ${s.id} → « ${out.value} »`);
+            }
+          } else if (refN === ref.max) {
+            if (count) tallyQ21.whole++;
+            if (!L.whole || idx(ref.max) >= SQ21) add(`toute la plage : cas mal établi (${r.id} × ${s.id})`);
+            if (out.value !== `Whole range (${ref.min}-${ref.max} kg)` || out.numValue !== ref.max || !out.reason.includes(`${idx(ref.max)} at ${ref.max} kg`)) {
+              add(`texte « toute la plage » faux : ${r.id} × ${s.id} → « ${out.value} »`);
+            }
+          } else {
+            if (count) tallyQ21.mid++;
+            if (idx(refN) >= SQ21) add(`à N = ${refN} kg l'indice ${idx(refN)} n'est pas sous ${SQ21} (${r.id} × ${s.id})`);
+            if (idx(refN + ref.step) < SQ21) add(`à N + ${ref.step} kg l'indice reste sous ${SQ21} (${r.id} × ${s.id})`);
+            const want = `${idx(refN)} at ${refN} kg, ${idx(refN + ref.step)} at ${refN + ref.step} kg`;
+            if (out.value !== `Up to ${refN} kg` || out.numValue !== refN || !out.reason.includes(want)) {
+              add(`texte « jusqu'à N kg » faux : ${r.id} × ${s.id} → « ${out.value} » (attendu « Up to ${refN} kg » et « ${want} »)`);
+            }
+          }
+        }
+      }
+      // Cordage proposé : le moins rigide du catalogue.
+      const lowest = api.pickLowestStiffnessString(catalogQ21.strings);
+      const minStiff = Math.min(...strQ21.map((s) => s.stiffness));
+      if (!lowest || lowest.stiffness !== minStiff) add(`cordage proposé : ${lowest ? `${lowest.id} (${lowest.stiffness} lb/in)` : 'aucun'} au lieu du moins rigide (${minStiff} lb/in)`);
+      // (b) Ce que la branche peut proposer : raquettes de RA ≤ son plafond × cordage le moins rigide, sous le seuil.
+      const branch = branchOfQ21(html);
+      const cap = branch ? /maxStiffness:\s*(\d+)/.exec(branch) : null;
+      if (!cap) add('branche de la douleur déclarée : plafond de RA introuvable, relire le contrôle 21 quater');
+      else if (lowest) {
+        for (const r of racqQ21.filter((x) => x.stiffness <= Number(cap[1]))) {
+          if (count) tallyQ21.proposals++;
+          if (api.sensitiveTensionLimit(engine, r.stiffness, lowest.stiffness).none) add(`proposition : ${r.id} × ${lowest.id} ne passe sous ${SQ21} à aucune tension`);
+        }
+      }
+      return issues;
+    };
+
+    // (c1) La branche de la douleur déclarée : contrainte de seuil, aucune tension en dur, plus de tri par note de confort.
+    const branchIssuesQ21 = (html: string): string[] => {
+      const b = branchOfQ21(html);
+      if (b === null) return ['branche : la branche de la douleur déclarée est introuvable, relire le contrôle 21 quater'];
+      const issues: string[] = [];
+      if (!b.includes("rcsProfile = 'tennis_elbow'")) issues.push("branche : le profil tennis_elbow (seuil 32) n'est plus posé");
+      if (!/tension = sensitiveTension\(RCS, racquet\.stiffness, string\.stiffness\)/.test(b)) issues.push('branche : la tension ne vient plus du calcul sensitiveTension');
+      if (/if \([^\n]*\)\s*\{\s*tension = sensitiveTension\(/.test(b)) issues.push('branche : tension calculée sous condition, la tension héritée du niveau peut rester affichée');
+      if (!/pickLowestStiffnessString\(stringsDB\)/.test(b)) issues.push("branche : le cordage n'est plus le moins rigide du catalogue");
+      if (/tension\s*=\s*\{/.test(b) || /numValue:\s*\d/.test(b) || /\d{2}(?:\.\d)?\s*(?:-|–|to)\s*\d{2}(?:\.\d)?\s*kg/.test(b)) issues.push('branche : tension fixe écrite en dur');
+      if (/pickBestString\(/.test(b)) issues.push('branche : cordage choisi par pickBestString (tri par note, non mesurée)');
+      if (!b.includes("'Lowest stiffness in our catalogue: ' + lowest.stiffness + ' lb/in, the value of its string page")) {
+        issues.push('branche : la raison du cordage ne cite plus sa rigidité de fiche');
+      }
+      if (/TWU measurement/.test(b)) issues.push('branche : « mesure TWU » affirmé sans source lisible par la page');
+      return issues;
+    };
+
+    // (c2) Aucune chaîne des pages EN hors blog ni de public/js ne met une tension fixe (deux chiffres, kg ou lb) à côté d'un bras
+    //      sensible ou d'une douleur. Une tension calculée (${…} kg) ou un levier (« 1 kg ») ne sont pas des tensions fixes.
+    const FIXED_KG = /(?<![\w${}.])\d{2}(?:[.,]\d)?(?:\s*(?:-|–|to|à)\s*\d{2}(?:[.,]\d)?)?\s*(?:kg|lbs?)\b/;
+    const ARMQ21 = /sensitive[- ](?:arm|shoulder)|tennis[ _]elbow|elbow pain|painful arm|arm pain|shoulder pain|bras sensible|douleur|coude/i;
+    const JS_STRINGS = /'(?:[^'\\\n]|\\.)*'|"(?:[^"\\\n]|\\.)*"|`(?:[^`\\]|\\.)*`/g;
+    const noCommentsQ21 = (js: string) => js.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|[^:'"\\\w])\/\/[^\n]*/g, '$1');
+    const jsStringsQ21 = (js: string): string[] => [...noCommentsQ21(js).matchAll(JS_STRINGS)].map((m) => m[0]);
+    const chunksOfQ21 = (file: string, src: string): string[] => {
+      if (file.endsWith('.js')) return jsStringsQ21(src);
+      const scripts = [...src.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[1]);
+      const rest = src
+        .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, ' ')
+        .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, ' ')
+        .replace(/<!--[\s\S]*?-->/g, ' ');
+      return [
+        ...scripts.flatMap(jsStringsQ21),
+        ...[...rest.matchAll(/>([^<>]+)</g)].map((m) => m[1]),
+        ...[...rest.matchAll(/"[^"\n]*"/g)].map((m) => m[0]),
+      ];
+    };
+    const scanFixedQ21 = (file: string, src: string): string[] =>
+      chunksOfQ21(file, src)
+        .filter((c) => FIXED_KG.test(c) && ARMQ21.test(c))
+        .map((c) => `${file} : tension fixe à côté d'un bras sensible ou d'une douleur (« ${c.replace(/\s+/g, ' ').slice(0, 90)} »)`);
+    const SCANQ21 = [
+      ...readdirSync('public/en').filter((f) => f.endsWith('.html')).map((f) => `public/en/${f}`),
+      ...readdirSync('public/js').filter((f) => f.endsWith('.js')).map((f) => `public/js/${f}`),
+    ];
+
+    const engineQ21 = loadEngineQ21(engineSrcQ21);
+    const realIssues = checkPageQ21(pageQ21, engineQ21, true);
+    realIssues.forEach((i) => fail(`${PAGEQ21} : ${i}`));
+    branchIssuesQ21(pageQ21).forEach((i) => fail(`${PAGEQ21} : ${i}`));
+    let scanned = 0;
+    for (const f of SCANQ21) {
+      scanned++;
+      scanFixedQ21(f, readFileSync(f, 'utf8')).forEach((i) => fail(i));
+    }
+
+    // Tests négatifs : chaque altération doit être détectée ; témoins positifs : chaque variante neutre doit être acceptée.
+    const replaceOnceQ21 = (s: string, find: string, rep: string): string | null => (s.includes(find) ? s.replace(find, () => rep) : null);
+    let detectedQ21 = 0;
+    let acceptedQ21 = 0;
+    const PAGE_NEG: Array<[string, string, string]> = [
+      ['N d\'un pas trop haut (≤ au lieu de <)', 'if (engine.calculate(ra, stiffness, t).rcs < threshold) n = t;', 'if (engine.calculate(ra, stiffness, t).rcs <= threshold) n = t;'],
+      ['seuil standard (35) au lieu du seuil bras sensible', 'const threshold = engine.HEALTH_ALERT_SENSITIVE_RCS;', 'const threshold = engine.HEALTH_ALERT_RCS;'],
+      ['plage tronquée à 28 kg', 'const SENSITIVE_TENSION_RANGE = { min: 18, max: 30, step: 0.5 };', 'const SENSITIVE_TENSION_RANGE = { min: 18, max: 28, step: 0.5 };'],
+      ['phrase : indice cité à N + 1 kg', "L.indexNext + ' at ' + (L.n + r.step) + ' kg.'", "L.indexNext + ' at ' + (L.n + 1) + ' kg.'"],
+      ['cordage le plus RIGIDE au lieu du moins rigide', 'if (!best || s.stiffness < best.stiffness) best = s;', 'if (!best || s.stiffness > best.stiffness) best = s;'],
+      ['indice montré à la tension minimale dans le cas « jusqu\'à N »', "return { title: title, value: 'Up to ' + L.n + ' kg', numValue: L.n,", "return { title: title, value: 'Up to ' + L.n + ' kg', numValue: r.min,"],
+      ['marqueur du bloc retiré', OPENQ21, '// seuil'],
+    ];
+    const BRANCH_NEG: Array<[string, string, string]> = [
+      ['tension fixe « 21-23 kg » rétablie', 'tension = sensitiveTension(RCS, racquet.stiffness, string.stiffness);', "tension = { value: '21-23 kg', numValue: 22, reason: 'Lower tension.' };"],
+      ['cordage rechoisi par note de confort', 'const lowest = pickLowestStiffnessString(stringsDB);', "const lowest = pickBestString({ types: ['Multifilament'], preferComfort: true });"],
+      ['profil tennis_elbow retiré', "rcsProfile = 'tennis_elbow';", "rcsProfile = 'club';"],
+      ['tension calculée sous condition (repli sur la tension du niveau)', 'tension = sensitiveTension(RCS, racquet.stiffness, string.stiffness);', 'if (racquet && string && racquet.stiffness !== null && string.stiffness !== null) {\n          tension = sensitiveTension(RCS, racquet.stiffness, string.stiffness);\n        }'],
+      ['raison du cordage sans sa rigidité', "'Lowest stiffness in our catalogue: ' + lowest.stiffness + ' lb/in, the value of its string page", "'Lowest-stiffness string, the value of its string page"],
+      ['« mesure TWU » affirmé', "the value of its string page (the stiffness the RCS index uses).", "a TWU measurement."],
+    ];
+    const ENGINE_NEG_SRC = "'For a sensitive arm, string at 21-23 kg.'";
+    const POSITIVES: Array<[string, string, string]> = [
+      ['phrase de fin reformulée', "' Each kg changes the index by 0.5 point.", "' One kg of tension moves the index by half a point."],
+      ['titre reformulé, seuil cité', "const title = 'Tension and the alert threshold (' + L.threshold + ')';", "const title = 'Tension below the alert threshold (' + L.threshold + ')';"],
+    ];
+    for (const [name, find, rep] of PAGE_NEG) {
+      const m = replaceOnceQ21(pageQ21, find, rep);
+      if (m === null) { fail(`${PAGEQ21} : prémisse du test négatif « ${name} » fausse (motif absent)`); continue; }
+      if (checkPageQ21(m, engineQ21).length > 0) detectedQ21++;
+      else fail(`${PAGEQ21} : garde-fou muet sur « ${name} »`);
+    }
+    for (const [name, find, rep] of BRANCH_NEG) {
+      const m = replaceOnceQ21(pageQ21, find, rep);
+      if (m === null) { fail(`${PAGEQ21} : prémisse du test négatif « ${name} » fausse (motif absent)`); continue; }
+      if (branchIssuesQ21(m).length > 0) detectedQ21++;
+      else fail(`${PAGEQ21} : garde-fou muet sur « ${name} »`);
+    }
+    // Moteur : seuil bras sensible changé (31) sans toucher à la page : la page doit diverger du recalcul.
+    const engMut = replaceOnceQ21(engineSrcQ21, 'HEALTH_ALERT_SENSITIVE_RCS: 32,', 'HEALTH_ALERT_SENSITIVE_RCS: 31,');
+    if (engMut === null) fail(`${ENGINEQ21} : prémisse du test négatif « seuil du moteur à 31 » fausse (motif absent)`);
+    else if (checkPageQ21(pageQ21, loadEngineQ21(engMut)).length > 0) detectedQ21++;
+    else fail(`${ENGINEQ21} : garde-fou muet sur « seuil du moteur à 31 »`);
+    // Balayage : une tension fixe pour un bras sensible ajoutée au moteur EN doit être vue ; un levier « 1 kg » ne l'est pas.
+    if (scanFixedQ21(ENGINEQ21, `${engineSrcQ21}\nconst x = ${ENGINE_NEG_SRC};`).length > 0) detectedQ21++;
+    else fail(`${ENGINEQ21} : garde-fou muet sur « tension fixe pour un bras sensible ajoutée au moteur »`);
+    if (scanFixedQ21(ENGINEQ21, `${engineSrcQ21}\nconst y = 'For a sensitive arm, 1 kg less lowers the index by 0.5 point.';\nconst z = \`For a sensitive arm: \${n} kg\`;`).length === 0) acceptedQ21++;
+    else fail(`${ENGINEQ21} : témoin positif « levier de 1 kg et tension calculée » rejeté à tort`);
+    // Balayage des pages : une tension fixe pour une douleur en texte HTML, dans une chaîne d'un script ou dans un attribut
+    // doit être vue ; la même dans un commentaire de script (jamais affiché) ne l'est pas.
+    const SCAN_NEGQ21: Array<[string, string, string]> = [
+      ['texte HTML', '</body>', '<p>For a sensitive arm, string at 21-23 kg.</p>\n</body>'],
+      ['chaîne d\'un script', OPENQ21, `const adviceQ21 = 'Elbow pain? String at 22 kg.';\n    ${OPENQ21}`],
+      ['attribut', '</body>', '<meta name="description" content="Tennis elbow: string at 21 kg">\n</body>'],
+    ];
+    for (const [name, find, rep] of SCAN_NEGQ21) {
+      const m = replaceOnceQ21(pageQ21, find, rep);
+      if (m === null) { fail(`${PAGEQ21} : prémisse du test négatif « balayage, ${name} » fausse (motif absent)`); continue; }
+      if (scanFixedQ21(PAGEQ21, m).length > 0) detectedQ21++;
+      else fail(`${PAGEQ21} : garde-fou muet sur « tension fixe pour une douleur, ${name} »`);
+    }
+    const commentedQ21 = replaceOnceQ21(pageQ21, OPENQ21, `// ancien conseil « 21-23 kg » pour un bras sensible, retiré\n    ${OPENQ21}`);
+    if (commentedQ21 !== null && scanFixedQ21(PAGEQ21, commentedQ21).length === 0) acceptedQ21++;
+    else fail(`${PAGEQ21} : témoin positif « tension citée dans un commentaire de script » rejeté à tort`);
+    for (const [name, find, rep] of POSITIVES) {
+      const m = replaceOnceQ21(pageQ21, find, rep);
+      if (m === null) { fail(`${PAGEQ21} : prémisse du témoin positif « ${name} » fausse (motif absent)`); continue; }
+      const found = [...checkPageQ21(m, engineQ21), ...branchIssuesQ21(m)];
+      if (found.length === 0) acceptedQ21++;
+      else fail(`${PAGEQ21} : témoin positif « ${name} » rejeté à tort : ${found[0]}`);
+    }
+
+    if (failures.length === beforeQ21) {
+      ok(
+        `configurateur EN, douleur déclarée : tension calculée sous le seuil d'alerte bras sensible (${SQ21} = seuil bras sensible sondé dans calculateAdvancedRcs = HEALTH_ALERT_SENSITIVE_RCS du moteur EN) ; ` +
+          `bloc de la page évalué tel quel avec le moteur EN sur ${tallyQ21.combos} montages (${racqQ21.length} raquettes à RA connu × ${strQ21.length} cordages), ` +
+          `plage du curseur ${RANGEQ21?.min}-${RANGEQ21?.max} kg par ${RANGEQ21?.step} : N identique au recalcul par calculateRCS (« jusqu'à N kg » ${tallyQ21.mid}, ` +
+          `toute la plage ${tallyQ21.whole}, aucune tension ${tallyQ21.none}), indice à N sous ${SQ21} et à N + ${RANGEQ21?.step} kg au seuil ou au-dessus, valeur et phrase ` +
+          `affichées exactes ; cordage proposé = le moins rigide du catalogue, rigidité de fiche citée ; ${tallyQ21.proposals} raquettes proposables sous le seuil ; ` +
+          `aucune tension fixe dans la branche ni à côté d'un bras sensible dans ${scanned} fichiers (public/en hors blog, public/js) ; ` +
+          `${detectedQ21} tests négatifs détectés, ${acceptedQ21} témoins positifs acceptés`
+      );
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
 // 21 ter. HYBRIDES : UN SEUL INDICE, celui que l'alerte lit, que la page affiche et que le PDF imprime (22/10/2026)
 // ---------------------------------------------------------------------------
 // Constat : pour un hybride, la page affichait un « RCS Moyen » (moyenne des indices des montants, pris à la tension MOYENNE, et des
@@ -4521,287 +4802,6 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
             `sans travers : aucune borne ; ${detected} tests négatifs détectés, ${accepted} témoins positifs acceptés (grille réelle en ${(realMs / 1000).toFixed(1)} s)`
         );
       }
-    }
-  }
-}
-
-// ---------------------------------------------------------------------------
-// 22. CONFIGURATEUR EN — douleur déclarée : la tension affichée est CALCULÉE, sous le seuil d'alerte bras sensible (23/10/2026)
-// Décision (avis d'Opus 5.5 du 23/10/2026, point 5 ; tsa-acquisition, propriétaire de public/en) : le conseil « 21-23 kg »
-// pour un bras sensible, sans aucune source, est retiré. La page dit à la place jusqu'à quelle tension N l'indice du montage
-// qu'elle propose reste sous le seuil d'alerte bras sensible, et montre l'indice à cette tension.
-// (a) Le bloc <seuil-bras-sensible> de public/en/configurator.html, évalué TEL QUEL avec le moteur statique EN, donne sur
-//     toutes les raquettes à RA connu × tous les cordages du catalogue (catalog.json, buildCatalog) la même N qu'un recalcul
-//     indépendant par calculateRCS (src/data), sur la plage du curseur de tension de rcs-calculator.html : indice à N sous le
-//     seuil, à N + un pas au seuil ou au-dessus ; « toute la plage » et « aucune tension » exacts ; la valeur et la phrase
-//     affichées portent les indices du recalcul ; seuil = ARM_ALERT_RCS.sensitive = HEALTH_ALERT_SENSITIVE_RCS du moteur EN ;
-//     cordage proposé = le moins rigide du catalogue, sa rigidité de fiche citée (le statut « mesure TWU » n'est pas lisible
-//     par une surface : provenance et table par jauge leur sont fermées par les garde-fous de tsa-core).
-// (b) Les montages que la branche peut proposer (raquettes de RA ≤ son plafond × cordage le moins rigide) passent sous le seuil.
-// (c) Plus aucune tension fixe pour une douleur déclarée : la branche n'écrit aucune tension en dur et ne trie plus par note
-//     de confort ; aucune chaîne des pages EN hors blog ni de public/js ne met une tension fixe à côté d'un bras sensible ou
-//     d'une douleur.
-{
-  const before22 = failures.length;
-  const PAGE22 = 'public/en/configurator.html';
-  const ENGINE22 = 'public/js/rcs-calculator-en.js';
-  const CALC22 = 'public/en/rcs-calculator.html';
-  let page22 = '';
-  let engineSrc22 = '';
-  let calcHtml22 = '';
-  try {
-    page22 = readFileSync(PAGE22, 'utf8').replace(/\r\n/g, '\n');
-    engineSrc22 = readFileSync(ENGINE22, 'utf8').replace(/\r\n/g, '\n');
-    calcHtml22 = readFileSync(CALC22, 'utf8');
-  } catch (e) {
-    fail(`seuil bras sensible (configurateur EN) : fichier illisible (${(e as Error).message})`);
-  }
-  if (page22 && engineSrc22 && calcHtml22) {
-    const loadEngine22 = (src: string): any =>
-      new Function('window', 'document', `${src}; return typeof RCS !== 'undefined' ? RCS : window.RCS;`)({}, { addEventListener() {} });
-    const OPEN22 = '// <seuil-bras-sensible>';
-    const CLOSE22 = '// </seuil-bras-sensible>';
-    const blockOf22 = (html: string): string | null => {
-      const i = html.indexOf(OPEN22);
-      const j = html.indexOf(CLOSE22);
-      if (i < 0 || j < i || html.indexOf(OPEN22, i + 1) >= 0) return null;
-      return html.slice(i, j);
-    };
-    const BRANCH_OPEN = "if (currentSelections.physical === 'bras' || currentSelections.physical === 'epaule') {";
-    const branchOf22 = (html: string): string | null => {
-      const i = html.indexOf(BRANCH_OPEN);
-      const j = html.indexOf('// PRIORITY 3', i);
-      return i < 0 || j < 0 ? null : html.slice(i, j);
-    };
-    const catalog22: any = buildCatalog(racquetsDatabase, stringsDatabase);
-    const racq22: any[] = catalog22.racquets.filter((r: any) => typeof r.stiffness === 'number');
-    const str22: any[] = catalog22.strings.filter((s: any) => typeof s.stiffness === 'number');
-    const S22 = ARM_ALERT_RCS.sensitive;
-    const slider22 = /id="tensionSlider"[^>]*min="([\d.]+)"[^>]*max="([\d.]+)"[^>]*step="([\d.]+)"/.exec(calcHtml22);
-    const RANGE22 = slider22 ? { min: Number(slider22[1]), max: Number(slider22[2]), step: Number(slider22[3]) } : null;
-    if (!RANGE22) fail(`${CALC22} : curseur de tension introuvable, relire le contrôle 22`);
-    const tally22 = { combos: 0, mid: 0, whole: 0, none: 0, proposals: 0 };
-
-    // (a) et (b) : le bloc de la page contre le recalcul indépendant ; renvoie les écarts (vide = conforme).
-    const checkPage22 = (html: string, engine: any, count = false): string[] => {
-      const issues: string[] = [];
-      const add = (m: string) => { if (issues.length < 12) issues.push(m); };
-      const block = blockOf22(html);
-      if (block === null) return ['bloc <seuil-bras-sensible> absent ou en double dans la page'];
-      let api: any;
-      try {
-        api = new Function(`${block}\nreturn { SENSITIVE_TENSION_RANGE, pickLowestStiffnessString, sensitiveTensionLimit, sensitiveTension };`)();
-      } catch (e) {
-        return [`bloc illisible (${(e as Error).message})`];
-      }
-      if (engine.HEALTH_ALERT_SENSITIVE_RCS !== S22) add(`seuil : HEALTH_ALERT_SENSITIVE_RCS du moteur EN (${engine.HEALTH_ALERT_SENSITIVE_RCS}) ≠ ARM_ALERT_RCS.sensitive (${S22})`);
-      const R = api.SENSITIVE_TENSION_RANGE;
-      if (!RANGE22 || R.min !== RANGE22.min || R.max !== RANGE22.max || R.step !== RANGE22.step) {
-        add(`plage : la page raisonne sur ${JSON.stringify(R)}, le curseur du calculateur RCS sur ${JSON.stringify(RANGE22)}`);
-      }
-      const ref = RANGE22 ?? R;
-      const steps = Math.round((ref.max - ref.min) / ref.step);
-      for (const r of racq22) {
-        for (const s of str22) {
-          const idx = (t: number) => calculateRCS(r.stiffness, s.stiffness, t);
-          let refN: number | null = null;
-          let blocked = false;
-          let prev = -Infinity;
-          for (let i = 0; i <= steps; i++) {
-            const t = ref.min + i * ref.step;
-            const x = idx(t);
-            if (x < prev) add(`recalcul : indice non monotone en tension (${r.id} × ${s.id} à ${t} kg)`);
-            prev = x;
-            if (!blocked && x < S22) refN = t;
-            else blocked = true;
-          }
-          const L = api.sensitiveTensionLimit(engine, r.stiffness, s.stiffness);
-          if (count) tally22.combos++;
-          if (L.n !== refN) { add(`tension : ${r.id} × ${s.id}, la page dit N = ${L.n}, le recalcul N = ${refN}`); continue; }
-          if (L.threshold !== S22) add(`seuil : la page compare à ${L.threshold} au lieu de ${S22}`);
-          const out = api.sensitiveTension(engine, r.stiffness, s.stiffness);
-          const shown = engine.calculate(r.stiffness, s.stiffness, out.numValue).rcs;
-          if (shown !== idx(out.numValue)) add(`indice montré : ${shown} au lieu de ${idx(out.numValue)} (${r.id} × ${s.id} à ${out.numValue} kg)`);
-          if (!String(out.title).includes(`(${S22})`) || !String(out.reason).includes(`(index ${S22})`)) add(`texte : le seuil ${S22} n'est pas cité (${r.id} × ${s.id})`);
-          if (refN === null) {
-            if (count) tally22.none++;
-            if (!L.none || idx(ref.min) < S22) add(`aucune tension : cas mal établi (${r.id} × ${s.id})`);
-            if (out.value !== `None from ${ref.min} to ${ref.max} kg` || out.numValue !== ref.min || !out.reason.includes(`it is ${idx(ref.min)} at ${ref.min} kg`)) {
-              add(`texte « aucune tension » faux : ${r.id} × ${s.id} → « ${out.value} »`);
-            }
-          } else if (refN === ref.max) {
-            if (count) tally22.whole++;
-            if (!L.whole || idx(ref.max) >= S22) add(`toute la plage : cas mal établi (${r.id} × ${s.id})`);
-            if (out.value !== `Whole range (${ref.min}-${ref.max} kg)` || out.numValue !== ref.max || !out.reason.includes(`${idx(ref.max)} at ${ref.max} kg`)) {
-              add(`texte « toute la plage » faux : ${r.id} × ${s.id} → « ${out.value} »`);
-            }
-          } else {
-            if (count) tally22.mid++;
-            if (idx(refN) >= S22) add(`à N = ${refN} kg l'indice ${idx(refN)} n'est pas sous ${S22} (${r.id} × ${s.id})`);
-            if (idx(refN + ref.step) < S22) add(`à N + ${ref.step} kg l'indice reste sous ${S22} (${r.id} × ${s.id})`);
-            const want = `${idx(refN)} at ${refN} kg, ${idx(refN + ref.step)} at ${refN + ref.step} kg`;
-            if (out.value !== `Up to ${refN} kg` || out.numValue !== refN || !out.reason.includes(want)) {
-              add(`texte « jusqu'à N kg » faux : ${r.id} × ${s.id} → « ${out.value} » (attendu « Up to ${refN} kg » et « ${want} »)`);
-            }
-          }
-        }
-      }
-      // Cordage proposé : le moins rigide du catalogue.
-      const lowest = api.pickLowestStiffnessString(catalog22.strings);
-      const minStiff = Math.min(...str22.map((s) => s.stiffness));
-      if (!lowest || lowest.stiffness !== minStiff) add(`cordage proposé : ${lowest ? `${lowest.id} (${lowest.stiffness} lb/in)` : 'aucun'} au lieu du moins rigide (${minStiff} lb/in)`);
-      // (b) Ce que la branche peut proposer : raquettes de RA ≤ son plafond × cordage le moins rigide, sous le seuil.
-      const branch = branchOf22(html);
-      const cap = branch ? /maxStiffness:\s*(\d+)/.exec(branch) : null;
-      if (!cap) add('branche de la douleur déclarée : plafond de RA introuvable, relire le contrôle 22');
-      else if (lowest) {
-        for (const r of racq22.filter((x) => x.stiffness <= Number(cap[1]))) {
-          if (count) tally22.proposals++;
-          if (api.sensitiveTensionLimit(engine, r.stiffness, lowest.stiffness).none) add(`proposition : ${r.id} × ${lowest.id} ne passe sous ${S22} à aucune tension`);
-        }
-      }
-      return issues;
-    };
-
-    // (c1) La branche de la douleur déclarée : contrainte de seuil, aucune tension en dur, plus de tri par note de confort.
-    const branchIssues22 = (html: string): string[] => {
-      const b = branchOf22(html);
-      if (b === null) return ['branche : la branche de la douleur déclarée est introuvable, relire le contrôle 22'];
-      const issues: string[] = [];
-      if (!b.includes("rcsProfile = 'tennis_elbow'")) issues.push("branche : le profil tennis_elbow (seuil 32) n'est plus posé");
-      if (!/tension = sensitiveTension\(RCS, racquet\.stiffness, string\.stiffness\)/.test(b)) issues.push('branche : la tension ne vient plus du calcul sensitiveTension');
-      if (/if \([^\n]*\)\s*\{\s*tension = sensitiveTension\(/.test(b)) issues.push('branche : tension calculée sous condition, la tension héritée du niveau peut rester affichée');
-      if (!/pickLowestStiffnessString\(stringsDB\)/.test(b)) issues.push("branche : le cordage n'est plus le moins rigide du catalogue");
-      if (/tension\s*=\s*\{/.test(b) || /numValue:\s*\d/.test(b) || /\d{2}(?:\.\d)?\s*(?:-|–|to)\s*\d{2}(?:\.\d)?\s*kg/.test(b)) issues.push('branche : tension fixe écrite en dur');
-      if (/pickBestString\(/.test(b)) issues.push('branche : cordage choisi par pickBestString (tri par note, non mesurée)');
-      if (!b.includes("'Lowest stiffness in our catalogue: ' + lowest.stiffness + ' lb/in, the value of its string page")) {
-        issues.push('branche : la raison du cordage ne cite plus sa rigidité de fiche');
-      }
-      if (/TWU measurement/.test(b)) issues.push('branche : « mesure TWU » affirmé sans source lisible par la page');
-      return issues;
-    };
-
-    // (c2) Aucune chaîne des pages EN hors blog ni de public/js ne met une tension fixe (deux chiffres, kg ou lb) à côté d'un bras
-    //      sensible ou d'une douleur. Une tension calculée (${…} kg) ou un levier (« 1 kg ») ne sont pas des tensions fixes.
-    const FIXED_KG = /(?<![\w${}.])\d{2}(?:[.,]\d)?(?:\s*(?:-|–|to|à)\s*\d{2}(?:[.,]\d)?)?\s*(?:kg|lbs?)\b/;
-    const ARM22 = /sensitive[- ](?:arm|shoulder)|tennis[ _]elbow|elbow pain|painful arm|arm pain|shoulder pain|bras sensible|douleur|coude/i;
-    const JS_STRINGS = /'(?:[^'\\\n]|\\.)*'|"(?:[^"\\\n]|\\.)*"|`(?:[^`\\]|\\.)*`/g;
-    const noComments22 = (js: string) => js.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|[^:'"\\\w])\/\/[^\n]*/g, '$1');
-    const jsStrings22 = (js: string): string[] => [...noComments22(js).matchAll(JS_STRINGS)].map((m) => m[0]);
-    const chunksOf22 = (file: string, src: string): string[] => {
-      if (file.endsWith('.js')) return jsStrings22(src);
-      const scripts = [...src.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[1]);
-      const rest = src
-        .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, ' ')
-        .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, ' ')
-        .replace(/<!--[\s\S]*?-->/g, ' ');
-      return [
-        ...scripts.flatMap(jsStrings22),
-        ...[...rest.matchAll(/>([^<>]+)</g)].map((m) => m[1]),
-        ...[...rest.matchAll(/"[^"\n]*"/g)].map((m) => m[0]),
-      ];
-    };
-    const scanFixed22 = (file: string, src: string): string[] =>
-      chunksOf22(file, src)
-        .filter((c) => FIXED_KG.test(c) && ARM22.test(c))
-        .map((c) => `${file} : tension fixe à côté d'un bras sensible ou d'une douleur (« ${c.replace(/\s+/g, ' ').slice(0, 90)} »)`);
-    const SCAN22 = [
-      ...readdirSync('public/en').filter((f) => f.endsWith('.html')).map((f) => `public/en/${f}`),
-      ...readdirSync('public/js').filter((f) => f.endsWith('.js')).map((f) => `public/js/${f}`),
-    ];
-
-    const engine22 = loadEngine22(engineSrc22);
-    const realIssues = checkPage22(page22, engine22, true);
-    realIssues.forEach((i) => fail(`${PAGE22} : ${i}`));
-    branchIssues22(page22).forEach((i) => fail(`${PAGE22} : ${i}`));
-    let scanned = 0;
-    for (const f of SCAN22) {
-      scanned++;
-      scanFixed22(f, readFileSync(f, 'utf8')).forEach((i) => fail(i));
-    }
-
-    // Tests négatifs : chaque altération doit être détectée ; témoins positifs : chaque variante neutre doit être acceptée.
-    const replaceOnce22 = (s: string, find: string, rep: string): string | null => (s.includes(find) ? s.replace(find, () => rep) : null);
-    let detected22 = 0;
-    let accepted22 = 0;
-    const PAGE_NEG: Array<[string, string, string]> = [
-      ['N d\'un pas trop haut (≤ au lieu de <)', 'if (engine.calculate(ra, stiffness, t).rcs < threshold) n = t;', 'if (engine.calculate(ra, stiffness, t).rcs <= threshold) n = t;'],
-      ['seuil standard (35) au lieu du seuil bras sensible', 'const threshold = engine.HEALTH_ALERT_SENSITIVE_RCS;', 'const threshold = engine.HEALTH_ALERT_RCS;'],
-      ['plage tronquée à 28 kg', 'const SENSITIVE_TENSION_RANGE = { min: 18, max: 30, step: 0.5 };', 'const SENSITIVE_TENSION_RANGE = { min: 18, max: 28, step: 0.5 };'],
-      ['phrase : indice cité à N + 1 kg', "L.indexNext + ' at ' + (L.n + r.step) + ' kg.'", "L.indexNext + ' at ' + (L.n + 1) + ' kg.'"],
-      ['cordage le plus RIGIDE au lieu du moins rigide', 'if (!best || s.stiffness < best.stiffness) best = s;', 'if (!best || s.stiffness > best.stiffness) best = s;'],
-      ['indice montré à la tension minimale dans le cas « jusqu\'à N »', "return { title: title, value: 'Up to ' + L.n + ' kg', numValue: L.n,", "return { title: title, value: 'Up to ' + L.n + ' kg', numValue: r.min,"],
-      ['marqueur du bloc retiré', OPEN22, '// seuil'],
-    ];
-    const BRANCH_NEG: Array<[string, string, string]> = [
-      ['tension fixe « 21-23 kg » rétablie', 'tension = sensitiveTension(RCS, racquet.stiffness, string.stiffness);', "tension = { value: '21-23 kg', numValue: 22, reason: 'Lower tension.' };"],
-      ['cordage rechoisi par note de confort', 'const lowest = pickLowestStiffnessString(stringsDB);', "const lowest = pickBestString({ types: ['Multifilament'], preferComfort: true });"],
-      ['profil tennis_elbow retiré', "rcsProfile = 'tennis_elbow';", "rcsProfile = 'club';"],
-      ['tension calculée sous condition (repli sur la tension du niveau)', 'tension = sensitiveTension(RCS, racquet.stiffness, string.stiffness);', 'if (racquet && string && racquet.stiffness !== null && string.stiffness !== null) {\n          tension = sensitiveTension(RCS, racquet.stiffness, string.stiffness);\n        }'],
-      ['raison du cordage sans sa rigidité', "'Lowest stiffness in our catalogue: ' + lowest.stiffness + ' lb/in, the value of its string page", "'Lowest-stiffness string, the value of its string page"],
-      ['« mesure TWU » affirmé', "the value of its string page (the stiffness the RCS index uses).", "a TWU measurement."],
-    ];
-    const ENGINE_NEG_SRC = "'For a sensitive arm, string at 21-23 kg.'";
-    const POSITIVES: Array<[string, string, string]> = [
-      ['phrase de fin reformulée', "' Each kg changes the index by 0.5 point.", "' One kg of tension moves the index by half a point."],
-      ['titre reformulé, seuil cité', "const title = 'Tension and the alert threshold (' + L.threshold + ')';", "const title = 'Tension below the alert threshold (' + L.threshold + ')';"],
-    ];
-    for (const [name, find, rep] of PAGE_NEG) {
-      const m = replaceOnce22(page22, find, rep);
-      if (m === null) { fail(`${PAGE22} : prémisse du test négatif « ${name} » fausse (motif absent)`); continue; }
-      if (checkPage22(m, engine22).length > 0) detected22++;
-      else fail(`${PAGE22} : garde-fou muet sur « ${name} »`);
-    }
-    for (const [name, find, rep] of BRANCH_NEG) {
-      const m = replaceOnce22(page22, find, rep);
-      if (m === null) { fail(`${PAGE22} : prémisse du test négatif « ${name} » fausse (motif absent)`); continue; }
-      if (branchIssues22(m).length > 0) detected22++;
-      else fail(`${PAGE22} : garde-fou muet sur « ${name} »`);
-    }
-    // Moteur : seuil bras sensible changé (31) sans toucher à la page : la page doit diverger du recalcul.
-    const engMut = replaceOnce22(engineSrc22, 'HEALTH_ALERT_SENSITIVE_RCS: 32,', 'HEALTH_ALERT_SENSITIVE_RCS: 31,');
-    if (engMut === null) fail(`${ENGINE22} : prémisse du test négatif « seuil du moteur à 31 » fausse (motif absent)`);
-    else if (checkPage22(page22, loadEngine22(engMut)).length > 0) detected22++;
-    else fail(`${ENGINE22} : garde-fou muet sur « seuil du moteur à 31 »`);
-    // Balayage : une tension fixe pour un bras sensible ajoutée au moteur EN doit être vue ; un levier « 1 kg » ne l'est pas.
-    if (scanFixed22(ENGINE22, `${engineSrc22}\nconst x = ${ENGINE_NEG_SRC};`).length > 0) detected22++;
-    else fail(`${ENGINE22} : garde-fou muet sur « tension fixe pour un bras sensible ajoutée au moteur »`);
-    if (scanFixed22(ENGINE22, `${engineSrc22}\nconst y = 'For a sensitive arm, 1 kg less lowers the index by 0.5 point.';\nconst z = \`For a sensitive arm: \${n} kg\`;`).length === 0) accepted22++;
-    else fail(`${ENGINE22} : témoin positif « levier de 1 kg et tension calculée » rejeté à tort`);
-    // Balayage des pages : une tension fixe pour une douleur en texte HTML, dans une chaîne d'un script ou dans un attribut
-    // doit être vue ; la même dans un commentaire de script (jamais affiché) ne l'est pas.
-    const SCAN_NEG22: Array<[string, string, string]> = [
-      ['texte HTML', '</body>', '<p>For a sensitive arm, string at 21-23 kg.</p>\n</body>'],
-      ['chaîne d\'un script', OPEN22, `const advice22 = 'Elbow pain? String at 22 kg.';\n    ${OPEN22}`],
-      ['attribut', '</body>', '<meta name="description" content="Tennis elbow: string at 21 kg">\n</body>'],
-    ];
-    for (const [name, find, rep] of SCAN_NEG22) {
-      const m = replaceOnce22(page22, find, rep);
-      if (m === null) { fail(`${PAGE22} : prémisse du test négatif « balayage, ${name} » fausse (motif absent)`); continue; }
-      if (scanFixed22(PAGE22, m).length > 0) detected22++;
-      else fail(`${PAGE22} : garde-fou muet sur « tension fixe pour une douleur, ${name} »`);
-    }
-    const commented22 = replaceOnce22(page22, OPEN22, `// ancien conseil « 21-23 kg » pour un bras sensible, retiré\n    ${OPEN22}`);
-    if (commented22 !== null && scanFixed22(PAGE22, commented22).length === 0) accepted22++;
-    else fail(`${PAGE22} : témoin positif « tension citée dans un commentaire de script » rejeté à tort`);
-    for (const [name, find, rep] of POSITIVES) {
-      const m = replaceOnce22(page22, find, rep);
-      if (m === null) { fail(`${PAGE22} : prémisse du témoin positif « ${name} » fausse (motif absent)`); continue; }
-      const found = [...checkPage22(m, engine22), ...branchIssues22(m)];
-      if (found.length === 0) accepted22++;
-      else fail(`${PAGE22} : témoin positif « ${name} » rejeté à tort : ${found[0]}`);
-    }
-
-    if (failures.length === before22) {
-      ok(
-        `configurateur EN, douleur déclarée : tension calculée sous le seuil d'alerte bras sensible (${S22} = ARM_ALERT_RCS.sensitive = HEALTH_ALERT_SENSITIVE_RCS) ; ` +
-          `bloc de la page évalué tel quel avec le moteur EN sur ${tally22.combos} montages (${racq22.length} raquettes à RA connu × ${str22.length} cordages), ` +
-          `plage du curseur ${RANGE22?.min}-${RANGE22?.max} kg par ${RANGE22?.step} : N identique au recalcul par calculateRCS (« jusqu'à N kg » ${tally22.mid}, ` +
-          `toute la plage ${tally22.whole}, aucune tension ${tally22.none}), indice à N sous ${S22} et à N + ${RANGE22?.step} kg au seuil ou au-dessus, valeur et phrase ` +
-          `affichées exactes ; cordage proposé = le moins rigide du catalogue, rigidité de fiche citée ; ${tally22.proposals} raquettes proposables sous le seuil ; ` +
-          `aucune tension fixe dans la branche ni à côté d'un bras sensible dans ${scanned} fichiers (public/en hors blog, public/js) ; ` +
-          `${detected22} tests négatifs détectés, ${accepted22} témoins positifs acceptés`
-      );
     }
   }
 }
