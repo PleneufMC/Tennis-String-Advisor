@@ -1,11 +1,27 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.3.26
+> **Version** : 2.3.27
 > **Date** : 23 octobre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
 > **Branche de référence** : `main` (seule branche longue ; la production Netlify en déploie)
 > **Repo** : https://github.com/PleneufMC/Tennis-String-Advisor.git
+
+**Changelog v2.3.26 → v2.3.27** — **Écarts de fiche : Kirschbaum Touch Multifibre (nom, jauges, rigidité TWU) et Dunlop CX 200
+(RA tenu, deux valeurs sourcées) ; contrôle 14 bis sur deux dossiers** (avis d'Opus 5.5 du 23/10/2026, point 10 ; Pierre : « je donne le
+La, vous exécutez » ; `tsa-core`). **Kirschbaum** : le fabricant écrit « Touch Multifibre » et « Durchmesser 1.25, 1.30 und 1.35 mm »
+(kirschbaum-shop.de, L0) ; la fiche disait « Multifiber », 1.30 seule : nom et jauges alignés, id conservé. **Le nom faux cachait une
+mesure** : l'appariement strict ne trouvait pas les lignes TWU « Kirschbaum Touch Multifibre 16 » (1.30, 161,7 lb/in) et « 17 (1.25) »
+(165,7) ; la rigidité 160, sans source, devient 165,7 par la règle C (hausse ; série suspecte, garde (A) satisfaite ; table par jauge
+générée par `c2-par-jauge.mts`). Description sans « toucher soyeux et confort marqué » (contrôle 19 : la fiche dépasse la médiane des
+multifilaments, qui passe de 162,3 à 162,9). Effet : aucune alerte ajoutée ni retirée sur la grille du contrôle 5 (`c2-effet-alertes.mts
+--base=76f4d62`). **CX 200 (2024)** : RA de la fiche 66 ; constructeur 65 (us.dunlopsports.com, protocole non publié, L0) ; mesure TWU 64
+(page d'essai « Dunlop CX 200 2024 », Flex Rating Test, L1). Q-1 : un RA ne change que sur mesure L1, et 64 est une BAISSE : **RA 66 tenu**
+(`held`, deux faits cités) ; la baisse est mesurée (66 → 64 sur les 1 074 montages de la fiche : −22 alertes standard, −59 bras
+sensible, −34 `calculateCompatibility`, −22 palier « Très Ferme », 0 ajoutée ; 66 → 65 : −13 / −26 / −21 / −12) et attend la revue de
+`tsa-measure` (règle 2). **Contrôle 14 bis** : relit `ALIGNMENT_DOSSIERS` (veille du 10/10 et `docs/redaction/veille-2026-10-23-ecarts-de-fiche.md`,
+faits V117 à V122), échoue sur un numéro en double ou un dossier absent ; champ `model` alignable ; 3 tests négatifs ajoutés (20). Le
+témoin « excellent toucher » du contrôle 19 passe de XR3, devenue la médiane, à NXT (173,7).
 
 **Changelog v2.3.25 → v2.3.26** — **Hybrides : un seul indice, celui que l'alerte lit, que le configurateur
 affiche et que le PDF imprime ; contrôle 21 ter** (décision (b)+(a) de l'orchestrateur du 22/10/2026, Pierre ayant délégué ; limite (4)
@@ -1573,4 +1589,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.3.26 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.3.27 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
