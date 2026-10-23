@@ -66,7 +66,7 @@ const BLOG_ARTICLES: Array<{ slug: string; modified: string }> = [
   { slug: 'challengers-sinner-alcaraz-2026.html', modified: '2026-10-22' },
   { slug: 'actualite-materiel-tennis-2026-guerre-du-spin.html', modified: '2026-10-10' },
   { slug: 'cordage-mono-vs-multifilament.html', modified: '2026-10-21' },
-  { slug: 'cordage-tennis-chaleur.html', modified: '2026-10-22' },
+  { slug: 'cordage-tennis-chaleur.html', modified: '2026-10-23' },
   { slug: 'tension-cordage-hiver.html', modified: '2026-10-22' },
   { slug: 'raquette-point-fort-ou-point-faible.html', modified: '2026-08-27' },
   // Adapté de l'EN next-gen (01/10/2026), appairé en hreflang.
