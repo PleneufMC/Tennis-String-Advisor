@@ -1,11 +1,30 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.3.27
+> **Version** : 2.3.29
 > **Date** : 23 octobre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
 > **Branche de référence** : `main` (seule branche longue ; la production Netlify en déploie)
 > **Repo** : https://github.com/PleneufMC/Tennis-String-Advisor.git
+
+**Changelog v2.3.28 → v2.3.29** — **Fiches G et S de l'inventaire photos : tamis, plans, poids et jauges corrigés sur source,
+cinq RA relevés sur mesure L1, quatre générations établies ; écart justifié du RA par défaut** (avis d'Opus 5.5 du 23/10/2026 ;
+inventaire `AB_inventaire_photos`, décisions fiche par fiche `AC_fiches_g_s_v` ; `tsa-core` ; **empilée sur la PR #145** (second
+dossier de faits) ; numérotée après #149, à renuméroter selon l'ordre de fusion). **Constat** : 36 fiches bloquaient les photos faute
+de génération établie ou parce que leurs caractéristiques ne correspondaient à aucun produit trouvé. Pages ouvertes lues le 23/10
+(robot nommé, `robots.txt` / `agents.md` / `llms.txt`, 3 s par hôte ; head.com, wilson.com, tecnifibre.com, TWE non lus) ; faits V123
+à V142 du dossier du 23/10. **Changé** (13 fiches) : FX 500 Tour tamis 100 → 98 (trois pages d'essai, 2020, 2023, 2025) ; Prestige
+Tour plan 18x20 → 16x19 et RA 60 → 62 ; V8 Pro plan 16x19 → 18x20 et RA 64 → 67 ; Ripstick 100 RA 60 → 67 (seconde génération,
+TWU) ; Extreme Standard RA 65 → 66 (2022 et 2024 mesurées 66) ; TF40 305 RA 63 → 64 (page d'essai 16x19) ; EZONE Junior 25 (100 in²,
+230 g) et 26 (16x18, 240 g), Pure Aero Junior 25 (235 g), Pro Stacked (jauges 1.20, 1.30, 1.35) sur la page du fabricant. **Tenus** :
+FX 500 Tour RA 67 (65 mesuré sur la génération en vente : baisse) et Pure Strike 100 16x20 RA 64 (61 mesuré : baisse) jusqu'à la revue
+de `tsa-measure`. **Générations établies sans changement** (provenance `held`) : Blade Standard = Blade 98 16x19 v7 (2019), FX 500 =
+2023, SX 300 Tour = 2020, Warrior 100 (300g) = Textreme Warrior 100. **Effet** (grille du contrôle 5, `fiches-effet-alertes.mts`) :
++164 alertes standard, +351 bras sensible, +203 `calculateCompatibility`, **0 disparue** (Ripstick +79 / +175 / +103, V8 Pro +43 / +87 /
++45, Prestige Tour +14 / +41 / +25, TF40 +15 / +22 / +9, Extreme +13 / +26 / +21). **RA par défaut** : ces hausses portent la médiane des
+100 RA publiés de 64 à 65 ; `DEFAULT_RACQUET_RA` reste à 64, écart d'un point justifié et daté dans le contrôle 1 (une exception
+devenue inutile échoue) : le recaler élèverait l'indice des 29 raquettes sans RA, toutes juniors (+319 / +841 / +377 alertes sur 31 146
+montages) et toucherait le « montage de référence RA 64 » de la charte F7 §2 : décision de l'orchestrateur.
 
 **Changelog v2.3.26 → v2.3.27** — **Écarts de fiche : Kirschbaum Touch Multifibre (nom, jauges, rigidité TWU) et Dunlop CX 200
 (RA tenu, deux valeurs sourcées) ; contrôle 14 bis sur deux dossiers** (avis d'Opus 5.5 du 23/10/2026, point 10 ; Pierre : « je donne le
@@ -1589,4 +1608,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.3.27 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.3.29 — Tennis String Advisor — « Mesurer avant d'affirmer. »*

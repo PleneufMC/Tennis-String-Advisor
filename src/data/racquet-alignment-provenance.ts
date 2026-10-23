@@ -109,13 +109,15 @@ export const RACQUET_ALIGNMENT: Readonly<Record<string, Alignment>> = {
     held: { balance: { value: 320, facts: [['V85', 'L0', '30,5']], why: 'équilibre non cordé 30,5 sans unité écrite sur la page Wilson : non converti' } },
   },
   // Fiches listées par la veille et NON modifiées (arbitrage de l'orchestrateur du 10/10/2026 : générations ambiguës ou RA en signal).
+  // 23/10/2026 : la 16x19 est mesurée 64 (page d'essai TWU, V133) ; V1 et 2024 ont le même RA et les mêmes caractéristiques.
   'tecnifibre-tf40-305': {
-    changes: {},
-    held: { stiffness: { value: 63, facts: [['V36', 'L2', '64'], ['V37', 'L2', '64']], why: 'génération (V3 ou « 2024 ») non écrite, RA 64 chez TW US seul ; Tecnifibre ne publie aucun RA' } },
+    changes: { stiffness: { before: 63, after: 64, facts: [['V133', 'L1', '64']] } },
+    held: {},
   },
+  // 23/10/2026 : le RA de la fiche est sous toutes les générations mesurées (2022 et 2024 : 66) ; la hausse ne dépend pas de la génération.
   'head-extreme-standard': {
-    changes: {},
-    held: { stiffness: { value: 65, facts: [['V40', 'L1', '66'], ['V42', 'L2', '67']], why: 'génération ambiguë (2022, 2024 ou 2026 en vente) et Head L0 inaccessible (429)' } },
+    changes: { stiffness: { before: 65, after: 66, facts: [['V40', 'L1', '66']] } },
+    held: {},
   },
   'head-speed-mp': {
     changes: {},
@@ -143,6 +145,62 @@ export const RACQUET_ALIGNMENT: Readonly<Record<string, Alignment>> = {
       },
     },
   },
+  // Fiches G et S du 23/10/2026 (AC_fiches_g_s_v, dossier du 23/10, V123 à V142).
+  'dunlop-fx-500-tour': {
+    changes: { headSize: { before: 100, after: 98, facts: [['V123', 'L1', '98'], ['V124', 'L1', '98'], ['V125', 'L1', '98']] } },
+    held: { stiffness: { value: 67, facts: [['V125', 'L1', '65'], ['V123', 'L1', '69']], why: 'aucune génération à 67 (2020 : 69 ; 2023 et 2025 : 65) ; la baisse vers la génération en vente (65) attend la revue tsa-measure (règle 2)' } },
+  },
+  'head-prestige-tour': {
+    changes: {
+      stringPattern: { before: '18x20', after: '16x19', facts: [['V126', 'L1', '16x19'], ['V127', 'L1', '16x19']] },
+      stiffness: { before: 60, after: 62, facts: [['V126', 'L1', '62'], ['V128', 'L2', '62']] },
+    },
+    held: {},
+  },
+  'volkl-v8-pro': {
+    changes: {
+      stringPattern: { before: '16x19', after: '18x20', facts: [['V129', 'L1', '18x20'], ['V130', 'L2', '18x20']] },
+      stiffness: { before: 64, after: 67, facts: [['V129', 'L1', '67'], ['V130', 'L2', '67']] },
+    },
+    held: {},
+  },
+  'prince-ripstick-standard': {
+    changes: { stiffness: { before: 60, after: 67, facts: [['V131', 'L1', '67'], ['V132', 'L2', '67']] } },
+    held: {},
+  },
+  'babolat-pure-aero-junior-25': {
+    changes: { weight: { before: 240, after: 235, facts: [['V136', 'L0', '235g']] } },
+    held: {},
+  },
+  'yonex-ezone-junior-25': {
+    changes: { headSize: { before: 98, after: 100, facts: [['V134', 'L0', '100sq.in.']] }, weight: { before: 240, after: 230, facts: [['V134', 'L0', '230g']] } },
+    held: {},
+  },
+  'yonex-ezone-junior-26': {
+    changes: { stringPattern: { before: '16x19', after: '16x18', facts: [['V135', 'L0', '16x18']] }, weight: { before: 255, after: 240, facts: [['V135', 'L0', '240g']] } },
+    held: {},
+  },
+  'babolat-pure-strike-100-16x20': {
+    changes: {},
+    held: { stiffness: { value: 64, facts: [['V138', 'L1', '61']], why: 'seule Pure Strike 100 en 16x20 : la 2024, mesurée 61 (TWU) ; Babolat déclare 65 ± 3 non cordé (autre nature) ; baisse 64 -> 61 soumise à la revue tsa-measure (règle 2)' } },
+  },
+  // Générations établies, fiches justes (aucun champ changé) : le nom reste, la génération est consignée ici et dans le dossier.
+  'wilson-blade-standard': {
+    changes: {},
+    held: { stiffness: { value: 62, facts: [['V139', 'L1', '62']], why: 'Blade 98 16x19 v7 (2019) : 98 in², 16x19, RA 62 mesuré, comme la fiche' } },
+  },
+  'dunlop-fx-500': {
+    changes: {},
+    held: { stiffness: { value: 69, facts: [['V140', 'L1', '69']], why: 'FX 500 2023 : 100 in², 16x19, RA 69 mesuré, comme la fiche (2020 : 71 ; 2026 : 68)' } },
+  },
+  'dunlop-sx-300-tour': {
+    changes: {},
+    held: { stiffness: { value: 65, facts: [['V141', 'L1', '65']], why: 'SX 300 Tour 2020 : 100 in², 16x19, RA 65 mesuré, comme la fiche (la 2025 est en 98 in², 69)' } },
+  },
+  'prince-warrior-100-300g': {
+    changes: {},
+    held: { stiffness: { value: 66, facts: [['V142', 'L1', '66']], why: 'Textreme Warrior 100 (2016) : 100 in², 16x18, RA 66 mesuré, comme la fiche (la Warrior 100 (300g) actuelle est en 16x19, 64)' } },
+  },
   'wilson-clash-100l-v3': {
     changes: {},
     held: {
@@ -166,6 +224,10 @@ export const STRING_ALIGNMENT: Readonly<Record<string, Alignment>> = {
   },
   'tecnifibre-multifeel': {
     changes: { gauges: { before: '1.30', after: '1.25,1.30', facts: [['V102', 'L0', '1.25et1.30'], ['V105', 'L2', '1.25']] } },
+    held: {},
+  },
+  'solinco-pro-stacked': {
+    changes: { gauges: { before: '1.20,1.25,1.30', after: '1.20,1.30,1.35', facts: [['V137', 'L0', '15L(1.35)16(1.30)17(1.20)']] } },
     held: {},
   },
   'kirschbaum-touch-multifiber': {
