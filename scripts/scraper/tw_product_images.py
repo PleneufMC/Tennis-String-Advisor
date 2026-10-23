@@ -16,7 +16,7 @@ Principes
   `product-images-mapping.json` (versionné). Le script ne fait que la vérifier :
   jauge et couleur (cordages), tamis et plan de cordage (raquettes). Tout
   désaccord envoie l'id en quarantaine, jamais en « meilleur effort ».
-* Collecte modérée : une requête à la fois, >= 1,1 s d'intervalle,
+* Collecte modérée : une requête à la fois, >= 3 s par hôte (1,1 s pour TW du 29/09 au 22/10/2026),
   User-Agent honnête, cache disque (reprise possible), pas de boucle de retry
   agressive (une seule nouvelle tentative, 10 s plus tard).
 
@@ -87,6 +87,7 @@ from __future__ import annotations
 import html
 import io
 import json
+import os
 import re
 import subprocess
 import sys
@@ -125,7 +126,7 @@ EU_BRANDS = {'BABOLAT', 'WILSON', 'HEAD', 'YONEX', 'DUNLOP', 'PRINCE', 'TECNIFIB
 # Le robot se nomme comme agent automatisé (consigne du 22/10/2026 : jamais un navigateur déguisé) ;
 # avant toute collecte sur un site : robots.txt, agents.md, llms.txt et conditions d'utilisation lus.
 UA = 'TennisStringAdvisor-ImageCollector/1.1 (automated agent; +https://tennisstringadvisor.org)'
-MIN_INTERVAL_S = 1.1
+MIN_INTERVAL_S = 3.0  # TW et TWE compris (consigne du 23/10/2026 : 3 s minimum par hôte)
 MAX_WIDTH = 600
 MAX_HEIGHT = 800  # raquettes en portrait : 800 px suffisent (affichage <= 320 px de haut)
 WEBP_QUALITY = 72
@@ -149,7 +150,6 @@ SEEDS = [
     '/Hybrid_Tennis_String/catpage-HYBRIDS.html',
 ]
 
-_last_request = 0.0
 _last_status: int | str = 0  # statut de la dernière requête réseau (200, code HTTP ou « erreur réseau »)
 
 
@@ -168,8 +168,8 @@ CAPTCHA_RE = re.compile(rb'captcha|cf-challenge|challenge-platform|Access denied
 ANTIBOT_TITLE_RE = re.compile(
     rb'<title>[^<]*(captcha|challenge|denied|checkpoint|just a moment|attention required|are you a robot|verify you)', re.I)
 
-# Débit par hôte : TW/TWE 1,1 s (décision du 29/09) ; tout le reste >= 3 s (consigne du
-# 10/10/2026) ; luxilon.com publie « Crawl-delay: 10 » dans son robots.txt.
+# Débit par hôte : >= 3 s pour tout hôte depuis le 23/10/2026 (TW/TWE : 1,1 s du 29/09 au 22/10 ; le reste >= 3 s
+# depuis la consigne du 10/10/2026) ; luxilon.com publie « Crawl-delay: 10 » dans son robots.txt.
 TW_HOSTS = ('tennis-warehouse.com', 'tenniswarehouse-europe.com')
 HOST_INTERVAL = {'www.luxilon.com': 10.0}
 SLOW_INTERVAL_S = 3.0
@@ -309,9 +309,41 @@ def fetch(url: str, dest: Path, binary: bool = False) -> bytes | None:
     return _get(url, dest, binary)
 
 
+# Horloge par hôte PARTAGÉE entre processus (23/10/2026) : deux worktrees dont `out/` est une même jonction
+# (deux agents en parallèle) ne doivent jamais envoyer deux requêtes au même hôte à moins de son intervalle.
+# Un fichier verrou par hôte (création exclusive), la date de la dernière requête à côté ; un verrou laissé
+# par un processus tué est repris après 120 s.
+HOST_CLOCK = OUT / 'host-clock'
+
+
+def _wait_turn(host: str, interval: float) -> None:
+    HOST_CLOCK.mkdir(parents=True, exist_ok=True)
+    lock, stamp = HOST_CLOCK / f'{host}.lock', HOST_CLOCK / f'{host}.last'
+    while True:
+        try:
+            fd = os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+            break
+        except FileExistsError:
+            try:
+                if time.time() - lock.stat().st_mtime > 120:
+                    lock.unlink()
+            except FileNotFoundError:
+                pass
+            time.sleep(0.2)
+    try:
+        last = float(stamp.read_text(encoding='utf-8')) if stamp.exists() else 0.0
+        wait = interval - (time.time() - last)
+        if wait > 0:
+            time.sleep(wait)
+        stamp.write_text(f'{time.time():.3f}', encoding='utf-8')
+    finally:
+        os.close(fd)
+        lock.unlink(missing_ok=True)
+
+
 def _get(url: str, dest: Path, binary: bool = False) -> bytes | None:
     """Requête réseau elle-même (débit par hôte, une nouvelle tentative, arrêt au refus)."""
-    global _last_request, _last_status
+    global _last_status
     if dest.exists() and dest.stat().st_size > 0:
         return dest.read_bytes()
     host = urllib.parse.urlsplit(url).hostname or ''
@@ -320,10 +352,7 @@ def _get(url: str, dest: Path, binary: bool = False) -> bytes | None:
         raise AccessRefused(f"ARRÊT : {host} a refusé le robot le {r['date']} ({r['code']}) — aucune requête")
     interval = host_interval(host)
     for attempt in (1, 2):
-        wait = interval - (time.monotonic() - _last_request)
-        if wait > 0:
-            time.sleep(wait)
-        _last_request = time.monotonic()
+        _wait_turn(host, interval)
         req = urllib.request.Request(url, headers={
             'User-Agent': UA,
             'Accept': 'image/webp,image/*,*/*;q=0.8' if binary else 'text/html,*/*;q=0.8',
