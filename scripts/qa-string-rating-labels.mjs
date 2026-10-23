@@ -46,6 +46,9 @@
  *  7 bis. EXPORT public/data/catalog.json (22/10/2026) — il publie les notes : chaque cordage
  *     y porte sa nature (`rating_basis`, celle de sa fiche) et `meta` les libellés et la
  *     mention de référence, en mémoire comme sur disque (si généré).
+ *  7 ter. REPLI DU CHARGEUR EN (23/10/2026) — public/js/rating-labels.js exécuté tel quel avec une liste des
+ *     natures injoignable, puis d'un ancien format sans `third_party` : toute note porte « Rating not measured »,
+ *     jamais une nature attribuée (« équipe » par défaut serait attribuer à TSA une note reprise d'un tiers).
  *  8. TESTS NÉGATIFS — chaque garde-fou est éprouvé sur une altération qui DOIT échouer
  *     (libellé retiré, faux libellé, libellé placé après les notes, note modifiée, note
  *     dans une meta, aggregateRating, note hors bloc, page sans libellés, liste
@@ -62,6 +65,7 @@
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import path from 'node:path';
+import vm from 'node:vm';
 import { buildCatalog, loadTsCatalog } from './catalog/catalog-json.mjs';
 import { loadProductImages } from './catalog/product-images.mjs';
 import { BASIS_JSON_PATH, RATING_LABELS, TESTER_RATINGS_TS, THIRD_PARTY_TS, harmonisedStringIds, thirdPartyStringIds } from './en-products/rating-basis.mjs';
@@ -79,12 +83,14 @@ const CONTRACT = {
   editorial: 'TSA team rating, not measured',
   harmonised: 'Average of the TSA team rating and published tester reviews, not measured',
   third_party: "Rating taken, in whole or in part, from a retailer's published test, not measured",
+  // Repli si la liste des natures est injoignable : aucune nature attribuée, aucun auteur nommé (jamais « équipe »).
+  unknown: 'Rating not measured',
   none: 'Not published',
   note: 'Ratings out of 10 are not measured; each rating shows its basis. The RCS index and the arm alert use stiffness (lb/in) only.',
   // Mention française (src/lib/string-rating-nature.ts) : sert au seul contrôle de dérive.
   noteFr: "Notes /10 non mesurées : la nature de chaque note est indiquée à côté. L'indice RCS n'utilise que la rigidité (lb/in) ; l'alerte bras peut aussi se déclencher sur la note de confort.",
 };
-const BASES = ['editorial', 'harmonised', 'third_party', 'none'];
+const BASES = ['editorial', 'harmonised', 'third_party', 'unknown', 'none'];
 // Première phrase de la mention FR : repère les occurrences dans src/.
 const NOTE_FR_LEAD = 'Notes /10 non mesurées';
 // Aucune note /10 n'est une mesure : « measured » sans négation est refusé dans les libellés et la mention.
@@ -323,6 +329,28 @@ function catalogExportProblems(catalog, expectedBasis, where) {
   return problems;
 }
 
+/**
+ * Repli de public/js/rating-labels.js quand string-rating-basis.json est injoignable : le source donné est exécuté tel quel
+ * (contexte isolé, `fetch` qui échoue), puis chaque cordage est étiqueté. Attendu : « Rating not measured » pour toute note,
+ * « Not published » sans note, jamais une nature attribuée (« équipe », « moyenne », « reprise »), et une erreur en console.
+ */
+async function fallbackProblems(labelsSrc, catalogRows, fetchImpl = () => Promise.reject(new Error('liste injoignable (test)'))) {
+  const errors = [];
+  const ctx = { console: { error: (m) => errors.push(String(m)), log() {}, warn() {} }, fetch: fetchImpl };
+  vm.createContext(ctx);
+  vm.runInContext(labelsSrc, ctx, { filename: LABELS_JS });
+  const api = ctx.TSARatingLabels;
+  await api.load();
+  const problems = [];
+  for (const r of catalogRows) {
+    const got = api.label(r);
+    const want = hasRating(r) ? CONTRACT.unknown : CONTRACT.none;
+    if (got !== want) problems.push(`${LABELS_JS}, liste injoignable : ${r.id} étiqueté « ${got} », « ${want} » attendu (aucune nature attribuée)`);
+  }
+  if (errors.length === 0) problems.push(`${LABELS_JS}, liste injoignable : aucune erreur journalisée en console`);
+  return problems;
+}
+
 /** Formule écartée (« la rigidité est la grandeur mesurée ») dans un texte de surface. */
 function discardedPhraseProblems(where, text) {
   const m = DISCARDED_RE.exec(text);
@@ -526,6 +554,24 @@ const catalogMem = buildCatalog(racquetsDatabase, stringsDatabase);
   }
 }
 
+// 7 ter. Repli du chargeur EN : liste des natures injoignable, ou d'un ancien format (sans `third_party`) ----------
+// Aucune nature attribuée, jamais « équipe » par défaut : ce serait attribuer à TSA une note reprise d'un tiers (règle 3).
+const labelsSrc = readFileSync(path.join(ROOT, LABELS_JS), 'utf8');
+const oldFormatFetch = () => Promise.resolve({ ok: true, json: () => Promise.resolve({ harmonised: [...fromGenerator] }) });
+const fallbackUnreachable = await fallbackProblems(labelsSrc, rows);
+const fallbackOldFormat = await fallbackProblems(labelsSrc, rows, oldFormatFetch);
+[...fallbackUnreachable, ...fallbackOldFormat].forEach(fail);
+if (fallbackUnreachable.length + fallbackOldFormat.length === 0) {
+  ok(`repli de ${LABELS_JS} (liste injoignable, ou sans third_party) : ${rows.filter(hasRating).length} cordages notés étiquetés « ${CONTRACT.unknown} », aucune nature attribuée, ${rows.filter((r) => !hasRating(r)).length} « ${CONTRACT.none} », erreur en console`);
+}
+// Altérations du repli, mesurées ici (le chargeur est asynchrone) et rejouées parmi les tests négatifs.
+const fallbackToTeam = await fallbackProblems(labelsSrc.replace("if (!state.ok) return hasRating(s) ? 'unknown' : 'none';", ''), rows);
+const fallbackOldFormatAccepted = await fallbackProblems(
+  labelsSrc.replace(' || !Array.isArray(data.third_party)', '').replace('new Set(data.third_party)', 'new Set(data.third_party || [])'),
+  rows,
+  oldFormatFetch,
+);
+
 // 8. Tests négatifs -----------------------------------------------------------
 {
   const before = failures;
@@ -617,6 +663,8 @@ const catalogMem = buildCatalog(racquetsDatabase, stringsDatabase);
     ['fiche : note reprise étiquetée « editorial »', () => ficheProblems(inSection(rendered.get(T.id), (s) => swap(s, 'data-rating-basis="third_party"', 'data-rating-basis="editorial"')), ctx(T))],
     ['liste des notes reprises absente du fichier de nature', () => basisFileProblems({ harmonised: fromGenerator }, fromGenerator, [...thirdParty])],
     ['libellé affirmant une note mesurée', () => labelsContractProblems({ ...RATING_LABELS, LABEL: { ...RATING_LABELS.LABEL, editorial: 'TSA team rating, laboratory measured' } })],
+    ['liste injoignable : repli sur « équipe »', () => fallbackToTeam.filter((m) => m.includes(T.id) && m.includes(CONTRACT.editorial))],
+    ['liste sans third_party acceptée : note reprise étiquetée « équipe »', () => fallbackOldFormatAccepted.filter((m) => m.includes(T.id) && m.includes(CONTRACT.editorial))],
     [
       'mention FR tronquée dans src/',
       () => frMentionProblems([{ path: 'src/x.tsx', src: "const NOTE = 'Notes /10 non mesurées : la nature de chaque note est indiquée à côté.';" }]).problems,
@@ -646,7 +694,7 @@ const catalogMem = buildCatalog(racquetsDatabase, stringsDatabase);
   }
   if (failures === before) {
     ok(
-      `tests négatifs : ${negatives.length} altérations détectées (libellé, nature, ordre, note, meta, JSON-LD, page dynamique, liste, meta FR, contrat, ancienne mention, mention FR, export, notes reprises, « mesurée ») ; ` +
+      `tests négatifs : ${negatives.length} altérations détectées (libellé, nature, ordre, note, meta, JSON-LD, page dynamique, liste, meta FR, contrat, ancienne mention, mention FR, export, notes reprises, « mesurée », repli) ; ` +
         `${controls.length} témoins positifs acceptés (mention FR bien écrite)`,
     );
   }

@@ -29,9 +29,11 @@
  * depuis src/data/tester-ratings.ts et src/data/string-ratings-third-party.ts (non
  * versionné, jamais édité). Le catalogue EN (catalog.json, tsa-core) porte la même
  * nature (`rating_basis`, depuis le 23/10/2026) : basculer sur lui supprimera ce chargement.
- * Si le fichier est injoignable, les 18 harmonisés et les notes reprises portent le
- * libellé de l'équipe et l'erreur est journalisée dans la console (inexact pour les notes
- * reprises : limite connue, signalée) ; une note n'est jamais affichée sans libellé.
+ * Si le fichier est injoignable ou d'un format inattendu (liste `third_party` absente
+ * comprise), aucune nature n'est attribuée : toute note porte « Rating not measured », sans
+ * nom d'auteur, et l'erreur est journalisée dans la console. Jamais le libellé de l'équipe
+ * par défaut : ce serait attribuer à TSA une note reprise d'un tiers (règle 3). Une note
+ * n'est jamais affichée sans libellé.
  *
  * Fonctionne dans le navigateur (window.TSARatingLabels) et sous Node (require).
  */
@@ -43,6 +45,8 @@
     editorial: 'TSA team rating, not measured',
     harmonised: 'Average of the TSA team rating and published tester reviews, not measured',
     third_party: "Rating taken, in whole or in part, from a retailer's published test, not measured",
+    // Repli quand la liste des natures est injoignable : aucune nature attribuée, aucun auteur nommé.
+    unknown: 'Rating not measured',
     none: 'Not published'
   };
 
@@ -93,17 +97,17 @@
           return res.json();
         })
         .then(function (data) {
-          if (!data || !Array.isArray(data.harmonised)) throw new Error('unexpected format');
+          if (!data || !Array.isArray(data.harmonised) || !Array.isArray(data.third_party)) throw new Error('unexpected format');
           state.ids = new Set(data.harmonised);
-          state.thirdParty = new Set(data.third_party || []);
+          state.thirdParty = new Set(data.third_party);
           state.ok = true;
           state.ready = true;
           return state;
         })
         .catch(function (err) {
-          console.error('TSARatingLabels: ' + BASIS_URL + ' could not be read (' + err.message + '); harmonised and retailer-sourced strings get the plain team label.');
-          state.ids = new Set();
-          state.thirdParty = new Set();
+          console.error('TSARatingLabels: ' + BASIS_URL + ' could not be read (' + err.message + '); ratings are labelled "' + LABEL.unknown + '", no basis attributed.');
+          state.ids = null;
+          state.thirdParty = null;
           state.ok = false;
           state.ready = true;
           return state;
@@ -114,6 +118,8 @@
 
   function basis(s) {
     if (!state.ready) throw new Error('TSARatingLabels.load() must resolve before a string is labelled');
+    // Liste injoignable : l'auteur d'une note n'est pas connu, aucune nature n'est attribuée (jamais « équipe » par défaut).
+    if (!state.ok) return hasRating(s) ? 'unknown' : 'none';
     return basisOf(s, state.ids, state.thirdParty);
   }
 
