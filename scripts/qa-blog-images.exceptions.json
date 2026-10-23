@@ -23,9 +23,9 @@
     },
     {
       "fichier": "public/blog/materiel-next-gen-fonseca-mensik-cobolli-jodar.html",
-      "empreinte": "sha256:f8f8084c7d591bd456278d1f1c8d5e606d0ed51fedbc7559fd47b5c84b50bb8d",
+      "empreinte": "sha256:9a1e6702493c7a97928da24c0c23103bed9fc970139f123e601b6f35cef68a96",
       "depuis": "2026-10-23",
-      "motif": "Antérieur à la règle images du 10/10/2026 ; corrigé le 10/10/2026 (PR #116 : rigidités, indices et rangs alignés sur la base après la règle C et le lot 3, urgence d'exactitude) — visuel de corps à créer, première mission de l’équipe éditoriale ; JSON-LD du <head> corrigé le 11/10/2026 (logo éditeur en 404 remplacé ; corps inchangé) ; corrigé le 22/10/2026 (avis conditionnés par la santé réécrits en constats chiffrés, charte F7 v1.2, urgence d'exactitude ; visuel de corps toujours à créer) ; puis outils décrits tels qu'ils sont, même jour ; renouvelée le 23/10/2026 : head aligné sur le corps et dates (tsa-acquisition), puis dernières corrections du rédacteur, toutes du 22/10/2026 (PR #136) ; visuel de corps toujours à créer ; puis corrections finales du pigiste et de l'avis Opus 5.5, 23/10/2026"
+      "motif": "Antérieur à la règle images du 10/10/2026 ; corrigé le 10/10/2026 (PR #116 : rigidités, indices et rangs alignés sur la base après la règle C et le lot 3, urgence d'exactitude) — visuel de corps à créer, première mission de l’équipe éditoriale ; JSON-LD du <head> corrigé le 11/10/2026 (logo éditeur en 404 remplacé ; corps inchangé) ; corrigé le 22/10/2026 (avis conditionnés par la santé réécrits en constats chiffrés, charte F7 v1.2, urgence d'exactitude ; visuel de corps toujours à créer) ; puis outils décrits tels qu'ils sont, même jour ; renouvelée le 23/10/2026 : head aligné sur le corps et dates (tsa-acquisition), puis dernières corrections du rédacteur, toutes du 22/10/2026 (PR #136) ; visuel de corps toujours à créer ; puis corrections finales du pigiste et de l'avis Opus 5.5, 23/10/2026 ; puis article:modified_time aligné sur dateModified, 23/10/2026"
     },
     {
       "fichier": "public/blog/meilleur-cordage-polyester-2026.html",
