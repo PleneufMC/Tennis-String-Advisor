@@ -77,9 +77,11 @@ export function productFigureHtml(images, kind, id, name) {
   const e = productImageFor(images, kind, id);
   const kindLabel = kind === 'racquet' ? 'Racquet' : 'String';
   if (e) {
+    // Produit voisin (22/10/2026) : la légende dit la jauge ou le coloris réellement photographiés.
+    const shown = (e.shownGauge ? ` · gauge shown: ${esc(e.shownGauge)} mm` : '') + (e.shownColour ? ` · colour shown: ${esc(e.shownColour)}` : '');
     return `    <figure class="mt-6" data-product-image="photo">
       <div class="relative h-72 sm:h-80 overflow-hidden rounded-lg bg-white"><img src="${esc(e.file)}" alt="${esc(`${kindLabel} ${name}`)}" width="${e.width}" height="${e.height}" loading="eager" decoding="async" class="h-full w-full object-contain p-2"></div>
-${e.credit ? `      <figcaption class="mt-1.5 text-xs text-gray-600 dark:text-gray-400">Photo: ${esc(e.credit)}</figcaption>
+${e.credit ? `      <figcaption class="mt-1.5 text-xs text-gray-600 dark:text-gray-400">Photo: ${esc(e.credit)}${shown}</figcaption>
 ` : ''}    </figure>
 `;
   }

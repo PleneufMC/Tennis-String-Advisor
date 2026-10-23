@@ -106,6 +106,8 @@ export function ProductImage({ kind, id, alt, name, size = 'card', eager = false
       {credit && (
         <figcaption className="mt-1.5 text-xs text-slate-500 dark:text-slate-400">
           Photo : {productImageCredit(image.source)}
+          {image.shownGauge && <> · jauge présentée : {image.shownGauge.replace('.', ',')} mm</>}
+          {image.shownColour && <> · coloris présenté : {image.shownColour}</>}
         </figcaption>
       )}
     </figure>
