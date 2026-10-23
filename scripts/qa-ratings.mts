@@ -1049,7 +1049,8 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
 // ---------------------------------------------------------------------------
 // 12. PHOTOS PRODUIT (Tennis Warehouse, décision de Pierre du 29/09/2026 ;
 //     Tennis Warehouse Europe et fiches EN depuis le 09/10/2026 ;
-//     images officielles des fabricants, source `fabricant:<marque>`, depuis le 10/10/2026)
+//     images officielles des fabricants, source `fabricant:<marque>`, depuis le 10/10/2026 ;
+//     détaillants, source `detaillant:<site>`, depuis le 23/10/2026)
 // ---------------------------------------------------------------------------
 // Dispositif désactivable et purgeable (src/lib/product-images.ts). Une photo
 // fausse est une information fausse : chaque entrée du manifeste doit viser un
@@ -1061,7 +1062,7 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
   const before = failures.length;
   const { PRODUCT_IMAGES, PRODUCT_IMAGE_CREDITS } = await import('../src/data/product-images');
   // Liste blanche : pour chaque source, les préfixes de page et d'image admis. Une source absente
-  // (Head et Luxilon, fermés au robot, ou tout revendeur sans décision de Pierre) est refusée.
+  // (Head et Luxilon, fermés au robot, ou tout détaillant dont la politique d'accès n'a pas été lue) est refusée.
   // Babolat : site FR et, depuis le 22/10/2026, site US (produit absent du site FR).
   const SOURCE_HOSTS: Record<string, { pages: string[]; images: string[] }> = {
     'tennis-warehouse': { pages: ['https://www.tennis-warehouse.com/'], images: ['https://img.tennis-warehouse.com/'] },
@@ -1078,9 +1079,12 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     // Envois manuels de Pierre : toute page https, image https ou fichier envoyé (« upload:<fichier> ») ;
     // contrôles propres plus bas (crédit par image, ni moteur de recherche ni filigrane, crédit honnête).
     'upload:pierre': { pages: ['https://'], images: ['https://', 'upload:'] },
+    // Détaillants (consigne de Pierre du 23/10/2026) : sites dont robots.txt, agents.md et llms.txt ont été lus
+    // avant toute page ; crédit « Photo : <détaillant> ».
+    'detaillant:racquetdepot': { pages: ['https://www.racquetdepot.co.uk/'], images: ['https://cdn11.bigcommerce.com/s-iiwjfnucrp/images/stencil/'] },
   };
   // Hôtes d'images de toutes les sources : jamais appelés par l'application ni par les fiches EN.
-  const IMAGE_HOSTS_RE = /img\.tennis-?warehouse(-europe)?\.com|cdn\.shopify\.com\/s\/files|wilson\.com\/cdn\/shop|media\.babolat\.com|yonex\.com\/media\/catalog|solincosports\.com\/wp-content|dunlopsports\.com\/on\/demandware|kirschbaum-shop\.de\/out\/pictures/;
+  const IMAGE_HOSTS_RE = /img\.tennis-?warehouse(-europe)?\.com|cdn\.shopify\.com\/s\/files|wilson\.com\/cdn\/shop|media\.babolat\.com|yonex\.com\/media\/catalog|solincosports\.com\/wp-content|dunlopsports\.com\/on\/demandware|kirschbaum-shop\.de\/out\/pictures|cdn11\.bigcommerce\.com\/s-iiwjfnucrp/;
   const SEARCH_ENGINE_RE = /(^|\.)(google|bing|yandex|duckduckgo|baidu|qwant|yahoo|ecosia|startpage|tineye)\./i;
   const BRANDS = [...new Set([...racquetsDatabase, ...stringsDatabase].map((x) => x.brand))];
   const squash = (x: string) => x.toLowerCase().replace(/ö/g, 'o').replace(/[^a-z0-9]/g, '');
@@ -1110,9 +1114,9 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
       const brand = BRANDS.find((b) => squash(b) === squash(e.credit ?? ''));
       if (brand && !squash(host).includes(squash(brand))) issues.push(`photo ${id} : crédit « ${e.credit} » pour une image prise sur ${host}`);
     }
-    // Produit voisin (22/10/2026) : une autre jauge seulement si la fiche la liste ; un autre coloris
-    // seulement si la fiche n'en fixe aucun (aucune fiche raquette n'a de coloris). La légende dit ce
-    // que la photo montre.
+    // Produit voisin (22/10/2026) : une autre jauge seulement si la fiche la liste. Coloris présenté : d'abord
+    // pour une fiche sans coloris, puis admis aussi pour un cordage dont la fiche fixe un coloris (arbitrage de
+    // l'orchestrateur du 23/10/2026, catégorie C) ; la légende dit ce que la photo montre.
     const str = stringById.get(id);
     if (e.shownGauge !== undefined) {
       const gauges = new Set((str?.gauges ?? []).flatMap((g) => g.split('/')));
@@ -1121,10 +1125,7 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
         issues.push(`photo ${id} : jauge présentée ${e.shownGauge} absente de la fiche (${(str.gauges ?? []).join(', ')})`);
       }
     }
-    if (e.shownColour !== undefined) {
-      if (str?.color) issues.push(`photo ${id} : coloris présenté « ${e.shownColour} » alors que la fiche fixe « ${str.color} »`);
-      else if (!e.shownColour.trim()) issues.push(`photo ${id} : coloris présenté vide`);
-    }
+    if (e.shownColour !== undefined && !e.shownColour.trim()) issues.push(`photo ${id} : coloris présenté vide`);
     return issues;
   };
   let bytes = 0;
@@ -1192,12 +1193,16 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
       ['Babolat : site d’un autre pays que FR et US', entryIssues(bId, { ...bEntry, sourcePageUrl: 'https://www.babolat.com/de/x/101576.html' }, bCredits), 'page source invalide'],
       ['jauge présentée absente de la fiche', entryIssues(multiGauge.id, { ...strEntry, shownGauge: '1.18' }, bCredits), 'absente de la fiche'],
       ['jauge présentée sur une raquette', entryIssues(racquetsDatabase[0].id, { ...synthetic('fabricant:babolat', racquetsDatabase[0].id), shownGauge: '1.25' }, bCredits), 'sur une raquette'],
-      ['coloris présenté sur une fiche qui fixe un coloris', entryIssues(multiGauge.id, { ...strEntry, shownColour: 'Pink' }, bCredits), 'alors que la fiche fixe'],
+      ['coloris présenté vide (cordage)', entryIssues(multiGauge.id, { ...strEntry, shownColour: '' }, bCredits), 'coloris présenté vide'],
       ['coloris présenté vide (raquette)', entryIssues(racquetsDatabase[0].id, { ...synthetic('fabricant:babolat', racquetsDatabase[0].id), shownColour: ' ' }, bCredits), 'coloris présenté vide'],
     );
     // Témoin : raquette (sans coloris de fiche) photographiée dans un des coloris de la page, avec la légende.
     const racquetColour = entryIssues(racquetsDatabase[0].id, { ...synthetic('fabricant:babolat', racquetsDatabase[0].id), shownColour: 'Espresso Brown' }, bCredits);
     if (racquetColour.length) fail(`photos produit : témoin « coloris présenté sur une raquette » refusé (${racquetColour.join(' ; ')})`);
+    else witnesses++;
+    // Témoin : cordage dont la fiche fixe un coloris, photographié dans un autre (arbitrage du 23/10/2026).
+    const otherColour = entryIssues(multiGauge.id, { ...strEntry, shownColour: 'Pink' }, bCredits);
+    if (otherColour.length) fail(`photos produit : témoin « coloris présenté sur un cordage à coloris fixé » refusé (${otherColour.join(' ; ')})`);
     else witnesses++;
     // Témoin : fiche sans coloris (aucune au catalogue aujourd'hui), le coloris présenté est admis.
     const blank = '__temoin-sans-coloris__';
