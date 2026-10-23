@@ -146,6 +146,11 @@ existe et qu'il est bien placé.
      l'article ;
    - H1 unique ;
    - slug court, en minuscules, avec des tirets ;
+   - aucun nouveau slug qui recommande un matériel pour un état de santé
+     (« best-…-for-tennis-elbow », « meilleur-cordage-bras-sensible ») : le slug
+     nomme le sujet ou la question du lecteur. Un slug déjà en ligne reste : c'est
+     un identifiant, et le renommer ne change rien à la santé (avis Opus 5.5 du
+     23/10/2026, point 3) ; son title, son H1 et ses balises suivent F7 ;
    - pas d'année dans le title ni dans le slug, sauf nécessité (un classement
      daté). Dans ce cas, la date de mise à jour planifiée est fixée au point 2.
 7. **Plan Hn proposé** : il couvre l'intention et les questions associées. Le
