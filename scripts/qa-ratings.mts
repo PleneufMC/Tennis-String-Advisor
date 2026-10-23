@@ -1071,9 +1071,19 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     'fabricant:babolat': { pages: ['https://www.babolat.com/fr/', 'https://www.babolat.com/us/'], images: ['https://media.babolat.com/image/upload/'] },
     'fabricant:tecnifibre': { pages: ['https://www.tecnifibre.com/products/'], images: ['https://cdn.shopify.com/s/files/1/0907/5425/3144/files/'] },
     'fabricant:yonex': { pages: ['https://www.yonex.com/tennis/'], images: ['https://www.yonex.com/media/catalog/product/'] },
+    // Lot du 22/10/2026 : sites dont agents.md et llms.txt ne refusent pas ce robot.
+    'fabricant:solinco': { pages: ['https://solincosports.com/equipment/'], images: ['https://solincosports.com/wp-content/uploads/'] },
+    'fabricant:dunlop': { pages: ['https://us.dunlopsports.com/dunlop/tennis/'], images: ['https://us.dunlopsports.com/on/demandware.static/'] },
+    'fabricant:kirschbaum': { pages: ['https://www.kirschbaum-shop.de/'], images: ['https://www.kirschbaum-shop.de/out/pictures/'] },
+    // Envois manuels de Pierre : toute page https, image https ou fichier envoyé (« upload:<fichier> ») ;
+    // contrôles propres plus bas (crédit par image, ni moteur de recherche ni filigrane, crédit honnête).
+    'upload:pierre': { pages: ['https://'], images: ['https://', 'upload:'] },
   };
   // Hôtes d'images de toutes les sources : jamais appelés par l'application ni par les fiches EN.
-  const IMAGE_HOSTS_RE = /img\.tennis-?warehouse(-europe)?\.com|cdn\.shopify\.com\/s\/files|wilson\.com\/cdn\/shop|media\.babolat\.com|yonex\.com\/media\/catalog/;
+  const IMAGE_HOSTS_RE = /img\.tennis-?warehouse(-europe)?\.com|cdn\.shopify\.com\/s\/files|wilson\.com\/cdn\/shop|media\.babolat\.com|yonex\.com\/media\/catalog|solincosports\.com\/wp-content|dunlopsports\.com\/on\/demandware|kirschbaum-shop\.de\/out\/pictures/;
+  const SEARCH_ENGINE_RE = /(^|\.)(google|bing|yandex|duckduckgo|baidu|qwant|yahoo|ecosia|startpage|tineye)\./i;
+  const BRANDS = [...new Set([...racquetsDatabase, ...stringsDatabase].map((x) => x.brand))];
+  const squash = (x: string) => x.toLowerCase().replace(/ö/g, 'o').replace(/[^a-z0-9]/g, '');
   const { existsSync, readdirSync, statSync } = await import('node:fs');
   const racquetIds = new Set(racquetsDatabase.map((r) => r.id));
   const stringById = new Map(stringsDatabase.map((s) => [s.id, s]));
@@ -1089,6 +1099,17 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     if (!hosts.images.some((h) => e.sourceImageUrl.startsWith(h))) issues.push(`photo ${id} : image source invalide pour ${e.source}`);
     if (!e.twProduct) issues.push(`photo ${id} : intitulé du produit source absent (association non auditable)`);
     if (!/^\d{4}-\d{2}-\d{2}$/.test(e.retrievedAt)) issues.push(`photo ${id} : date de collecte invalide`);
+    // Crédit propre à l'image : réservé aux envois manuels, obligatoire pour eux, et honnête (le nom d'une
+    // marque seulement pour une image prise sur un site de cette marque).
+    if (e.source !== 'upload:pierre' && e.credit !== undefined) issues.push(`photo ${id} : crédit propre à l'image hors envoi manuel`);
+    if (e.source === 'upload:pierre') {
+      const host = (() => { try { return new URL(e.sourcePageUrl).hostname; } catch { return ''; } })();
+      if (!e.credit?.trim()) issues.push(`photo ${id} : envoi manuel sans crédit propre (la source réelle)`);
+      if (!host || SEARCH_ENGINE_RE.test(host)) issues.push(`photo ${id} : page d'origine absente ou moteur de recherche (${host || '?'})`);
+      if (/watermark|filigrane/i.test(`${e.sourcePageUrl} ${e.sourceImageUrl}`)) issues.push(`photo ${id} : URL qui annonce un filigrane`);
+      const brand = BRANDS.find((b) => squash(b) === squash(e.credit ?? ''));
+      if (brand && !squash(host).includes(squash(brand))) issues.push(`photo ${id} : crédit « ${e.credit} » pour une image prise sur ${host}`);
+    }
     // Produit voisin (22/10/2026) : une autre jauge seulement si la fiche la liste ; un autre coloris
     // seulement si la fiche n'en fixe aucun (aucune fiche raquette n'a de coloris). La légende dit ce
     // que la photo montre.
@@ -1130,7 +1151,9 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     // (une source purgée doit laisser l'audit vert).
     const synthetic = (source: string, id: string): PhotoEntry => ({
       file: `/images/products/${racquetIds.has(id) ? 'racquets' : 'strings'}/${id}.webp`, width: 1, height: 1, retrievedAt: '2026-10-22', source,
-      sourcePageUrl: `${SOURCE_HOSTS[source].pages[0]}temoin`, sourceImageUrl: `${SOURCE_HOSTS[source].images[0]}temoin.jpg`, twProduct: 'témoin',
+      sourcePageUrl: `${SOURCE_HOSTS[source].pages[0]}${source === 'upload:pierre' ? 'www.exemple-photographe.test/' : ''}temoin`,
+      sourceImageUrl: `${SOURCE_HOSTS[source].images[0]}temoin.jpg`, twProduct: 'témoin',
+      ...(source === 'upload:pierre' ? { credit: 'Exemple Photographe' } : {}),
     } as PhotoEntry);
     for (const source of Object.keys(SOURCE_HOSTS)) {
       const real = Object.entries(PRODUCT_IMAGES).find(([, e]) => e.source === source);
@@ -1140,10 +1163,22 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
       if (witness.length) fail(`photos produit : témoin de la source ${source} refusé (${witness.join(' ; ')})`);
       else witnesses++;
       const noCredit = Object.fromEntries(Object.entries(credits).filter(([k]) => k !== source));
+      if (source === 'upload:pierre') {
+        // Toute page https est admise : les négatifs portent sur le crédit, les moteurs et le filigrane.
+        negatives.push(
+          [`${source} : page en http`, entryIssues(id, { ...base, sourcePageUrl: 'http://www.exemple-photographe.test/x' }, credits), 'page source invalide'],
+          [`${source} : crédit propre manquant`, entryIssues(id, { ...base, credit: undefined }, credits), 'sans crédit propre'],
+          [`${source} : page de moteur de recherche`, entryIssues(id, { ...base, sourcePageUrl: 'https://www.google.com/imgres?x' }, credits), 'moteur de recherche'],
+          [`${source} : image filigranée annoncée`, entryIssues(id, { ...base, sourceImageUrl: 'https://img.exemple.test/watermark/x.jpg' }, credits), 'filigrane'],
+          [`${source} : marque créditée pour une image de tiers`, entryIssues(id, { ...base, credit: 'Head', sourcePageUrl: 'https://www.exemple-revendeur.test/head-speed' }, credits), 'pour une image prise sur'],
+        );
+        continue;
+      }
       negatives.push(
         [`${source} : page hors liste blanche`, entryIssues(id, { ...base, sourcePageUrl: 'https://www.exemple-revendeur.test/produit' }, credits), 'page source invalide'],
         [`${source} : image hors liste blanche`, entryIssues(id, { ...base, sourceImageUrl: 'https://cdn.exemple-revendeur.test/image.jpg' }, credits), 'image source invalide'],
         [`${source} : crédit manquant`, entryIssues(id, base, noCredit), 'aucun libellé de crédit'],
+        [`${source} : crédit propre hors envoi manuel`, entryIssues(id, { ...base, credit: 'Quelqu’un' }, credits), 'hors envoi manuel'],
       );
     }
     const bId = multiGauge.id;
@@ -1176,6 +1211,7 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     }
     // Légende FR : le composant lit les deux champs et les annonce tels quels.
     const captionIssues = (src: string): string[] => [
+      ...(/Photo : \{image\.credit \?\? productImageCredit\(image\.source\)\}/.test(src) ? [] : ['crédit propre à l\'image non lu par le composant FR']),
       ...(/image\.shownGauge\s*&&[^\n]*jauge présentée : \{image\.shownGauge/.test(src) ? [] : ['légende « jauge présentée » absente du composant FR']),
       ...(/image\.shownColour\s*&&[^\n]*coloris présenté : \{image\.shownColour\}/.test(src) ? [] : ['légende « coloris présenté » absente du composant FR']),
     ];
@@ -1184,7 +1220,7 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     if (!captionIssues(fig.replace('jauge présentée', 'jauge')).length) fail('photos produit : garde-fou muet sur la légende FR retirée');
     if (failures.length === before) {
       ok(`photos produit : ${Object.keys(SOURCE_HOSTS).length} sources en liste blanche, ${witnesses} témoins acceptés, ${negatives.length + 1} tests négatifs détectés ` +
-        '(page ou image hors liste et crédit manquant pour chaque source, Head et Luxilon, Babolat hors FR/US, jauge ou coloris présentés hors règle ou vides, légende FR)');
+        '(page ou image hors liste et crédit manquant pour chaque source, envois manuels : crédit propre, moteur, filigrane, marque créditée à tort ; Head et Luxilon, Babolat hors FR/US, jauge ou coloris présentés hors règle ou vides, légende et crédit FR)');
     }
   }
   for (const folder of ['racquets', 'strings']) {
@@ -1229,7 +1265,8 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
         if (/og:image/.test(html)) fail(`fiche EN ${kind}/${item.id} : og:image présent`);
         if (IMAGE_HOSTS_RE.test(html)) fail(`fiche EN ${kind}/${item.id} : hotlink vers la source`);
         if (expected) {
-          const credit = (PRODUCT_IMAGE_CREDITS as Record<string, string>)[(expected as unknown as { source: string }).source];
+          const credit = (expected as unknown as { credit?: string }).credit
+            ?? (PRODUCT_IMAGE_CREDITS as Record<string, string>)[(expected as unknown as { source: string }).source];
           if (!html.includes(`<img src="${expected.file}"`)) fail(`fiche EN ${kind}/${item.id} : photo validée non affichée`);
           else if (!credit || !html.includes(`Photo: ${credit}`)) fail(`fiche EN ${kind}/${item.id} : crédit « Photo: ${credit} » absent`);
           else if (expected.shownGauge && !html.includes(`gauge shown: ${expected.shownGauge} mm`)) fail(`fiche EN ${kind}/${item.id} : légende « gauge shown » absente`);
