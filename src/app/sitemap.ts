@@ -73,7 +73,7 @@ const BLOG_ARTICLES: Array<{ slug: string; modified: string }> = [
   { slug: 'materiel-next-gen-fonseca-mensik-cobolli-jodar.html', modified: '2026-10-23' },
   { slug: 'combien-de-temps-dure-un-cordage.html', modified: '2026-10-23' },
   // Classement polyester 2026 (09/10/2026), appairé en hreflang.
-  { slug: 'meilleur-cordage-polyester-2026.html', modified: '2026-10-10' },
+  { slug: 'meilleur-cordage-polyester-2026.html', modified: '2026-10-23' },
   // Meilleures raquettes 2026 par profil (09/10/2026), appairé en hreflang.
   { slug: 'meilleures-raquettes-tennis-2026.html', modified: '2026-10-23' },
   // Polyester et tennis elbow, tri par rigidité (09/10/2026), appairé en hreflang.
@@ -116,7 +116,7 @@ const EN_BLOG_ARTICLES: Array<{ slug: string; modified: string }> = [
   // /blog/combien-de-temps-dure-un-cordage.html.
   { slug: 'how-long-do-tennis-strings-last.html', modified: '2026-10-23' },
   // Adapté du FR meilleur-cordage-polyester-2026 (09/10/2026), appairé en hreflang.
-  { slug: 'best-polyester-tennis-strings-2026.html', modified: '2026-10-10' },
+  { slug: 'best-polyester-tennis-strings-2026.html', modified: '2026-10-23' },
   // Adapté du FR tension-cordage-hiver (09/10/2026), appairé en hreflang.
   { slug: 'tennis-string-tension-cold-weather.html', modified: '2026-10-22' },
   // Adapté du FR cordage-tennis-elbow (09/10/2026), réécrit sur le catalogue, appairé en hreflang.

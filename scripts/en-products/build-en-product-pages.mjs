@@ -43,7 +43,7 @@ import { fileURLToPath } from 'node:url';
 import { buildCatalog, loadTsCatalog } from '../catalog/catalog-json.mjs';
 // Photo produit ou illustration (module tsa-core, même drapeau et même manifeste que le FR).
 import { loadProductImages, productFigureHtml } from '../catalog/product-images.mjs';
-import { BASIS_JSON_PATH, RATING_LABELS, buildBasisFile, ratingBasisOf } from './rating-basis.mjs';
+import { BASIS_JSON_PATH, RATING_LABELS, buildBasisFile, ratingBasisOf, ratingLabelOf } from './rating-basis.mjs';
 
 const SITE = 'https://tennisstringadvisor.org';
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -122,7 +122,7 @@ function ratingsSection(s) {
   const rows = RATING_LABELS.NOTE_FIELDS.map((f) => ratingRow(f.charAt(0).toUpperCase() + f.slice(1), s[f]));
   return `    <section class="mt-10">
       <h2 class="text-xl font-semibold">${heading}</h2>
-      <p class="mt-1 text-sm font-medium text-gray-800 dark:text-gray-200" data-rating-basis="${basis}">${esc(RATING_LABELS.LABEL[basis])}</p>
+      <p class="mt-1 text-sm font-medium text-gray-800 dark:text-gray-200" data-rating-basis="${basis}">${esc(ratingLabelOf(s))}</p>
       <p class="mb-3 mt-1 text-sm text-gray-600 dark:text-gray-400" data-rating-note>${esc(RATING_LABELS.NOTE)}</p>
       ${rows.join('\n      ')}
     </section>`;
