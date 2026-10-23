@@ -7,7 +7,7 @@
 > **Branche de référence** : `main` (seule branche longue ; la production Netlify en déploie)
 > **Repo** : https://github.com/PleneufMC/Tennis-String-Advisor.git
 
-**Changelog (numéro de version à fixer à la fusion)** — **Photos produit, lot du 22/10/2026 : 13 images officielles,
+**Changelog (numéro de version à fixer à la fusion)** — **Photos produit, lot du 22/10/2026 : 12 images officielles,
 légende du produit voisin, politique d'accès lue avant toute requête** (demande de Pierre du 22/10/2026 : « rajouter toutes
 les photos de raquettes et cordages manquantes » ; sources bornées par l'orchestrateur ; `tsa-core`). **Couverture** 65 → **74/129
 raquettes**, 60 → **63/179 cordages**, **137 fiches EN sur 308** : Wilson 6 (Blade Feel Comp Jr 25, Burn V6 100LS, Clash 100 Pro V3,
@@ -20,7 +20,8 @@ différents), Dynamix VP (noir seulement). **Produit voisin** : une photo d'une 
 voisine, jamais. **Accès** : `fetch` lit robots.txt (règles appliquées à chaque URL), agents.md et llms.txt avant la première requête ;
 User-Agent « automated agent ». **Incident** : agents.md et llms.txt de wilson.com et tecnifibre.com (modèle Shopify) exigent
 « Web Bot Auth » pour les requêtes serveur ; lus après la collecte du lot (consigne reçue en cours de lot) : hôtes consignés, plus
-aucune requête ; leurs 9 photos du lot sont à arbitrer (retrait : décisions remises en quarantaine, puis `build`). **Contrôle 12** :
+aucune requête ; leurs 9 photos du lot **restent en place jusqu'à leur remplacement** par une image équivalente d'une
+source dont la politique d'accès le permet (décision de Pierre du 23/10/2026). **Contrôle 12** :
 liste blanche page/image par source (Babolat FR et US), témoins et tests négatifs par source, Head et Luxilon refusés, règles du produit
 voisin, indépendant des photos présentes ; `purge fabricant:<marque>` testée sur les 4 marques (audit vert, manifeste et images
 identiques après reconstruction).
@@ -1131,7 +1132,8 @@ corrigé dans la même PR.
   refusée (429), aucune photo. Fabricants : head.com (429) et luxilon.com (403)
   ont refusé le robot, wilson.com, babolat.com, tecnifibre.com et yonex.com
   l'ont accepté (14 photos le 10/10, 12 le 22/10) ; depuis le 22/10, wilson.com et
-  tecnifibre.com sont consignés (agents.md : Web Bot Auth exigé, non fourni).
+  tecnifibre.com sont consignés (agents.md : Web Bot Auth exigé, non fourni) ;
+  leurs photos restent en place jusqu'à leur remplacement (Pierre, 23/10/2026).
 - Notes de raquette (décision de Pierre du 10/10/2026) : **aucune note déduite
   des caractéristiques** n'est affichée, nulle part (comparateur, configurateur,
   PDF Premium, FR et EN). Raquette évaluée : « Avis de testeurs (synthèse) »,
