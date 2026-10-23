@@ -11,7 +11,8 @@
 nouvelles marques, procédure d'envoi manuel de Pierre** (consignes de l'orchestrateur du 22/10/2026 ; `tsa-core` ; **empilée sur
 la PR des 12 images**). **Couverture** 74 → **75/129 raquettes**, 63 → **65/179 cordages**, **140 fiches EN sur 308** : Dunlop CX 200
 (site US ; fiche décrite « CX 200 2024 », code article CX200-24 ; RA 65 publiée contre 66 sur la fiche, écart signalé à `tsa-core`), Solinco Confidential (coloris attesté sur le packshot et confirmé par son nom de fichier « …_GRY », « jauge présentée : 1,30 mm »), Kirschbaum Touch
-Multifibre (boutique de la marque, Impressum Kirschbaum Sportartikel GmbH). **Sites consignés** (agents.md ou llms.txt exigent Web Bot
+Multifibre (boutique de la marque, Impressum Kirschbaum Sportartikel GmbH) ; ces trois photos posées avec le GO de Pierre du 23/10/2026
+(« Aucun fabricant ne me reprochera de faire la publicité gratuite de son matériel »). **Sites consignés** (agents.md ou llms.txt exigent Web Bot
 Auth, lus avant toute page) : toroline.com, shop.solincosports.com, diademsports.com, gammasports.com, volkltennis.com ; **sans page
 produit** : princetennis.com, isosport.com (Isospeed) ; **politique illisible** (erreur TLS) : signum-pro.de, aucune requête ; **Wikimedia
 Commons** : 4 catégories lues, aucune photo à génération identifiable. Quarantaines datées : FX 500 (2026, RA non publiée : arbitrage),
@@ -20,7 +21,7 @@ Evolution (bleu). **Envoi manuel** : dossier hors dépôt `Documents\TSA_photos_
 (`docs/photos-a-importer/`), commande `import-upload` puis `build`, source `upload:pierre`, crédit propre à chaque image (la source
 réelle), association contrôlée comme pour les marques, refus (moteur de recherche, filigrane annoncé, crédit de marque pour une image
 de tiers, attestations absentes), avertissement de génération, `purge upload:pierre`. **Barrière d'accès** : agents.md lu en premier ;
-un fichier de politique illisible arrête l'hôte sans le consigner. **Contrôle 12** : 11 sources en liste blanche, 52 tests négatifs ;
+un fichier de politique illisible arrête l'hôte sans le consigner. **Contrôle 12** : 11 sources en liste blanche, 53 tests négatifs ;
 purge testée sur `fabricant:solinco`, `fabricant:dunlop`, `fabricant:kirschbaum` et `upload:pierre`.
 
 **Changelog (numéro de version à fixer à la fusion)** — **Photos produit, lot du 22/10/2026 : 12 images officielles,
@@ -1153,7 +1154,7 @@ corrigé dans la même PR.
   gammasports.com et volkltennis.com sont consignés (agents.md : Web Bot Auth exigé,
   non fourni) ; les photos Wilson et Tecnifibre restent en place jusqu'à leur
   remplacement (Pierre, 23/10/2026) ; solincosports.com, us.dunlopsports.com et
-  kirschbaum-shop.de ouverts (3 photos).
+  kirschbaum-shop.de ouverts (3 photos, GO de Pierre du 23/10/2026).
 - Notes de raquette (décision de Pierre du 10/10/2026) : **aucune note déduite
   des caractéristiques** n'est affichée, nulle part (comparateur, configurateur,
   PDF Premium, FR et EN). Raquette évaluée : « Avis de testeurs (synthèse) »,
