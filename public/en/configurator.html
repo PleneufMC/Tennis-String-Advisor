@@ -1170,6 +1170,9 @@
       return picked;
     }
 
+    // Dernier choix par note sans aucun candidat noté : la page le dit au lieu de choisir un cordage non noté.
+    let stringPickNote = null;
+
     // Smart string picker
     function pickBestString(criteria) {
       console.log('🎸 pickBestString called with criteria:', criteria);
@@ -1193,19 +1196,15 @@
         console.log(`  Type filter (${criteria.types.join(', ')}): ${beforeCount} → ${candidates.length}`);
       }
       
-      // Sort by comfort if needed
-      if (criteria.preferComfort) {
-        candidates.sort((a, b) => (b.comfort || 5) - (a.comfort || 5));
-      }
-      
-      // Sort by spin if needed
-      if (criteria.preferSpin) {
-        candidates.sort((a, b) => (b.spin || 5) - (a.spin || 5));
-      }
-      
-      // Sort by control if needed
-      if (criteria.preferControl) {
-        candidates.sort((a, b) => (b.control || 5) - (a.control || 5));
+      // Tri par une note /10 (confort, puis effet, puis contrôle, dans cet ordre comme avant) : seuls les cordages qui ONT
+      // cette note sont classés, aucune note n'est comblée (règle 3 ; avis d'Opus 5.5 du 23/10/2026). Sans candidat noté,
+      // aucun cordage n'est choisi au nom de sa note.
+      stringPickNote = null;
+      for (const [flag, key] of [['preferComfort', 'comfort'], ['preferSpin', 'spin'], ['preferControl', 'control']]) {
+        if (!criteria[flag]) continue;
+        const rated = candidates.filter(s => typeof s[key] === 'number');
+        if (candidates.length > 0 && rated.length === 0) stringPickNote = 'No rated string matches these criteria.';
+        candidates = rated.sort((a, b) => b[key] - a[key]);
       }
       
       const topCandidates = candidates.slice(0, Math.min(3, candidates.length));
@@ -1259,6 +1258,12 @@
         stiffness: s.stiffness,
         reason: reason
       };
+    }
+
+    // Cordage choisi par une note /10 : la raison nomme le critère appliqué et la nature de la note du cordage choisi
+    // (libellé de /js/rating-labels.js), jamais « mesurée ».
+    function ratedStringView(s, criterion) {
+      return stringView(s, s ? criterion + ' (' + TSARatingLabels.label(s) + ').' : '');
     }
 
     function showGenerateError(message) {
@@ -1345,7 +1350,7 @@
         rcsProfile = 'debutant';
         
         racquet = racquetView(pickBestRacquet(racquetCriteria), 'Flexible, light racquet: RA 66 or below, light or tweener category.');
-        string = stringView(pickBestString(stringCriteria), 'Multifilament or natural gut, string families that are less stiff than polyester on average.');
+        string = ratedStringView(pickBestString(stringCriteria), 'Multifilament or natural gut, string families that are less stiff than polyester on average: one of those with the highest comfort rating in the catalog');
       } else if (currentSelections.level === 'intermediaire') {
         racquetCriteria = {
           level: 'Intermediate',
@@ -1361,7 +1366,7 @@
         rcsProfile = 'club';
         
         racquet = racquetView(pickBestRacquet(racquetCriteria), 'Tweener or modern-player category, RA 60 to 67.');
-        string = stringView(pickBestString(stringCriteria), 'One of the multifilament or hybrid strings with the highest comfort rating in the catalog.');
+        string = ratedStringView(pickBestString(stringCriteria), 'One of the multifilament or hybrid strings with the highest comfort rating in the catalog');
       }
 
       // PRIORITY 2: Adjust for physical issues (OVERRIDES level for safety)
@@ -1398,7 +1403,7 @@
           rcsProfile = 'competiteur';
           
           racquet = racquetView(pickBestRacquet(racquetCriteria), 'Power or modern-player category, RA 66 or above.');
-          string = stringView(pickBestString(stringCriteria), 'One of the polyester or co-polyester strings with the highest control rating in the catalog.');
+          string = ratedStringView(pickBestString(stringCriteria), 'One of the polyester or co-polyester strings with the highest control rating in the catalog');
         } else if (currentSelections.style === 'controle') {
           racquetCriteria = {
             level: currentSelections.level === 'avance' ? 'Advanced' : 'Pro',
@@ -1412,7 +1417,7 @@
           rcsProfile = 'confirme';
           
           racquet = racquetView(pickBestRacquet(racquetCriteria), 'Control or classic-player category.');
-          string = stringView(pickBestString(stringCriteria), 'One of the polyester strings with the highest control rating in the catalog.');
+          string = ratedStringView(pickBestString(stringCriteria), 'One of the polyester strings with the highest control rating in the catalog');
         } else if (currentSelections.style === 'spin') {
           racquetCriteria = {
             level: currentSelections.level === 'avance' ? 'Advanced' : 'Pro',
@@ -1426,14 +1431,16 @@
           rcsProfile = 'club';
           
           racquet = racquetView(pickBestRacquet(racquetCriteria), 'Modern-player or spin category.');
-          string = stringView(pickBestString(stringCriteria), 'One of the polyester or co-polyester strings with the highest spin rating in the catalog.');
+          string = ratedStringView(pickBestString(stringCriteria), 'One of the polyester or co-polyester strings with the highest spin rating in the catalog');
         }
       }
 
       // Aucun candidat, ou rigidité absente (RCS incalculable) : on le dit
       // plutôt que de montrer un produit codé en dur.
       if (!racquet || !string || racquet.stiffness === null || string.stiffness === null) {
-        showGenerateError('No recommendation is available for this profile yet. Change one answer and try again.');
+        showGenerateError(!string && stringPickNote
+          ? stringPickNote + ' Change one answer and try again.'
+          : 'No recommendation is available for this profile yet. Change one answer and try again.');
         return;
       }
 
