@@ -9,8 +9,8 @@
 
 **Changelog (numéro de version à fixer à la fusion, après l'entrée suivante)** — **Photos produit, suite du lot du 22/10/2026 :
 nouvelles marques, procédure d'envoi manuel de Pierre** (consignes de l'orchestrateur du 22/10/2026 ; `tsa-core` ; **empilée sur
-la PR des 13 images**). **Couverture** 75 → **76/129 raquettes**, 63 → **65/179 cordages**, **141 fiches EN sur 308** : Dunlop CX 200
-(site US, RA 65 contre 66), Solinco Confidential (coloris attesté sur le packshot, « jauge présentée : 1,30 mm »), Kirschbaum Touch
+la PR des 12 images**). **Couverture** 74 → **75/129 raquettes**, 63 → **65/179 cordages**, **140 fiches EN sur 308** : Dunlop CX 200
+(site US ; fiche décrite « CX 200 2024 », code article CX200-24 ; RA 65 publiée contre 66 sur la fiche, écart signalé à `tsa-core`), Solinco Confidential (coloris attesté sur le packshot et confirmé par son nom de fichier « …_GRY », « jauge présentée : 1,30 mm »), Kirschbaum Touch
 Multifibre (boutique de la marque, Impressum Kirschbaum Sportartikel GmbH). **Sites consignés** (agents.md ou llms.txt exigent Web Bot
 Auth, lus avant toute page) : toroline.com, shop.solincosports.com, diademsports.com, gammasports.com, volkltennis.com ; **sans page
 produit** : princetennis.com, isosport.com (Isospeed) ; **politique illisible** (erreur TLS) : signum-pro.de, aucune requête ; **Wikimedia
@@ -25,13 +25,14 @@ purge testée sur `fabricant:solinco`, `fabricant:dunlop`, `fabricant:kirschbaum
 
 **Changelog (numéro de version à fixer à la fusion)** — **Photos produit, lot du 22/10/2026 : 13 images officielles,
 légende du produit voisin, politique d'accès lue avant toute requête** (demande de Pierre du 22/10/2026 : « rajouter toutes
-les photos de raquettes et cordages manquantes » ; sources bornées par l'orchestrateur ; `tsa-core`). **Couverture** 65 → **75/129
-raquettes**, 60 → **63/179 cordages**, **138 fiches EN sur 308** : Wilson 6 (Blade Feel Comp Jr 25, Burn V6 100LS, Clash 100 Pro V3,
-US Open Jr 21/23/25), Yonex 2 (EZONE 105, VCORE 98 Tour), Tecnifibre 3 (Tempo 285 V2, TGV, Multifeel), Babolat 2 (Pure Strike 100
-16x20 Gen4 du site US, RPM Team), toutes de fiches alignées le 10/10 ou à caractéristiques identiques. **Quarantaines datées** : T-Fight
-315S (seule vue entière au code article du 305S), 6 cordages Wilson de la collection officielle (jauge 1,32, coloris, montages hybrides
+les photos de raquettes et cordages manquantes » ; sources bornées par l'orchestrateur ; `tsa-core`). **Couverture** 65 → **74/129
+raquettes**, 60 → **63/179 cordages**, **137 fiches EN sur 308** : Wilson 6 (Blade Feel Comp Jr 25, Burn V6 100LS, Clash 100 Pro V3,
+US Open Jr 21/23/25), Yonex 2 (EZONE 105, avec la légende « coloris présenté : Espresso Brown » ; VCORE 98 Tour), Tecnifibre 3 (Tempo
+285 V2, TGV, Multifeel), Babolat 1 (RPM Team), toutes de fiches alignées le 10/10 ou à caractéristiques identiques. **Quarantaines
+datées** : Pure Strike 100 16x20 (contre-vérification du 23/10 : génération de la fiche non établie, RA ± 3 non discriminante, même
+règle que TF40 305 et FX 500 2026), T-Fight 315S (seule vue entière au code article du 305S), 6 cordages Wilson de la collection officielle (jauge 1,32, coloris, montages hybrides
 différents), Dynamix VP (noir seulement). **Produit voisin** : une photo d'une autre jauge de la fiche porte la légende « jauge présentée :
-1,25 mm » (FR) / « gauge shown » (EN) ; un autre coloris n'est admis que sur une fiche sans coloris (« coloris présenté ») ; une raquette
+1,25 mm » (FR) / « gauge shown » (EN) ; un autre coloris n'est admis que sur une fiche sans coloris (« coloris présenté » / « colour shown », toute fiche raquette) ; une raquette
 voisine, jamais. **Accès** : `fetch` lit robots.txt (règles appliquées à chaque URL), agents.md et llms.txt avant la première requête ;
 User-Agent « automated agent ». **Incident** : agents.md et llms.txt de wilson.com et tecnifibre.com (modèle Shopify) exigent
 « Web Bot Auth » pour les requêtes serveur ; lus après la collecte du lot (consigne reçue en cours de lot) : hôtes consignés, plus
@@ -1101,8 +1102,8 @@ corrigé dans la même PR.
   `audit:ratings`.
 - Export PDF, thème sombre, i18n FR/EN livrés.
 - Photos produit Tennis Warehouse (29/09/2026), Tennis Warehouse Europe et
-  sites officiels des fabricants (10/10 et 22/10/2026) : 76/129 raquettes, 65/179
-  cordages, hébergées chez nous, FR (141 fiches EN sur 308 comprises) ; envois
+  sites officiels des fabricants (10/10 et 22/10/2026) : 75/129 raquettes, 65/179
+  cordages, hébergées chez nous, FR (140 fiches EN sur 308 comprises) ; envois
   manuels de Pierre possibles (`import-upload`, source `upload:pierre`, aucun à ce jour) ;
   drapeau `PRODUCT_IMAGES_ENABLED` et commande `purge` (globale ou par source,
   ex. `purge fabricant:wilson`) pour le retrait ; associations vérifiées par
@@ -1112,7 +1113,7 @@ corrigé dans la même PR.
   Pierre du 10/10/2026, en connaissance du risque. Tennis-Point : collecte
   refusée (429), aucune photo. Fabricants : head.com (429) et luxilon.com (403)
   ont refusé le robot, wilson.com, babolat.com, tecnifibre.com et yonex.com
-  l'ont accepté (14 photos le 10/10, 13 le 22/10) ; depuis le 22/10, wilson.com,
+  l'ont accepté (14 photos le 10/10, 12 le 22/10) ; depuis le 22/10, wilson.com,
   tecnifibre.com, toroline.com, shop.solincosports.com, diademsports.com,
   gammasports.com et volkltennis.com sont consignés (agents.md : Web Bot Auth exigé,
   non fourni) ; solincosports.com, us.dunlopsports.com et kirschbaum-shop.de ouverts
