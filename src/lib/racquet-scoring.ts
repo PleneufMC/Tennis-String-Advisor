@@ -143,24 +143,25 @@ import {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * RA retenu quand `stiffness` est `null`.
+ * RA retenu quand `stiffness` est `null` : **valeur par défaut 64, convention du site, non mesurée**.
  *
- * Valeur = **médiane** des 100 raquettes renseignées (moyenne 64,17 ;
- * médiane 64). La médiane est préférée à la moyenne : elle est insensible
- * aux extrêmes (55 et 72) et reste une valeur effectivement observée.
+ * Choisie le 08/08/2026 comme médiane des 100 raquettes renseignées (moyenne 64,17 ; médiane 64 alors). Médiane des RA publiés :
+ * 65 au 26/10/2026, après les hausses de RA sur mesure L1 du 23/10 ; la médiane oscille entre 64 et 65 au gré des corrections.
+ * Le contrôle 1 de `audit:ratings` exige que la convention reste à ±1 de la médiane ; au-delà, l'arbitrage est rouvert (avis
+ * d'Opus 5.5 du 26/10/2026, R4 de la revue de #152).
  *
  * Remplace les deux anciens défauts contradictoires (65 et 63).
  *
  * ⚠️ Les 29 raquettes concernées sont à 93 % des modèles juniors, pour
- * lesquels aucun RA n'est publié. Une estimation médiane « adulte » leur est
- * appliquée faute de mieux ; `isRacquetStiffnessEstimated` permet à l'UI de
+ * lesquels aucun RA n'est publié. Le RA par défaut (convention « adulte ») leur
+ * est appliqué faute de mieux ; `isRacquetStiffnessEstimated` permet à l'UI de
  * le signaler au lieu de faire passer une estimation pour une mesure.
  */
 export const DEFAULT_RACQUET_RA = 64;
 
 /**
  * Bornes réelles du RA — pour cadrer les barres de comparaison et l'échelle
- * des notes. `median` est la valeur observée sur les 100 raquettes renseignées.
+ * des notes. `median` : valeur par défaut 64 (convention, = `DEFAULT_RACQUET_RA`) ; médiane des RA publiés : 65 au 26/10/2026.
  *
  * ⚠️ Corrige au passage un défaut d'affichage : `/compare` traçait la barre
  * « Rigidité (RA) » sur `maxValue={80}` alors que les données vont de 55 à 72.

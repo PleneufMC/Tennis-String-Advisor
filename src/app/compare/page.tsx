@@ -312,7 +312,7 @@ export default function ComparePage() {
       return {
         weight: racquets.map(r => r.weight),
         headSize: racquets.map(r => r.headSize),
-        // RA effectif : la médiane mesurée (64) comble les 29 raquettes sans RA
+        // RA effectif : le RA par défaut (64, convention du site, non mesurée) comble les 29 raquettes sans RA
         // publié, et `raEstimated` permet de le signaler au lieu d'afficher N/A.
         stiffness: racquets.map(r => effectiveRacquetRA(r)),
         raEstimated: racquets.map(r => isRacquetStiffnessEstimated(r)),
@@ -574,8 +574,8 @@ export default function ComparePage() {
                   />
                   {(comparisonSpecs.raEstimated as boolean[]).some(Boolean) && (
                     <p className="text-xs text-amber-700 -mt-4">
-                      RA estimé à {RA_RANGE.median} (médiane mesurée) pour les raquettes
-                      dont le fabricant ne publie pas cette valeur.
+                      RA non publié : indice calculé avec un RA par défaut de {RA_RANGE.median} (convention du site,
+                      non mesurée) pour les raquettes dont le fabricant ne publie pas cette valeur.
                     </p>
                   )}
                   <ComparisonBar

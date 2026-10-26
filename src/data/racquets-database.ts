@@ -520,8 +520,9 @@ export const racquetsDatabase: TennisRacquet[] = [
     id: 'prince-ripstick-standard',
     brand: 'Prince',
     model: 'Ripstick',
-    variant: 'Standard',
+    variant: '100 300g (2025)',
     // 23/10/2026 (faits V131 et V132 de docs/redaction/veille-2026-10-23-ecarts-de-fiche.md) : Ripstick 100 300g, seconde génération (2025) : TWU 67, 100 in², 16x18 (fiche TW) ; la première (2021) mesurait 64 ; RA 60 -> 67 (hausse, L1).
+    // 26/10/2026 (avis d'Opus 5.5, R3 de la revue de #152) : génération NOMMÉE (ex-« Standard », id conservé) : 67 n'est exact que pour la 2025 ; pour une 2021 (64, RDC), indice surestimé d'environ 1 point, sur-alerte assumée (règle C).
     stiffness: 67,
     weight: 300,
     headSize: 100,
@@ -580,7 +581,7 @@ export const racquetsDatabase: TennisRacquet[] = [
     brand: 'Tecnifibre',
     model: 'TF40',
     variant: '305',
-    // 23/10/2026 (faits V133 de docs/redaction/veille-2026-10-23-ecarts-de-fiche.md) : TF40 305 16x19 mesurée 64 (page d'essai TWU) ; même RA en L2 (V36, V37) ; génération en vente : V3, mêmes caractéristiques ; RA 63 -> 64 (hausse, L1).
+    // 23/10/2026 (faits V133 de docs/redaction/veille-2026-10-23-ecarts-de-fiche.md) : TF40 305 16x19 mesurée 64 (page d'essai TW, mesure RDC) ; même RA en L2 (V36, V37) ; génération en vente : V3, mêmes caractéristiques ; RA 63 -> 64 (hausse, L1 ; règle des mesures L1 du 26/10/2026 : génération voisine, L2 concordante).
     stiffness: 64,
     weight: 305,
     headSize: 98,
@@ -1508,7 +1509,7 @@ export const racquetsDatabase: TennisRacquet[] = [
     brand: 'Völkl',
     model: 'V8',
     variant: 'Pro',
-    // 23/10/2026 (faits V129 et V130 de docs/redaction/veille-2026-10-23-ecarts-de-fiche.md) : toutes les V8 Pro lues sont en 18x20 (V-Feel 2020, v3) : plan 16x19 -> 18x20 ; RA 64 -> 67 (V-Feel 2020 mesurée 67, v3 67 chez TW US ; hausse).
+    // 23/10/2026 (faits V129 et V130 de docs/redaction/veille-2026-10-23-ecarts-de-fiche.md) : toutes les V8 Pro lues sont en 18x20 (V-Feel 2020, v3) : plan 16x19 -> 18x20 ; RA 64 -> 67 (V-Feel 2020 mesurée 67 à la RDC, v3 67 chez TW US ; hausse ; règle des mesures L1 du 26/10/2026 : génération voisine, L2 concordante).
     stiffness: 67,
     weight: 305,
     headSize: 100,
@@ -2202,7 +2203,7 @@ export function calculateCompatibility(
   let score = 70; // Score de base
   let recommendation = '';
 
-  // RA effectif : médiane observée (64) si la donnée constructeur est absente.
+  // RA effectif : RA par défaut (64, convention du site, non mesurée) si la donnée constructeur est absente.
   // Valeur alignée sur DEFAULT_RACQUET_RA de lib/racquet-scoring.ts. On évite
   // ici un import pour ne pas créer de dépendance depuis la couche données.
   const racquetStiffness = racquet.stiffness ?? 64;

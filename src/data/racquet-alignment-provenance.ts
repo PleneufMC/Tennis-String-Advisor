@@ -1,8 +1,11 @@
 /**
  * Provenance des fiches alignées sur le produit en vente (veille du 10/10/2026, PR « fiches désynchronisées »).
  * Faits : `docs/redaction/veille-2026-10-10-fiches-desynchronisees.md` (V01-V116 ; L0 constructeur, L1 laboratoire TWU,
- * L2 revendeur, L3 test publié). Arbitrages Q-1 à Q-5 de l'orchestrateur : entrée de CLAUDE.md du 10/10/2026 (un RA ne
- * change que sur MESURE L1 ; un RA que TW US seul établit reste un signal ; juniors au poids non cordé ; ids conservés).
+ * L2 revendeur, L3 test publié). Règle des mesures L1 (avis d'Opus 5.5 du 26/10/2026, R2 de la revue de #152) : une mesure RDC
+ * d'une page d'essai TW est L1, comme le « Flex Rating Test » TWU ; une hausse de RA admet la mesure d'une génération voisine si
+ * une valeur L2 concorde ; une baisse exige la mesure de la génération exacte (dossier du 23/10/2026, « L1 (RDC) » / « L1 (TWU) »).
+ * Arbitrages Q-1 à Q-5 de l'orchestrateur : entrée de CLAUDE.md du 10/10/2026 (un RA ne change que sur MESURE L1 ; un RA que
+ * TW US seul établit reste un signal ; juniors au poids non cordé ; ids conservés).
  * `changes` : valeur avant/après et faits [numéro, niveau, fragment que la ligne du dossier doit contenir] qui
  * l'établissent. `held` : une autre valeur circule mais n'est PAS établie, le champ ne bouge pas. Une BAISSE de RA
  * exigerait `loweringReview` (mesure exacte, série non suspecte, revue `tsa-measure`) : aucune dans ce lot.
@@ -109,7 +112,9 @@ export const RACQUET_ALIGNMENT: Readonly<Record<string, Alignment>> = {
     held: { balance: { value: 320, facts: [['V85', 'L0', '30,5']], why: 'équilibre non cordé 30,5 sans unité écrite sur la page Wilson : non converti' } },
   },
   // Fiches listées par la veille et NON modifiées (arbitrage de l'orchestrateur du 10/10/2026 : générations ambiguës ou RA en signal).
-  // 23/10/2026 : la 16x19 est mesurée 64 (page d'essai TWU, V133) ; V1 et 2024 ont le même RA et les mêmes caractéristiques.
+  // 23/10/2026 : la 16x19 est mesurée 64 (page d'essai TW, mesure RDC, V133) ; V1 et 2024 ont le même RA et les mêmes caractéristiques.
+  // Hausse sur la mesure d'une génération voisine, L2 concordante (V36, V37 du 10/10 : 64, citées en recoupement de V133 ; statut
+  // « signal » sous la seule Q-1, donc pas citées comme faits) : règle des mesures L1 du 26/10/2026.
   'tecnifibre-tf40-305': {
     changes: { stiffness: { before: 63, after: 64, facts: [['V133', 'L1', '64']] } },
     held: {},
@@ -157,6 +162,7 @@ export const RACQUET_ALIGNMENT: Readonly<Record<string, Alignment>> = {
     },
     held: {},
   },
+  // Hausse sur la mesure RDC de la V-Feel V8 Pro 2020 (V129), génération voisine ; L2 concordante pour la v3 en vente (V130 : 67).
   'volkl-v8-pro': {
     changes: {
       stringPattern: { before: '16x19', after: '18x20', facts: [['V129', 'L1', '18x20'], ['V130', 'L2', '18x20']] },
@@ -164,8 +170,15 @@ export const RACQUET_ALIGNMENT: Readonly<Record<string, Alignment>> = {
     },
     held: {},
   },
+  // 26/10/2026 (avis d'Opus 5.5, R3 de la revue de #152) : génération en vente (2025, mesure TWU stricte) NOMMÉE dans la fiche, 67 n'étant
+  // exact que pour elle. La 2021 mesure 64 (RDC, PRIPSreview, recoupement de V131) : pour son propriétaire, indice surestimé d'environ
+  // 1 point, sur-alerte assumée (règle C) ; même règle de génération que la Prestige Tour (2023 en vente, 62, plutôt que 2021, 65).
   'prince-ripstick-standard': {
-    changes: { stiffness: { before: 60, after: 67, facts: [['V131', 'L1', '67'], ['V132', 'L2', '67']] } },
+    edition: '2025',
+    changes: {
+      variant: { before: 'Standard', after: '100 300g (2025)', facts: [['V131', 'L1', 'Ripstick 100 300g'], ['V132', 'L2', '300g 2025']] },
+      stiffness: { before: 60, after: 67, facts: [['V131', 'L1', '67'], ['V132', 'L2', '67']] },
+    },
     held: {},
   },
   'babolat-pure-aero-junior-25': {

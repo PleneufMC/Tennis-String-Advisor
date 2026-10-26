@@ -84,7 +84,7 @@ const fail = (msg: string) => failures.push(msg);
 const ok = (msg: string) => notes.push(`  ok   ${msg}`);
 
 // ---------------------------------------------------------------------------
-// 1. Le RA par défaut doit être la médiane MESURÉE, et unique.
+// 1. Le RA par défaut (convention) reste à ±1 de la médiane MESURÉE, et unique.
 // ---------------------------------------------------------------------------
 {
   const published = racquetsDatabase
@@ -93,31 +93,61 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
     .sort((a, b) => a - b);
   const median = published[Math.floor(published.length / 2)];
 
-  // Écart JUSTIFIÉ, daté et motivé : la médiane exacte, pas une tolérance générale. Une exception devenue inutile fait échouer
-  // le contrôle (elle doit être retirée). 23/10/2026 : les hausses de RA sur mesure L1 (V8 Pro, Ripstick) portent la médiane de
-  // 64 à 65 ; la recaler élève l'indice des 29 raquettes sans RA (toutes juniors : +319 alertes standard, +841 bras sensible,
-  // +377 compatibilité sur 31 146 montages) et le « montage de référence RA 64 » de la charte F7 §2 : décision de l'orchestrateur.
-  const DEFAULT_RA_GAP: { median: number; date: string; why: string } | null = {
-    median: 65,
-    date: '2026-10-23',
-    why: 'médiane portée à 65 par les hausses L1 du 23/10 ; recalage de DEFAULT_RACQUET_RA et du montage de référence de la charte F7 soumis à l\'orchestrateur',
+  // Le RA par défaut est une CONVENTION du site (64, non mesurée), choisie le 08/08/2026 comme médiane des RA publiés. Elle doit
+  // rester à ±1 de la médiane mesurée : la médiane oscille entre 64 et 65 au gré des corrections de RA sur mesure L1 (65 depuis les
+  // hausses V8 Pro et Ripstick du 23/10/2026 ; deux baisses en attente la ramèneraient à 64). Au-delà d'un point, l'arbitrage est
+  // rouvert (avis d'Opus 5.5 du 26/10/2026, R4 de la revue de #152). Recaler à 65 élèverait l'indice des 29 raquettes sans RA, toutes
+  // juniors (+319 alertes standard, +841 bras sensible, +377 compatibilité sur 31 146 montages), sans rien savoir de nouveau sur elles.
+  const DEFAULT_RA_BAND = 1;
+  const defaultRaVerdict = (defaultRa: number, ras: readonly number[]): string | null => {
+    const sorted = ras.filter((v) => Number.isFinite(v)).sort((a, b) => a - b);
+    if (sorted.length === 0) return 'aucun RA publié : médiane indéfinie';
+    const m = sorted[Math.floor(sorted.length / 2)];
+    if (!Number.isFinite(defaultRa)) return `RA par défaut non fini (${defaultRa})`;
+    const gap = Math.abs(defaultRa - m);
+    return gap <= DEFAULT_RA_BAND
+      ? null
+      : `DEFAULT_RACQUET_RA = ${defaultRa} à ${gap} points de la médiane mesurée des ${sorted.length} RA publiés (${m}) : ` +
+          `au-delà de ±${DEFAULT_RA_BAND}, rouvrir l'arbitrage de la convention (lib/racquet-scoring.ts)`;
   };
-  if (DEFAULT_RACQUET_RA !== median) {
-    const tolerated = DEFAULT_RA_GAP !== null && median === DEFAULT_RA_GAP.median && Math.abs(median - DEFAULT_RACQUET_RA) === 1 &&
-      /^\d{4}-\d{2}-\d{2}$/.test(DEFAULT_RA_GAP.date) && DEFAULT_RA_GAP.why.trim().length > 0;
-    if (!tolerated) {
-      fail(
-        `DEFAULT_RACQUET_RA = ${DEFAULT_RACQUET_RA} alors que la médiane mesurée ` +
-          `des ${published.length} RA publiés est ${median}. Recaler la constante ` +
-          `(ou justifier l'écart) dans lib/racquet-scoring.ts.`
-      );
-    } else {
-      ok(`RA par défaut ${DEFAULT_RACQUET_RA}, médiane mesurée ${median} sur ${published.length} raquettes : écart d'un point justifié le ${DEFAULT_RA_GAP!.date} (${DEFAULT_RA_GAP!.why})`);
-    }
-  } else if (DEFAULT_RA_GAP !== null) {
-    fail(`écart justifié du ${DEFAULT_RA_GAP.date} devenu inutile (médiane ${median} = DEFAULT_RACQUET_RA) : le retirer`);
+  const verdict = defaultRaVerdict(DEFAULT_RACQUET_RA, published);
+  if (verdict !== null) {
+    fail(verdict);
   } else {
-    ok(`RA par défaut = médiane mesurée (${median}) sur ${published.length} raquettes`);
+    ok(
+      `RA par défaut ${DEFAULT_RACQUET_RA} (convention du site), médiane mesurée ${median} sur ${published.length} raquettes : ` +
+        `écart ${Math.abs(DEFAULT_RACQUET_RA - median)}, dans la bande ±${DEFAULT_RA_BAND}`
+    );
+  }
+  if (RA_RANGE.median !== DEFAULT_RACQUET_RA) {
+    fail(`RA_RANGE.median = ${RA_RANGE.median} ≠ DEFAULT_RACQUET_RA = ${DEFAULT_RACQUET_RA} : le comparateur afficherait une autre valeur par défaut que celle du calcul`);
+  } else {
+    ok(`RA_RANGE.median = DEFAULT_RACQUET_RA (${DEFAULT_RACQUET_RA}), valeur citée par le comparateur`);
+  }
+  // Tests négatifs : un écart de 2 points, dans un sens ou dans l'autre, une valeur non finie et une base vide doivent échouer ;
+  // un écart de 0 ou 1 point doit passer (témoins). La base réelle, déplacée de ±2 points, doit aussi échouer.
+  {
+    const shifted = (d: number) => published.map((v) => v + d);
+    const negatives: Array<[string, number, readonly number[]]> = [
+      ['médiane 66, défaut 64', 64, [60, 64, 66, 66, 72]],
+      ['médiane 62, défaut 64', 64, [57, 60, 62, 64, 70]],
+      ['base réelle +2', DEFAULT_RACQUET_RA, shifted(DEFAULT_RACQUET_RA + 2 - median)],
+      ['base réelle −2', DEFAULT_RACQUET_RA, shifted(DEFAULT_RACQUET_RA - 2 - median)],
+      ['défaut NaN', Number.NaN, published],
+      ['base vide', DEFAULT_RACQUET_RA, []],
+    ];
+    const witnesses: Array<[string, number, readonly number[]]> = [
+      ['médiane 65, défaut 64', 64, [60, 64, 65, 66, 72]],
+      ['médiane 63, défaut 64', 64, [57, 62, 63, 64, 70]],
+      ['médiane 64, défaut 64', 64, [57, 63, 64, 66, 70]],
+    ];
+    const missed = negatives.filter(([, d, ras]) => defaultRaVerdict(d, ras) === null).map(([n]) => n);
+    const refused = witnesses.filter(([, d, ras]) => defaultRaVerdict(d, ras) !== null).map(([n]) => n);
+    if (missed.length > 0 || refused.length > 0) {
+      fail(`contrôle 1, bande ±${DEFAULT_RA_BAND} : tests négatifs non détectés [${missed.join(' ; ')}], témoins refusés [${refused.join(' ; ')}]`);
+    } else {
+      ok(`contrôle 1, bande ±${DEFAULT_RA_BAND} : ${negatives.length} tests négatifs détectés, ${witnesses.length} témoins acceptés`);
+    }
   }
 
   if (RA_RANGE.min !== published[0] || RA_RANGE.max !== published[published.length - 1]) {
@@ -2030,20 +2060,25 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
 // faute de preuve. Échoue si : (a) le catalogue ne porte pas la valeur consignée (« après », ou valeur tenue pour un champ
 // « held ») ou une fiche perd son id public ; (b) un fait cité est absent du dossier copié dans le dépôt, d'un autre niveau,
 // sans la valeur (énoncé, valeur ou extrait) ou, pour un champ changé, de statut « signal » / « introuvable » ; (c) un RA
-// change sans MESURE L1 (Q-1 : TW US et TWE sont du même groupe) ou baisse sans revue `tsa-measure` ; (d) l'édition annoncée
-// n'est pas dans le nom ; (e) une surface du site lit la provenance. Chaque garde est rejouée sur une copie altérée.
+// change sans MESURE L1 (Q-1 : TW US et TWE sont du même groupe ; L1 = page d'essai TW, RDC ou TWU, règle du 26/10/2026) ou baisse
+// sans revue `tsa-measure` ; (d) l'édition annoncée n'est pas dans le nom ; (e) une surface du site lit la provenance ; (f) une mesure
+// L1 du dossier du 23/10/2026 (V117 et suivants) ne dit pas son instrument ou le contredit. Chaque garde est rejouée sur une copie altérée.
 {
   const before = failures.length;
   const AP = await import('../src/data/racquet-alignment-provenance');
   type AProv = Readonly<Record<string, (typeof AP.RACQUET_ALIGNMENT)[string]>>;
-  type Row = { level: string; status: string; text: string };
+  type Row = { level: string; status: string; text: string; instrument: string; extract: string };
   type AItem = { id: string; variant?: string; gauges?: string[] } & Record<string, unknown>;
   const norm = (x: string) => x.toLowerCase().replace(/[\s ]/g, '').replace(/×/g, 'x');
   const readRows = (md: string): Map<string, Row> => {
     const rows = new Map<string, Row>();
     for (const m of md.matchAll(/^\| (V\d{2,3}) \|(.*)\|\s*$/gm)) {
       const cells = m[2].replace(/\\\|/g, '\u0001').split('|').map((c) => c.trim());
-      rows.set(m[1], { level: cells[2].split(/[\s(]/)[0], status: cells[cells.length - 1].replace(/\*/g, ''), text: norm([cells[0], cells[1], cells[5]].join(' ')) }); // énoncé, valeur, extrait : ni « Recoupement » ni « Base TSA »
+      rows.set(m[1], {
+        level: cells[2].split(/[\s(]/)[0], status: cells[cells.length - 1].replace(/\*/g, ''),
+        text: norm([cells[0], cells[1], cells[5]].join(' ')), // énoncé, valeur, extrait : ni « Recoupement » ni « Base TSA »
+        instrument: (/\((RDC|TWU)\)/.exec(cells[2]) ?? ['', ''])[1], extract: cells[5] ?? '',
+      });
     }
     return rows;
   };
@@ -2058,6 +2093,20 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
   AP.ALIGNMENT_DOSSIERS.filter((p) => !existsSync(p)).forEach((p) => fail(`fiches alignées : dossier ${p} absent du dépôt`));
   dossiers.dup.forEach((k) => fail(`fiches alignées : fait ${k} numéroté dans deux dossiers`));
   const dossierRows = dossiers.rows;
+  // (f) Règle des mesures L1 (avis d'Opus 5.5 du 26/10/2026, R2 de la revue de #152) : une mesure RDC d'une page d'essai TW est L1, comme le
+  // « Flex Rating Test » TWU ; depuis le dossier du 23/10/2026, chaque mesure L1 dit laquelle (« L1 (RDC) » ou « L1 (TWU) ») et l'extrait cité
+  // ne la contredit pas. Le dossier du 10/10/2026, copie telle quelle de la veille, n'est pas concerné.
+  const checkInstruments = (rows: Map<string, Row>): string[] => {
+    const issues: string[] = [];
+    for (const [k, r] of rows) {
+      if (Number(k.slice(1)) < 117 || r.level !== 'L1') continue;
+      if (r.instrument !== 'RDC' && r.instrument !== 'TWU') issues.push(`${k} : mesure L1 sans instrument (« L1 (RDC) » ou « L1 (TWU) »)`);
+      else if (/\bRDC\b/.test(r.extract) && r.instrument !== 'RDC') issues.push(`${k} : extrait RDC, libellé « L1 (${r.instrument}) »`);
+      else if (/Flex Rating Test/i.test(r.extract) && r.instrument !== 'TWU') issues.push(`${k} : extrait « Flex Rating Test », libellé « L1 (${r.instrument}) »`);
+    }
+    return issues;
+  };
+  checkInstruments(dossierRows).forEach((i) => fail(`fiches alignées : ${i}`));
   const checkAlignment = (items: readonly AItem[], prov: AProv, rows: Map<string, Row> = dossierRows): string[] => {
     const issues: string[] = [];
     const val = (it: AItem, f: string) => (f === 'gauges' ? it.gauges?.join(',') : it[f]);
@@ -2129,6 +2178,10 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     ['1.30 retirée de la Poly Tour Strike', checkAlignment(setItem(strs, 'yonex-poly-tour-strike', { gauges: ['1.20', '1.25'] }), S0), 'yonex-poly-tour-strike.gauges'],
     ['1.35 réintroduite sur la RPM Team', checkAlignment(setItem(strs, 'babolat-rpm-team', { gauges: ['1.25', '1.30', '1.35'] }), S0), 'babolat-rpm-team.gauges'],
     ['surface qui importe la provenance', scanAlign([{ path: 'src/app/x.tsx', src: "import { RACQUET_ALIGNMENT } from '@/data/racquet-alignment-provenance';" }]), 'src/app/x.tsx'],
+    ['mesure L1 sans instrument', checkInstruments(readRows('| V150 | a | b | L1 | u | d | « Flex Rating Test 60 » | r | x | **confirmé** |')), 'V150 : mesure L1 sans instrument'],
+    ['extrait RDC libellé TWU', checkInstruments(readRows('| V151 | a | b | L1 (TWU) | u | d | « Babolat RDC Ratings Score Grade Flex Rating 64 » | r | x | **confirmé** |')), 'V151 : extrait RDC'],
+    ['extrait TWU libellé RDC', checkInstruments(readRows('| V152 | a | b | L1 (RDC) | u | d | « Lab Data Score Grade Flex Rating Test 64 » | r | x | **confirmé** |')), 'V152 : extrait « Flex Rating Test »'],
+    ['génération retirée du nom (Ripstick « Standard »)', checkAlignment(setItem(races, 'prince-ripstick-standard', { variant: 'Standard' }), R0), 'prince-ripstick-standard.variant'],
   ];
   for (const [name, found, needle] of negatives) {
     if (!found.some((i) => i.includes(needle))) fail(`fiches alignées : garde-fou muet sur « ${name} » (${needle})`);
@@ -2139,8 +2192,9 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     const nFacts = [...Object.values(R0), ...Object.values(S0)].reduce(
       (n, a) => n + Object.values(a.changes).reduce((m, c) => m + c.facts.length, 0) + Object.values(a.held).reduce((m, h) => m + h.facts.length, 0), 0);
     const nRa = Object.values(R0).filter((a) => a.changes.stiffness).length;
+    const l1 = [...dossierRows].filter(([k, r]) => Number(k.slice(1)) >= 117 && r.level === 'L1').map(([, r]) => r.instrument);
     ok(`fiches alignées : ${nR} raquettes en provenance (${changed} modifiées, ${nR - changed} tenues faute de preuve), ${Object.keys(S0).length} cordages (nom, jauges, coloris), ` +
-      `${nFacts} faits retrouvés dans ${AP.ALIGNMENT_DOSSIERS.length} dossiers (niveau, valeur, statut ; ${dossierRows.size} faits, aucun numéro en double), ${nRa} RA changés tous sur mesure L1, aucune baisse de RA, aucune surface ne lit la provenance, ${negatives.length} tests négatifs détectés`);
+      `${nFacts} faits retrouvés dans ${AP.ALIGNMENT_DOSSIERS.length} dossiers (niveau, valeur, statut ; ${dossierRows.size} faits, aucun numéro en double), ${nRa} RA changés tous sur mesure L1, aucune baisse de RA, instrument dit pour les ${l1.length} mesures L1 du 23/10 (${l1.filter((i) => i === 'RDC').length} RDC, ${l1.filter((i) => i === 'TWU').length} TWU), aucune surface ne lit la provenance, ${negatives.length} tests négatifs détectés`);
   }
 }
 
