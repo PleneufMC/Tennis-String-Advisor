@@ -839,7 +839,7 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
   //     doit être un profil à bras sensible : sinon l'alerte dès le seuil « bras sensible » ne s'appliquerait à personne.
   if (S9 !== null) {
     const declared = (html: string): { profile: string | null; shoulderSharesBranch: boolean } => {
-      const m = /currentSelections\.physical === 'bras'[\s\S]{0,1500}?rcsProfile = '([a-z_]+)'/.exec(html);
+      const m = /if \(armSensitive && rcs >= RCS\.HEALTH_ALERT_SENSITIVE_RCS\) profile = '([a-z_]+)'/.exec(html);
       return {
         profile: m ? m[1] : null,
         shoulderSharesBranch: /currentSelections\.physical === 'bras' \|\| currentSelections\.physical === 'epaule'/.test(html),
@@ -848,7 +848,7 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     const mappingIssues = (html: string): string[] => {
       const { profile, shoulderSharesBranch } = declared(html);
       const issues: string[] = [];
-      if (profile === null) issues.push("le profil posé quand le visiteur déclare une douleur (physical === 'bras') est introuvable : la page a changé, relire le contrôle 9");
+      if (profile === null) issues.push("le profil posé à l'affichage quand le visiteur déclare une douleur et que l'indice atteint le seuil bras sensible est introuvable : la page a changé, relire le contrôle 9");
       else if (!SENSIBLES.includes(profile)) issues.push(`la douleur déclarée pose le profil « ${profile} », qui n'est pas à bras sensible : l'alerte dès ${S9} ne s'appliquerait pas`);
       if (!shoulderSharesBranch) issues.push("la douleur à l'épaule (physical === 'epaule') ne partage plus la branche de la douleur au bras : relire le contrôle 9");
       return issues;
@@ -864,9 +864,9 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
       const real = mappingIssues(page);
       real.forEach((i) => fail(`${PAGE} : ${i}`));
       const PAGE_MUTATIONS: Array<[string, string, string, string]> = [
-        ['la douleur déclarée pose un profil standard (club)', "rcsProfile = 'tennis_elbow';", "rcsProfile = 'club';", 'pas à bras sensible'],
+        ['la douleur déclarée pose un profil standard (club)', "profile = 'tennis_elbow';", "profile = 'club';", 'pas à bras sensible'],
         ['l\'épaule ne partage plus la branche du bras', "currentSelections.physical === 'bras' || currentSelections.physical === 'epaule'", "currentSelections.physical === 'bras'", 'épaule'],
-        ['la branche de la douleur déclarée disparaît', "currentSelections.physical === 'bras'", "currentSelections.physical === 'xxx'", 'introuvable'],
+        ['le profil bras sensible n\'est plus posé à l\'affichage', "if (armSensitive && rcs >= RCS.HEALTH_ALERT_SENSITIVE_RCS) profile = 'tennis_elbow';", '', 'introuvable'],
       ];
       let caught = 0;
       for (const [name, find, replace, needle] of PAGE_MUTATIONS) {
@@ -4362,7 +4362,7 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
       ['cordages sans note gardés (lus comme 0)', 'conf', [["const rated = candidates.filter(s => typeof s[key] === 'number');", 'const rated = candidates;']]],
       ['note « aucun cordage noté » jamais posée', 'conf', [["if (candidates.length > 0 && rated.length === 0) stringPickNote = 'No rated string matches these criteria.';", '']]],
       ['raison sans la nature de la note', 'conf', [["return stringView(s, s ? criterion + ' (' + TSARatingLabels.label(s) + ').' : '');", "return stringView(s, s ? criterion + '.' : '');"]]],
-      ['cordage choisi par une note sans ratedStringView', 'conf', [["string = ratedStringView(pickBestString(withSafeStiffness(RCS, stringCriteria, racquet, tension.maxKg)), 'One of the polyester strings with the highest control rating' + SAFE_CLAUSE);", "string = stringView(pickBestString(withSafeStiffness(RCS, stringCriteria, racquet, tension.maxKg)), 'One of the polyester strings with the highest control rating' + SAFE_CLAUSE + '.');"]]],
+      ['cordage choisi par une note sans ratedStringView', 'conf', [["string = ratedStringView(pickBestString(withSafeStiffness(RCS, stringCriteria, racquet, tension)), 'One of the polyester strings with the highest control rating' + SAFE_CLAUSE);", "string = stringView(pickBestString(withSafeStiffness(RCS, stringCriteria, racquet, tension)), 'One of the polyester strings with the highest control rating' + SAFE_CLAUSE + '.');"]]],
       ['tri prix croissant : prix absent lu comme 0', 'cat', [["case 'price-asc': return absentLast(a.price_eur, b.price_eur, 1);", "case 'price-asc': return a.price_eur - b.price_eur;"]]],
       ['tri confort : note absente lue comme 0 (en tête si croissant)', 'cat', [["case 'comfort-desc': return absentLast(a.comfort, b.comfort, -1);", "case 'comfort-desc': return (a.comfort ?? 0) - (b.comfort ?? 0);"]]],
       ['prix maximal : prix absent accepté', 'cat', [["if (maxPrice && !(typeof string.price_eur === 'number' && string.price_eur <= parseInt(maxPrice))) return false;", 'if (maxPrice && string.price_eur > parseInt(maxPrice)) return false;']]],
@@ -4853,7 +4853,7 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     const sliderQ21 = /id="tensionSlider"[^>]*min="([\d.]+)"[^>]*max="([\d.]+)"[^>]*step="([\d.]+)"/.exec(calcHtmlQ21);
     const RANGEQ21 = sliderQ21 ? { min: Number(sliderQ21[1]), max: Number(sliderQ21[2]), step: Number(sliderQ21[3]) } : null;
     if (!RANGEQ21) fail(`${CALCQ21} : curseur de tension introuvable, relire le contrôle 21 quater`);
-    const tallyQ21 = { combos: 0, mid: 0, whole: 0, none: 0, ceilings: 0, runs: 0, pain: 0, distinct: new Set<string>(), maxIndex: -Infinity, minGap: Infinity };
+    const tallyQ21 = { combos: 0, mid: 0, whole: 0, none: 0, ceilings: 0, runs: 0, pain: 0, ranged: 0, unranged: 0, distinct: new Set<string>(), maxIndex: -Infinity, minGap: Infinity };
 
     // (a) et (b) : le bloc de la page contre le recalcul indépendant ; renvoie les écarts (vide = conforme).
     const checkPageQ21 = (html: string, engine: any, count = false): string[] => {
@@ -4869,6 +4869,16 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
       }
       if (/pickLowestStiffnessString|Lowest stiffness/i.test(block)) add('bloc : le cordage « de rigidité la plus basse du catalogue » est revenu (B2)');
       if (engine.HEALTH_ALERT_SENSITIVE_RCS !== SQ21) add(`seuil : HEALTH_ALERT_SENSITIVE_RCS du moteur EN (${engine.HEALTH_ALERT_SENSITIVE_RCS}) ≠ seuil bras sensible sondé dans calculateAdvancedRcs (${SQ21})`);
+      // Chaque tension de recette porte sa plage (minKg, maxKg) et son milieu, cohérents avec la valeur affichée ; le rempart et le
+      // plafond de rigidité lisent maxKg, la plage publiée du cordage lit minKg et maxKg.
+      const recipes = [...html.matchAll(/(?:let )?tension = \{ value: '(\d+)-(\d+) kg', numValue: ([\d.]+),([^}]*)\}/g)];
+      if (recipes.length !== 6) add(`tensions de recette : ${recipes.length} trouvées au lieu de 6 (défaut, débutant, intermédiaire, puissance, contrôle, effet)`);
+      for (const m of recipes) {
+        const lo = Number(m[1]);
+        const hi = Number(m[2]);
+        if (Number(m[3]) !== (lo + hi) / 2) add(`tension ${lo}-${hi} kg : numValue ${m[3]} n'est pas le milieu`);
+        if (!new RegExp(`minKg: ${lo},\\s*maxKg: ${hi},`).test(m[4])) add(`tension ${lo}-${hi} kg : minKg ${lo} et maxKg ${hi} absents ou faux (le rempart et le plafond de rigidité les lisent)`);
+      }
       const R = api.SENSITIVE_TENSION_RANGE;
       if (!RANGEQ21 || R.min !== RANGEQ21.min || R.max !== RANGEQ21.max || R.step !== RANGEQ21.step) {
         add(`plage : la page raisonne sur ${JSON.stringify(R)}, le curseur du calculateur RCS sur ${JSON.stringify(RANGEQ21)}`);
@@ -4897,7 +4907,7 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
           if (count) { if (refN === null) tallyQ21.none++; else if (refN === ref.max) tallyQ21.whole++; else tallyQ21.mid++; }
           if (refN !== null) {
             const T = refN;
-            const note: string = api.armAlertNote(engine, r.stiffness, s.stiffness, T);
+            const note: string = api.armAlertNote(engine, r.stiffness, s.stiffness, T, T);
             if (!note.includes(`(index ${SQ21})`)) add(`texte : le seuil ${SQ21} n'est pas cité (${r.id} × ${s.id})`);
             if (!note.includes(`at ${T} kg: ${idx(T)}, ${SQ21 - idx(T)} point`)) add(`texte : indice ${idx(T)} à ${T} kg, ou sa distance au seuil, faux (${r.id} × ${s.id}) : « ${note.slice(0, 200)} »`);
             if (refN < ref.max && !note.includes(`up to ${refN} kg (${idx(refN)} at ${refN} kg, ${idx(refN + ref.step)} at ${refN + ref.step} kg)`)) add(`texte « jusqu'à N kg » faux (${r.id} × ${s.id})`);
@@ -4926,7 +4936,7 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
 
     // (c) La page exécutée telle quelle : generateResult de bout en bout, sur le catalogue, pour toutes les combinaisons de réponses.
     const REGION_OPEN = '// Smart racquet picker based on criteria';
-    const REGION_CLOSE = '// Update RCS Display';
+    const REGION_CLOSE = '// Check auth state for nav';
     const LEVELS: Array<string | null> = [null, 'debutant', 'intermediaire', 'avance', 'competition'];
     const STYLES: Array<string | null> = [null, 'puissance', 'controle', 'spin', 'polyvalent'];
     const PHYSICALS: Array<string | null> = [null, 'aucun', 'bras', 'epaule'];
@@ -4935,14 +4945,26 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     const DRAWS: Array<[number, number]> = [];
     for (const r of [0.1, 0.5, 0.9]) for (const s of [0.1, 0.5, 0.9]) DRAWS.push([r, s]);
     const FORBIDDEN = /lowest[- ]stiffness|softest|least[- ]stiff|most flexible|\bsoftness rank|\bprotect(?:s|ed|ing|ion)?\b|\brelie(?:f|ve|ves|ved)\b|\bheal(?:s|ed|ing)?\b|\bcures?\b|\bprevent/i;
-    type PageRun = { error: string | null; racquet?: any; string?: any; tension?: any; profile?: string | null };
-    // La page est compilée UNE fois par version testée ; chaque parcours réinitialise l'état (réponses, tirages, éléments).
-    const compilePageQ21 = (html: string, engine: any): ((sel: Record<string, string | null>, draw: [number, number]) => Promise<PageRun>) | string => {
+    type PageRun = { error: string | null; racquet?: any; string?: any; tension?: any; profile?: string | null; armSensitive?: boolean; verdict?: any };
+    // La page est compilée UNE fois par version testée ; chaque parcours réinitialise l'état (réponses, tirages, éléments). La région
+    // compilée va de pickBestRacquet à la fin de updateRCSDisplay : le verdict affiché est celui de la page, pas une copie.
+    const compilePageQ21 = (html: string, engine: any): { run: (sel: Record<string, string | null>, draw: [number, number]) => Promise<PageRun>; verdictAt: (ra: number, s: number, t: number, profile: string | null, arm: boolean) => any } | string => {
       const i = html.indexOf(REGION_OPEN);
       const j = html.indexOf(REGION_CLOSE, i);
       if (i < 0 || j < 0) return 'région de la page introuvable, relire le contrôle 21 quater';
       const st: { sel: Record<string, string | null>; queue: number[]; els: Record<string, any>; args: any[] | null } = { sel: {}, queue: [], els: {}, args: null };
-      const el = (id: string) => (st.els[id] ??= { textContent: '', innerHTML: '', className: '', style: {}, classList: { add() {}, remove() {}, toggle() {} } });
+      const el = (id: string) => {
+        if (!st.els[id]) {
+          const e: any = { textContent: '', innerHTML: '', className: '', style: {} };
+          e.classList = {
+            add: (c: string) => { e.className = `${e.className} ${c}`.trim(); },
+            remove: (c: string) => { e.className = e.className.split(/\s+/).filter((x: string) => x && x !== c).join(' '); },
+            toggle() {},
+          };
+          st.els[id] = e;
+        }
+        return st.els[id];
+      };
       const M: any = Object.create(Math);
       M.random = () => (st.queue.length > 0 ? st.queue.shift()! : 0.5);
       const ctx: any = {
@@ -4950,75 +4972,121 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
         TSACatalog: { load: async () => catalogQ21, display: (v: any, suffix = '') => (v === null || v === undefined ? 'Not published' : `${v}${suffix}`) },
         TSARatingLabels: { load: async () => {}, label: () => 'label', basis: () => 'editorial', NOTE: 'note' },
         getSelections: () => st.sel, canConfigure: () => true, recordConfigurationUsage() {}, goToStep() {}, trackConfiguratorComplete() {},
-        updateRCSDisplay: (...a: any[]) => { st.args = a; },
+        capture: (...a: any[]) => { st.args = a; },
       };
-      let generate: () => Promise<void>;
+      let api: any;
       try {
-        generate = new Function('ctx', `const { ${Object.keys(ctx).join(', ')} } = ctx;\nlet racquetsDB, stringsDB;\n${html.slice(i, j)}\nreturn generateResult;`)(ctx);
+        api = new Function('ctx', `const { ${Object.keys(ctx).join(', ')} } = ctx;\nlet racquetsDB, stringsDB;\n${html.slice(i, j)}\nconst realUpdate = updateRCSDisplay;\nupdateRCSDisplay = function () { capture.apply(null, arguments); return realUpdate.apply(null, arguments); };\nreturn { generateResult, realUpdate };`)(ctx);
       } catch (e) {
         return `page illisible (${(e as Error).message})`;
       }
-      return async (sel, draw) => {
-        st.sel = sel; st.queue = [...draw]; st.els = {}; st.args = null;
-        try {
-          await generate();
-        } catch (e) {
-          return { error: `generateResult a levé ${(e as Error).message}` };
-        }
-        const box = st.els['generateError'];
-        if (box && box.textContent) return { error: String(box.textContent) };
-        if (!st.args) return { error: 'aucun indice affiché' };
-        const g = (id: string) => st.els[id].textContent;
-        return {
-          error: null,
-          racquet: { brand: g('rec-racquet-brand'), name: g('rec-racquet-name'), ra: st.args[0], reason: g('rec-racquet-reason') },
-          string: { brand: g('rec-string-brand'), name: g('rec-string-name'), stiffness: st.args[1], reason: g('rec-string-reason') },
-          tension: { title: g('rec-tension-title'), value: g('rec-tension'), num: st.args[2], reason: g('rec-tension-reason') },
-          profile: st.args[3] ?? null,
-        };
+      const verdict = () => ({
+        msg: st.els['rcs-eval-message']?.textContent ?? '', sug: st.els['rcs-eval-suggestion']?.textContent ?? '',
+        cls: st.els['rcs-profile-eval']?.className ?? '', warn: st.els['rcs-health-warning']?.innerHTML ?? '',
+      });
+      return {
+        run: async (sel, draw) => {
+          st.sel = sel; st.queue = [...draw]; st.els = {}; st.args = null;
+          try {
+            await api.generateResult();
+          } catch (e) {
+            return { error: `generateResult a levé ${(e as Error).message}` };
+          }
+          const box = st.els['generateError'];
+          if (box && box.textContent) return { error: String(box.textContent) };
+          if (!st.args) return { error: 'aucun indice affiché' };
+          const g = (id: string) => st.els[id].textContent;
+          return {
+            error: null,
+            racquet: { brand: g('rec-racquet-brand'), name: g('rec-racquet-name'), ra: st.args[0], reason: g('rec-racquet-reason') },
+            string: { brand: g('rec-string-brand'), name: g('rec-string-name'), stiffness: st.args[1], reason: g('rec-string-reason') },
+            tension: { title: g('rec-tension-title'), value: g('rec-tension'), num: st.args[2], reason: g('rec-tension-reason') },
+            profile: st.args[3] ?? null,
+            armSensitive: st.args[4] === true,
+            verdict: verdict(),
+          };
+        },
+        verdictAt: (ra, s, t, profile, arm) => { st.els = {}; api.realUpdate(ra, s, t, profile, arm); return verdict(); },
       };
     };
     // full : tout le produit des réponses (page réelle) ; sinon niveau × style × douleur × tirages, les réponses sans effet restant vides.
     const allRunsQ21 = async (html: string, engine: any, count = false, full = false): Promise<string[]> => {
       const issues: string[] = [];
       const add = (m: string) => { if (issues.length < 12) issues.push(m); };
-      const run = compilePageQ21(html, engine);
-      if (typeof run === 'string') return [run];
+      const page = compilePageQ21(html, engine);
+      if (typeof page === 'string') return [page];
+      // Le seuil bras sensible ne change QUE l'alerte : à un indice entre les deux seuils, la douleur déclarée montre le verdict
+      // « tennis elbow risk for a sensitive arm », l'absence de douleur jamais ; sous le seuil, aucune différence.
+      {
+        const probe = (() => {
+          for (const ra of [66, 67, 64]) for (let s = 200; s <= 280; s += 5) if (calculateRCS(ra, s, 24) >= SQ21 && calculateRCS(ra, s, 24) < ARM_ALERT_STANDARD) return { ra, s };
+          return null;
+        })();
+        if (!probe) add('verdict : aucun montage entre les deux seuils pour sonder la page, relire le contrôle 21 quater');
+        else {
+          const withArm = page.verdictAt(probe.ra, probe.s, 24, 'club', true);
+          const without = page.verdictAt(probe.ra, probe.s, 24, 'club', false);
+          if (!/tennis elbow risk for a sensitive arm/.test(withArm.msg)) add(`verdict : à l'indice ${calculateRCS(probe.ra, probe.s, 24)} avec un bras sensible déclaré, « ${withArm.msg} » au lieu du verdict d'alerte`);
+          if (/tennis elbow risk/.test(without.msg)) add(`verdict : sans douleur déclarée, le verdict d'alerte bras sensible s'affiche (« ${without.msg} »)`);
+          const under = page.verdictAt(66, 160, 22, 'club', true);
+          const underNone = page.verdictAt(66, 160, 22, 'club', false);
+          if (JSON.stringify(under) !== JSON.stringify(underNone)) add('verdict : sous le seuil, la douleur déclarée change le verdict de plage du profil');
+        }
+      }
       const freqs = full ? FREQUENCIES : [null];
       const budgets = full ? BUDGETS : [null];
       for (const level of LEVELS) for (const style of STYLES) for (const frequency of freqs) for (const br of budgets) for (const bs of budgets) for (const draw of DRAWS) {
         const base = { level, style, frequency, 'budget-racquet': br, 'budget-string': bs };
         const runs: Record<string, PageRun> = {};
-        for (const physical of PHYSICALS) runs[String(physical)] = await run({ ...base, physical }, draw);
+        for (const physical of PHYSICALS) runs[String(physical)] = await page.run({ ...base, physical }, draw);
         const where = `niveau ${level}, style ${style}, fréquence ${frequency}, budgets ${br}/${bs}, tirage ${draw.join('/')}`;
         for (const [physical, r] of Object.entries(runs)) {
           if (count) tallyQ21.runs++;
           if (r.error !== null) { add(`${where}, douleur ${physical} : aucune recommandation (« ${r.error} »)`); continue; }
-          const top = /(\d+(?:\.\d)?) kg$/.exec(String(r.tension.value));
-          const maxKg = top ? Number(top[1]) : NaN;
-          if (!(maxKg > 0)) { add(`${where}, douleur ${physical} : tension « ${r.tension.value} » illisible`); continue; }
+          const span = /^(\d+(?:\.\d)?)(?:-(\d+(?:\.\d)?))? kg$/.exec(String(r.tension.value));
+          const loKg = span ? Number(span[1]) : NaN;
+          const maxKg = span ? Number(span[2] ?? span[1]) : NaN;
+          if (!(maxKg > 0) || !(loKg > 0)) { add(`${where}, douleur ${physical} : tension « ${r.tension.value} » illisible`); continue; }
           const idxEngine = engine.calculate(r.racquet.ra, r.string.stiffness, maxKg).rcs;
           const idxRef = calculateRCS(r.racquet.ra, r.string.stiffness, maxKg);
           if (count) { tallyQ21.maxIndex = Math.max(tallyQ21.maxIndex, idxRef); tallyQ21.minGap = Math.min(tallyQ21.minGap, SQ21 - idxRef); }
           if (idxEngine >= SQ21 || idxRef >= SQ21) add(`${where}, douleur ${physical} : montage EN ALERTE, ${r.racquet.brand} ${r.racquet.name} (RA ${r.racquet.ra}) + ${r.string.brand} ${r.string.name} (${r.string.stiffness} lb/in) à ${maxKg} kg = indice ${idxRef} (seuil ${SQ21})`);
           if (idxEngine !== idxRef) add(`${where} : indice du moteur EN ${idxEngine} ≠ recalcul ${idxRef}`);
-          for (const t of [r.racquet.reason, r.string.reason, r.tension.reason, r.tension.title, r.tension.value]) {
+          // La tension proposée reste dans la plage publiée du cordage (fiche du catalogue).
+          const fiche = catalogQ21.strings.find((x: any) => x.brand === r.string.brand && x.model === r.string.name);
+          if (!fiche) add(`${where} : cordage « ${r.string.brand} ${r.string.name} » introuvable dans le catalogue`);
+          else if (typeof fiche.tension_min === 'number' && typeof fiche.tension_max === 'number') {
+            if (count) tallyQ21.ranged++;
+            if (loKg < fiche.tension_min || maxKg > fiche.tension_max) add(`${where}, douleur ${physical} : tension ${r.tension.value} hors de la plage publiée de ${r.string.brand} ${r.string.name} (${fiche.tension_min}-${fiche.tension_max} kg)`);
+          } else if (count) tallyQ21.unranged++;
+          for (const t of [r.racquet.reason, r.string.reason, r.tension.reason, r.tension.title, r.tension.value, r.verdict.msg, r.verdict.sug]) {
             if (FORBIDDEN.test(String(t))) add(`${where}, douleur ${physical} : mention interdite dans « ${String(t).slice(0, 120)} »`);
           }
           if (count) tallyQ21.distinct.add(`${r.racquet.brand} ${r.racquet.name}|${r.string.brand} ${r.string.name}|${r.tension.value}`);
           const pain = physical === 'bras' || physical === 'epaule';
           if (!pain) {
             if (r.profile === 'tennis_elbow') add(`${where}, douleur ${physical} : profil tennis_elbow sans douleur déclarée`);
+            if (r.armSensitive) add(`${where}, douleur ${physical} : seuil bras sensible appliqué sans douleur déclarée`);
             continue;
           }
           if (count) tallyQ21.pain++;
-          if (r.profile !== 'tennis_elbow') add(`${where}, douleur ${physical} : profil ${r.profile} au lieu de tennis_elbow (seuil ${SQ21})`);
+          if (!r.armSensitive) add(`${where}, douleur ${physical} : le seuil bras sensible (${SQ21}) n'est pas transmis à l'affichage`);
           const none = runs['aucun'];
           const same = none.error === null && none.racquet.name === r.racquet.name && none.racquet.brand === r.racquet.brand &&
             none.string.name === r.string.name && none.string.brand === r.string.brand && none.string.reason === r.string.reason &&
             none.racquet.reason === r.racquet.reason && none.tension.value === r.tension.value && none.tension.num === r.tension.num;
           if (!same) add(`${where}, douleur ${physical} : le matériel ou la tension changent avec la douleur déclarée (B1)`);
-          const want = `Index of this montage (RA ${r.racquet.ra}, ${r.string.stiffness} lb/in) at ${maxKg} kg: ${idxRef}, ${SQ21 - idxRef} point`;
+          // Le profil et le verdict de plage sont ceux de la recette, avec ou sans douleur (la douleur ne change que l'alerte, qui ne peut
+          // plus se déclencher ici puisque aucun montage n'atteint le seuil).
+          if (none.error === null && r.profile !== none.profile) add(`${where}, douleur ${physical} : profil ${r.profile} au lieu de celui de la recette (${none.profile})`);
+          if (none.error === null && JSON.stringify(r.verdict) !== JSON.stringify(none.verdict)) {
+            add(`${where}, douleur ${physical} : verdict affiché différent de celui sans douleur (« ${r.verdict.msg} » / « ${r.verdict.sug} » contre « ${none.verdict.msg} » / « ${none.verdict.sug} »)`);
+          }
+          const idxMid = calculateRCS(r.racquet.ra, r.string.stiffness, r.tension.num);
+          const gap = SQ21 - idxRef;
+          const want = r.tension.num === maxKg
+            ? `Index of this montage (RA ${r.racquet.ra}, ${r.string.stiffness} lb/in) at ${maxKg} kg: ${idxRef}, ${gap} point`
+            : `Index of this montage (RA ${r.racquet.ra}, ${r.string.stiffness} lb/in): ${idxMid} at ${r.tension.num} kg (the index shown above), ${idxRef} at ${maxKg} kg (top of the proposed range), ${gap} point`;
           if (!String(r.tension.reason).includes(want) || !String(r.tension.reason).includes(`(index ${SQ21})`)) add(`${where}, douleur ${physical} : constat absent ou faux (attendu « ${want} »)`);
           if (none.error === null && !String(r.tension.reason).startsWith(String(none.tension.reason))) add(`${where}, douleur ${physical} : la raison de la tension n'est plus celle de la recette suivie du constat`);
         }
@@ -5084,15 +5152,20 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     ];
     // Altérations du déroulé de la page : détectées par l'exécution de toutes les combinaisons de réponses.
     const RUN_NEG: Array<[string, string, string, string?, string?]> = [
-      ['plafond de rigidité non appliqué (modèle ancien : tri par note seul)', 'pickBestString(withSafeStiffness(RCS, stringCriteria, racquet, tension.maxKg)), \'One of the polyester or co-polyester strings with the highest control rating\'', 'pickBestString(stringCriteria), \'One of the polyester or co-polyester strings with the highest control rating\''],
-      ['plafond calculé sur la tension minimale de la plage', 'withSafeStiffness(RCS, stringCriteria, racquet, tension.maxKg)), \'One of the polyester strings', 'withSafeStiffness(RCS, stringCriteria, racquet, tension.numValue - 1)), \'One of the polyester strings'],
-      ['cordage par défaut de l\'ancienne page (RPM Blast, indice 35)', "const DEFAULT_STRING_ID = 'babolat-hybrid-rpm-blast-vs-touch';", "const DEFAULT_STRING_ID = 'babolat-rpm-blast';"],
-      ['rempart retiré et cordage par défaut devenu rigide (donnée changée)', "if (RCS.calculate(racquet.stiffness, string.stiffness, tension.maxKg).rcs >= RCS.HEALTH_ALERT_SENSITIVE_RCS) {", "if (false) {", "const DEFAULT_STRING_ID = 'babolat-hybrid-rpm-blast-vs-touch';", "const DEFAULT_STRING_ID = 'babolat-rpm-blast';"],
-      ['douleur : profil tennis_elbow retiré', "rcsProfile = 'tennis_elbow';", "rcsProfile = 'club';"],
-      ['douleur : constat retiré', "tension = Object.assign({}, tension, { reason: tension.reason + ' ' + armAlertNote(RCS, racquet.stiffness, string.stiffness, tension.maxKg) });", ''],
-      ['douleur : tension recalculée au lieu de celle de la recette', "tension = Object.assign({}, tension, { reason: tension.reason + ' ' + armAlertNote(RCS, racquet.stiffness, string.stiffness, tension.maxKg) });", "tension = Object.assign({}, tension, { value: '21 kg', numValue: 21, maxKg: 21, reason: tension.reason + ' ' + armAlertNote(RCS, racquet.stiffness, string.stiffness, 21) });"],
-      ['douleur : raquette de RA bas imposée', "if (currentSelections.physical === 'bras' || currentSelections.physical === 'epaule') {\n        rcsProfile = 'tennis_elbow';", "if (currentSelections.physical === 'bras' || currentSelections.physical === 'epaule') {\n        racquet = racquetView(catalogById(racquetsDB, 'babolat-pure-drive-standard'), 'x');\n        rcsProfile = 'tennis_elbow';"],
-      ['douleur : « Lowest stiffness » rétabli dans la raison du cordage', "string = ratedStringView(pickBestString(withSafeStiffness(RCS, stringCriteria, racquet, tension.maxKg)), 'One of the multifilament or hybrid strings with the highest comfort rating' + SAFE_CLAUSE);", "string = ratedStringView(pickBestString(withSafeStiffness(RCS, stringCriteria, racquet, tension.maxKg)), 'Lowest stiffness in our catalogue' + SAFE_CLAUSE);"],
+      ['plafond de rigidité non appliqué (modèle ancien : tri par note seul)', "pickBestString(withSafeStiffness(RCS, stringCriteria, racquet, tension)), 'One of the polyester or co-polyester strings with the highest control rating'", "pickBestString(stringCriteria), 'One of the polyester or co-polyester strings with the highest control rating'"],
+      ['plafond calculé sur la tension minimale de la plage', "withSafeStiffness(RCS, stringCriteria, racquet, tension)), 'One of the polyester strings", "withSafeStiffness(RCS, stringCriteria, racquet, Object.assign({}, tension, { maxKg: tension.numValue - 1 }))), 'One of the polyester strings"],
+      ["cordage par défaut de l'ancienne page (RPM Blast, indice 35)", "const DEFAULT_STRING_ID = 'babolat-hybrid-rpm-blast-vs-touch';", "const DEFAULT_STRING_ID = 'babolat-rpm-blast';"],
+      ['rempart retiré et cordage par défaut devenu rigide (donnée changée)', "if (!(RCS.calculate(racquet.stiffness, string.stiffness, tension.maxKg).rcs < RCS.HEALTH_ALERT_SENSITIVE_RCS)) {", "if (false) {", "const DEFAULT_STRING_ID = 'babolat-hybrid-rpm-blast-vs-touch';", "const DEFAULT_STRING_ID = 'babolat-rpm-blast';"],
+      ['rempart ouvert sur une tension illisible (>= au lieu de !(<))', "if (!(RCS.calculate(racquet.stiffness, string.stiffness, tension.maxKg).rcs < RCS.HEALTH_ALERT_SENSITIVE_RCS)) {", "if (RCS.calculate(racquet.stiffness, string.stiffness, tension.maxKg).rcs >= RCS.HEALTH_ALERT_SENSITIVE_RCS) {", "let tension = { value: '23-25 kg', numValue: 24, minKg: 23, maxKg: 25,", "let tension = { value: '23-25 kg', numValue: 24, minKg: 23,"],
+      ['douleur : profil tennis_elbow imposé au verdict de plage', "if (armSensitive && rcs >= RCS.HEALTH_ALERT_SENSITIVE_RCS) profile = 'tennis_elbow';", "if (armSensitive) profile = 'tennis_elbow';"],
+      ['douleur : seuil bras sensible jamais appliqué au verdict', "if (armSensitive && rcs >= RCS.HEALTH_ALERT_SENSITIVE_RCS) profile = 'tennis_elbow';", ''],
+      ['douleur : constat retiré', "tension = Object.assign({}, tension, { reason: tension.reason + ' ' + armAlertNote(RCS, racquet.stiffness, string.stiffness, tension.numValue, tension.maxKg) });", ''],
+      ['douleur : tension recalculée au lieu de celle de la recette', "tension = Object.assign({}, tension, { reason: tension.reason + ' ' + armAlertNote(RCS, racquet.stiffness, string.stiffness, tension.numValue, tension.maxKg) });", "tension = Object.assign({}, tension, { value: '21 kg', numValue: 21, maxKg: 21, reason: tension.reason + ' ' + armAlertNote(RCS, racquet.stiffness, string.stiffness, 21, 21) });"],
+      ['douleur : raquette de RA bas imposée', "if (armSensitive) {\n        tension = Object.assign", "if (armSensitive) {\n        racquet = racquetView(catalogById(racquetsDB, 'babolat-pure-drive-standard'), 'x');\n        tension = Object.assign"],
+      ['douleur : « Lowest stiffness » rétabli dans la raison du cordage', "'One of the multifilament or hybrid strings with the highest comfort rating' + SAFE_CLAUSE", "'Lowest stiffness in our catalogue' + SAFE_CLAUSE"],
+      ['tension au-dessus de la plage publiée du cordage (limitation retirée)', 'tension = fitTensionToString(tension, string);', ''],
+      ['plage publiée du cordage retirée du filtre de choix', '(s.tension_min <= criteria.tension.max && s.tension_max >= criteria.tension.min));', 'true);'],
+      ['limitation à la plage publiée : maximum non respecté', 'const hi = Math.min(tension.maxKg, s.tensionMax);', 'const hi = tension.maxKg;'],
     ];
     const POSITIVES: Array<[string, string, string]> = [
       ['phrase de fin du constat reformulée', "' Each kg changes the index by 0.5 point.", "' One kg of tension moves the index by half a point."],
@@ -5150,7 +5223,7 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
       ok(
         `configurateur EN, santé : la page exécutée telle quelle sur ${tallyQ21.runs} parcours (${LEVELS.length} niveaux × ${STYLES.length} styles × ${FREQUENCIES.length} fréquences × ${PHYSICALS.length} douleurs × ${BUDGETS.length * BUDGETS.length} budgets × ${DRAWS.length} tirages) : ` +
           `0 recommandation en alerte (indice maximal ${tallyQ21.maxIndex}, au moins ${tallyQ21.minGap} point(s) sous le seuil ${SQ21} = seuil bras sensible sondé dans calculateAdvancedRcs = HEALTH_ALERT_SENSITIVE_RCS du moteur EN), ` +
-          `0 erreur, 0 mention interdite, ${tallyQ21.distinct.size} recommandations distinctes ; ${tallyQ21.pain} parcours « douleur déclarée » : même matériel et même tension que sans douleur, profil tennis_elbow, constat chiffré exact ; ` +
+          `0 erreur, 0 mention interdite, ${tallyQ21.distinct.size} recommandations distinctes ; ${tallyQ21.pain} parcours « douleur déclarée » : même matériel, même tension, même profil et même verdict de plage que sans douleur, seuil ${SQ21} transmis à l'affichage (verdict d'alerte sondé entre les deux seuils), constat chiffré exact ; tension toujours dans la plage publiée du cordage (${tallyQ21.ranged} parcours à plage publiée, ${tallyQ21.unranged} sur un cordage sans plage publiée) ; ` +
           `plafond de rigidité vérifié sur ${tallyQ21.ceilings} couples raquette × tension ; sensitiveTensionLimit identique au recalcul par calculateRCS sur ${tallyQ21.combos} montages ` +
           `(${racqQ21.length} raquettes × ${strQ21.length} cordages ; « jusqu'à N kg » ${tallyQ21.mid}, toute la plage ${tallyQ21.whole}, aucune tension ${tallyQ21.none}) ; ` +
           `aucune tension fixe à côté d'un bras sensible dans ${scanned} fichiers (public/en hors blog, public/js) ; ` +
