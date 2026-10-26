@@ -1,6 +1,6 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.3.30
+> **Version** : 2.3.31
 > **Date** : 26 octobre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
@@ -87,6 +87,32 @@ suivent. **À reprendre par `tsa-redacteur`** : articles qui citent ces notes (M
 classement en confort des 18 polyesters testés) et le dossier `docs/redaction/coherence-chiffres-regle-c.md` (`redaction:valeurs` :
 1 écart, Mach-10 8,8 contre 8,3).
 
+**Changelog v2.3.30 → v2.3.31** — **Hybrides prémontés : composition établie, rigidité dérivée de leurs deux cordages et étiquetée ;
+contrôle 24** (avis d'Opus 5.5 du 23/10/2026, point 9 ; Pierre : « je donne le La, vous exécutez » ; `tsa-core` ; numérotée après la
+PR #147 (v2.3.30) ; contrôle numéroté 24, les 22 et 23 étant à #147). **Constat** : les 9 fiches de type « Hybrid » portaient une rigidité sans source,
+et 6 des 7 sets calculables étaient SOUS la valeur que le configurateur donne à leurs deux cordages montés à la main (rapport P du
+22/10). **Compositions lues sur des pages ouvertes** (`src/data/prepacked-hybrids.ts`, extraits et niveaux ; wilson.com, tecnifibre.com et
+head.com refusent les robots, rien n'a été contourné) : RPM Blast 125 + Touch VS 130 (babolat.com, L0 ; jauge 1.30/1.30 retirée) ; Duo
+Power = ALU Power 1.25 + NXT Power 1.30 (deux revendeurs indépendants ; jauges 1.25/1.25 → 1.25/1.30) ; **Duo Control = 4G Rough + NXT
+Control** (Tennis Warehouse ; la fiche décrivait le Duo Feel, Element + NXT) ; Champion's Choice et Champion's Choice Duo = boyau Wilson +
+ALU Power Rough (la seconde fiche disait Element + boyau : doublon probable, fusion à arbitrer) ; RPM Blast + Xcel, Razor Code + X-One
+et Ice Code + NRG2 introuvables (composition de la fiche, retrait à arbitrer) ; Head Gravity = deux co-polyesters non nommés (la fiche
+disait « poly + multi »). **Règle** : composition connue → rigidité de la fiche = celle que `setupFirmnessIndex` prête aux deux
+cordages à la même tension, max(60/40 ; moyenne), le plus haut des deux sens si l'ordre n'est pas fixé (8 sur 8 : ordre au choix ou non
+publié), arrondie au dixième supérieur, jamais sous la valeur d'avant ; composition non publiée → valeur de fiche conservée (alerte
+comprise), mention « composition non publiée, rigidité de fiche sans source », exclue des classements (`isStiffnessRankable`).
+**Valeurs** : Duo Control 188 → 222, Razor Code + X-One 180 → 212,5, RPM Blast + Xcel 192 → 206, Ice Code + NRG2 172 → 198,4, Duo Power
+175 → 196, RPM Blast + Touch VS 168 → 180,8, les deux Champion's Choice 165 et 158 → 178 ; Gravity 178 conservé. **Fiche FR** : rigidité
+marquée « (estimé) » et mention sous les caractéristiques (« Rigidité dérivée des deux cordages du set, A et B, comme le configurateur
+calcule un hybride… ; aucune mesure du set n'est publiée »). Descriptions corrigées (compositions, « équilibre parfait », « officiel »,
+« confort » d'Ice Code + NRG2, au-dessus de la médiane des hybrides, 196). **Effet** (grille du contrôle 5, `c2-effet-alertes.mts
+--base=a2cee22`) : alertes standard +20 (7,12 → 7,13 %), bras sensible +533 (23,25 → 23,63 %), `calculateCompatibility` +535, **0
+disparue**, 0 rigidité en baisse. **Contrôle 24** de `audit:ratings` : toute fiche « Hybrid » consignée, composants présents et non
+hybrides, rigidité = plus haut de la valeur d'avant et de la valeur dérivée recalculée, indice de la fiche jamais sous celui du moteur
+pour les deux cordages (8 RA × 6 tensions), composition non publiée immobile et hors classements, sources (URL https, niveau, date,
+extrait ≤ 40 mots), jauges, mention et « estimé » de la fiche FR ; 15 tests négatifs. **Couplage voulu** : la rigidité d'un set suit
+désormais celle de ses composants ; une baisse future d'un composant (4G Rough 262, TWU 216, dans les 13 baisses de l'avis du 23/10)
+fera échouer le contrôle 24 tant que le set n'est pas recalculé, donc compté dans les alertes retirées.
 **Changelog v2.3.25 → v2.3.26** — **Hybrides : un seul indice, celui que l'alerte lit, que le configurateur
 affiche et que le PDF imprime ; contrôle 21 ter** (décision (b)+(a) de l'orchestrateur du 22/10/2026, Pierre ayant délégué ; limite (4)
 de la v2.3.23 ; `tsa-core` ; **`[verrou: configurator/page.tsx]`** ; branche partie de la tête de la PR #130, `6d943a4`, non fusionnée :
@@ -1662,4 +1688,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.3.30 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.3.31 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
