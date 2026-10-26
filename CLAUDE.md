@@ -1,7 +1,7 @@
 # CLAUDE.md — Tennis String Advisor
 
 > **Version** : 2.3.32
-> **Date** : 23 octobre 2026
+> **Date** : 26 octobre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
 > **Branche de référence** : `main` (seule branche longue ; la production Netlify en déploie)
@@ -91,6 +91,34 @@ réelle), association contrôlée comme pour les marques, refus (moteur de reche
 de tiers, attestations absentes), avertissement de génération, `purge upload:pierre`. **Barrière d'accès** : agents.md lu en premier ;
 un fichier de politique illisible arrête l'hôte sans le consigner. **Contrôle 12** : 11 sources en liste blanche, 53 tests négatifs ;
 purge testée sur `fabricant:solinco`, `fabricant:dunlop`, `fabricant:kirschbaum` et `upload:pierre`.
+
+**Changelog v2.3.29 → v2.3.30** — **D2 restreint : sept notes de confort recalées sur la rigidité mesurée (TWU) ;
+contrôles 22 et 23** (avis d'Opus 5.5 du 23/10/2026, points 1 et 6, Pierre : « je donne le La, vous exécutez » ; mesure Q de `tsa-measure`
+du 22/10 ; `tsa-core`). **Constat** : la note de confort /10 est une note de l'équipe, non mesurée, qui suit la rigidité du catalogue ; sept
+fiches, plus rigides selon la mesure TWU que la rigidité sur laquelle leur note avait été calée, dépassaient de plus de 1,0 point la
+droite de leur famille. **Règle** (`src/data/comfort-recalibration.ts`, appliquée une fois) : droite L2 (pente de la relation note ~
+rigidité du catalogue, recalée sur la série TWU), tolérance 1,0, note ramenée sur la droite, seulement si la mesure TWU est au moins la
+médiane de la famille (220 lb/in polyester, 162,3 multifilament : Isospeed Cream, Razor Soft et Element écartés) ; note harmonisée avec
+des avis de testeurs : seule la composante éditoriale est ramenée, puis la moyenne avec l'avis recalé est refaite (`harmonizedRating`,
+étape 4 de la méthode). **Notes** : Luxilon 4G 6,3 → 5,3, Solinco Mach-10 8,8 → 8,3, Babolat RPM Team 6,8 → 5,9 (harmonisées), Babolat
+Revenge 7 → 5,4, Tecnifibre Black Code 4S et Razor Code 7,5 → 6,4, Tecnifibre TGV 9,5 → 8,4. Jamais une note ne monte ; aucun seuil ne
+bouge (32 / 35 ; second filet « confort » < 55 / < 45, gardé tel quel). **Étiquette** : « note de confort recalée sur la rigidité mesurée
+(TWU) » ajoutée au libellé de nature des notes partout où elles s'affichent (FR : `stringRatingLabel`, fiche, cartes, comparateur,
+configurateur, statistiques, PDF ; EN : « comfort rating recalibrated on measured stiffness (TWU) », `rating-labels.js`, fiches générées,
+catalogue, comparateur, configurateur ; un fichier de nature sans la liste des fiches recalées est un format inattendu, repli
+« Rating not measured »). Elle s'ajoute aux libellés de nature d'Opus 5.5 (#144) ; aucune note /10 n'est dite « mesurée » : seule
+exception, exacte et unique, « rigidité mesurée (TWU) » / « measured stiffness (TWU) » de cette mention, où c'est la rigidité TWU qui
+est mesurée (contrôle 18 (a) et `audit:string-labels`, 2 tests négatifs chacun : « note de confort mesurée », « rigidité mesurée »
+sans « (TWU) »). **Mesure** (grille du contrôle 5, moteur réel, deux profils ; harnais de Q rejoué) : **0 alerte
+disparue**, +50 standard (Revenge 47, 4G 3) et +74 bras sensible (Black Code 4S 37, Razor Code 37) ; taux 7,12 → 7,16 % et 23,25 → 23,30 %.
+**Contrôles** de `audit:ratings` : 22 (règle rejouée sur l'instantané d'avant D2, droites et médianes recalculées, sélection complète,
+valeurs, étiquettes FR et EN, 0 alerte disparue, 11 tests négatifs) ; 23, permanent, sur l'instantané `data/reference/second-filet-
+2026-10-23.json` (`scripts/scraper/reference-second-filet.mts`) : aucune note de confort ne monte, ne disparaît ni n'apparaît sur une
+fiche « Non publié », aucune fiche ni raquette ne disparaît, aucune alerte bras de la grille ne disparaît (8 tests négatifs). Contrôles
+13 (composante éditoriale recalée), 13 bis (code `recalee-twu`), 18 (mention) et `audit:string-labels` (périmètre `tsa-measure`, délégué)
+suivent. **À reprendre par `tsa-redacteur`** : articles qui citent ces notes (Mach-10 « 8,8, le mieux noté en confort des 18 »,
+classement en confort des 18 polyesters testés) et le dossier `docs/redaction/coherence-chiffres-regle-c.md` (`redaction:valeurs` :
+1 écart, Mach-10 8,8 contre 8,3).
 
 **Changelog v2.3.25 → v2.3.26** — **Hybrides : un seul indice, celui que l'alerte lit, que le configurateur
 affiche et que le PDF imprime ; contrôle 21 ter** (décision (b)+(a) de l'orchestrateur du 22/10/2026, Pierre ayant délégué ; limite (4)
@@ -1185,6 +1213,9 @@ corrigé dans la même PR.
   et 21 ter de `audit:ratings`. Les `rcsScore` enregistrés avant la mise en ligne gardent, pour un hybride, l'ancienne définition : les
   moyennes « RCS moyen » des configurations enregistrées (panneau du configurateur, `/statistics`, `storage.getStats`) mêlent les deux
   définitions tant que ces configurations existent ; aucune migration, aucune alerte ne lit ce champ.
+- **Notes de confort contredites par la mesure, recalées (D2 restreint, 23/10/2026)** : 7 fiches, uniquement à la baisse, étiquetées
+  « note de confort recalée sur la rigidité mesurée (TWU) » partout où la note s'affiche. Garde-fous : contrôle 22 (règle) et contrôle 23
+  (aucune note de confort ne monte, aucune alerte bras ne disparaît par rapport à la référence du 23/10/2026) de `audit:ratings`.
 - Export PDF, thème sombre, i18n FR/EN livrés.
 - Photos produit Tennis Warehouse (29/09/2026), Tennis Warehouse Europe et
   sites officiels des fabricants (10/10 et 22/10/2026) : 75/129 raquettes, 65/179
