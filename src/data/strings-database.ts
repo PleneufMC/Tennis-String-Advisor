@@ -275,7 +275,8 @@ export const stringsDatabase: TennisString[] = [
     model: 'Reflex MLT',
     type: 'Multifilament',
     gauges: ['1.25', '1.30'],
-    stiffness: 170,
+    // Rigidité (P6, 26/10/2026, BAISSE, GO explicite de Pierre) : TWU « Head Reflex MLT 16 (1.30) » = 159,4 lb/in (jauge 1.30), règle C, jauge la plus rigide mesurée ; toutes les jauges de la fiche mesurées, série non suspecte ; remplace 170 (sans source). Mesure AD de tsa-measure du 23/10/2026. Provenance : src/data/string-stiffness-provenance.ts.
+    stiffness: 159.4,
     stiffnessByGauge: { '1.25': 141.2, '1.30': 159.4 },
     performance: 7.5,
     control: 7.0,
@@ -525,7 +526,7 @@ export const stringsDatabase: TennisString[] = [
     power: 8.0,
     recommendedTension: { min: 20, max: 25 },
     price: { europe: 14, usa: 16 },
-    description: 'Cinquième polyester le moins rigide du catalogue, pour la transition du multifilament au polyester.',
+    description: 'Sixième polyester le moins rigide du catalogue, pour la transition du multifilament au polyester.',
     color: 'Cream'
   },
   {
@@ -648,7 +649,8 @@ export const stringsDatabase: TennisString[] = [
     model: 'ALU Power Soft',
     type: 'Polyester',
     gauges: ['1.25'],
-    stiffness: 210,
+    // Rigidité (P6, 26/10/2026, BAISSE, GO explicite de Pierre) : TWU « Luxilon Alu Power Soft 1.25 » = 197,7 lb/in (jauge 1.25), jauge unique de la fiche ; remplace 210 (sans source). Mesure AD de tsa-measure du 23/10/2026. Provenance : src/data/string-stiffness-provenance.ts.
+    stiffness: 197.7,
     stiffnessByGauge: { '1.25': 197.7 },
     performance: 9.5,
     control: 9.2,
@@ -1271,7 +1273,8 @@ export const stringsDatabase: TennisString[] = [
     model: 'RIP Control',
     type: 'Multifilament',
     gauges: ['1.25', '1.30'],
-    stiffness: 180,
+    // Rigidité (P6, 26/10/2026, BAISSE, GO explicite de Pierre) : TWU « Head RIP Control 16 » = 156,6 lb/in (jauge 1.30), règle C, jauge la plus rigide mesurée ; toutes les jauges de la fiche mesurées, série non suspecte ; remplace 180 (sans source). Mesure AD de tsa-measure du 23/10/2026. Provenance : src/data/string-stiffness-provenance.ts.
+    stiffness: 156.6,
     stiffnessByGauge: { '1.25': 137.7, '1.30': 156.6 },
     performance: 7.8,
     control: 8.3,
@@ -1466,7 +1469,8 @@ export const stringsDatabase: TennisString[] = [
     model: 'Control Classic',
     type: 'Multifilament',
     gauges: ['1.30'],
-    stiffness: 178,
+    // Rigidité (P6, 26/10/2026, BAISSE, GO explicite de Pierre) : TWU « IsoSpeed Control Classic 16 » = 136 lb/in (jauge 1.30), jauge unique de la fiche ; remplace 178 (sans source). Mesure AD de tsa-measure du 23/10/2026. Provenance : src/data/string-stiffness-provenance.ts.
+    stiffness: 136,
     stiffnessByGauge: { '1.30': 136 },
     performance: 7.8,
     control: 8.4,
@@ -1551,7 +1555,8 @@ export const stringsDatabase: TennisString[] = [
     model: 'Tour Bite Diamond Rough',
     type: 'Polyester',
     gauges: ['1.20', '1.25', '1.30'],
-    stiffness: 260,
+    // Rigidité (P6, 26/10/2026, BAISSE, GO explicite de Pierre) : TWU « Solinco Tour Bite Diamond Rough 16 (1.30) » = 192,6 lb/in (jauge 1.30), règle C, jauge la plus rigide mesurée ; toutes les jauges de la fiche mesurées, série non suspecte ; remplace 260 (sans source). Mesure AD de tsa-measure du 23/10/2026. Provenance : src/data/string-stiffness-provenance.ts.
+    stiffness: 192.6,
     stiffnessByGauge: { '1.20': 181.7, '1.25': 191.5, '1.30': 192.6 },
     performance: 9,
     control: 9.5,
@@ -1601,7 +1606,7 @@ export const stringsDatabase: TennisString[] = [
     power: 8,
     recommendedTension: { min: 22, max: 27 },
     price: { europe: 15, usa: 17 },
-    description: 'Construction en couches pour un meilleur maintien de tension et confort.',
+    description: 'Construction en couches pour un meilleur maintien de tension.',
     color: 'Yellow/Black'
   },
   {
@@ -1639,7 +1644,7 @@ export const stringsDatabase: TennisString[] = [
     power: 9,
     recommendedTension: { min: 22, max: 27 },
     price: { europe: 18, usa: 20 },
-    description: 'Polyester orienté puissance avec plus de confort que le RPM Blast. Bon compromis spin/puissance.',
+    description: 'Polyester orienté puissance de la gamme RPM. Bon compromis spin/puissance.',
     proUsage: 'Benoît Paire',
     color: 'Electric Brown'
   },
@@ -2017,7 +2022,8 @@ export const stringsDatabase: TennisString[] = [
     model: '4G Soft',
     type: 'Polyester',
     gauges: ['1.25'],
-    stiffness: 235,
+    // Rigidité (P6, 26/10/2026, BAISSE, GO explicite de Pierre) : TWU « Luxilon 4G Soft 1.25 » = 217,2 lb/in (jauge 1.25), jauge unique de la fiche ; remplace 235 (sans source). Mesure AD de tsa-measure du 23/10/2026. Provenance : src/data/string-stiffness-provenance.ts.
+    stiffness: 217.2,
     stiffnessByGauge: { '1.25': 217.2 },
     performance: 9,
     control: 9.5,
@@ -2036,7 +2042,8 @@ export const stringsDatabase: TennisString[] = [
     model: '4G Rough',
     type: 'Polyester',
     gauges: ['1.25'],
-    stiffness: 262,
+    // Rigidité (P6, 26/10/2026, BAISSE, GO explicite de Pierre) : TWU « Luxilon 4G Rough 16L » = 216 lb/in (jauge 1.25), jauge unique de la fiche ; remplace 262 (sans source). Mesure AD de tsa-measure du 23/10/2026. Provenance : src/data/string-stiffness-provenance.ts.
+    stiffness: 216,
     stiffnessByGauge: { '1.25': 216 },
     performance: 9.5,
     control: 9.5,
@@ -2151,7 +2158,8 @@ export const stringsDatabase: TennisString[] = [
     model: 'Adrenaline Rough',
     type: 'Polyester',
     gauges: ['1.25'],
-    stiffness: 212,
+    // Rigidité (P6, 26/10/2026, BAISSE, GO explicite de Pierre) : TWU « Luxilon Adrenaline Rough 16L/1.25 » = 202,9 lb/in (jauge 1.25), jauge unique de la fiche ; remplace 212 (sans source). Mesure AD de tsa-measure du 23/10/2026. Provenance : src/data/string-stiffness-provenance.ts.
+    stiffness: 202.9,
     stiffnessByGauge: { '1.25': 202.9 },
     performance: 9,
     control: 8.5,
@@ -2339,7 +2347,8 @@ export const stringsDatabase: TennisString[] = [
     model: 'Hawk Rough',
     type: 'Polyester',
     gauges: ['1.25'],
-    stiffness: 212,
+    // Rigidité (P6, 26/10/2026, BAISSE, GO explicite de Pierre) : TWU « Head Hawk Rough 17 » = 201,2 lb/in (jauge 1.25), jauge unique de la fiche ; remplace 212 (sans source). Mesure AD de tsa-measure du 23/10/2026. Provenance : src/data/string-stiffness-provenance.ts.
+    stiffness: 201.2,
     stiffnessByGauge: { '1.25': 201.2 },
     performance: 8.5,
     control: 8.5,
@@ -2358,7 +2367,8 @@ export const stringsDatabase: TennisString[] = [
     model: 'Lynx',
     type: 'Polyester',
     gauges: ['1.20', '1.25', '1.30'],
-    stiffness: 225,
+    // Rigidité (P6, 26/10/2026, BAISSE, GO explicite de Pierre) : TWU « Head Lynx 16 (1.30) » = 185,7 lb/in (jauge 1.30), règle C, jauge la plus rigide mesurée ; toutes les jauges de la fiche mesurées, série non suspecte ; remplace 225 (sans source). Mesure AD de tsa-measure du 23/10/2026. Provenance : src/data/string-stiffness-provenance.ts.
+    stiffness: 185.7,
     stiffnessByGauge: { '1.20': 174.9, '1.25': 179.5, '1.30': 185.7 },
     performance: 9,
     control: 9,
@@ -2591,7 +2601,7 @@ export const stringsDatabase: TennisString[] = [
     power: 8,
     recommendedTension: { min: 22, max: 27 },
     price: { europe: 13, usa: 15 },
-    description: 'Polyester moderne avec bon équilibre entre spin, confort et durabilité.',
+    description: 'Polyester moderne avec bon équilibre entre spin et durabilité.',
     color: 'Orange'
   },
   {
@@ -2808,7 +2818,8 @@ export const stringsDatabase: TennisString[] = [
     model: 'Ruff Code',
     type: 'Polyester',
     gauges: ['1.25', '1.30'],
-    stiffness: 215,
+    // Rigidité (P6, 26/10/2026, BAISSE, GO explicite de Pierre) : TWU « Tecnifibre Ruff Code 16 (1.30) » = 207,5 lb/in (jauge 1.30), règle C, jauge la plus rigide mesurée ; toutes les jauges de la fiche mesurées, série non suspecte ; remplace 215 (sans source). Mesure AD de tsa-measure du 23/10/2026. Provenance : src/data/string-stiffness-provenance.ts.
+    stiffness: 207.5,
     stiffnessByGauge: { '1.25': 207.5, '1.30': 207.5 },
     performance: 8.5,
     control: 8.5,
@@ -3147,7 +3158,8 @@ export const stringsDatabase: TennisString[] = [
     model: 'Poly Tour Tough',
     type: 'Polyester',
     gauges: ['1.25'],
-    stiffness: 245,
+    // Rigidité (P6, 26/10/2026, BAISSE, GO explicite de Pierre) : TWU « Yonex Poly Tour Tough 16L » = 193,7 lb/in (jauge 1.25), jauge unique de la fiche ; remplace 245 (sans source). Mesure AD de tsa-measure du 23/10/2026. Provenance : src/data/string-stiffness-provenance.ts.
+    stiffness: 193.7,
     stiffnessByGauge: { '1.25': 193.7 },
     performance: 8.5,
     control: 9.5,
@@ -3186,7 +3198,8 @@ export const stringsDatabase: TennisString[] = [
     model: 'Poly Tour Air',
     type: 'Polyester',
     gauges: ['1.25'],
-    stiffness: 195,
+    // Rigidité (P6, 26/10/2026, BAISSE, GO explicite de Pierre) : TWU « Yonex Poly Tour Air 16L » = 154,9 lb/in (jauge 1.25), jauge unique de la fiche ; remplace 195 (sans source). Mesure AD de tsa-measure du 23/10/2026. Provenance : src/data/string-stiffness-provenance.ts.
+    stiffness: 154.9,
     stiffnessByGauge: { '1.25': 154.9 },
     performance: 8.5,
     control: 8,

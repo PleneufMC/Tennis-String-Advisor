@@ -240,7 +240,7 @@ function swarm(items: { x: number; s: TennisString }[], r: number, gap: number):
 // ---------------------------------------------------------------------------------------------
 function polyestersFigure(fa: Facts, lang: Lang): string {
   const W = 640;
-  const X0 = 44, X1 = 616, D0 = 160, D1 = 290; // axe 160-290 : le polyester le plus rigide (Luxilon 4G) est à 286,9 lb/in depuis le lot 3
+  const X0 = 44, X1 = 616, D0 = 150, D1 = 290; // axe 150-290 : le plus rigide (Luxilon 4G) est à 286,9 lb/in depuis le lot 3, le plus souple (Yonex Poly Tour Air) à 154,9 depuis P6 (26/10/2026)
   const kx = (X1 - X0) / (D1 - D0);
   const X = (v: number) => X0 + (v - D0) * kx;
   const Y_AXIS = 222;
