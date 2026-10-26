@@ -13,7 +13,7 @@ inventaire `AB_inventaire_photos`, décisions fiche par fiche `AC_fiches_g_s_v` 
 #149, v2.3.31). **Constat** : 36 fiches bloquaient les photos faute
 de génération établie ou parce que leurs caractéristiques ne correspondaient à aucun produit trouvé. Pages ouvertes lues le 23/10
 (robot nommé, `robots.txt` / `agents.md` / `llms.txt`, 3 s par hôte ; head.com, wilson.com, tecnifibre.com, TWE non lus) ; faits V123
-à V142 du dossier du 23/10. **Changé** (13 fiches) : FX 500 Tour tamis 100 → 98 (trois pages d'essai, 2020, 2023, 2025) ; Prestige
+à V142 du dossier du 23/10. **Changé** (10 fiches, 14 champs) : FX 500 Tour tamis 100 → 98 (trois pages d'essai, 2020, 2023, 2025) ; Prestige
 Tour plan 18x20 → 16x19 et RA 60 → 62 ; V8 Pro plan 16x19 → 18x20 et RA 64 → 67 ; Ripstick 100 RA 60 → 67 (seconde génération,
 TWU) ; Extreme Standard RA 65 → 66 (2022 et 2024 mesurées 66) ; TF40 305 RA 63 → 64 (page d'essai 16x19) ; EZONE Junior 25 (100 in²,
 230 g) et 26 (16x18, 240 g), Pure Aero Junior 25 (235 g), Pro Stacked (jauges 1.20, 1.30, 1.35) sur la page du fabricant. **Tenus** :
