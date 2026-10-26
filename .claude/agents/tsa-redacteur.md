@@ -105,8 +105,10 @@ Lis avant toute action :
   - pas de « cette saison » ni de « récemment » sans date ;
   - ce qui dépend d'une génération de produit ou d'un prix est daté et isolé
     dans un passage facile à mettre à jour, jamais diffusé dans tout le texte.
-- **Les verdicts dépendent du joueur** : « pour un bras sensible… », « pour un
-  frappeur lourd… ». Pas de vainqueur absolu, et jamais entre données de
+- **Les verdicts dépendent du jeu et du montage** : « si le confort passe avant
+  le contrôle… », « pour un frappeur lourd… », avec le palier et l'indice au
+  montage cité (F7). Jamais un verdict conditionné par un état de santé (« pour
+  un bras sensible… »). Pas de vainqueur absolu, et jamais entre données de
   natures différentes (F2).
 - **La santé** :
   - tu appliques F7 ;

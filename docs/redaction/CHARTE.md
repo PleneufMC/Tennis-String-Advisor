@@ -1,6 +1,6 @@
 # Charte éditoriale — Tennis String Advisor
 
-> **Version 1.2 — 21 octobre 2026.** Règles communes à la chaîne éditoriale :
+> **Version 1.3 — 23 octobre 2026.** Règles communes à la chaîne éditoriale :
 > `tsa-pigiste`, `tsa-redacteur`, `tsa-acquisition` et l'orchestrateur. Elles
 > sont écrites **ici, une seule fois** ; les prompts des agents y renvoient sans
 > les recopier. Le déroulé du travail (qui fait quoi, dans quel ordre) est dans
@@ -8,7 +8,9 @@
 > 10/10/2026 : evergreen d'abord (§1), images générées par son outil MCP (§4),
 > consentement avant toute publication (§6). La v1.2 réécrit F7 (§2) sur sa
 > décision du 21/10/2026 : qualifier franchement un montage, confort compris,
-> ne jamais prêter au matériel un effet sur la santé.
+> ne jamais prêter au matériel un effet sur la santé. La v1.3 réécrit le premier
+> paragraphe du §1 (avis Opus 5.5 du 23/10/2026, point 8) : le site ne promet
+> aucun effet du matériel sur la santé, ni « la prévention du tennis elbow ».
 >
 > **Rang.** Les neuf règles non négociables de `CLAUDE.md` §4 passent avant
 > tout ; cette charte les applique au contenu. En cas de conflit, `CLAUDE.md`
@@ -22,10 +24,14 @@
 
 ## 1. Ce qu'un article de TSA doit faire
 
-Un article aide un joueur à **choisir** un cordage, une tension ou une raquette
-en gardant **son bras** comme premier critère. C'est ce qui distingue TSA des
-sites qui notent aussi des cordages : la prévention du tennis elbow, avec un
-indice (le RCS) et des seuils publiés.
+Un article aide un joueur à **choisir** un cordage, une tension ou une raquette,
+et à savoir ce que vaut son montage : il le qualifie franchement (confortable,
+standard, ferme, très ferme), chiffres à l'appui. C'est ce qui distingue TSA des
+sites qui notent aussi des cordages : un indice de fermeté du montage complet
+(le RCS : raquette, cordage et tension) et des seuils d'alerte bras publiés, qui
+passent avant tout autre critère. Le site ne promet aucun effet du matériel sur
+la santé : il mesure la fermeté, signale les seuils, et renvoie toute douleur
+vers un professionnel de santé.
 
 Trois conséquences :
 
