@@ -5,9 +5,9 @@
   "articles": [
     {
       "fichier": "public/blog/actualite-materiel-tennis-2026-guerre-du-spin.html",
-      "empreinte": "sha256:f5f0347a0bb589f7a00c3f44b01df72205e8813715bb5b0d7eef40d812eb3d8b",
-      "depuis": "2026-10-11",
-      "motif": "Antérieur à la règle images du 10/10/2026 ; corrigé le 10/10/2026 (PR #102 : valeurs produit alignées sur la base, urgence d'exactitude) — visuel de corps à créer, première mission de l’équipe éditoriale ; JSON-LD du <head> corrigé le 11/10/2026 (logo éditeur en 404 remplacé ; corps inchangé)"
+      "empreinte": "sha256:ec3727248ce16e1e33e677f451bd72c6fc6dce3125b5a44171b303e902f0afe1",
+      "depuis": "2026-10-26",
+      "motif": "Antérieur à la règle images du 10/10/2026 ; corrigé le 10/10/2026 (PR #102 : valeurs produit alignées sur la base, urgence d'exactitude) — visuel de corps à créer, première mission de l’équipe éditoriale ; JSON-LD du <head> corrigé le 11/10/2026 (logo éditeur en 404 remplacé ; corps inchangé) ; corrigé le 23/10/2026 (passages « bras » réécrits au gabarit F7 v1.2, PR #150 ; relecture du pigiste appliquée le 26/10/2026 (effet « vibrations » attribué à la marque, date au 26/10/2026 ; #150) ; visuel de corps toujours à créer)"
     },
     {
       "fichier": "public/blog/challengers-sinner-alcaraz-2026.html",
@@ -29,9 +29,9 @@
     },
     {
       "fichier": "public/blog/meilleur-cordage-polyester-2026.html",
-      "empreinte": "sha256:9b420e3854cd0135f16994fb7b34c5d50314bdf567c3e695ddf01f712a89af43",
-      "depuis": "2026-10-11",
-      "motif": "Antérieur à la règle images du 10/10/2026 ; corrigé le 10/10/2026 (PR #116 : rigidités, indices et rangs alignés sur la base après la règle C et le lot 3, urgence d'exactitude) — visuel de corps à créer, première mission de l’équipe éditoriale ; JSON-LD du <head> corrigé le 11/10/2026 (réponse n° 1 du FAQPage alignée sur le texte visible ; corps inchangé)"
+      "empreinte": "sha256:84370ce01876447b75879593f3aa9d83d2834f23cc1e01d3b02f5cc1a95cabec",
+      "depuis": "2026-10-26",
+      "motif": "Antérieur à la règle images du 10/10/2026 ; corrigé le 10/10/2026 (PR #116 : rigidités, indices et rangs alignés sur la base après la règle C et le lot 3, urgence d'exactitude) — visuel de corps à créer, première mission de l’équipe éditoriale ; JSON-LD du <head> corrigé le 11/10/2026 (réponse n° 1 du FAQPage alignée sur le texte visible ; corps inchangé) ; corrigé le 23/10/2026 (note et rang de confort du Mach-10 après D2, #147 ; FAQ « bras sensible », encadré et critère « bras » réécrits au gabarit F7 v1.2 le même jour (#150) ; relecture du pigiste appliquée le 26/10/2026 (rangs et qualificatifs de rigidité limités aux rigidités mesurées, Confidential compris, date au 26/10/2026 ; #150) ; visuel de corps toujours à créer)"
     },
     {
       "fichier": "public/blog/meilleures-raquettes-tennis-2026.html",
@@ -47,9 +47,9 @@
     },
     {
       "fichier": "public/en/blog/best-polyester-tennis-strings-2026.html",
-      "empreinte": "sha256:ececf92a1937f94d9327cc5da6c2e7c1615f3a56409aa97fcdc754e47bbe7b80",
-      "depuis": "2026-10-11",
-      "motif": "Antérieur à la règle images du 10/10/2026 ; corrigé le 10/10/2026 (PR #116 : rigidités, indices et rangs alignés sur la base après la règle C et le lot 3, urgence d'exactitude) — visuel de corps à créer, première mission de l’équipe éditoriale ; JSON-LD du <head> corrigé le 11/10/2026 (réponse n° 1 du FAQPage alignée sur le texte visible ; corps inchangé)"
+      "empreinte": "sha256:34d71029ae60aefdaffbe31acc8cbbea523ad575fffa259fd89a7cb9e9b9cfe1",
+      "depuis": "2026-10-26",
+      "motif": "Antérieur à la règle images du 10/10/2026 ; corrigé le 10/10/2026 (PR #116 : rigidités, indices et rangs alignés sur la base après la règle C et le lot 3, urgence d'exactitude) — visuel de corps à créer, première mission de l’équipe éditoriale ; JSON-LD du <head> corrigé le 11/10/2026 (réponse n° 1 du FAQPage alignée sur le texte visible ; corps inchangé) ; corrigé le 23/10/2026 (note et rang de confort du Mach-10 après D2, #147 ; FAQ « bras sensible », encadré et critère « bras » réécrits au gabarit F7 v1.2 le même jour (#150) ; relecture du pigiste appliquée le 26/10/2026 (rangs et qualificatifs de rigidité limités aux rigidités mesurées, Confidential compris, date au 26/10/2026 ; #150) ; visuel de corps toujours à créer)"
     },
     {
       "fichier": "public/en/blog/best-tennis-racquets-2026.html",
@@ -71,9 +71,9 @@
     },
     {
       "fichier": "public/en/blog/next-gen-tennis-racquets-fonseca-mensik-cobolli-jodar.html",
-      "empreinte": "sha256:ffc803e8e2fa371a4b3d27d408040a169026aee1ea1f55c039c4ecaee9887699",
-      "depuis": "2026-10-11",
-      "motif": "Antérieur à la règle images du 10/10/2026 : couverture conforme, visuel de corps à créer (première mission de l’équipe éditoriale) ; JSON-LD du <head> corrigé le 11/10/2026 (logo éditeur en 404 remplacé ; corps inchangé)"
+      "empreinte": "sha256:34207cd1363dea95e395e1e23e8b2610bb8f8c277693cb46788ed490023316f7",
+      "depuis": "2026-10-23",
+      "motif": "Antérieur à la règle images du 10/10/2026 : couverture conforme, visuel de corps à créer (première mission de l’équipe éditoriale) ; JSON-LD du <head> corrigé le 11/10/2026 (logo éditeur en 404 remplacé ; corps inchangé) ; corrigé le 23/10/2026 (passages « bras » réécrits au gabarit F7 v1.2, PR #150 ; visuel de corps toujours à créer)"
     },
     {
       "fichier": "public/en/blog/tennis-string-tension-cold-weather.html",
