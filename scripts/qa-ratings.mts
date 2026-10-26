@@ -5612,9 +5612,14 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     // `armWith(r, s)` : l'alerte existe-t-elle pour ce montage ? Sert à vérifier que la valeur d'avant, seule, la portait encore.
     const excused = (rid: string, sid: string, r0: RefR, r1: CurR, s0: RefS, s1: CurS, armWith: (r: RefR | CurR, s: RefS | CurS) => boolean) => {
       const xr = exceptions.find((e) => e.id === rid && e.ra !== undefined);
-      if (xr && r1.ra === xr.ra && r1.ra < r0.ra && r0.weight === r1.weight && armWith({ ...r1, ra: r0.ra }, s1)) { used.add(rid); return true; }
       const xs = exceptions.find((e) => e.id === sid && e.stiffness !== undefined);
-      if (xs && s0.type === s1.type && s0.comfort === s1.comfort && s1.stiffness === xs.stiffness && s1.stiffness < s0.stiffness && armWith(r1, { ...s1, stiffness: s0.stiffness })) { used.add(sid); return true; }
+      const okR = xr !== undefined && r1.ra === xr.ra && r1.ra < r0.ra && r0.weight === r1.weight;
+      const okS = xs !== undefined && s0.type === s1.type && s0.comfort === s1.comfort && s1.stiffness === xs.stiffness && s1.stiffness < s0.stiffness;
+      if (okR && armWith({ ...r1, ra: r0.ra }, s1)) { used.add(rid); return true; }
+      if (okS && armWith(r1, { ...s1, stiffness: s0.stiffness })) { used.add(sid); return true; }
+      // Les deux baisses autorisées ensemble (raquette ET cordage exemptés, rien d'autre de changé) : le montage ne diffère de la référence
+      // que par elles.
+      if (okR && okS) { used.add(rid); used.add(sid); return true; }
       return false;
     };
     const sById = new Map(strings.map((s) => [s.id, s]));
