@@ -1,6 +1,6 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.3.33
+> **Version** : 2.3.34
 > **Date** : 26 octobre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
@@ -149,7 +149,7 @@ témoins) et que `RA_RANGE.median` la recopie. Libellés : le comparateur dit «
 de `tsa-acquisition` : retouchés ici parce qu'aucune nouvelle PR ne s'ouvre (consigne de Pierre du 26/10/2026). Le mot « médiane » de
 la charte F7 relève de la PR charte de Pierre.
 
-**Changelog v2.3.32 → v2.3.33** — **P6 : treize rigidités de cordage abaissées à leur mesure TWU, premier lot qui RETIRE des
+**Changelog v2.3.33 → v2.3.34** — **P6 : treize rigidités de cordage abaissées à leur mesure TWU, premier lot qui RETIRE des
 alertes bras (GO explicite de Pierre du 26/10/2026)** (mesure préalable AD de `tsa-measure` du 23/10/2026 ; `tsa-core`). **Critères** (AD §1,
 rejoués) : toutes les jauges de la fiche mesurées par TWU (relevé versionné du 29/09/2026, 51 lbs, Fast), appariement strict, série non
 suspecte ; valeur = règle C (jauge la plus rigide mesurée, ou jauge unique). **Changé** (lb/in) : Solinco Tour Bite Diamond Rough 260 → 192,6 ;
@@ -1747,4 +1747,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.3.33 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.3.34 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
