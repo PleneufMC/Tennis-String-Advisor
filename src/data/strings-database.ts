@@ -1590,7 +1590,8 @@ export const stringsDatabase: TennisString[] = [
     brand: 'Solinco',
     model: 'Pro Stacked',
     type: 'Polyester',
-    gauges: ['1.20', '1.25', '1.30'],
+    // Jauges officielles (23/10/2026, solincosports.com, fait V137) : 15L (1.35), 16 (1.30), 17 (1.20) ; pas de 1.25. Rigidité inchangée (aucune ligne TWU).
+    gauges: ['1.20', '1.30', '1.35'],
     stiffness: 220,
     performance: 8.5,
     control: 8.5,

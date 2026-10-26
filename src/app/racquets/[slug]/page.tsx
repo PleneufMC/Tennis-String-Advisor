@@ -16,7 +16,7 @@ import { effectiveRacquetRA, isRacquetStiffnessEstimated } from '@/lib/racquet-s
  * une page de liste, donc aucune surface pour les requêtes de modèle.
  *
  * Point de vigilance : `stiffness` (RA) est absent sur 29 des 129 fiches. On
- * n'affiche JAMAIS la médiane de repli comme une donnée constructeur — le
+ * n'affiche JAMAIS le RA par défaut de repli comme une donnée constructeur — le
  * champ est marqué « estimé » via `isRacquetStiffnessEstimated` (règle 3 §4).
  */
 
@@ -178,7 +178,7 @@ export default function RacquetPage({ params }: { params: { slug: string } }) {
         {raEstimated && (
           <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
             La rigidité RA n&apos;est pas publiée par le constructeur pour ce modèle.
-            La valeur affichée est la médiane mesurée sur le catalogue, utilisée
+            La valeur affichée est un RA par défaut (convention du site, non mesurée), utilisé
             uniquement pour permettre un calcul indicatif — ce n&apos;est pas une
             donnée constructeur.
           </p>

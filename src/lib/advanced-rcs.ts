@@ -33,7 +33,7 @@ export interface AdvancedRcsInput {
   /**
    * RA de la raquette (rigidité cadre).
    * Utilisez `effectiveRacquetRA()` de `lib/racquet-scoring` pour l'obtenir :
-   * il applique la médiane mesurée (64) quand la donnée est absente.
+   * il applique le RA par défaut (64, convention du site) quand la donnée est absente.
    */
   racquetStiffness: number;
   /** Poids de la raquette en grammes (optionnel). */
@@ -300,7 +300,7 @@ export function calculateAdvancedRcs(input: AdvancedRcsInput): AdvancedRcsResult
   const { rcs, hybrid } = setupFirmnessIndex(input);
 
   // --- Écarts normalisés (autour des centres "données réelles") ---
-  // RA : 55-72. Centre = MÉDIANE MESURÉE (64) sur les 100 raquettes dont le RA
+  // RA : 55-72. Centre = RA par défaut (64, convention du site ; médiane des RA publiés : 64 le 08/08, 65 le 26/10/2026) — choisi sur les 100 raquettes dont le RA
   // est publié — et non 63 comme écrit initialement de mémoire. Aligné sur
   // DEFAULT_RACQUET_RA de lib/racquet-scoring.ts. >0 => cadre rigide.
   const raDev = racquetStiffness - 64;
