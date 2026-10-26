@@ -53,6 +53,7 @@ import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { stringsDatabase, calculateRCS, getStringRecommendation, type TennisString } from '../../src/data/strings-database';
 import { STRING_STIFFNESS_PROVENANCE } from '../../src/data/string-stiffness-provenance';
+import { isStiffnessRankable } from '../../src/data/prepacked-hybrids';
 
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 type Lang = 'fr' | 'en';
@@ -65,7 +66,7 @@ type Lang = 'fr' | 'en';
 const EXAMPLE = { ra: 64, kg: 24 };
 const SOFT_N = 15; // « les plus souples » (section 2) : les 15 plus souples des polyesters dont la rigidité de la fiche est une mesure TWU (P4)
 const ZONE_FIRM_MIN = 240; // « les plus fermes » : 240 lb/in ou plus (section 3)
-const AS_OF = { fr: '23 octobre 2026', en: 'October 23, 2026' }; // date de relevé affichée (F11) : à mettre à jour avec la base
+const AS_OF = { fr: '26 octobre 2026', en: 'October 26, 2026' }; // date de relevé affichée (F11) : à mettre à jour avec la base
 
 const NB = '&nbsp;';
 const TARGETS = [
@@ -152,14 +153,19 @@ export function computeFacts() {
   const soft = measured.slice(0, SOFT_N);
   if (soft.length < SOFT_N) throw new Error(`moins de ${SOFT_N} polyesters à rigidité mesurée`);
   const firm = polys.filter((s) => s.stiffness >= ZONE_FIRM_MIN);
+  // familles classées par médiane : seulement les fiches classables (isStiffnessRankable, #149 : un set prémonté n'entre dans un
+  // classement que si sa composition est publiée ; les autres sets sont nommés dans la légende, hors classement)
+  const ranked = all.filter(isStiffnessRankable);
+  const unrankedHybrids = all.filter((s) => s.type === 'Hybrid' && !isStiffnessRankable(s)).length;
   const families = FAMILY_ORDER.map((f) => {
-    const v = all.filter((s) => s.type === f.type).map((s) => s.stiffness);
+    const v = ranked.filter((s) => s.type === f.type).map((s) => s.stiffness);
     if (v.length === 0) throw new Error(`famille vide : ${f.type}`);
-    const nAligned = all.filter((s) => s.type === f.type && alignedOnTwu(s)).length;
+    const nAligned = ranked.filter((s) => s.type === f.type && alignedOnTwu(s)).length;
     return { ...f, n: v.length, min: Math.min(...v), med: r1(median(v)), max: Math.max(...v), nAligned };
   }).sort((a, b) => a.med - b.med);
   const known = families.reduce((t, f) => t + f.n, 0);
-  if (known !== all.length) throw new Error(`${all.length - known} cordage(s) hors des 5 familles : ajouter la famille au script`);
+  if (known !== ranked.length) throw new Error(`${ranked.length - known} cordage(s) hors des 5 familles : ajouter la famille au script`);
+  if (all.length - ranked.length !== unrankedHybrids) throw new Error('fiche non classable hors des sets prémontés : revoir la légende');
   // chiffres cités dans le texte des articles (voir expectations) : trois plus souples (mesurés), plus rigide, écart entre le plus souple et le plus rigide
   const softest = polys[0], stiffest = polys[polys.length - 1];
   if (!alignedOnTwu(softest) || !alignedOnTwu(stiffest)) throw new Error('le plus souple ou le plus rigide n\'est plus une mesure TWU : revoir l\'écart cité');
@@ -191,6 +197,7 @@ export function computeFacts() {
     nAlignedPolys: polys.filter(alignedOnTwu).length,
     nAlignedAll: all.filter(alignedOnTwu).length,
     families,
+    unrankedHybrids,
     example: { ...EXAMPLE },
   };
 }
@@ -410,8 +417,8 @@ function famillesFigure(fa: Facts, lang: Lang): string {
   o.push(`</svg>`);
 
   const caption = T(
-    `Rigidité des fiches par famille de cordage, de la plus souple à la plus rigide : minimum, médiane et maximum. La bande du haut situe l'indice RCS du montage de référence (raquette de RA${NB}${fa.example.ra}, ${fa.example.kg}${NB}kg) selon la rigidité du cordage. Ces valeurs sont celles de nos fiches${NB}: ${fa.nAlignedAll} des ${fa.total} sont alignées sur une mesure du laboratoire TWU (${alignedList('fr')}), les autres ne sont pas des mesures TWU. Schéma Tennis String Advisor, d'après la base du site, état au ${AS_OF.fr}.`,
-    `Stiffness of the product pages by string family, softest to stiffest: minimum, median and maximum. The band at the top shows the RCS index of the reference setup (racquet with an RA of${NB}${fa.example.ra}, ${fa.example.kg}${NB}kg) according to string stiffness. These values are the ones on our product pages: ${fa.nAlignedAll} of the ${fa.total} are aligned on a measurement by the TWU lab (${alignedList('en')}), the others are not TWU measurements. Chart by Tennis String Advisor, based on the site's database, as of ${AS_OF.en}.`,
+    `Rigidité des fiches par famille de cordage, de la plus souple à la plus rigide : minimum, médiane et maximum. La bande du haut situe l'indice RCS du montage de référence (raquette de RA${NB}${fa.example.ra}, ${fa.example.kg}${NB}kg) selon la rigidité du cordage. Ces valeurs sont celles de nos fiches${NB}: ${fa.nAlignedAll} des ${fa.total} sont alignées sur une mesure du laboratoire TWU (${alignedList('fr')}), les autres ne sont pas des mesures TWU. Hybrides${NB}: les sets prémontés à composition publiée, dont la rigidité est dérivée de leurs deux cordages${NB}; ${fa.unrankedHybrids}${NB}autres sets (composition non publiée, ou set introuvable sur les pages ouvertes) ne sont pas classés. Schéma Tennis String Advisor, d'après la base du site, état au ${AS_OF.fr}.`,
+    `Stiffness of the product pages by string family, softest to stiffest: minimum, median and maximum. The band at the top shows the RCS index of the reference setup (racquet with an RA of${NB}${fa.example.ra}, ${fa.example.kg}${NB}kg) according to string stiffness. These values are the ones on our product pages: ${fa.nAlignedAll} of the ${fa.total} are aligned on a measurement by the TWU lab (${alignedList('en')}), the others are not TWU measurements. Hybrids: the pre-packed sets with a published composition, whose stiffness is derived from their two strings; ${fa.unrankedHybrids}${NB}other sets (composition not published, or set not found on the pages opened) are not ranked. Chart by Tennis String Advisor, based on the site's database, as of ${AS_OF.en}.`,
   );
   return wrapFigure(o.join('\n'), caption);
 }
@@ -493,6 +500,7 @@ function expectations(fa: Facts, lang: Lang, kind: string): { re: RegExp; what: 
     ? [
         { re: row('Multifilament', m), what: 'ligne multifilament du tableau des familles' },
         { re: row('Polyester', p), what: 'ligne polyester du tableau des familles' },
+        { re: row('Hybride', fam('Hybrid')), what: 'ligne hybride du tableau des familles (sets classables)' },
         { re: rx(`${fa.total} fiches cordages`), what: 'effectif du catalogue' },
         { re: rx(`multifilaments de ${m.min} à ${m.max}`), what: 'étendue des multifilaments dans le texte' },
         { re: rx(dot(`les polyesters de ${n(p.min)} à ${n(p.max)}.`)), what: '« L\'essentiel » : étendue des polyesters' },
@@ -501,6 +509,7 @@ function expectations(fa: Facts, lang: Lang, kind: string): { re: RegExp; what: 
     : [
         { re: row('Multifilament', m), what: 'ligne multifilament du tableau des familles' },
         { re: row('Polyester', p), what: 'ligne polyester du tableau des familles' },
+        { re: row('Hybrid', fam('Hybrid')), what: 'ligne hybride du tableau des familles (sets classables)' },
         { re: rx(`${fa.total} string pages`), what: 'effectif du catalogue' },
         { re: rx(`multifilaments at ${m.min}-${m.max}`), what: 'étendue des multifilaments dans le texte' },
         { re: rx(dot(`polyesters at ${n(p.min)}-${n(p.max)}.`)), what: 'short version : étendue des polyesters' },

@@ -7,39 +7,6 @@
 > **Branche de référence** : `main` (seule branche longue ; la production Netlify en déploie)
 > **Repo** : https://github.com/PleneufMC/Tennis-String-Advisor.git
 
-**Changelog v2.3.31 → v2.3.32** — **Fiches G et S de l'inventaire photos : tamis, plans, poids et jauges corrigés sur source,
-cinq RA relevés sur mesure L1 (RDC ou TWU), Ripstick nommée « 100 300g (2025) », quatre générations établies ; RA par défaut :
-convention du site, à ±1 de la médiane** (avis d'Opus 5.5 du 23/10/2026, puis du 26/10/2026 sur les réserves R2 à R4 de la revue ;
-inventaire `AB_inventaire_photos`, décisions fiche par fiche `AC_fiches_g_s_v` ; `tsa-core` ; partie de la tête de la PR #145, fusionnée ; numérotée après
-#149, v2.3.31). **Constat** : 36 fiches bloquaient les photos faute
-de génération établie ou parce que leurs caractéristiques ne correspondaient à aucun produit trouvé. Pages ouvertes lues le 23/10
-(robot nommé, `robots.txt` / `agents.md` / `llms.txt`, 3 s par hôte ; head.com, wilson.com, tecnifibre.com, TWE non lus) ; faits V123
-à V142 du dossier du 23/10. **Changé** (10 fiches, 15 champs) : FX 500 Tour tamis 100 → 98 (trois pages d'essai, 2020, 2023, 2025) ; Prestige
-Tour plan 18x20 → 16x19 et RA 60 → 62 ; V8 Pro plan 16x19 → 18x20 et RA 64 → 67 (V-Feel 2020, RDC ; v3 chez TW US : 67) ; Ripstick nommée « Ripstick 100 300g
-(2025) » (ex-« Standard », id conservé) et RA 60 → 67 (2025, TWU ; la 2021 mesure 64 : pour son propriétaire, indice surestimé
-d'environ 1 point, sur-alerte assumée) ; Extreme Standard RA 65 → 66 (2022 et 2024 mesurées 66) ; TF40 305 RA 63 → 64 (page d'essai 16x19, RDC ; TW US : 64) ; EZONE Junior 25 (100 in²,
-230 g) et 26 (16x18, 240 g), Pure Aero Junior 25 (235 g), Pro Stacked (jauges 1.20, 1.30, 1.35) sur la page du fabricant. **Tenus** :
-FX 500 Tour RA 67 (65 mesuré sur la génération en vente : baisse) et Pure Strike 100 16x20 RA 64 (61 mesuré : baisse) jusqu'à la revue
-de `tsa-measure`. **Générations établies sans changement** (provenance `held`) : Blade Standard = Blade 98 16x19 v7 (2019), FX 500 =
-2023, SX 300 Tour = 2020, Warrior 100 (300g) = Textreme Warrior 100. **Règle des mesures L1** (R2, précise Q-1 du 10/10) :
-**une mesure RDC d'une page d'essai TW est L1**, comme le « Flex Rating Test » TWU (même grandeur, le RA cordé, mesurée par un
-instrument ; la fiche produit d'un revendeur reste L2) ; **une hausse admet la mesure d'une génération voisine si une valeur L2
-concorde** ; **une baisse exige la mesure de la génération exacte** (et, inchangé, la revue de `tsa-measure` et la liste des alertes
-retirées). TF40 305 et V8 Pro en relèvent ; le dossier du 23/10 dit « L1 (RDC) » (9 faits) ou « L1 (TWU) » (7) fait par fait et le
-contrôle 14 bis vérifie ce libellé sur l'extrait cité (3 tests négatifs, plus un pour la génération retirée du nom de la Ripstick).
-**Effet** (grille du contrôle 5, `fiches-effet-alertes.mts`) :
-+164 alertes standard, +351 bras sensible, +203 `calculateCompatibility`, **0 disparue** (Ripstick +79 / +175 / +103, V8 Pro +43 / +87 /
-+45, Prestige Tour +14 / +41 / +25, TF40 +15 / +22 / +9, Extreme +13 / +26 / +21). **RA par défaut** (R4) : ces hausses portent la médiane
-des 100 RA publiés de 64 à 65 ; `DEFAULT_RACQUET_RA` reste à 64, **convention du site, non mesurée** (le recaler élèverait l'indice
-des 29 raquettes sans RA, toutes juniors : +319 / +841 / +377 alertes sur 31 146 montages, sans rien savoir de nouveau sur elles).
-Le contrôle 1 exige que la convention reste à ±1 de la médiane mesurée (au-delà, l'arbitrage est rouvert ; 6 tests négatifs, 3
-témoins) et que `RA_RANGE.median` la recopie. Libellés : le comparateur dit « RA non publié : indice calculé avec un RA par défaut de
-64 (convention du site, non mesurée) » au lieu de « RA estimé à 64 (médiane mesurée) », la fiche raquette « un RA par défaut
-(convention du site, non mesurée) » au lieu de « la médiane mesurée sur le catalogue » ; commentaires de `racquet-scoring.ts`,
-`advanced-rcs.ts` et `racquets-database.ts` alignés ; aucun calcul touché. `compare/page.tsx` et `racquets/[slug]/page.tsx` relèvent
-de `tsa-acquisition` : retouchés ici parce qu'aucune nouvelle PR ne s'ouvre (consigne de Pierre du 26/10/2026). Le mot « médiane » de
-la charte F7 relève de la PR charte de Pierre.
-
 **Changelog v2.3.26 → v2.3.27** — **Écarts de fiche : Kirschbaum Touch Multifibre (nom, jauges, rigidité TWU) et Dunlop CX 200
 (RA tenu, deux valeurs sourcées) ; contrôle 14 bis sur deux dossiers** (avis d'Opus 5.5 du 23/10/2026, point 10 ; Pierre : « je donne le
 La, vous exécutez » ; `tsa-core`). **Kirschbaum** : le fabricant écrit « Touch Multifibre » et « Durchmesser 1.25, 1.30 und 1.35 mm »
@@ -119,6 +86,65 @@ fiche « Non publié », aucune fiche ni raquette ne disparaît, aucune alerte b
 suivent. **À reprendre par `tsa-redacteur`** : articles qui citent ces notes (Mach-10 « 8,8, le mieux noté en confort des 18 »,
 classement en confort des 18 polyesters testés) et le dossier `docs/redaction/coherence-chiffres-regle-c.md` (`redaction:valeurs` :
 1 écart, Mach-10 8,8 contre 8,3).
+
+**Changelog v2.3.30 → v2.3.31** — **Hybrides prémontés : composition établie, rigidité dérivée de leurs deux cordages et étiquetée ;
+contrôle 24** (avis d'Opus 5.5 du 23/10/2026, point 9 ; Pierre : « je donne le La, vous exécutez » ; `tsa-core` ; numérotée après la
+PR #147 (v2.3.30) ; contrôle numéroté 24, les 22 et 23 étant à #147). **Constat** : les 9 fiches de type « Hybrid » portaient une rigidité sans source,
+et 6 des 7 sets calculables étaient SOUS la valeur que le configurateur donne à leurs deux cordages montés à la main (rapport P du
+22/10). **Compositions lues sur des pages ouvertes** (`src/data/prepacked-hybrids.ts`, extraits et niveaux ; wilson.com, tecnifibre.com et
+head.com refusent les robots, rien n'a été contourné) : RPM Blast 125 + Touch VS 130 (babolat.com, L0 ; jauge 1.30/1.30 retirée) ; Duo
+Power = ALU Power 1.25 + NXT Power 1.30 (deux revendeurs indépendants ; jauges 1.25/1.25 → 1.25/1.30) ; **Duo Control = 4G Rough + NXT
+Control** (Tennis Warehouse ; la fiche décrivait le Duo Feel, Element + NXT) ; Champion's Choice et Champion's Choice Duo = boyau Wilson +
+ALU Power Rough (la seconde fiche disait Element + boyau : doublon probable, fusion à arbitrer) ; RPM Blast + Xcel, Razor Code + X-One
+et Ice Code + NRG2 introuvables (composition de la fiche, retrait à arbitrer) ; Head Gravity = deux co-polyesters non nommés (la fiche
+disait « poly + multi »). **Règle** : composition connue → rigidité de la fiche = celle que `setupFirmnessIndex` prête aux deux
+cordages à la même tension, max(60/40 ; moyenne), le plus haut des deux sens si l'ordre n'est pas fixé (8 sur 8 : ordre au choix ou non
+publié), arrondie au dixième supérieur, jamais sous la valeur d'avant ; composition non publiée → valeur de fiche conservée (alerte
+comprise), mention « composition non publiée, rigidité de fiche sans source », exclue des classements (`isStiffnessRankable`).
+**Valeurs** : Duo Control 188 → 222, Razor Code + X-One 180 → 212,5, RPM Blast + Xcel 192 → 206, Ice Code + NRG2 172 → 198,4, Duo Power
+175 → 196, RPM Blast + Touch VS 168 → 180,8, les deux Champion's Choice 165 et 158 → 178 ; Gravity 178 conservé. **Fiche FR** : rigidité
+marquée « (estimé) » et mention sous les caractéristiques (« Rigidité dérivée des deux cordages du set, A et B, comme le configurateur
+calcule un hybride… ; aucune mesure du set n'est publiée »). Descriptions corrigées (compositions, « équilibre parfait », « officiel »,
+« confort » d'Ice Code + NRG2, au-dessus de la médiane des hybrides, 196). **Effet** (grille du contrôle 5, `c2-effet-alertes.mts
+--base=a2cee22`) : alertes standard +20 (7,12 → 7,13 %), bras sensible +533 (23,25 → 23,63 %), `calculateCompatibility` +535, **0
+disparue**, 0 rigidité en baisse. **Contrôle 24** de `audit:ratings` : toute fiche « Hybrid » consignée, composants présents et non
+hybrides, rigidité = plus haut de la valeur d'avant et de la valeur dérivée recalculée, indice de la fiche jamais sous celui du moteur
+pour les deux cordages (8 RA × 6 tensions), composition non publiée immobile et hors classements, sources (URL https, niveau, date,
+extrait ≤ 40 mots), jauges, mention et « estimé » de la fiche FR ; 15 tests négatifs. **Couplage voulu** : la rigidité d'un set suit
+désormais celle de ses composants ; une baisse future d'un composant (4G Rough 262, TWU 216, dans les 13 baisses de l'avis du 23/10)
+fera échouer le contrôle 24 tant que le set n'est pas recalculé, donc compté dans les alertes retirées.
+**Changelog v2.3.31 → v2.3.32** — **Fiches G et S de l'inventaire photos : tamis, plans, poids et jauges corrigés sur source,
+cinq RA relevés sur mesure L1 (RDC ou TWU), Ripstick nommée « 100 300g (2025) », quatre générations établies ; RA par défaut :
+convention du site, à ±1 de la médiane** (avis d'Opus 5.5 du 23/10/2026, puis du 26/10/2026 sur les réserves R2 à R4 de la revue ;
+inventaire `AB_inventaire_photos`, décisions fiche par fiche `AC_fiches_g_s_v` ; `tsa-core` ; partie de la tête de la PR #145, fusionnée ; numérotée après
+#149, v2.3.31). **Constat** : 36 fiches bloquaient les photos faute
+de génération établie ou parce que leurs caractéristiques ne correspondaient à aucun produit trouvé. Pages ouvertes lues le 23/10
+(robot nommé, `robots.txt` / `agents.md` / `llms.txt`, 3 s par hôte ; head.com, wilson.com, tecnifibre.com, TWE non lus) ; faits V123
+à V142 du dossier du 23/10. **Changé** (10 fiches, 15 champs) : FX 500 Tour tamis 100 → 98 (trois pages d'essai, 2020, 2023, 2025) ; Prestige
+Tour plan 18x20 → 16x19 et RA 60 → 62 ; V8 Pro plan 16x19 → 18x20 et RA 64 → 67 (V-Feel 2020, RDC ; v3 chez TW US : 67) ; Ripstick nommée « Ripstick 100 300g
+(2025) » (ex-« Standard », id conservé) et RA 60 → 67 (2025, TWU ; la 2021 mesure 64 : pour son propriétaire, indice surestimé
+d'environ 1 point, sur-alerte assumée) ; Extreme Standard RA 65 → 66 (2022 et 2024 mesurées 66) ; TF40 305 RA 63 → 64 (page d'essai 16x19, RDC ; TW US : 64) ; EZONE Junior 25 (100 in²,
+230 g) et 26 (16x18, 240 g), Pure Aero Junior 25 (235 g), Pro Stacked (jauges 1.20, 1.30, 1.35) sur la page du fabricant. **Tenus** :
+FX 500 Tour RA 67 (65 mesuré sur la génération en vente : baisse) et Pure Strike 100 16x20 RA 64 (61 mesuré : baisse) jusqu'à la revue
+de `tsa-measure`. **Générations établies sans changement** (provenance `held`) : Blade Standard = Blade 98 16x19 v7 (2019), FX 500 =
+2023, SX 300 Tour = 2020, Warrior 100 (300g) = Textreme Warrior 100. **Règle des mesures L1** (R2, précise Q-1 du 10/10) :
+**une mesure RDC d'une page d'essai TW est L1**, comme le « Flex Rating Test » TWU (même grandeur, le RA cordé, mesurée par un
+instrument ; la fiche produit d'un revendeur reste L2) ; **une hausse admet la mesure d'une génération voisine si une valeur L2
+concorde** ; **une baisse exige la mesure de la génération exacte** (et, inchangé, la revue de `tsa-measure` et la liste des alertes
+retirées). TF40 305 et V8 Pro en relèvent ; le dossier du 23/10 dit « L1 (RDC) » (9 faits) ou « L1 (TWU) » (7) fait par fait et le
+contrôle 14 bis vérifie ce libellé sur l'extrait cité (3 tests négatifs, plus un pour la génération retirée du nom de la Ripstick).
+**Effet** (grille du contrôle 5, `fiches-effet-alertes.mts`) :
++164 alertes standard, +351 bras sensible, +203 `calculateCompatibility`, **0 disparue** (Ripstick +79 / +175 / +103, V8 Pro +43 / +87 /
++45, Prestige Tour +14 / +41 / +25, TF40 +15 / +22 / +9, Extreme +13 / +26 / +21). **RA par défaut** (R4) : ces hausses portent la médiane
+des 100 RA publiés de 64 à 65 ; `DEFAULT_RACQUET_RA` reste à 64, **convention du site, non mesurée** (le recaler élèverait l'indice
+des 29 raquettes sans RA, toutes juniors : +319 / +841 / +377 alertes sur 31 146 montages, sans rien savoir de nouveau sur elles).
+Le contrôle 1 exige que la convention reste à ±1 de la médiane mesurée (au-delà, l'arbitrage est rouvert ; 6 tests négatifs, 3
+témoins) et que `RA_RANGE.median` la recopie. Libellés : le comparateur dit « RA non publié : indice calculé avec un RA par défaut de
+64 (convention du site, non mesurée) » au lieu de « RA estimé à 64 (médiane mesurée) », la fiche raquette « un RA par défaut
+(convention du site, non mesurée) » au lieu de « la médiane mesurée sur le catalogue » ; commentaires de `racquet-scoring.ts`,
+`advanced-rcs.ts` et `racquets-database.ts` alignés ; aucun calcul touché. `compare/page.tsx` et `racquets/[slug]/page.tsx` relèvent
+de `tsa-acquisition` : retouchés ici parce qu'aucune nouvelle PR ne s'ouvre (consigne de Pierre du 26/10/2026). Le mot « médiane » de
+la charte F7 relève de la PR charte de Pierre.
 
 **Changelog v2.3.25 → v2.3.26** — **Hybrides : un seul indice, celui que l'alerte lit, que le configurateur
 affiche et que le PDF imprime ; contrôle 21 ter** (décision (b)+(a) de l'orchestrateur du 22/10/2026, Pierre ayant délégué ; limite (4)

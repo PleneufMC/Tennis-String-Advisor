@@ -58,7 +58,7 @@ const BLOG_ARTICLES: Array<{ slug: string; modified: string }> = [
   { slug: 'plan-de-cordage-tennis.html', modified: '2026-10-22' },
   { slug: 'jauge-cordage-tennis.html', modified: '2026-10-23' },
   { slug: 'guide-tension-cordage-tennis.html', modified: '2026-10-23' },
-  { slug: 'cordage-tennis-elbow.html', modified: '2026-10-23' },
+  { slug: 'cordage-tennis-elbow.html', modified: '2026-10-26' },
   { slug: 'guide-materiel-tennis.html', modified: '2026-10-23' },
   { slug: 'analyse-setups-atp-top-20.html', modified: '2026-10-22' },
   { slug: 'nouveautes-equipement-tennis-2025-2026.html', modified: '2026-10-23' },
@@ -77,7 +77,7 @@ const BLOG_ARTICLES: Array<{ slug: string; modified: string }> = [
   // Meilleures raquettes 2026 par profil (09/10/2026), appairé en hreflang.
   { slug: 'meilleures-raquettes-tennis-2026.html', modified: '2026-10-23' },
   // Polyester et tennis elbow, tri par rigidité (09/10/2026), appairé en hreflang.
-  { slug: 'cordage-polyester-tennis-elbow.html', modified: '2026-10-23' },
+  { slug: 'cordage-polyester-tennis-elbow.html', modified: '2026-10-26' },
 ];
 
 // Pages anglaises statiques publiques (`public/en/*.html`).
@@ -120,11 +120,11 @@ const EN_BLOG_ARTICLES: Array<{ slug: string; modified: string }> = [
   // Adapté du FR tension-cordage-hiver (09/10/2026), appairé en hreflang.
   { slug: 'tennis-string-tension-cold-weather.html', modified: '2026-10-23' },
   // Adapté du FR cordage-tennis-elbow (09/10/2026), réécrit sur le catalogue, appairé en hreflang.
-  { slug: 'best-tennis-strings-for-tennis-elbow.html', modified: '2026-10-23' },
+  { slug: 'best-tennis-strings-for-tennis-elbow.html', modified: '2026-10-26' },
   // Adapté du FR meilleures-raquettes-tennis-2026 (09/10/2026), appairé en hreflang.
   { slug: 'best-tennis-racquets-2026.html', modified: '2026-10-23' },
   // Adapté du FR cordage-polyester-tennis-elbow (09/10/2026), appairé en hreflang.
-  { slug: 'polyester-strings-tennis-elbow.html', modified: '2026-10-23' },
+  { slug: 'polyester-strings-tennis-elbow.html', modified: '2026-10-26' },
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
