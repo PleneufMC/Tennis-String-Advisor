@@ -1,6 +1,6 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.3.34
+> **Version** : 2.3.35
 > **Date** : 26 octobre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
@@ -149,7 +149,7 @@ témoins) et que `RA_RANGE.median` la recopie. Libellés : le comparateur dit «
 de `tsa-acquisition` : retouchés ici parce qu'aucune nouvelle PR ne s'ouvre (consigne de Pierre du 26/10/2026). Le mot « médiane » de
 la charte F7 relève de la PR charte de Pierre.
 
-**Changelog v2.3.33 → v2.3.34** — **Deux RA abaissés sur mesure TWU de la génération exacte (GO explicite de Pierre du 26/10/2026) ;
+**Changelog v2.3.34 → v2.3.35** — **Deux RA abaissés sur mesure TWU de la génération exacte (GO explicite de Pierre du 26/10/2026) ;
 trois baisses tenues faute de génération établie** (règle des mesures L1 de la v2.3.32 : une baisse exige la mesure L1 de la génération
 exacte ; `tsa-core`). **Appliqué** : Dunlop CX 200 RA 66 → 64 (page d'essai TWU « Dunlop CX 200 2024 », V121 ; la fiche nomme la CX 200 2024 ;
 Dunlop déclare 65, protocole non publié, autre nature) ; Babolat Pure Strike 100 16x20 RA 64 → 61 (page d'essai TWU de la 2024, V138, seule
@@ -1739,4 +1739,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.3.34 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.3.35 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
