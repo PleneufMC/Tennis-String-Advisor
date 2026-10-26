@@ -64,8 +64,8 @@ const BLOG_ARTICLES: Array<{ slug: string; modified: string }> = [
   { slug: 'nouveautes-equipement-tennis-2025-2026.html', modified: '2026-10-23' },
   { slug: 'cordage-terre-battue.html', modified: '2026-10-23' },
   { slug: 'challengers-sinner-alcaraz-2026.html', modified: '2026-10-22' },
-  { slug: 'actualite-materiel-tennis-2026-guerre-du-spin.html', modified: '2026-10-23' },
-  { slug: 'cordage-mono-vs-multifilament.html', modified: '2026-10-23' },
+  { slug: 'actualite-materiel-tennis-2026-guerre-du-spin.html', modified: '2026-10-26' },
+  { slug: 'cordage-mono-vs-multifilament.html', modified: '2026-10-26' },
   { slug: 'cordage-tennis-chaleur.html', modified: '2026-10-23' },
   { slug: 'tension-cordage-hiver.html', modified: '2026-10-22' },
   { slug: 'raquette-point-fort-ou-point-faible.html', modified: '2026-10-23' },
@@ -73,7 +73,7 @@ const BLOG_ARTICLES: Array<{ slug: string; modified: string }> = [
   { slug: 'materiel-next-gen-fonseca-mensik-cobolli-jodar.html', modified: '2026-10-23' },
   { slug: 'combien-de-temps-dure-un-cordage.html', modified: '2026-10-23' },
   // Classement polyester 2026 (09/10/2026), appairé en hreflang.
-  { slug: 'meilleur-cordage-polyester-2026.html', modified: '2026-10-23' },
+  { slug: 'meilleur-cordage-polyester-2026.html', modified: '2026-10-26' },
   // Meilleures raquettes 2026 par profil (09/10/2026), appairé en hreflang.
   { slug: 'meilleures-raquettes-tennis-2026.html', modified: '2026-10-23' },
   // Polyester et tennis elbow, tri par rigidité (09/10/2026), appairé en hreflang.
@@ -105,8 +105,8 @@ const EN_BLOG_ARTICLES: Array<{ slug: string; modified: string }> = [
   // avec leur source FR.
   { slug: 'tennis-string-gauge.html', modified: '2026-10-23' },
   { slug: 'tennis-string-pattern.html', modified: '2026-10-23' },
-  { slug: 'polyester-vs-multifilament-strings.html', modified: '2026-10-23' },
-  { slug: 'tennis-string-tension-guide.html', modified: '2026-10-23' },
+  { slug: 'polyester-vs-multifilament-strings.html', modified: '2026-10-26' },
+  { slug: 'tennis-string-tension-guide.html', modified: '2026-10-26' },
   // Article chaleur (28/08/2026), appairé en hreflang avec
   // /blog/cordage-tennis-chaleur.html.
   { slug: 'tennis-strings-heat-tension.html', modified: '2026-10-22' },
@@ -116,7 +116,7 @@ const EN_BLOG_ARTICLES: Array<{ slug: string; modified: string }> = [
   // /blog/combien-de-temps-dure-un-cordage.html.
   { slug: 'how-long-do-tennis-strings-last.html', modified: '2026-10-23' },
   // Adapté du FR meilleur-cordage-polyester-2026 (09/10/2026), appairé en hreflang.
-  { slug: 'best-polyester-tennis-strings-2026.html', modified: '2026-10-23' },
+  { slug: 'best-polyester-tennis-strings-2026.html', modified: '2026-10-26' },
   // Adapté du FR tension-cordage-hiver (09/10/2026), appairé en hreflang.
   { slug: 'tennis-string-tension-cold-weather.html', modified: '2026-10-22' },
   // Adapté du FR cordage-tennis-elbow (09/10/2026), réécrit sur le catalogue, appairé en hreflang.
