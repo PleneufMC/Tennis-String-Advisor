@@ -5554,17 +5554,20 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
   // Head Reflex MLT, Head RIP Control et Isospeed Control Classic baissent aussi, sans alerte à retirer sur cette grille : pas d'exception.
   const P6_GO = "Pierre, GO explicite du 26/10/2026 (transmis par l'orchestrateur) : baisses P6";
   const P6_MOTIVE = 'rigidité abaissée à la mesure TWU de la fiche (règle C ; mesure AD de tsa-measure du 23/10/2026 ; provenance string-stiffness-provenance.ts)';
-  const EXCEPTIONS23: ReadonlyArray<{ id: string; date: string; motive: string; go: string }> = [
-    { id: 'solinco-tour-bite-diamond-rough', date: '2026-10-26', motive: P6_MOTIVE, go: P6_GO },
-    { id: 'yonex-poly-tour-tough', date: '2026-10-26', motive: P6_MOTIVE, go: P6_GO },
-    { id: 'luxilon-4g-soft', date: '2026-10-26', motive: P6_MOTIVE, go: P6_GO },
-    { id: 'luxilon-4g-rough', date: '2026-10-26', motive: P6_MOTIVE, go: P6_GO },
-    { id: 'head-lynx', date: '2026-10-26', motive: P6_MOTIVE, go: P6_GO },
-    { id: 'luxilon-alu-power-soft', date: '2026-10-26', motive: P6_MOTIVE, go: P6_GO },
-    { id: 'luxilon-adrenaline-rough', date: '2026-10-26', motive: P6_MOTIVE, go: P6_GO },
-    { id: 'head-hawk-rough', date: '2026-10-26', motive: P6_MOTIVE, go: P6_GO },
-    { id: 'tecnifibre-ruff-code', date: '2026-10-26', motive: P6_MOTIVE, go: P6_GO },
-    { id: 'yonex-poly-tour-air', date: '2026-10-26', motive: P6_MOTIVE, go: P6_GO },
+  // Une exception est BORNÉE : elle n'excuse que la disparition d'une alerte due à la baisse de la rigidité de ce cordage à la valeur écrite
+  // (`stiffness`), quand rien d'autre n'a changé dans le montage (raquette, note de confort, type). Elle ne couvre jamais une note de confort
+  // relevée, retirée ou créée, ni le retrait de la fiche, ni une autre baisse de rigidité (revue indépendante de #153, défaut n° 1).
+  const EXCEPTIONS23: ReadonlyArray<{ id: string; stiffness: number; date: string; motive: string; go: string }> = [
+    { id: 'solinco-tour-bite-diamond-rough', stiffness: 192.6, date: '2026-10-26', motive: P6_MOTIVE, go: P6_GO },
+    { id: 'yonex-poly-tour-tough', stiffness: 193.7, date: '2026-10-26', motive: P6_MOTIVE, go: P6_GO },
+    { id: 'luxilon-4g-soft', stiffness: 217.2, date: '2026-10-26', motive: P6_MOTIVE, go: P6_GO },
+    { id: 'luxilon-4g-rough', stiffness: 216, date: '2026-10-26', motive: P6_MOTIVE, go: P6_GO },
+    { id: 'head-lynx', stiffness: 185.7, date: '2026-10-26', motive: P6_MOTIVE, go: P6_GO },
+    { id: 'luxilon-alu-power-soft', stiffness: 197.7, date: '2026-10-26', motive: P6_MOTIVE, go: P6_GO },
+    { id: 'luxilon-adrenaline-rough', stiffness: 202.9, date: '2026-10-26', motive: P6_MOTIVE, go: P6_GO },
+    { id: 'head-hawk-rough', stiffness: 201.2, date: '2026-10-26', motive: P6_MOTIVE, go: P6_GO },
+    { id: 'tecnifibre-ruff-code', stiffness: 207.5, date: '2026-10-26', motive: P6_MOTIVE, go: P6_GO },
+    { id: 'yonex-poly-tour-air', stiffness: 154.9, date: '2026-10-26', motive: P6_MOTIVE, go: P6_GO },
   ];
   type RefS = { type: string; stiffness: number; twu: number | null; comfort: number | null };
   type RefR = { ra: number; weight: number | null };
@@ -5577,20 +5580,31 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
   type CurS = { id: string; type: string; stiffness: number; comfort: number | null };
   type CurR = { id: string; ra: number; weight: number | null };
   const isArm23 = (w: string) => /bras|elbow/i.test(w);
-  const check23 = (strings: readonly CurS[], racquets: readonly CurR[]) => {
+  const check23 = (strings: readonly CurS[], racquets: readonly CurR[], exceptions: typeof EXCEPTIONS23 = EXCEPTIONS23) => {
     const issues: string[] = [];
     const used = new Set<string>();
-    const excepted = (id: string) => { const hit = EXCEPTIONS23.some((x) => x.id === id); if (hit) used.add(id); return hit; };
+    for (const x of exceptions) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(x.date) || x.motive.trim().length < 20 || !x.go.trim()) issues.push(`exception ${x.id} : date, motif ou GO absent`);
+    }
+    // Disparition excusée seulement si : type et note de confort du cordage inchangés, rigidité abaissée à la valeur écrite, et l'alerte existe
+    // encore avec la raquette d'aujourd'hui et la rigidité d'avant (`stillWithOld`) : c'est la baisse de rigidité, et elle seule, qui la retire.
+    const excused = (sid: string, s0: RefS, s1: CurS, stillWithOld: boolean) => {
+      const x = exceptions.find((e) => e.id === sid);
+      const hit = x !== undefined && stillWithOld && s0.type === s1.type && s0.comfort === s1.comfort &&
+        s1.stiffness === x.stiffness && s1.stiffness < s0.stiffness;
+      if (hit) used.add(sid);
+      return hit;
+    };
     const sById = new Map(strings.map((s) => [s.id, s]));
     const rById = new Map(racquets.map((r) => [r.id, r]));
     for (const [id, r] of Object.entries(ref!.strings)) {
       const s = sById.get(id);
-      if (!s) { if (!excepted(id)) issues.push(`${id} : fiche retirée depuis la référence (ses alertes disparaissent)`); continue; }
-      if (r.comfort !== null && s.comfort === null && !excepted(id)) issues.push(`${id} : note de confort retirée (${r.comfort} -> non publiée) : le second filet de la fiche disparaît`);
-      if (r.comfort !== null && s.comfort !== null && s.comfort > r.comfort + 1e-9 && !excepted(id)) issues.push(`${id} : note de confort relevée (${r.comfort} -> ${s.comfort}) sans mesure ni GO`);
-      if (r.comfort === null && s.comfort !== null && !excepted(id)) issues.push(`${id} : note de confort créée (${s.comfort}) sur une fiche « Non publié » : valeur comblée`);
+      if (!s) { issues.push(`${id} : fiche retirée depuis la référence (ses alertes disparaissent)`); continue; }
+      if (r.comfort !== null && s.comfort === null) issues.push(`${id} : note de confort retirée (${r.comfort} -> non publiée) : le second filet de la fiche disparaît`);
+      if (r.comfort !== null && s.comfort !== null && s.comfort > r.comfort + 1e-9) issues.push(`${id} : note de confort relevée (${r.comfort} -> ${s.comfort}) sans mesure ni GO`);
+      if (r.comfort === null && s.comfort !== null) issues.push(`${id} : note de confort créée (${s.comfort}) sur une fiche « Non publié » : valeur comblée`);
     }
-    for (const id of Object.keys(ref!.racquets)) if (!rById.has(id) && !excepted(id)) issues.push(`${id} : raquette retirée depuis la référence (ses alertes disparaissent)`);
+    for (const id of Object.keys(ref!.racquets)) if (!rById.has(id)) issues.push(`${id} : raquette retirée depuis la référence (ses alertes disparaissent)`);
     let gone = 0;
     let added = 0;
     let example = '';
@@ -5609,14 +5623,14 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
             });
             const a0 = calculateAdvancedRcs(inp(r0, s0)).warnings.some(isArm23);
             const a1 = calculateAdvancedRcs(inp(r1, s1)).warnings.some(isArm23);
-            if (a0 && !a1 && !excepted(sid) && !excepted(rid)) { gone++; if (!example) example = `${rid} + ${sid} à ${t} kg (${armSensitive ? 'bras sensible' : 'standard'})`; }
+            if (a0 && !a1 && !excused(sid, s0, s1, calculateAdvancedRcs(inp(r1, s0)).warnings.some(isArm23))) { gone++; if (!example) example = `${rid} + ${sid} à ${t} kg (${armSensitive ? 'bras sensible' : 'standard'})`; }
             if (!a0 && a1) added++;
           }
         }
       }
     }
     if (gone > 0) issues.push(`${gone} alerte(s) bras disparue(s) depuis la référence, par exemple ${example}`);
-    for (const x of EXCEPTIONS23) if (!used.has(x.id)) issues.push(`exception inutilisée : ${x.id} (${x.date})`);
+    for (const x of exceptions) if (!used.has(x.id)) issues.push(`exception inutilisée : ${x.id} (${x.date})`);
     return { issues, gone, added };
   };
   if (ref) {
@@ -5635,6 +5649,13 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
       ['fiche retirée (4G)', () => check23(curS.filter((s) => s.id !== 'luxilon-4g'), curR).issues, 'fiche retirée'],
       [`RA baissé (${aRacquet.id} 66 -> 60)`, () => check23(curS, curR.map((r) => (r.id === aRacquet.id ? { ...r, ra: 60 } : r))).issues, 'alerte(s) bras disparue(s)'],
       ['raquette retirée', () => check23(curS, curR.filter((r) => r.id !== aRacquet.id)).issues, 'raquette retirée'],
+      ['fiche exemptée : note de confort relevée (Poly Tour Tough 6 -> 9)', () => check23(mod('yonex-poly-tour-tough', { comfort: 9 }), curR).issues, 'yonex-poly-tour-tough : note de confort relevée'],
+      ['fiche exemptée : note relevée, alertes disparues (Poly Tour Tough 6 -> 9)', () => check23(mod('yonex-poly-tour-tough', { comfort: 9 }), curR).issues, 'alerte(s) bras disparue(s)'],
+      ['fiche exemptée : note de confort retirée (Head Lynx)', () => check23(mod('head-lynx', { comfort: null }), curR).issues, 'head-lynx : note de confort retirée'],
+      ['fiche exemptée : retirée du catalogue (4G Rough)', () => check23(curS.filter((s) => s.id !== 'luxilon-4g-rough'), curR).issues, 'luxilon-4g-rough : fiche retirée'],
+      ['fiche exemptée : rigidité abaissée sous la valeur écrite (4G Rough 216 -> 200)', () => check23(mod('luxilon-4g-rough', { stiffness: 200 }), curR).issues, 'alerte(s) bras disparue(s)'],
+      ['fiche exemptée : RA d\'une raquette abaissé en même temps', () => check23(curS, curR.map((r) => (r.id === aRacquet.id ? { ...r, ra: 60 } : r))).issues, 'alerte(s) bras disparue(s)'],
+      ['exception sans GO', () => check23(curS, curR, EXCEPTIONS23.map((x, i) => (i === 0 ? { ...x, go: '' } : x))).issues, 'date, motif ou GO absent'],
     ];
     let detected = 0;
     for (const [name, run, needle] of negatives) {
@@ -5653,7 +5674,7 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     if (failures.length === before23) {
       ok(
         `second filet : par rapport à la référence du 23/10/2026 (${Object.keys(ref.strings).length} cordages, ${Object.keys(ref.racquets).length} raquettes), aucune note de confort ` +
-          `relevée, retirée ni créée, aucune fiche ni raquette retirée, 0 alerte bras disparue hors exceptions (${real.added} ajoutée(s)) ; ${EXCEPTIONS23.length} exception(s) datée(s), motivée(s), avec le GO de Pierre (${[...new Set(EXCEPTIONS23.map((x) => x.date))].join(', ')}) ; ` +
+          `relevée, retirée ni créée, aucune fiche ni raquette retirée, 0 alerte bras disparue hors exceptions (${real.added} ajoutée(s)) ; ${EXCEPTIONS23.length} exception(s) datée(s), motivée(s), avec le GO de Pierre (${[...new Set(EXCEPTIONS23.map((x) => x.date))].join(', ')}), bornées à la seule baisse de rigidité à la valeur écrite ; ` +
           `${detected} tests négatifs détectés, ${accepted} témoins positifs acceptés`
       );
     }
@@ -5720,6 +5741,12 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
       const expected = e.held ? e.held.value : Math.max(e.before, derived);
       if (e.held && !(e.held.value > Math.max(e.before, derived))) issues.push(`${id} : tenue inutile (${e.held.value} ≤ ${Math.max(e.before, derived)}, plus haut de la valeur d'avant et de la valeur dérivée)`);
       if (e.held && (!/^\d{4}-\d{2}-\d{2}$/.test(e.held.date) || e.held.why.trim().length < 60)) issues.push(`${id} : tenue sans date ou sans motif`);
+      // La tenue nomme le composant abaissé (sa valeur d'aujourd'hui = la fiche) et la valeur dérivée non appliquée (recalculée), que la mention affiche.
+      if (e.held && (![a, b].includes(e.held.lowered.id) || byId.get(e.held.lowered.id)?.stiffness !== e.held.lowered.after || !(e.held.lowered.before > e.held.lowered.after))) {
+        issues.push(`${id} : tenue : composant abaissé ${e.held.lowered.id} mal consigné (composant du set, valeur d'aujourd'hui, baisse)`);
+      }
+      if (e.held && Math.abs(e.held.derived - Math.max(e.before, derived)) > 1e-9) issues.push(`${id} : tenue : valeur dérivée consignée ${e.held.derived} ≠ ${Math.max(e.before, derived)} recalculée`);
+      if (e.held && (!notice.includes(String(e.held.derived).replace('.', ',')) || !notice.includes(label(e.held.lowered.id)))) issues.push(`${id} : tenue : la mention ne nomme pas le cordage abaissé ou la valeur dérivée`);
       if (Math.abs(s.stiffness - expected) > 1e-9) issues.push(`${id} : rigidité ${s.stiffness} ≠ ${expected} (plus haut de ${e.before} et de la valeur dérivée de ${a} ${ca.stiffness} et ${b} ${cb.stiffness})`);
       const orders: [number, number][] = e.orderFixed ? [[ca.stiffness, cb.stiffness]] : [[ca.stiffness, cb.stiffness], [cb.stiffness, ca.stiffness]];
       grid: for (const ra of RAS_22) for (const t of TENS_22) {
@@ -5761,6 +5788,8 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     ['fiche FR sans mention', checkPrepacked(items22, T0, page22.replace(/data-testid="prepacked-hybrid-notice"/g, '')), 'mention des hybrides prémontés n\'est pas affichée'],
     ['tenue inutile (Duo Control tenu à 190, sous la valeur dérivée)', checkPrepacked(set22('wilson-duo-control', { stiffness: 190 }), with22('wilson-duo-control', { held: { ...T0['wilson-duo-control'].held!, value: 190 } }), page22), 'wilson-duo-control : tenue inutile'],
     ['tenue sans motif', checkPrepacked(items22, with22('wilson-duo-control', { held: { ...T0['wilson-duo-control'].held!, why: '' } }), page22), 'tenue sans date ou sans motif'],
+    ['tenue : valeur dérivée consignée fausse (190)', checkPrepacked(items22, with22('wilson-duo-control', { held: { ...T0['wilson-duo-control'].held!, derived: 190 } }), page22), 'valeur dérivée consignée 190'],
+    ['tenue : composant abaissé hors du set', checkPrepacked(items22, with22('wilson-duo-control', { held: { ...T0['wilson-duo-control'].held!, lowered: { id: 'luxilon-4g', before: 300, after: 286.9 } } }), page22), 'composant abaissé luxilon-4g mal consigné'],
     ['tenue retirée en silence (Duo Control laissé à 222)', checkPrepacked(items22, with22('wilson-duo-control', { held: undefined }), page22), 'wilson-duo-control : rigidité 222 ≠ 194.4'],
     ['fiche FR sans « estimé »', checkPrepacked(items22, T0, page22.replace(/estimated:\s*Boolean\(PREPACKED_HYBRIDS\[string\.id\]\?\.components\)/, 'estimated: false')), 'non marquée « estimé »'],
   ];

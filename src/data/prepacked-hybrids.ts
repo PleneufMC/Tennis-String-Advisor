@@ -49,7 +49,13 @@ export interface PrepackedHybrid {
    * Valeur TENUE au-dessus de la valeur dérivée (règle 2) : un composant a baissé sur mesure, la valeur dérivée retirerait des alertes et
    * la baisse du set attend le GO explicite de Pierre. Absent sinon ; le contrôle 24 refuse une tenue inutile, sans date ou sans motif.
    */
-  held?: { value: number; date: string; why: string };
+  held?: {
+    value: number; date: string; why: string;
+    /** Le composant abaissé sur mesure : sa valeur d'avant (celle qui donnait `value`) et sa valeur mesurée d'aujourd'hui. */
+    lowered: { id: string; before: number; after: number };
+    /** Valeur dérivée d'aujourd'hui, NON appliquée (le contrôle 24 la recalcule). */
+    derived: number;
+  };
 }
 
 export const PREPACKED_HYBRIDS: Readonly<Record<string, PrepackedHybrid>> = {
@@ -83,7 +89,7 @@ export const PREPACKED_HYBRIDS: Readonly<Record<string, PrepackedHybrid>> = {
     }],
     note: 'La fiche annonçait Luxilon Element + Wilson NXT : c\'est la composition du Duo Feel (« Wilson Duo Feel Element 1.25 & NXT 16 », même revendeur). Ordre au choix. wilson.com non lu (Web Bot Auth).',
     held: {
-      value: 222, date: '2026-10-26',
+      value: 222, date: '2026-10-26', lowered: { id: 'luxilon-4g-rough', before: 262, after: 216 }, derived: 194.4,
       why: 'Valeur dérivée du 23/10/2026 (4G Rough 262, sans source ; NXT Control 162). Le lot P6 du 26/10/2026 abaisse le 4G Rough à sa mesure TWU (216) : la valeur dérivée devient 194,4 et retirerait des alertes ; le GO de Pierre couvre les 13 cordages du lot, pas ce set. Tenue à 222 jusqu\'à un GO explicite (règle 2).',
     },
   },
@@ -151,7 +157,12 @@ export function prepackedHybridNotice(id: string, names: (id: string) => string)
   if (!h.components) return 'Composition non publiée, rigidité de fiche sans source : valeur conservée pour le calcul et l\'alerte, hors classements.';
   const pair = `${names(h.components[0])} et ${names(h.components[1])}`;
   const order = h.orderFixed ? '' : ', le plus haut des deux sens de montage';
-  if (h.held) return `Rigidité tenue à ${h.held.value} lb/in : valeur dérivée des deux cordages du set, ${pair}${order}, avant la mesure en laboratoire de l'un d'eux ; la valeur dérivée actuelle, plus basse, n'est pas appliquée tant que cette baisse n'est pas validée. Aucune mesure du set n'est publiée.`;
+  if (h.held) {
+    const fr = (v: number) => String(v).replace('.', ',');
+    const { lowered, derived, value } = h.held;
+    return `Rigidité tenue à ${fr(value)} lb/in : valeur dérivée des deux cordages du set, ${pair}${order}, calculée avec ${names(lowered.id)} à ${fr(lowered.before)} lb/in (valeur de fiche sans source). ` +
+      `Mesuré depuis par TWU à ${fr(lowered.after)} lb/in, ce cordage donne au set une valeur dérivée de ${fr(derived)} lb/in, plus basse, qui n'est pas appliquée tant que cette baisse n'est pas validée. Aucune mesure du set n'est publiée.`;
+  }
   if (h.composition === 'fiche') return `Rigidité dérivée de ${pair}, la composition annoncée par cette fiche (set introuvable sur les pages ouvertes), comme le configurateur calcule un hybride${order} ; aucune mesure du set.`;
   return `Rigidité dérivée des deux cordages du set, ${pair}, comme le configurateur calcule un hybride${order} ; aucune mesure du set n'est publiée.`;
 }

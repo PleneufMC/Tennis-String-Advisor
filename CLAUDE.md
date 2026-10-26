@@ -161,9 +161,14 @@ contrôle 5, 774 montages par fiche, `c2-effet-alertes.mts --base=9c9e275`) : **
 `calculateCompatibility`, 0 ajoutée** ; grille complète : standard 7,29 → 6,54 %, sensible 23,95 → 23,02 %, compatibilité 16,00 → 14,74 %,
 « Très Ferme » 8,60 → 7,49 % ; détail par fiche dans la PR. **Tenu, non abaissé** : le set Wilson Duo Control (4G Rough + NXT Control), dont la
 rigidité dérivée tomberait de 222 à 194,4 (−16 / −274 / −198 alertes) : le GO couvre les 13 cordages, pas ce set ; champ `held` daté et
-motivé de `prepacked-hybrids.ts`, mention de la fiche FR adaptée, contrôle 24 (tenue inutile, sans motif ou retirée en silence : 3 tests
-négatifs). **Contrôle 23** : 10 exceptions datées, motivées, avec le GO (les 3 multifilaments n'ont aucune alerte à retirer sur cette grille).
-**Conséquences** : médianes polyester 220 → 216,9 et multifilament 162,3 → 162 lb/in ; contrôle 19 : quatre descriptions corrigées (Isospeed
+motivé de `prepacked-hybrids.ts` (cordage abaissé, valeur d'avant et valeur dérivée non appliquée consignés), mention de la fiche FR qui
+les nomme (4G Rough à 262 sans source, mesuré 216, valeur dérivée 194,4 non appliquée), contrôle 24 (tenue inutile, sans motif, retirée en
+silence, valeur dérivée ou composant mal consignés : 5 tests négatifs). **Contrôle 23** : 10 exceptions datées, motivées, avec le GO,
+**bornées** à la seule baisse de rigidité du cordage à la valeur écrite (une alerte n'est excusée que si elle existe encore avec la rigidité
+d'avant et que type et note de confort n'ont pas bougé) ; une note de confort relevée, retirée ou créée, le retrait de la fiche ou une autre
+baisse restent détectés sur ces fiches (7 tests négatifs ; revue indépendante de #153, défaut n° 1). Les 3 multifilaments n'ont aucune
+alerte à retirer sur cette grille.
+**Conséquences** : médianes polyester 220 → 216,9 et multifilament 162,9 → 162 lb/in ; contrôle 19 : quatre descriptions corrigées (Isospeed
 Cream « sixième » polyester le moins rigide ; « confort » retiré de Pro Stacked, RPM Power et Primal, à 220 lb/in, désormais au-dessus de la
 médiane). **Articles** (FR et EN) : « polyester et tennis elbow » (46 polyesters à rigidité mesurée au lieu de 36, plage 154,9 à 286,9,
 médiane 216,9, 15 plus souples et 18 plus fermes refaits, FAQ et JSON-LD), « cordage et tennis elbow » (tableau des familles, Poly Tour Air
