@@ -1,6 +1,6 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.3.34
+> **Version** : 2.3.36
 > **Date** : 26 octobre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
@@ -176,6 +176,48 @@ médiane 216,9, 15 plus souples et 18 plus fermes refaits, FAQ et JSON-LD), « c
 multifilament », « meilleur cordage polyester 2026 », « chaleur », « hiver » et le guide du matériel (indices recalculés : cadres de RA 57
 et 58, 28 à 29 au lieu de 29 ; de RA 69 à RA 57, 32 → 28 au lieu de 33 → 29) ; figures régénérées par `build-rigidite-figures.mts` (axe des polyesters 150-290) ; `dateModified`, sitemap
 et cartes des deux index alignés. Aucune note /10, formule ni seuil modifié ; libellés de nature des notes inchangés.
+
+**Changelog v2.3.35 → v2.3.36** — **Configurateur EN, PR 1 « santé » : aucune recommandation en alerte, la douleur déclarée n'active que
+l'alerte, plus de rang de souplesse sur une rigidité sans source ; contrôle 21 quater réécrit** (GO de Pierre du 26/10/2026 sur les trois
+bloquants B1 à B3 de l'audit AT du configurateur EN ; avis d'Opus 5.5 du 23/10/2026, point 5 ; `tsa-measure` pour la page, propriétaire
+`tsa-acquisition` ; numérotée après les entrées v2.3.33 à v2.3.35 des PR #143, #153 et #154 encore ouvertes). **Constat** (page d'`origin/main`
+exécutée telle quelle sur 900 parcours : 5 niveaux × 5 styles × 4 réponses de douleur × 9 tirages) : **270 parcours sur 900 (30 %)
+recommandaient un montage à l'indice 32 ou plus, 234 à 35 ou plus (indice maximal 42)** ; 7 des 9 recettes sans douleur étaient en alerte
+(défaut 35, avancé et compétition en puissance 40-42, contrôle 41, effet 34) ; la douleur déclarée remplaçait tout le matériel par le même
+couple (Babolat Touch Tonic, « Lowest stiffness in our catalogue: 88 lb/in », deux mesures plus basses existant : Wilson Natural Gut 80,6 et
+Luxilon Natural Gut 82,3) : un conseil dont la condition est un état de santé (charte F7). **Changé** (`public/en/configurator.html`, aucune
+donnée, formule, note ni seuil) : **(B1)** la douleur (bras ou épaule) ne change que le seuil d'alerte affiché : `updateRCSDisplay` reçoit `armSensitive` et
+ne pose le profil `tennis_elbow` (verdict « tennis elbow risk for a sensitive arm ») que si l'indice atteint 32 ; sinon le verdict de plage est
+celui du profil de la recette, identique avec ou sans douleur (la revue de la PR avait trouvé que le profil 11-24 posé à la déclaration
+affichait « Lowering the tension by 2 to 14 kg » dans 19 200 parcours sur 28 800) ; un constat chiffré, calculé par le moteur, s'ajoute à
+la raison de la tension (« Index of this montage … 28 at 26 kg (the index shown above), 29 at 27 kg (top of the proposed range), 3 points
+below the threshold ») ; ni la raquette, ni le cordage, ni la tension ne changent. **(B2)** `pickLowestStiffnessString`
+et la raison « Lowest stiffness… » sont supprimés ; aucun rang de souplesse n'est dit. **(B3)** `pickBestString` reçoit une contrainte dure
+`maxStiffness` : `stringStiffnessCeiling` (recherche dichotomique, moteur EN) donne la plus haute rigidité de cordage qui laisse l'indice sous 32,
+à la tension la plus haute de la plage proposée (`maxKg` de chaque recette) ; le cordage reste celui qui a la meilleure note du critère
+parmi ceux qui passent, la raison le dit (« … among those that keep the index below 32 at this racquet and tension ») ; un rempart refuse
+tout montage qui atteindrait 32, ou dont la tension est illisible (message d'erreur existant). **(D2 de la revue)** la tension proposée reste dans la
+plage publiée du cordage : `pickBestString` écarte les cordages dont la plage publiée ne rejoint pas celle de la recette (`minKg` à `maxKg`),
+`fitTensionToString` limite la tension à l'intersection (« The published tension range of this string is 21-26 kg: the tension is limited to
+25-26 kg ») ; un cordage sans plage publiée garde la tension de la recette (rien n'est comblé). Les boyaux dont la plage publiée commence à 23 kg ou plus
+ne sont plus proposés aux débutants (20-22 kg) : indice de la recette 16 → 23. Cordage par défaut : Babolat RPM Blast (240 lb/in, indice 35 avec la Pure Drive à
+25 kg) remplacé par Babolat Hybrid RPM Blast + VS Touch (180,8 lb/in, indice 29), la même famille. Le seuil retenu pour tous est 32, le plus bas des
+deux ; le moteur de sélection (filtres de raquette, tri, tirage parmi les trois premiers) n'est pas touché (PR 2). **Après** (mêmes 900
+parcours) : **0 en alerte, indice maximal 31** ; 9 recettes sur 9 sous 32 avec ou sans douleur ; 52 recommandations distinctes (56 avant), 13
+raquettes et 19 cordages (16 et 13 avant). Effet voulu : les recettes de contrôle et de puissance proposent des polyesters à 200-215 lb/in
+(Head Ultra Tour, Luxilon ALU Power Soft, Solinco Hyper-G Soft…) au lieu des plus rigides (Luxilon 4G 286,9, Babolat Pro Hurricane 260), et
+plusieurs montent à l'indice 31, à un point du seuil : la marge est celle du seuil, pas un choix (à discuter en PR 2). **Contrôle 21 quater**
+de `audit:ratings` réécrit : (a) `sensitiveTensionLimit` et `armAlertNote` contre le recalcul indépendant par `calculateRCS` sur 17 900
+montages ; (b) le plafond de rigidité sur 900 couples raquette × tension, à 0,1 lb/in près ; (c) **la page EXÉCUTÉE telle quelle**
+(`generateResult` de bout en bout, catalogue réel) sur 14 400 parcours (5 niveaux × 5 styles × 4 fréquences × 4 douleurs × 4 budgets × 9
+tirages) : 0 recommandation en alerte (moteur EN et `calculateRCS`), 0 erreur, 0 mention interdite, même matériel et même tension avec ou
+sans douleur, même profil et même verdict de plage, seuil 32 transmis à l'affichage (sondé entre les deux seuils), tension dans la plage publiée du cordage, constat exact ; (d) aucune tension fixe à côté d'un bras sensible. 29 tests négatifs (dont le plafond non appliqué,
+le défaut remis à 35, le rempart retiré ou ouvert sur une tension illisible, la douleur qui impose une raquette, une tension ou un profil, la plage publiée ignorée, « Lowest stiffness » rétabli) détectés, 4
+témoins positifs acceptés. Contrôle 21 quinquies adapté (plus de branche douleur, raisons de cordage). **Vérifié en exécution** (Chromium
+« Chrome for Testing » via `dev-browser`, page servie depuis `public/`, 4 parcours : compétition + contrôle sans et avec douleur, débutant + douleur à l'épaule,
+aucune réponse) : indices 31, 27, 15 et 28, aucune erreur de page, constat affiché. **Limite non traitée** (revue, D3, à l'arbitrage d'Opus 5.5) : cinq polyesters proposés n'ont ni table TWU ni provenance de rigidité (Head Ultra Tour 202, Babolat RPM Soft 205, Head Evolution Pro 208, Tecnifibre Pro Players 208, Luxilon Eco Rough 190), et le filtre favorise les rigidités de fiche basses : ils donnent l'indice 31, à un point du seuil, dans 39 % des parcours avancé et compétition. **Limites** : les 14 400 parcours sont rejoués dans Node avec
+un DOM simulé et le catalogue réel, non dans un navigateur ; le questionnaire n'a pas été parcouru à la souris ; les 16 raquettes et le tirage au
+sort restent ceux de la PR 2 ; GA4 (`configurator_complete` envoie cordage et tension) et la page FR ne sont pas touchés.
 
 **Changelog v2.3.25 → v2.3.26** — **Hybrides : un seul indice, celui que l'alerte lit, que le configurateur
 affiche et que le PDF imprime ; contrôle 21 ter** (décision (b)+(a) de l'orchestrateur du 22/10/2026, Pierre ayant délégué ; limite (4)
@@ -1752,4 +1794,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.3.34 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.3.36 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
