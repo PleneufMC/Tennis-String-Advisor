@@ -1299,7 +1299,8 @@ export const racquetsDatabase: TennisRacquet[] = [
     brand: 'Babolat',
     model: 'Pure Strike',
     variant: '100 16x20',
-    stiffness: 64,
+    // 26/10/2026 (fait V138 de docs/redaction/veille-2026-10-23-ecarts-de-fiche.md) : RA 64 -> 61, BAISSE sur mesure L1 (TWU, page d'essai de la Pure Strike 100 16x20 2024), génération exacte : la seule Pure Strike 100 en 16x20 est la 2024 (Gen4) ; GO explicite de Pierre du 26/10/2026. Le « 65 ± 3 » de Babolat est un RA non cordé (autre nature), jamais saisi.
+    stiffness: 61,
     weight: 305,
     headSize: 100,
     stringPattern: '16x20',
@@ -1422,7 +1423,8 @@ export const racquetsDatabase: TennisRacquet[] = [
     brand: 'Dunlop',
     model: 'CX',
     variant: '200',
-    stiffness: 66,
+    // 26/10/2026 (fait V121 de docs/redaction/veille-2026-10-23-ecarts-de-fiche.md) : RA 66 -> 64, BAISSE sur mesure L1 (TWU, page d'essai « Dunlop CX 200 2024 »), génération exacte de la fiche (CX 200 2024, code CX200-24) ; GO explicite de Pierre du 26/10/2026. Dunlop déclare 65 (protocole non publié, L0, V120).
+    stiffness: 64,
     weight: 305,
     headSize: 98,
     stringPattern: '16x19',

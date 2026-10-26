@@ -96,3 +96,8 @@ le plan concordent ; quand la valeur retenue n'est exacte que pour elle, la gén
 - 2026-10-26 · `tsa-core` — avis d'Opus 5.5 sur les réserves R2 et R3 de la revue de la PR #152 : règle des mesures L1 écrite (Méthode),
   instrument dit fait par fait (« L1 (RDC) » : 9 faits ; « L1 (TWU) » : 7 faits) ; Ripstick : génération nommée dans la fiche,
   « Ripstick 100 300g (2025) » (V131, V132). Aucune valeur de RA ni aucun fait nouveau ; aucune page relue.
+- 2026-10-26 · `tsa-core` — GO explicite de Pierre sur les baisses de RA mesurées par TWU, règle des mesures L1 (une baisse exige la mesure
+  de la génération exacte). **Appliquées** : CX 200 66 → 64 (V121 : CX 200 2024, génération nommée par la fiche) et Pure Strike 100 16x20
+  64 → 61 (V138 : la 2024, seule Pure Strike 100 en 16x20). **Tenues** : FX 500 Tour 67 (V123 à V125 : 69 en 2020, 65 en 2023 et 2025, la
+  fiche ne nomme aucune génération), Speed MP 61 (dossier du 10/10 : 60 en 2024 et 2026 ; 62 en 2022 selon une page d'essai
+  relevée dans le rapport AC, hors dossier) et Instinct MP 65 (64 en 2025 ; 65 en 2019, même rapport, hors dossier) : génération de la fiche non établie, la mesure de la génération exacte manque. Aucun fait nouveau, aucune page relue.

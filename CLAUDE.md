@@ -1,6 +1,6 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.3.32
+> **Version** : 2.3.34
 > **Date** : 26 octobre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
@@ -148,6 +148,21 @@ témoins) et que `RA_RANGE.median` la recopie. Libellés : le comparateur dit «
 `advanced-rcs.ts` et `racquets-database.ts` alignés ; aucun calcul touché. `compare/page.tsx` et `racquets/[slug]/page.tsx` relèvent
 de `tsa-acquisition` : retouchés ici parce qu'aucune nouvelle PR ne s'ouvre (consigne de Pierre du 26/10/2026). Le mot « médiane » de
 la charte F7 relève de la PR charte de Pierre.
+
+**Changelog v2.3.33 → v2.3.34** — **Deux RA abaissés sur mesure TWU de la génération exacte (GO explicite de Pierre du 26/10/2026) ;
+trois baisses tenues faute de génération établie** (règle des mesures L1 de la v2.3.32 : une baisse exige la mesure L1 de la génération
+exacte ; `tsa-core`). **Appliqué** : Dunlop CX 200 RA 66 → 64 (page d'essai TWU « Dunlop CX 200 2024 », V121 ; la fiche nomme la CX 200 2024 ;
+Dunlop déclare 65, protocole non publié, autre nature) ; Babolat Pure Strike 100 16x20 RA 64 → 61 (page d'essai TWU de la 2024, V138, seule
+Pure Strike 100 en 16x20 ; le « 65 ± 3 » de Babolat est un RA non cordé). Provenance : `changes` avec `loweringReview` (GO, mesure exacte,
+alertes chiffrées, revue avant fusion). **Effet** (grille du contrôle 5, 1 074 montages par raquette, moteur réel) : CX 200 −22 standard /
+−62 bras sensible / −36 `calculateCompatibility` / −28 « Très Ferme » ; Pure Strike −30 / −72 / −50 / −36 ; **total −52 / −134 / −86 / −64,
+0 ajoutée** ; grille complète : standard 7,29 → 7,25 %, sensible 23,95 → 23,85 %. **Tenu** (la fiche ne nomme aucune génération et une
+génération voisine mesure plus haut ou autant) : FX 500 Tour 67 (69 en 2020, 65 en 2023 et 2025 ; −34 / −56 / −33 si 65), Speed MP 61
+(60 en 2024, L1 ; 62 en 2022 selon le rapport AC, hors dossier ; −6 / −18 / −11 si 60), Instinct MP 65 (64 en 2025, L1 ; 65 en 2019 selon
+le même rapport ; −9 / −35 / −14 si 64) : une baisse exige la
+mesure de la génération exacte ; les nommer (comme la Ripstick) est un arbitrage. **Contrôles** : 14 bis, une baisse exige un fait L1 qui
+porte la valeur écrite (2 tests négatifs ajoutés, dont la baisse sans GO) ; 23, deux exceptions datées et motivées, avec le GO. La médiane
+des RA publiés reste 65 (contrôle 1 : bande ±1, inchangé). Aucun article ne cite le RA de ces deux fiches.
 
 **Changelog v2.3.25 → v2.3.26** — **Hybrides : un seul indice, celui que l'alerte lit, que le configurateur
 affiche et que le PDF imprime ; contrôle 21 ter** (décision (b)+(a) de l'orchestrateur du 22/10/2026, Pierre ayant délégué ; limite (4)
@@ -1724,4 +1739,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.3.32 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.3.34 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
