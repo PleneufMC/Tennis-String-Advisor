@@ -123,7 +123,7 @@ export const stringsDatabase: TennisString[] = [
     stiffnessByGauge: { '1.25': 258.9, '1.30': 286.9 },
     performance: 9.0,
     control: 10.0,
-    comfort: 6.3,
+    comfort: 5.3, // D2 du 23/10/2026 : 6.3 -> 5.3, recalée sur la rigidité mesurée (TWU) ; cf. comfort-recalibration.ts
     durability: 9.8,
     versatility: 8.1,
     innovation: 8.0,
@@ -213,7 +213,7 @@ export const stringsDatabase: TennisString[] = [
     stiffnessByGauge: { '1.30': 222.3 },
     performance: 9.5,
     control: 8.5,
-    comfort: 8.8,
+    comfort: 8.3, // D2 du 23/10/2026 : 8.8 -> 8.3, recalée sur la rigidité mesurée (TWU) ; cf. comfort-recalibration.ts
     durability: 9.2,
     versatility: 9.1,
     innovation: 10.0,
@@ -452,7 +452,7 @@ export const stringsDatabase: TennisString[] = [
     stiffnessByGaugeSuspect: true,
     performance: 8.5,
     control: 8.5,
-    comfort: 7.5,
+    comfort: 6.4, // D2 du 23/10/2026 : 7.5 -> 6.4, recalée sur la rigidité mesurée (TWU) ; cf. comfort-recalibration.ts
     durability: 8.0,
     versatility: 8.0,
     innovation: 8.0,
@@ -541,7 +541,7 @@ export const stringsDatabase: TennisString[] = [
     stiffnessByGaugeSuspect: true,
     performance: 7.0,
     control: 6.5,
-    comfort: 9.5,
+    comfort: 8.4, // D2 du 23/10/2026 : 9.5 -> 8.4, recalée sur la rigidité mesurée (TWU) ; cf. comfort-recalibration.ts
     durability: 7.0,
     versatility: 8.0,
     innovation: 7.0,
@@ -786,7 +786,7 @@ export const stringsDatabase: TennisString[] = [
     stiffnessByGauge: { '1.20': 216.6, '1.25': 229.2, '1.30': 242.9 },
     performance: 9.0,
     control: 9.0,
-    comfort: 7.5,
+    comfort: 6.4, // D2 du 23/10/2026 : 7.5 -> 6.4, recalée sur la rigidité mesurée (TWU) ; cf. comfort-recalibration.ts
     durability: 8.5,
     versatility: 8.5,
     innovation: 8.0,
@@ -1672,7 +1672,7 @@ export const stringsDatabase: TennisString[] = [
     stiffnessByGauge: { '1.30': 280.6 },
     performance: 8.5,
     control: 8.3,
-    comfort: 6.8,
+    comfort: 5.9, // D2 du 23/10/2026 : 6.8 -> 5.9, recalée sur la rigidité mesurée (TWU) ; cf. comfort-recalibration.ts
     durability: 8.2,
     versatility: 6.7,
     spin: 8.7,
@@ -1907,7 +1907,7 @@ export const stringsDatabase: TennisString[] = [
     stiffnessByGauge: { '1.25': 222.3, '1.30': 276 },
     performance: 8,
     control: 8.5,
-    comfort: 7,
+    comfort: 5.4, // D2 du 23/10/2026 : 7 -> 5.4, recalée sur la rigidité mesurée (TWU) ; cf. comfort-recalibration.ts
     durability: 8.5,
     spin: 8.5,
     power: 7.5,
