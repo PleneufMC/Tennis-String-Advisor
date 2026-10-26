@@ -1,6 +1,6 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.3.32
+> **Version** : 2.3.34
 > **Date** : 26 octobre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
@@ -148,6 +148,34 @@ témoins) et que `RA_RANGE.median` la recopie. Libellés : le comparateur dit «
 `advanced-rcs.ts` et `racquets-database.ts` alignés ; aucun calcul touché. `compare/page.tsx` et `racquets/[slug]/page.tsx` relèvent
 de `tsa-acquisition` : retouchés ici parce qu'aucune nouvelle PR ne s'ouvre (consigne de Pierre du 26/10/2026). Le mot « médiane » de
 la charte F7 relève de la PR charte de Pierre.
+
+**Changelog v2.3.33 → v2.3.34** — **P6 : treize rigidités de cordage abaissées à leur mesure TWU, premier lot qui RETIRE des
+alertes bras (GO explicite de Pierre du 26/10/2026)** (mesure préalable AD de `tsa-measure` du 23/10/2026 ; `tsa-core`). **Critères** (AD §1,
+rejoués) : toutes les jauges de la fiche mesurées par TWU (relevé versionné du 29/09/2026, 51 lbs, Fast), appariement strict, série non
+suspecte ; valeur = règle C (jauge la plus rigide mesurée, ou jauge unique). **Changé** (lb/in) : Solinco Tour Bite Diamond Rough 260 → 192,6 ;
+Yonex Poly Tour Tough 245 → 193,7 ; Luxilon 4G Soft 235 → 217,2 ; Luxilon 4G Rough 262 → 216 ; Head Lynx 225 → 185,7 ; Luxilon ALU Power Soft
+210 → 197,7 ; Luxilon Adrenaline Rough 212 → 202,9 ; Head Hawk Rough 212 → 201,2 ; Tecnifibre Ruff Code 215 → 207,5 ; Yonex Poly Tour Air
+195 → 154,9 (le polyester le moins rigide du catalogue) ; Head Reflex MLT 170 → 159,4 ; Head RIP Control 180 → 156,6 ; Isospeed Control
+Classic 178 → 136. Provenance : 13 entrées `appliquee` avec `loweringApprovedBy` (`string-stiffness-provenance.ts`). **Effet** (grille du
+contrôle 5, 774 montages par fiche, `c2-effet-alertes.mts --base=9c9e275`) : **−1 037 alertes standard, −1 275 bras sensible, −1 743
+`calculateCompatibility`, 0 ajoutée** ; grille complète : standard 7,29 → 6,54 %, sensible 23,95 → 23,02 %, compatibilité 16,00 → 14,74 %,
+« Très Ferme » 8,60 → 7,49 % ; détail par fiche dans la PR. **Tenu, non abaissé** : le set Wilson Duo Control (4G Rough + NXT Control), dont la
+rigidité dérivée tomberait de 222 à 194,4 (−16 / −274 / −198 alertes) : le GO couvre les 13 cordages, pas ce set ; champ `held` daté et
+motivé de `prepacked-hybrids.ts` (cordage abaissé, valeur d'avant et valeur dérivée non appliquée consignés), mention de la fiche FR qui
+les nomme (4G Rough à 262 sans source, mesuré 216, valeur dérivée 194,4 non appliquée), contrôle 24 (tenue inutile, sans motif, retirée en
+silence, valeur dérivée ou composant mal consignés : 5 tests négatifs). **Contrôle 23** : 10 exceptions datées, motivées, avec le GO,
+**bornées** à la seule baisse de rigidité du cordage à la valeur écrite (une alerte n'est excusée que si elle existe encore avec la rigidité
+d'avant et que type et note de confort n'ont pas bougé) ; une note de confort relevée, retirée ou créée, le retrait de la fiche ou une autre
+baisse restent détectés sur ces fiches (7 tests négatifs ; revue indépendante de #153, défaut n° 1). Les 3 multifilaments n'ont aucune
+alerte à retirer sur cette grille.
+**Conséquences** : médianes polyester 220 → 216,9 et multifilament 162,9 → 162 lb/in ; contrôle 19 : quatre descriptions corrigées (Isospeed
+Cream « sixième » polyester le moins rigide ; « confort » retiré de Pro Stacked, RPM Power et Primal, à 220 lb/in, désormais au-dessus de la
+médiane). **Articles** (FR et EN) : « polyester et tennis elbow » (46 polyesters à rigidité mesurée au lieu de 36, plage 154,9 à 286,9,
+médiane 216,9, 15 plus souples et 18 plus fermes refaits, FAQ et JSON-LD), « cordage et tennis elbow » (tableau des familles, Poly Tour Air
+195 → 154,9 et indice 28 → 24 dans le tableau des dix-sept, deux phrases devenues fausses réécrites), médianes citées par « mono ou
+multifilament », « meilleur cordage polyester 2026 », « chaleur », « hiver » et le guide du matériel (indices recalculés : cadres de RA 57
+et 58, 28 à 29 au lieu de 29 ; de RA 69 à RA 57, 32 → 28 au lieu de 33 → 29) ; figures régénérées par `build-rigidite-figures.mts` (axe des polyesters 150-290) ; `dateModified`, sitemap
+et cartes des deux index alignés. Aucune note /10, formule ni seuil modifié ; libellés de nature des notes inchangés.
 
 **Changelog v2.3.25 → v2.3.26** — **Hybrides : un seul indice, celui que l'alerte lit, que le configurateur
 affiche et que le PDF imprime ; contrôle 21 ter** (décision (b)+(a) de l'orchestrateur du 22/10/2026, Pierre ayant délégué ; limite (4)
@@ -1724,4 +1752,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.3.32 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.3.34 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
