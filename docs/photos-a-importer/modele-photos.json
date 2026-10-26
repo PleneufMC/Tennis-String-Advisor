@@ -1,0 +1,32 @@
+[
+ {
+  "id": "<id exact de la fiche raquette, ex. head-speed-mp>",
+  "fichier": "<id>.jpg",
+  "pageOrigine": "https://<page où l'image a été prise (jamais un moteur de recherche)>",
+  "imageOrigine": "https://<URL de l'image, facultatif>",
+  "credit": "<source réelle affichée « Photo : … » : la marque seulement si la page est sur son site>",
+  "fourniParPierre": true,
+  "droits": "Fourni par Pierre, qui prend la responsabilité des droits (décision du JJ/MM/AAAA)",
+  "date": "AAAA-MM-JJ",
+  "sansFiligrane": true,
+  "intitule": "<intitulé du produit sur la page d'origine>",
+  "generation": "<millésime ou génération lus sur la page, ex. 2024 ou V3 ; facultatif>",
+  "tamis": 100,
+  "plan": "16x19",
+  "poids": 300,
+  "ra": 65
+ },
+ {
+  "id": "<id exact de la fiche cordage, ex. head-hawk>",
+  "fichier": "<id>.png",
+  "pageOrigine": "https://<page d'origine>",
+  "credit": "<source réelle>",
+  "fourniParPierre": true,
+  "droits": "Fourni par Pierre, qui prend la responsabilité des droits (décision du JJ/MM/AAAA)",
+  "date": "AAAA-MM-JJ",
+  "sansFiligrane": true,
+  "intitule": "<intitulé du produit sur la page d'origine>",
+  "jauge": "1.25",
+  "coloris": "<coloris du cordage visible sur la photo>"
+ }
+]
