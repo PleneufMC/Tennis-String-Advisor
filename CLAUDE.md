@@ -133,9 +133,12 @@ instrument ; la fiche produit d'un revendeur reste L2) ; **une hausse admet la m
 concorde** ; **une baisse exige la mesure de la génération exacte** (et, inchangé, la revue de `tsa-measure` et la liste des alertes
 retirées). TF40 305 et V8 Pro en relèvent ; le dossier du 23/10 dit « L1 (RDC) » (9 faits) ou « L1 (TWU) » (7) fait par fait et le
 contrôle 14 bis vérifie ce libellé sur l'extrait cité (3 tests négatifs, plus un pour la génération retirée du nom de la Ripstick).
-**Effet** (grille du contrôle 5, `fiches-effet-alertes.mts`) :
-+164 alertes standard, +351 bras sensible, +203 `calculateCompatibility`, **0 disparue** (Ripstick +79 / +175 / +103, V8 Pro +43 / +87 /
-+45, Prestige Tour +14 / +41 / +25, TF40 +15 / +22 / +9, Extreme +13 / +26 / +21). **RA par défaut** (R4) : ces hausses portent la médiane
+**Effet** (grille du contrôle 5, `fiches-effet-alertes.mts`), sur `main` e7df5da
+(après #149) : +164 alertes standard, +362 bras sensible, +213 `calculateCompatibility`, **0 disparue** (Ripstick +79 / +181 / +108,
+V8 Pro +43 / +91 / +47, Prestige Tour +14 / +41 / +26, TF40 +15 / +22 / +10, Extreme +13 / +27 / +22), dont hybrides prémontés seuls
++0 / +11 / +12 : leur rigidité, relevée par #149, s'ajoute aux RA relevés ici. Avant #149 : +164 / +351 / +203 (Ripstick +79 / +175 /
++103, V8 Pro +43 / +87 / +45, Prestige Tour +14 / +41 / +25, TF40 +15 / +22 / +9, Extreme +13 / +26 / +21). Aucune donnée de cette PR
+ne change entre les deux mesures. **RA par défaut** (R4) : ces hausses portent la médiane
 des 100 RA publiés de 64 à 65 ; `DEFAULT_RACQUET_RA` reste à 64, **convention du site, non mesurée** (le recaler élèverait l'indice
 des 29 raquettes sans RA, toutes juniors : +319 / +841 / +377 alertes sur 31 146 montages, sans rien savoir de nouveau sur elles).
 Le contrôle 1 exige que la convention reste à ±1 de la médiane mesurée (au-delà, l'arbitrage est rouvert ; 6 tests négatifs, 3
