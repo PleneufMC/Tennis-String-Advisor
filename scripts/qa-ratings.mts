@@ -5562,11 +5562,15 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
 // échoue si, par rapport à la référence : une note de confort monte, disparaît, ou apparaît sur une fiche « Non publié » (valeur
 // comblée) ; une fiche ou une raquette disparaît ; ou une alerte bras de la grille du contrôle 5 disparaît (moteur réel, deux
 // profils, mêmes entrées que la référence sauf les données changées). Exceptions : liste explicite, datée, motivée, avec le GO de
-// Pierre ; 2 au 26/10/2026 (baisses de RA sur mesure L1 de la génération exacte) ; une exception inutilisée échoue. Tests négatifs sur des
-// copies altérées du catalogue.
+// Pierre ; 12 au 26/10/2026 (10 cordages du lot P6, 2 RA abaissés sur mesure L1 de la génération exacte) ; une exception inutilisée
+// échoue. Tests négatifs sur des copies altérées du catalogue.
 {
   const before23 = failures.length;
   const REF23 = 'data/reference/second-filet-2026-10-23.json';
+  // P6 (26/10/2026) : rigidités abaissées à leur mesure TWU (règle C, trois critères de la mesure AD de tsa-measure), GO explicite de Pierre.
+  // Head Reflex MLT, Head RIP Control et Isospeed Control Classic baissent aussi, sans alerte à retirer sur cette grille : pas d'exception.
+  const P6_GO = "Pierre, GO explicite du 26/10/2026 (transmis par l'orchestrateur) : baisses P6";
+  const P6_MOTIVE = 'rigidité abaissée à la mesure TWU de la fiche (règle C ; mesure AD de tsa-measure du 23/10/2026 ; provenance string-stiffness-provenance.ts)';
   // 26/10/2026 : RA abaissés sur mesure L1 de la génération exacte (provenance racquet-alignment-provenance.ts, loweringReview), GO explicite de Pierre.
   const RA_GO = "Pierre, GO explicite du 26/10/2026 (transmis par l'orchestrateur) : baisses de RA mesurées par TWU";
   // Une exception est BORNÉE : elle n'excuse que la disparition d'une alerte due à la baisse de la valeur écrite (`ra` d'une raquette,
@@ -5574,6 +5578,16 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
   // type et note de confort du cordage). Une valeur plus basse, une note de confort relevée, retirée ou créée, un retrait de fiche restent
   // détectés (revues indépendantes de #153 et #154). Date, motif et GO sont exigés.
   const EXCEPTIONS23: ReadonlyArray<{ id: string; ra?: number; stiffness?: number; date: string; motive: string; go: string }> = [
+    { id: 'solinco-tour-bite-diamond-rough', stiffness: 192.6, date: '2026-10-26', motive: P6_MOTIVE, go: P6_GO },
+    { id: 'yonex-poly-tour-tough', stiffness: 193.7, date: '2026-10-26', motive: P6_MOTIVE, go: P6_GO },
+    { id: 'luxilon-4g-soft', stiffness: 217.2, date: '2026-10-26', motive: P6_MOTIVE, go: P6_GO },
+    { id: 'luxilon-4g-rough', stiffness: 216, date: '2026-10-26', motive: P6_MOTIVE, go: P6_GO },
+    { id: 'head-lynx', stiffness: 185.7, date: '2026-10-26', motive: P6_MOTIVE, go: P6_GO },
+    { id: 'luxilon-alu-power-soft', stiffness: 197.7, date: '2026-10-26', motive: P6_MOTIVE, go: P6_GO },
+    { id: 'luxilon-adrenaline-rough', stiffness: 202.9, date: '2026-10-26', motive: P6_MOTIVE, go: P6_GO },
+    { id: 'head-hawk-rough', stiffness: 201.2, date: '2026-10-26', motive: P6_MOTIVE, go: P6_GO },
+    { id: 'tecnifibre-ruff-code', stiffness: 207.5, date: '2026-10-26', motive: P6_MOTIVE, go: P6_GO },
+    { id: 'yonex-poly-tour-air', stiffness: 154.9, date: '2026-10-26', motive: P6_MOTIVE, go: P6_GO },
     { id: 'dunlop-cx-200', ra: 64, date: '2026-10-26', motive: 'RA 66 -> 64, mesure TWU de la CX 200 2024 (V121), génération nommée par la fiche', go: RA_GO },
     { id: 'babolat-pure-strike-100-16x20', ra: 61, date: '2026-10-26', motive: 'RA 64 -> 61, mesure TWU de la Pure Strike 100 16x20 2024 (V138), seule génération en 16x20', go: RA_GO },
   ];
@@ -5658,11 +5672,18 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
       ['fiche retirée (4G)', () => check23(curS.filter((s) => s.id !== 'luxilon-4g'), curR).issues, 'fiche retirée'],
       [`RA baissé (${aRacquet.id} 66 -> 60)`, () => check23(curS, curR.map((r) => (r.id === aRacquet.id ? { ...r, ra: 60 } : r))).issues, 'alerte(s) bras disparue(s)'],
       ['raquette retirée', () => check23(curS, curR.filter((r) => r.id !== aRacquet.id)).issues, 'raquette retirée'],
+      ['fiche exemptée : note de confort relevée (Poly Tour Tough 6 -> 9)', () => check23(mod('yonex-poly-tour-tough', { comfort: 9 }), curR).issues, 'yonex-poly-tour-tough : note de confort relevée'],
+      ['fiche exemptée : note relevée, alertes disparues (Poly Tour Tough 6 -> 9)', () => check23(mod('yonex-poly-tour-tough', { comfort: 9 }), curR).issues, 'alerte(s) bras disparue(s)'],
+      ['fiche exemptée : note de confort retirée (Head Lynx)', () => check23(mod('head-lynx', { comfort: null }), curR).issues, 'head-lynx : note de confort retirée'],
+      ['fiche exemptée : retirée du catalogue (4G Rough)', () => check23(curS.filter((s) => s.id !== 'luxilon-4g-rough'), curR).issues, 'luxilon-4g-rough : fiche retirée'],
+      ['fiche exemptée : rigidité abaissée sous la valeur écrite (4G Rough 216 -> 200)', () => check23(mod('luxilon-4g-rough', { stiffness: 200 }), curR).issues, 'alerte(s) bras disparue(s)'],
+      ['fiche exemptée : RA d\'une raquette abaissé en même temps', () => check23(curS, curR.map((r) => (r.id === aRacquet.id ? { ...r, ra: 60 } : r))).issues, 'alerte(s) bras disparue(s)'],
+      ['exception sans GO', () => check23(curS, curR, EXCEPTIONS23.map((x, i) => (i === 0 ? { ...x, go: '' } : x))).issues, 'date, motif ou GO absent'],
       ['raquette exemptée : RA abaissé sous la valeur écrite (CX 200 64 -> 62)', () => check23(curS, curR.map((r) => (r.id === 'dunlop-cx-200' ? { ...r, ra: 62 } : r))).issues, 'alerte(s) bras disparue(s)'],
       ['raquette exemptée : retirée du catalogue (Pure Strike 100 16x20)', () => check23(curS, curR.filter((r) => r.id !== 'babolat-pure-strike-100-16x20')).issues, 'babolat-pure-strike-100-16x20 : raquette retirée'],
       ['raquette exemptée : poids changé en même temps (CX 200 à 340 g)', () => check23(curS, curR.map((r) => (r.id === 'dunlop-cx-200' ? { ...r, weight: 340 } : r))).issues, 'exception inutilisée : dunlop-cx-200'],
       ['exception sans date, motif ni GO', () => check23(curS, curR, EXCEPTIONS23.map((x, i) => (i === 0 ? { ...x, date: '', motive: '', go: '' } : x))).issues, 'date, motif ou GO absent'],
-      ['exception sans valeur bornée', () => check23(curS, curR, EXCEPTIONS23.map((x, i) => (i === 0 ? { ...x, ra: undefined } : x))).issues, 'ni RA ni rigidité bornés'],
+      ['exception sans valeur bornée', () => check23(curS, curR, EXCEPTIONS23.map((x, i) => (i === 0 ? { ...x, ra: undefined, stiffness: undefined } : x))).issues, 'ni RA ni rigidité bornés'],
     ];
     let detected = 0;
     for (const [name, run, needle] of negatives) {
@@ -5744,7 +5765,16 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
       if (a === b) issues.push(`${id} : deux fois le même composant`);
       if (ca.type === 'Hybrid' || cb.type === 'Hybrid') issues.push(`${id} : un composant est lui-même un hybride`);
       const derived = PH.prepackedHybridStiffness(ca.stiffness, cb.stiffness, e.orderFixed);
-      const expected = Math.max(e.before, derived);
+      // Tenue (règle 2) : un composant a baissé sur mesure, le set garde sa valeur jusqu'à un GO ; une tenue inutile, sans date ou sans motif échoue.
+      const expected = e.held ? e.held.value : Math.max(e.before, derived);
+      if (e.held && !(e.held.value > Math.max(e.before, derived))) issues.push(`${id} : tenue inutile (${e.held.value} ≤ ${Math.max(e.before, derived)}, plus haut de la valeur d'avant et de la valeur dérivée)`);
+      if (e.held && (!/^\d{4}-\d{2}-\d{2}$/.test(e.held.date) || e.held.why.trim().length < 60)) issues.push(`${id} : tenue sans date ou sans motif`);
+      // La tenue nomme le composant abaissé (sa valeur d'aujourd'hui = la fiche) et la valeur dérivée non appliquée (recalculée), que la mention affiche.
+      if (e.held && (![a, b].includes(e.held.lowered.id) || byId.get(e.held.lowered.id)?.stiffness !== e.held.lowered.after || !(e.held.lowered.before > e.held.lowered.after))) {
+        issues.push(`${id} : tenue : composant abaissé ${e.held.lowered.id} mal consigné (composant du set, valeur d'aujourd'hui, baisse)`);
+      }
+      if (e.held && Math.abs(e.held.derived - Math.max(e.before, derived)) > 1e-9) issues.push(`${id} : tenue : valeur dérivée consignée ${e.held.derived} ≠ ${Math.max(e.before, derived)} recalculée`);
+      if (e.held && (!notice.includes(String(e.held.derived).replace('.', ',')) || !notice.includes(label(e.held.lowered.id)))) issues.push(`${id} : tenue : la mention ne nomme pas le cordage abaissé ou la valeur dérivée`);
       if (Math.abs(s.stiffness - expected) > 1e-9) issues.push(`${id} : rigidité ${s.stiffness} ≠ ${expected} (plus haut de ${e.before} et de la valeur dérivée de ${a} ${ca.stiffness} et ${b} ${cb.stiffness})`);
       const orders: [number, number][] = e.orderFixed ? [[ca.stiffness, cb.stiffness]] : [[ca.stiffness, cb.stiffness], [cb.stiffness, ca.stiffness]];
       grid: for (const ra of RAS_22) for (const t of TENS_22) {
@@ -5784,6 +5814,11 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     ['composition de fiche qui cite une source', checkPrepacked(items22, with22('tecnifibre-hybrid-ice-code-nrg2', { sources: [src22] }), page22), 'composition « fiche » qui cite'],
     ['jauges ramenées à 1.25/1.25 (Duo Power)', checkPrepacked(set22('wilson-duo-power', { gauges: ['1.25/1.25'] }), T0, page22), 'wilson-duo-power : jauges'],
     ['fiche FR sans mention', checkPrepacked(items22, T0, page22.replace(/data-testid="prepacked-hybrid-notice"/g, '')), 'mention des hybrides prémontés n\'est pas affichée'],
+    ['tenue inutile (Duo Control tenu à 190, sous la valeur dérivée)', checkPrepacked(set22('wilson-duo-control', { stiffness: 190 }), with22('wilson-duo-control', { held: { ...T0['wilson-duo-control'].held!, value: 190 } }), page22), 'wilson-duo-control : tenue inutile'],
+    ['tenue sans motif', checkPrepacked(items22, with22('wilson-duo-control', { held: { ...T0['wilson-duo-control'].held!, why: '' } }), page22), 'tenue sans date ou sans motif'],
+    ['tenue : valeur dérivée consignée fausse (190)', checkPrepacked(items22, with22('wilson-duo-control', { held: { ...T0['wilson-duo-control'].held!, derived: 190 } }), page22), 'valeur dérivée consignée 190'],
+    ['tenue : composant abaissé hors du set', checkPrepacked(items22, with22('wilson-duo-control', { held: { ...T0['wilson-duo-control'].held!, lowered: { id: 'luxilon-4g', before: 300, after: 286.9 } } }), page22), 'composant abaissé luxilon-4g mal consigné'],
+    ['tenue retirée en silence (Duo Control laissé à 222)', checkPrepacked(items22, with22('wilson-duo-control', { held: undefined }), page22), 'wilson-duo-control : rigidité 222 ≠ 194.4'],
     ['fiche FR sans « estimé »', checkPrepacked(items22, T0, page22.replace(/estimated:\s*Boolean\(PREPACKED_HYBRIDS\[string\.id\]\?\.components\)/, 'estimated: false')), 'non marquée « estimé »'],
   ];
   for (const [name, found, needle] of neg24) {
@@ -5793,7 +5828,7 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     const v = Object.values(T0);
     const n = (c: string) => v.filter((e) => e.composition === c).length;
     ok(`hybrides prémontés : ${v.length} fiches « Hybrid » consignées (${n('publiee')} à composition publiée, ${n('fiche')} à composition de fiche, set introuvable, ${n('non-publiee')} non publiée : valeur conservée, hors classements) ; ` +
-      `rigidité = plus haut de la valeur d'avant et de la valeur dérivée des deux cordages, recalculée ; indice de la fiche jamais sous celui du moteur pour les deux cordages à la même tension (${RAS_22.length} RA × ${TENS_22.length} tensions ; ${nAbove} montage(s) au-dessus, par l'arrondi au dixième supérieur) ; ` +
+      `rigidité = plus haut de la valeur d'avant et de la valeur dérivée des deux cordages, recalculée, sauf ${v.filter((e) => e.held).length} tenue(s) datée(s) au-dessus (règle 2 : ${Object.keys(T0).filter((k) => T0[k].held).join(', ')}) ; indice de la fiche jamais sous celui du moteur pour les deux cordages à la même tension (${RAS_22.length} RA × ${TENS_22.length} tensions ; ${nAbove} montage(s) au-dessus, par l'arrondi au dixième supérieur) ; ` +
       `sources (URL, niveau, date, extrait), jauges et mention de la fiche FR vérifiées ; ${neg24.length} tests négatifs détectés`);
   }
 }

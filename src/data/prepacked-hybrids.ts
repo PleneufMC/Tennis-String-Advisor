@@ -11,7 +11,8 @@
  * RÈGLE. Composition publiée (page ouverte, règle 4) et deux cordages de la base : rigidité de la fiche = celle que le moteur prête au
  * montage des deux cordages à la même tension, max(0,6 × montants + 0,4 × travers ; moyenne), le plus haut des deux sens si l'ordre
  * n'est pas fixé par la source, arrondie au dixième SUPÉRIEUR (jamais sous la valeur des composants) ; jamais sous la valeur d'avant
- * (une baisse exigerait une mesure, règle 2). Composition introuvable sur les pages ouvertes : même calcul sur la composition que la
+ * (une baisse exigerait une mesure, règle 2). Un composant qui BAISSE sur mesure (lot P6 du 26/10/2026) ne fait pas baisser le set en
+ * silence : la valeur d'avant est TENUE (`held`, datée et motivée) tant que la baisse du set n'a pas son propre GO. Composition introuvable sur les pages ouvertes : même calcul sur la composition que la
  * fiche annonçait, étiqueté comme tel. Composition non publiée (aucun cordage nommé) : valeur de la fiche conservée, alerte comprise,
  * mention « composition non publiée, rigidité de fiche sans source », exclue des classements (`isStiffnessRankable`).
  *
@@ -44,6 +45,17 @@ export interface PrepackedHybrid {
   gauges?: readonly string[];
   sources: readonly PrepackedSource[];
   note: string;
+  /**
+   * Valeur TENUE au-dessus de la valeur dérivée (règle 2) : un composant a baissé sur mesure, la valeur dérivée retirerait des alertes et
+   * la baisse du set attend le GO explicite de Pierre. Absent sinon ; le contrôle 24 refuse une tenue inutile, sans date ou sans motif.
+   */
+  held?: {
+    value: number; date: string; why: string;
+    /** Le composant abaissé sur mesure : sa valeur d'avant (celle qui donnait `value`) et sa valeur mesurée d'aujourd'hui. */
+    lowered: { id: string; before: number; after: number };
+    /** Valeur dérivée d'aujourd'hui, NON appliquée (le contrôle 24 la recalcule). */
+    derived: number;
+  };
 }
 
 export const PREPACKED_HYBRIDS: Readonly<Record<string, PrepackedHybrid>> = {
@@ -76,6 +88,10 @@ export const PREPACKED_HYBRIDS: Readonly<Record<string, PrepackedHybrid>> = {
       excerpt: 'This set-up includes Luxilon 4G Rough 1.25 … The other string is NXT Control 16 … put 4G Rough in the mains … put NXT Control in the mains',
     }],
     note: 'La fiche annonçait Luxilon Element + Wilson NXT : c\'est la composition du Duo Feel (« Wilson Duo Feel Element 1.25 & NXT 16 », même revendeur). Ordre au choix. wilson.com non lu (Web Bot Auth).',
+    held: {
+      value: 222, date: '2026-10-26', lowered: { id: 'luxilon-4g-rough', before: 262, after: 216 }, derived: 194.4,
+      why: 'Valeur dérivée du 23/10/2026 (4G Rough 262, sans source ; NXT Control 162). Le lot P6 du 26/10/2026 abaisse le 4G Rough à sa mesure TWU (216) : la valeur dérivée devient 194,4 et retirerait des alertes ; le GO de Pierre couvre les 13 cordages du lot, pas ce set. Tenue à 222 jusqu\'à un GO explicite (règle 2).',
+    },
   },
   'wilson-champions-choice': {
     composition: 'publiee', components: ['wilson-natural-gut', 'luxilon-alu-power-rough'], orderFixed: false, before: 165,
@@ -141,6 +157,12 @@ export function prepackedHybridNotice(id: string, names: (id: string) => string)
   if (!h.components) return 'Composition non publiée, rigidité de fiche sans source : valeur conservée pour le calcul et l\'alerte, hors classements.';
   const pair = `${names(h.components[0])} et ${names(h.components[1])}`;
   const order = h.orderFixed ? '' : ', le plus haut des deux sens de montage';
+  if (h.held) {
+    const fr = (v: number) => String(v).replace('.', ',');
+    const { lowered, derived, value } = h.held;
+    return `Rigidité tenue à ${fr(value)} lb/in : valeur dérivée des deux cordages du set, ${pair}${order}, calculée avec ${names(lowered.id)} à ${fr(lowered.before)} lb/in (valeur de fiche sans source). ` +
+      `Mesuré depuis par TWU à ${fr(lowered.after)} lb/in, ce cordage donne au set une valeur dérivée de ${fr(derived)} lb/in, plus basse, qui n'est pas appliquée tant que cette baisse n'est pas validée. Aucune mesure du set n'est publiée.`;
+  }
   if (h.composition === 'fiche') return `Rigidité dérivée de ${pair}, la composition annoncée par cette fiche (set introuvable sur les pages ouvertes), comme le configurateur calcule un hybride${order} ; aucune mesure du set.`;
   return `Rigidité dérivée des deux cordages du set, ${pair}, comme le configurateur calcule un hybride${order} ; aucune mesure du set n'est publiée.`;
 }

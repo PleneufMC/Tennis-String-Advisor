@@ -59,15 +59,15 @@ const BLOG_ARTICLES: Array<{ slug: string; modified: string }> = [
   { slug: 'jauge-cordage-tennis.html', modified: '2026-10-23' },
   { slug: 'guide-tension-cordage-tennis.html', modified: '2026-10-23' },
   { slug: 'cordage-tennis-elbow.html', modified: '2026-10-26' },
-  { slug: 'guide-materiel-tennis.html', modified: '2026-10-23' },
+  { slug: 'guide-materiel-tennis.html', modified: '2026-10-26' },
   { slug: 'analyse-setups-atp-top-20.html', modified: '2026-10-22' },
   { slug: 'nouveautes-equipement-tennis-2025-2026.html', modified: '2026-10-23' },
   { slug: 'cordage-terre-battue.html', modified: '2026-10-23' },
   { slug: 'challengers-sinner-alcaraz-2026.html', modified: '2026-10-22' },
   { slug: 'actualite-materiel-tennis-2026-guerre-du-spin.html', modified: '2026-10-26' },
   { slug: 'cordage-mono-vs-multifilament.html', modified: '2026-10-26' },
-  { slug: 'cordage-tennis-chaleur.html', modified: '2026-10-23' },
-  { slug: 'tension-cordage-hiver.html', modified: '2026-10-23' },
+  { slug: 'cordage-tennis-chaleur.html', modified: '2026-10-26' },
+  { slug: 'tension-cordage-hiver.html', modified: '2026-10-26' },
   { slug: 'raquette-point-fort-ou-point-faible.html', modified: '2026-10-23' },
   // Adapté de l'EN next-gen (01/10/2026), appairé en hreflang.
   { slug: 'materiel-next-gen-fonseca-mensik-cobolli-jodar.html', modified: '2026-10-23' },
@@ -109,7 +109,7 @@ const EN_BLOG_ARTICLES: Array<{ slug: string; modified: string }> = [
   { slug: 'tennis-string-tension-guide.html', modified: '2026-10-26' },
   // Article chaleur (28/08/2026), appairé en hreflang avec
   // /blog/cordage-tennis-chaleur.html.
-  { slug: 'tennis-strings-heat-tension.html', modified: '2026-10-23' },
+  { slug: 'tennis-strings-heat-tension.html', modified: '2026-10-26' },
   // Adapté du FR raquette-point-fort-ou-point-faible (27/08/2026), appairé en hreflang.
   { slug: 'racquet-strengths-or-weaknesses.html', modified: '2026-10-23' },
   // Pilier durée de vie (01/10/2026), appairé en hreflang avec
@@ -118,7 +118,7 @@ const EN_BLOG_ARTICLES: Array<{ slug: string; modified: string }> = [
   // Adapté du FR meilleur-cordage-polyester-2026 (09/10/2026), appairé en hreflang.
   { slug: 'best-polyester-tennis-strings-2026.html', modified: '2026-10-26' },
   // Adapté du FR tension-cordage-hiver (09/10/2026), appairé en hreflang.
-  { slug: 'tennis-string-tension-cold-weather.html', modified: '2026-10-23' },
+  { slug: 'tennis-string-tension-cold-weather.html', modified: '2026-10-26' },
   // Adapté du FR cordage-tennis-elbow (09/10/2026), réécrit sur le catalogue, appairé en hreflang.
   { slug: 'best-tennis-strings-for-tennis-elbow.html', modified: '2026-10-26' },
   // Adapté du FR meilleures-raquettes-tennis-2026 (09/10/2026), appairé en hreflang.

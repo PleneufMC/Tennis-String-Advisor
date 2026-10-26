@@ -456,6 +456,99 @@ export const STRING_STIFFNESS_PROVENANCE: Readonly<Record<string, StringStiffnes
       'Série suspecte (inversion 1.25 (165,7) > 1.30 (161,7)) ; garde (A) satisfaite : le maximum (165,7) est contredit par une jauge plus épaisse mesurée plus souple, mais la plus rigide des mesures non contredites (161,7) reste ≥ 160, valeur actuelle.',
   },
 
+  // ---- P6 : baisses appliquées avec le GO explicite de Pierre (26/10/2026) ; mesure AD de tsa-measure (23/10/2026) ----------
+  // Trois critères (mesure AD, §1) : toutes les jauges de la fiche mesurées, appariement strict, série non suspecte ; valeur = règle C.
+  'solinco-tour-bite-diamond-rough': {
+    status: 'appliquee', before: 260, rule: 'plus-rigide', appliedGauge: '1.30',
+    measures: [{ twu: 'Solinco Tour Bite Diamond Rough 17 (1.20)', gauge: '1.20', lbIn: 181.7 }, { twu: 'Solinco Tour Bite Diamond Rough 16L (1.25)', gauge: '1.25', lbIn: 191.5 }, { twu: 'Solinco Tour Bite Diamond Rough 16 (1.30)', gauge: '1.30', lbIn: 192.6 }],
+    loweringApprovedBy: 'Pierre, GO explicite du 26/10/2026 (transmis par l\'orchestrateur) : baisses P6, mesure AD de tsa-measure du 23/10/2026',
+    note:
+      'Règle C : 1.30 (192,6), la plus rigide des trois jauges de la fiche, toutes mesurées ; 1.20 (181,7) et 1.25 (191,5) plus souples ; série monotone. BAISSE 260 → 192,6 (règle 2 : GO explicite de Pierre).',
+  },
+  'yonex-poly-tour-tough': {
+    status: 'appliquee', before: 245, rule: 'jauge-unique', appliedGauge: '1.25',
+    measures: [{ twu: 'Yonex Poly Tour Tough 16L', gauge: '1.25', lbIn: 193.7 }],
+    loweringApprovedBy: 'Pierre, GO explicite du 26/10/2026 (transmis par l\'orchestrateur) : baisses P6, mesure AD de tsa-measure du 23/10/2026',
+    note:
+      'Jauge unique de la fiche (1.25), mesurée ; aucune autre jauge de ce modèle dans le relevé. BAISSE 245 → 193,7 (règle 2 : GO explicite de Pierre).',
+  },
+  'luxilon-4g-soft': {
+    status: 'appliquee', before: 235, rule: 'jauge-unique', appliedGauge: '1.25',
+    measures: [{ twu: 'Luxilon 4G Soft 1.25', gauge: '1.25', lbIn: 217.2 }],
+    loweringApprovedBy: 'Pierre, GO explicite du 26/10/2026 (transmis par l\'orchestrateur) : baisses P6, mesure AD de tsa-measure du 23/10/2026',
+    note:
+      'Jauge unique de la fiche (1.25), mesurée ; aucune autre jauge de ce modèle dans le relevé. « 4G » et « 4G Rough » sont d\'autres fiches. BAISSE 235 → 217,2 (règle 2 : GO explicite de Pierre).',
+  },
+  'luxilon-4g-rough': {
+    status: 'appliquee', before: 262, rule: 'jauge-unique', appliedGauge: '1.25',
+    measures: [{ twu: 'Luxilon 4G Rough 16L', gauge: '1.25', lbIn: 216 }],
+    loweringApprovedBy: 'Pierre, GO explicite du 26/10/2026 (transmis par l\'orchestrateur) : baisses P6, mesure AD de tsa-measure du 23/10/2026',
+    note:
+      'Jauge unique de la fiche (1.25), mesurée ; aucune autre jauge de ce modèle dans le relevé. Composant du Wilson Duo Control (hybride prémonté) : sa rigidité dérivée n\'est PAS abaissée par ce lot (tenue, voir prepacked-hybrids.ts). BAISSE 262 → 216 (règle 2 : GO explicite de Pierre).',
+  },
+  'head-lynx': {
+    status: 'appliquee', before: 225, rule: 'plus-rigide', appliedGauge: '1.30',
+    measures: [{ twu: 'Head Lynx 18 (1.20)', gauge: '1.20', lbIn: 174.9 }, { twu: 'Head Lynx 17 (1.25)', gauge: '1.25', lbIn: 179.5 }, { twu: 'Head Lynx 16 (1.30)', gauge: '1.30', lbIn: 185.7 }],
+    loweringApprovedBy: 'Pierre, GO explicite du 26/10/2026 (transmis par l\'orchestrateur) : baisses P6, mesure AD de tsa-measure du 23/10/2026',
+    note:
+      'Règle C : 1.30 (185,7), la plus rigide des trois jauges de la fiche, toutes mesurées ; série monotone. « Lynx Tour » et « Lynx Edge » sont d\'autres fiches. BAISSE 225 → 185,7 (règle 2 : GO explicite de Pierre).',
+  },
+  'luxilon-alu-power-soft': {
+    status: 'appliquee', before: 210, rule: 'jauge-unique', appliedGauge: '1.25',
+    measures: [{ twu: 'Luxilon Alu Power Soft 1.25', gauge: '1.25', lbIn: 197.7 }],
+    loweringApprovedBy: 'Pierre, GO explicite du 26/10/2026 (transmis par l\'orchestrateur) : baisses P6, mesure AD de tsa-measure du 23/10/2026',
+    note:
+      'Jauge unique de la fiche (1.25), mesurée ; aucune autre jauge de ce modèle dans le relevé. BAISSE 210 → 197,7 (règle 2 : GO explicite de Pierre).',
+  },
+  'luxilon-adrenaline-rough': {
+    status: 'appliquee', before: 212, rule: 'jauge-unique', appliedGauge: '1.25',
+    measures: [{ twu: 'Luxilon Adrenaline Rough 16L/1.25', gauge: '1.25', lbIn: 202.9 }],
+    loweringApprovedBy: 'Pierre, GO explicite du 26/10/2026 (transmis par l\'orchestrateur) : baisses P6, mesure AD de tsa-measure du 23/10/2026',
+    note:
+      'Jauge unique de la fiche (1.25), mesurée ; aucune autre jauge de ce modèle dans le relevé. BAISSE 212 → 202,9 (règle 2 : GO explicite de Pierre).',
+  },
+  'head-hawk-rough': {
+    status: 'appliquee', before: 212, rule: 'jauge-unique', appliedGauge: '1.25',
+    measures: [{ twu: 'Head Hawk Rough 17', gauge: '1.25', lbIn: 201.2 }],
+    loweringApprovedBy: 'Pierre, GO explicite du 26/10/2026 (transmis par l\'orchestrateur) : baisses P6, mesure AD de tsa-measure du 23/10/2026',
+    note:
+      'Jauge unique de la fiche (1.25), mesurée ; aucune autre jauge de ce modèle dans le relevé. BAISSE 212 → 201,2 (règle 2 : GO explicite de Pierre).',
+  },
+  'tecnifibre-ruff-code': {
+    status: 'appliquee', before: 215, rule: 'plus-rigide', appliedGauge: '1.30',
+    measures: [{ twu: 'Tecnifibre Ruff Code 17 (1.25)', gauge: '1.25', lbIn: 207.5 }, { twu: 'Tecnifibre Ruff Code 16 (1.30)', gauge: '1.30', lbIn: 207.5 }],
+    loweringApprovedBy: 'Pierre, GO explicite du 26/10/2026 (transmis par l\'orchestrateur) : baisses P6, mesure AD de tsa-measure du 23/10/2026',
+    note:
+      'Règle C : 1.25 et 1.30 mesurées à 207,5 ; les deux jauges de la fiche, série monotone. BAISSE 215 → 207,5 (règle 2 : GO explicite de Pierre).',
+  },
+  'yonex-poly-tour-air': {
+    status: 'appliquee', before: 195, rule: 'jauge-unique', appliedGauge: '1.25',
+    measures: [{ twu: 'Yonex Poly Tour Air 16L', gauge: '1.25', lbIn: 154.9 }],
+    loweringApprovedBy: 'Pierre, GO explicite du 26/10/2026 (transmis par l\'orchestrateur) : baisses P6, mesure AD de tsa-measure du 23/10/2026',
+    note:
+      'Jauge unique de la fiche (1.25), mesurée ; aucune autre jauge de ce modèle dans le relevé. Devient le polyester le moins rigide du catalogue. BAISSE 195 → 154,9 (règle 2 : GO explicite de Pierre).',
+  },
+  'head-reflex-mlt': {
+    status: 'appliquee', before: 170, rule: 'plus-rigide', appliedGauge: '1.30',
+    measures: [{ twu: 'Head Reflex MLT 17 (1.25)', gauge: '1.25', lbIn: 141.2 }, { twu: 'Head Reflex MLT 16 (1.30)', gauge: '1.30', lbIn: 159.4 }],
+    loweringApprovedBy: 'Pierre, GO explicite du 26/10/2026 (transmis par l\'orchestrateur) : baisses P6, mesure AD de tsa-measure du 23/10/2026',
+    note:
+      'Règle C : 1.30 (159,4) ; 1.25 (141,2) plus souple ; les deux jauges de la fiche, série monotone. BAISSE 170 → 159,4 (règle 2 : GO explicite de Pierre).',
+  },
+  'head-rip-control': {
+    status: 'appliquee', before: 180, rule: 'plus-rigide', appliedGauge: '1.30',
+    measures: [{ twu: 'Head Rip Control 17 (1.25)', gauge: '1.25', lbIn: 137.7 }, { twu: 'Head RIP Control 16', gauge: '1.30', lbIn: 156.6 }],
+    loweringApprovedBy: 'Pierre, GO explicite du 26/10/2026 (transmis par l\'orchestrateur) : baisses P6, mesure AD de tsa-measure du 23/10/2026',
+    note:
+      'Règle C : 1.30 (156,6) ; 1.25 (137,7) plus souple ; les deux jauges de la fiche, série monotone. BAISSE 180 → 156,6 (règle 2 : GO explicite de Pierre).',
+  },
+  'isospeed-control-classic': {
+    status: 'appliquee', before: 178, rule: 'jauge-unique', appliedGauge: '1.30',
+    measures: [{ twu: 'IsoSpeed Control Classic 16', gauge: '1.30', lbIn: 136 }],
+    loweringApprovedBy: 'Pierre, GO explicite du 26/10/2026 (transmis par l\'orchestrateur) : baisses P6, mesure AD de tsa-measure du 23/10/2026',
+    note:
+      'Jauge unique de la fiche (1.30), mesurée ; aucune autre jauge de ce modèle dans le relevé. BAISSE 178 → 136 (règle 2 : GO explicite de Pierre).',
+  },
   // ---- Lot 3 : hausses établies mais NON appliquées -------------------------------------------------------------
   // Garde de série suspecte : la hausse ne repose que sur une mesure contredite par une jauge plus épaisse (voir l'en-tête).
   'solinco-x-natural': {
