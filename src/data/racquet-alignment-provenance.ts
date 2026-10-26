@@ -147,7 +147,7 @@ export const RACQUET_ALIGNMENT: Readonly<Record<string, Alignment>> = {
     held: {},
     loweringReview:
       'GO explicite de Pierre du 26/10/2026 (transmis par l\'orchestrateur) ; mesure L1 (TWU) de la génération exacte, CX 200 2024 nommée par la fiche (V121 : 64) ; Dunlop déclare 65 (V120, L0, protocole ' +
-      'non publié : autre nature) ; alertes retirées chiffrées dans la PR ; revue indépendante avant fusion',
+      'non publié : autre nature) ; alertes retirées chiffrées dans la PR #154 ; revue indépendante AX du 26/10/2026 (valeurs, générations et alertes vérifiées ; réserves corrigées sur la branche)',
   },
   // Fiches G et S du 23/10/2026 (AC_fiches_g_s_v, dossier du 23/10, V123 à V142).
   'dunlop-fx-500-tour': {
@@ -193,11 +193,11 @@ export const RACQUET_ALIGNMENT: Readonly<Record<string, Alignment>> = {
     held: {},
   },
   'babolat-pure-strike-100-16x20': {
-    changes: { stiffness: { before: 64, after: 61, facts: [['V138', 'L1', '61']] } },
+    changes: { stiffness: { before: 64, after: 61, facts: [['V138', 'L1', '61'], ['V143', 'L3', 'brand new model']] } },
     held: {},
     loweringReview:
-      'GO explicite de Pierre du 26/10/2026 (transmis par l\'orchestrateur) ; mesure L1 (TWU) de la génération exacte : la seule Pure Strike 100 en 16x20 est la 2024 (V138 : 61) ; Babolat déclare 65 ± 3 ' +
-      'non cordé (autre nature, jamais saisi) ; alertes retirées chiffrées dans la PR ; revue indépendante avant fusion',
+      'GO explicite de Pierre du 26/10/2026 (transmis par l\'orchestrateur) ; mesure L1 (TWU) de la génération exacte : la seule Pure Strike 100 en 16x20 est la 2024, nouveau modèle de la 4e génération (V143) ; mesure V138 : 61 ; ' +
+      'Babolat déclare 65 ± 3 non cordé (autre nature, jamais saisi) ; alertes retirées chiffrées dans la PR #154 ; revue indépendante AX du 26/10/2026 (valeurs, générations et alertes vérifiées ; réserves corrigées sur la branche)',
   },
   // Générations établies, fiches justes (aucun champ changé) : le nom reste, la génération est consignée ici et dans le dossier.
   'wilson-blade-standard': {

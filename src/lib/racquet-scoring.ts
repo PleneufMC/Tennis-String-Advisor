@@ -146,7 +146,8 @@ import {
  * RA retenu quand `stiffness` est `null` : **valeur par défaut 64, convention du site, non mesurée**.
  *
  * Choisie le 08/08/2026 comme médiane des 100 raquettes renseignées (moyenne 64,17 ; médiane 64 alors). Médiane des RA publiés :
- * 65 au 26/10/2026, après les hausses de RA sur mesure L1 du 23/10 ; la médiane oscille entre 64 et 65 au gré des corrections.
+ * 65 après les hausses de RA sur mesure L1 du 23/10 ; après les baisses CX 200 et Pure Strike du 26/10/2026, médiane haute (51e valeur, celle
+ * du contrôle 1) 65, médiane usuelle 64,5 ; elle oscille entre 64 et 65 au gré des corrections.
  * Le contrôle 1 de `audit:ratings` exige que la convention reste à ±1 de la médiane ; au-delà, l'arbitrage est rouvert (avis
  * d'Opus 5.5 du 26/10/2026, R4 de la revue de #152).
  *
@@ -161,7 +162,7 @@ export const DEFAULT_RACQUET_RA = 64;
 
 /**
  * Bornes réelles du RA — pour cadrer les barres de comparaison et l'échelle
- * des notes. `median` : valeur par défaut 64 (convention, = `DEFAULT_RACQUET_RA`) ; médiane des RA publiés : 65 au 26/10/2026.
+ * des notes. `median` : valeur par défaut 64 (convention, = `DEFAULT_RACQUET_RA`) ; médiane des RA publiés au 26/10/2026 : 65 (haute), 64,5 (usuelle).
  *
  * ⚠️ Corrige au passage un défaut d'affichage : `/compare` traçait la barre
  * « Rigidité (RA) » sur `maxValue={80}` alors que les données vont de 55 à 72.

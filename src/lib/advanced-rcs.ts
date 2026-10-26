@@ -300,7 +300,7 @@ export function calculateAdvancedRcs(input: AdvancedRcsInput): AdvancedRcsResult
   const { rcs, hybrid } = setupFirmnessIndex(input);
 
   // --- Écarts normalisés (autour des centres "données réelles") ---
-  // RA : 55-72. Centre = RA par défaut (64, convention du site ; médiane des RA publiés : 64 le 08/08, 65 le 26/10/2026) — choisi sur les 100 raquettes dont le RA
+  // RA : 55-72. Centre = RA par défaut (64, convention du site ; médiane des RA publiés : 64 le 08/08 ; le 26/10/2026, 65 (haute) et 64,5 (usuelle)) — choisi sur les 100 raquettes dont le RA
   // est publié — et non 63 comme écrit initialement de mémoire. Aligné sur
   // DEFAULT_RACQUET_RA de lib/racquet-scoring.ts. >0 => cadre rigide.
   const raDev = racquetStiffness - 64;

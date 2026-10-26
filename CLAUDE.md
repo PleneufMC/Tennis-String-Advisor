@@ -30,7 +30,7 @@ raquettes**, 60 → **63/179 cordages**, **137 fiches EN sur 308** : Wilson 6 (B
 US Open Jr 21/23/25), Yonex 2 (EZONE 105, avec la légende « coloris présenté : Espresso Brown » ; VCORE 98 Tour), Tecnifibre 3 (Tempo
 285 V2, TGV, Multifeel), Babolat 1 (RPM Team), toutes de fiches alignées le 10/10 ou à caractéristiques identiques. **Quarantaines
 datées** : Pure Strike 100 16x20 (contre-vérification du 23/10 : génération de la fiche non établie, RA ± 3 non discriminante, même
-règle que TF40 305 et FX 500 2026), T-Fight 315S (seule vue entière au code article du 305S), 6 cordages Wilson de la collection officielle (jauge 1,32, coloris, montages hybrides
+règle que TF40 305 et FX 500 2026 ; génération établie le 26/10/2026 : la 2024, seule 100 en 16x20, V143 du dossier du 23/10), T-Fight 315S (seule vue entière au code article du 305S), 6 cordages Wilson de la collection officielle (jauge 1,32, coloris, montages hybrides
 différents), Dynamix VP (noir seulement). **Produit voisin** : une photo d'une autre jauge de la fiche porte la légende « jauge présentée :
 1,25 mm » (FR) / « gauge shown » (EN) ; un autre coloris n'est admis que sur une fiche sans coloris (« coloris présenté » / « colour shown », toute fiche raquette) ; une raquette
 voisine, jamais. **Accès** : `fetch` lit robots.txt (règles appliquées à chaque URL), agents.md et llms.txt avant la première requête ;
@@ -152,17 +152,20 @@ la charte F7 relève de la PR charte de Pierre.
 **Changelog v2.3.34 → v2.3.35** — **Deux RA abaissés sur mesure TWU de la génération exacte (GO explicite de Pierre du 26/10/2026) ;
 trois baisses tenues faute de génération établie** (règle des mesures L1 de la v2.3.32 : une baisse exige la mesure L1 de la génération
 exacte ; `tsa-core`). **Appliqué** : Dunlop CX 200 RA 66 → 64 (page d'essai TWU « Dunlop CX 200 2024 », V121 ; la fiche nomme la CX 200 2024 ;
-Dunlop déclare 65, protocole non publié, autre nature) ; Babolat Pure Strike 100 16x20 RA 64 → 61 (page d'essai TWU de la 2024, V138, seule
-Pure Strike 100 en 16x20 ; le « 65 ± 3 » de Babolat est un RA non cordé). Provenance : `changes` avec `loweringReview` (GO, mesure exacte,
-alertes chiffrées, revue avant fusion). **Effet** (grille du contrôle 5, 1 074 montages par raquette, moteur réel) : CX 200 −22 standard /
-−62 bras sensible / −36 `calculateCompatibility` / −28 « Très Ferme » ; Pure Strike −30 / −72 / −50 / −36 ; **total −52 / −134 / −86 / −64,
-0 ajoutée** ; grille complète : standard 7,29 → 7,25 %, sensible 23,95 → 23,85 %. **Tenu** (la fiche ne nomme aucune génération et une
+Dunlop déclare 65, protocole non publié, autre nature) ; Babolat Pure Strike 100 16x20 RA 64 → 61 (page d'essai TWU de la 2024, V138 ; seule
+Pure Strike 100 en 16x20, « brand new model » de la 4e génération, V143 ; le « 65 ± 3 » de Babolat est un RA non cordé). Provenance : `changes` avec `loweringReview` (GO, mesure exacte,
+alertes chiffrées, revue indépendante AX). **Effet** (grille du contrôle 5 : 1 074 montages par raquette, 18 à 28 kg, moteur réel) : CX 200
+−22 standard / −62 bras sensible / −36 `calculateCompatibility` ; Pure Strike −30 / −72 / −50 ; **total −52 / −134 / −86, 0 ajoutée** ;
+palier « Très Ferme » sur la grille du contrôle 8 (19 à 29 kg) : −28 et −36, total −64 (−22 et −30 sur celle du contrôle 5) ; grille complète : standard 7,29 → 7,25 %, sensible 23,95 → 23,85 %. **Tenu** (la fiche ne nomme aucune génération et une
 génération voisine mesure plus haut ou autant) : FX 500 Tour 67 (69 en 2020, 65 en 2023 et 2025 ; −34 / −56 / −33 si 65), Speed MP 61
 (60 en 2024, L1 ; 62 en 2022 selon le rapport AC, hors dossier ; −6 / −18 / −11 si 60), Instinct MP 65 (64 en 2025, L1 ; 65 en 2019 selon
 le même rapport ; −9 / −35 / −14 si 64) : une baisse exige la
-mesure de la génération exacte ; les nommer (comme la Ripstick) est un arbitrage. **Contrôles** : 14 bis, une baisse exige un fait L1 qui
-porte la valeur écrite (2 tests négatifs ajoutés, dont la baisse sans GO) ; 23, deux exceptions datées et motivées, avec le GO. La médiane
-des RA publiés reste 65 (contrôle 1 : bande ±1, inchangé). Aucun article ne cite le RA de ces deux fiches.
+mesure de la génération exacte ; les nommer (comme la Ripstick) est un arbitrage. **Contrôles** : 14 bis, une baisse exige un fait L1 dont le RA
+MESURÉ (« Flex Rating (Test) N » de l'extrait, « RA N » ou nombre seul de la colonne « Valeur ») est la valeur écrite, jamais une sous-chaîne
+de la ligne (3 tests négatifs, dont la baisse sans GO et une Pure Strike à 59, lu dans « Balance Point 12.59 ») ; 23, deux exceptions
+datées, motivées, avec le GO, **bornées** au RA écrit (64, 61) : une valeur plus basse, un retrait, un poids changé ou une exception sans
+date, motif ou GO échouent (5 tests négatifs). La médiane haute des RA publiés (51e valeur, lue par le contrôle 1) reste 65 ; la médiane
+usuelle passe de 65 à 64,5 (la 50e valeur passe à 64) ; bande ±1 satisfaite. Aucun article ne cite le RA de ces deux fiches.
 
 **Changelog v2.3.25 → v2.3.26** — **Hybrides : un seul indice, celui que l'alerte lit, que le configurateur
 affiche et que le PDF imprime ; contrôle 21 ter** (décision (b)+(a) de l'orchestrateur du 22/10/2026, Pierre ayant délégué ; limite (4)
