@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { BuyButton } from '@/components/product/buy-button';
 import { ProductImage } from '@/components/product/product-image';
 import { StringRatingLabel } from '@/components/product/string-rating-label';
+import { STRING_OVERALL_RATING_LABEL } from '@/lib/string-rating-nature';
 import { cn } from '@/lib/utils';
 import { 
   Target, 
@@ -205,7 +206,11 @@ export function StringCard({
               {string.model}
             </CardTitle>
             {overallRating !== null && (
-              <div className="flex items-center gap-1 bg-green-100 text-green-700 px-2 py-1 rounded-lg">
+              <div
+                className="flex items-center gap-1 bg-green-100 text-green-700 px-2 py-1 rounded-lg"
+                title={STRING_OVERALL_RATING_LABEL}
+                aria-label={`${overallRating} : ${STRING_OVERALL_RATING_LABEL}`}
+              >
                 <Star className="h-4 w-4 fill-green-500 text-green-500" />
                 <span className="font-bold text-sm">{overallRating}</span>
               </div>
@@ -220,6 +225,12 @@ export function StringCard({
           {/* Nature de la note globale et des barres plus bas : appréciation de l'équipe,
               jamais une mesure (principe décidé le 10/10/2026). */}
           <StringRatingLabel string={string} className="mt-1 text-xs font-medium leading-snug text-gray-600" />
+          {/* La note globale est dérivée (moyenne de quatre notes) : elle le dit (règle 3, avis Opus du 23/10/2026). */}
+          {overallRating !== null && (
+            <p className="mt-0.5 text-xs leading-snug text-gray-600" data-overall-rating-label>
+              ★ {STRING_OVERALL_RATING_LABEL}
+            </p>
+          )}
         </CardHeader>
 
         {/* Quick specs */}

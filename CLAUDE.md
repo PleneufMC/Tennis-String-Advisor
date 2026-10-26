@@ -1,13 +1,155 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.3.26
-> **Date** : 23 octobre 2026
+> **Version** : 2.3.33
+> **Date** : 26 octobre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
 > **Branche de référence** : `main` (seule branche longue ; la production Netlify en déploie)
 > **Repo** : https://github.com/PleneufMC/Tennis-String-Advisor.git
 
-**Changelog (numéro de version à fixer à la fusion)** — **Tableau des paliers du §1 : la colonne « Lecture » qualifie l'indice, plus
+**Changelog v2.3.26 → v2.3.27** — **Écarts de fiche : Kirschbaum Touch Multifibre (nom, jauges, rigidité TWU) et Dunlop CX 200
+(RA tenu, deux valeurs sourcées) ; contrôle 14 bis sur deux dossiers** (avis d'Opus 5.5 du 23/10/2026, point 10 ; Pierre : « je donne le
+La, vous exécutez » ; `tsa-core`). **Kirschbaum** : le fabricant écrit « Touch Multifibre » et « Durchmesser 1.25, 1.30 und 1.35 mm »
+(kirschbaum-shop.de, L0) ; la fiche disait « Multifiber », 1.30 seule : nom et jauges alignés, id conservé. **Le nom faux cachait une
+mesure** : l'appariement strict ne trouvait pas les lignes TWU « Kirschbaum Touch Multifibre 16 » (1.30, 161,7 lb/in) et « 17 (1.25) »
+(165,7) ; la rigidité 160, sans source, devient 165,7 par la règle C (hausse ; série suspecte, garde (A) satisfaite ; table par jauge
+générée par `c2-par-jauge.mts`). Description sans « toucher soyeux et confort marqué » (contrôle 19 : la fiche dépasse la médiane des
+multifilaments, qui passe de 162,3 à 162,9). Effet : aucune alerte ajoutée ni retirée sur la grille du contrôle 5 (`c2-effet-alertes.mts
+--base=76f4d62`). **CX 200 (2024)** : RA de la fiche 66 ; constructeur 65 (us.dunlopsports.com, protocole non publié, L0) ; mesure TWU 64
+(page d'essai « Dunlop CX 200 2024 », Flex Rating Test, L1). Q-1 : un RA ne change que sur mesure L1, et 64 est une BAISSE : **RA 66 tenu**
+(`held`, deux faits cités) ; la baisse est mesurée (66 → 64 sur les 1 074 montages de la fiche : −22 alertes standard, −59 bras
+sensible, −34 `calculateCompatibility`, −22 palier « Très Ferme », 0 ajoutée ; 66 → 65 : −13 / −26 / −21 / −12) et attend la revue de
+`tsa-measure` (règle 2). **Contrôle 14 bis** : relit `ALIGNMENT_DOSSIERS` (veille du 10/10 et `docs/redaction/veille-2026-10-23-ecarts-de-fiche.md`,
+faits V117 à V122), échoue sur un numéro en double ou un dossier absent ; champ `model` alignable ; 3 tests négatifs ajoutés (20). Le
+témoin « excellent toucher » du contrôle 19 passe de XR3, devenue la médiane, à NXT (173,7).
+
+**Changelog v2.3.27 → v2.3.28** — **Photos produit, lot du 22/10/2026 : 12 images officielles,
+légende du produit voisin, politique d'accès lue avant toute requête** (demande de Pierre du 22/10/2026 : « rajouter toutes
+les photos de raquettes et cordages manquantes » ; sources bornées par l'orchestrateur ; `tsa-core`). **Couverture** 65 → **74/129
+raquettes**, 60 → **63/179 cordages**, **137 fiches EN sur 308** : Wilson 6 (Blade Feel Comp Jr 25, Burn V6 100LS, Clash 100 Pro V3,
+US Open Jr 21/23/25), Yonex 2 (EZONE 105, avec la légende « coloris présenté : Espresso Brown » ; VCORE 98 Tour), Tecnifibre 3 (Tempo
+285 V2, TGV, Multifeel), Babolat 1 (RPM Team), toutes de fiches alignées le 10/10 ou à caractéristiques identiques. **Quarantaines
+datées** : Pure Strike 100 16x20 (contre-vérification du 23/10 : génération de la fiche non établie, RA ± 3 non discriminante, même
+règle que TF40 305 et FX 500 2026), T-Fight 315S (seule vue entière au code article du 305S), 6 cordages Wilson de la collection officielle (jauge 1,32, coloris, montages hybrides
+différents), Dynamix VP (noir seulement). **Produit voisin** : une photo d'une autre jauge de la fiche porte la légende « jauge présentée :
+1,25 mm » (FR) / « gauge shown » (EN) ; un autre coloris n'est admis que sur une fiche sans coloris (« coloris présenté » / « colour shown », toute fiche raquette) ; une raquette
+voisine, jamais. **Accès** : `fetch` lit robots.txt (règles appliquées à chaque URL), agents.md et llms.txt avant la première requête ;
+User-Agent « automated agent ». **Incident** : agents.md et llms.txt de wilson.com et tecnifibre.com (modèle Shopify) exigent
+« Web Bot Auth » pour les requêtes serveur ; lus après la collecte du lot (consigne reçue en cours de lot) : hôtes consignés, plus
+aucune requête ; leurs 9 photos du lot **restent en place jusqu'à leur remplacement** par une image équivalente d'une
+source dont la politique d'accès le permet (décision de Pierre du 23/10/2026). **Contrôle 12** :
+liste blanche page/image par source (Babolat FR et US), témoins et tests négatifs par source, Head et Luxilon refusés, règles du produit
+voisin, indépendant des photos présentes ; `purge fabricant:<marque>` testée sur les 4 marques (audit vert, manifeste et images
+identiques après reconstruction).
+
+**Changelog v2.3.28 → v2.3.29** — **Photos produit, suite du lot du 22/10/2026 :
+nouvelles marques, procédure d'envoi manuel de Pierre** (consignes de l'orchestrateur du 22/10/2026 ; `tsa-core` ; **empilée sur
+la PR des 12 images**). **Couverture** 74 → **75/129 raquettes**, 63 → **65/179 cordages**, **140 fiches EN sur 308** : Dunlop CX 200
+(site US ; fiche décrite « CX 200 2024 », code article CX200-24 ; RA 65 publiée contre 66 sur la fiche, écart signalé à `tsa-core`), Solinco Confidential (coloris attesté sur le packshot et confirmé par son nom de fichier « …_GRY », « jauge présentée : 1,30 mm »), Kirschbaum Touch
+Multifibre (boutique de la marque, Impressum Kirschbaum Sportartikel GmbH) ; ces trois photos posées avec le GO de Pierre du 23/10/2026
+(« Aucun fabricant ne me reprochera de faire la publicité gratuite de son matériel »). **Sites consignés** (agents.md ou llms.txt exigent Web Bot
+Auth, lus avant toute page) : toroline.com, shop.solincosports.com, diademsports.com, gammasports.com, volkltennis.com ; **sans page
+produit** : princetennis.com, isosport.com (Isospeed) ; **politique illisible** (erreur TLS) : signum-pro.de, aucune requête ; **Wikimedia
+Commons** : 4 catégories lues, aucune photo à génération identifiable. Quarantaines datées : FX 500 (2026, RA non publiée : arbitrage),
+FX 500 Tour et SX 300 Tour (98 in², fiches 100), Outlast et X-Natural (coloris du packshot), Pro Stacked (1.25 non fabriquée),
+Evolution (bleu). **Envoi manuel** : dossier hors dépôt `Documents\TSA_photos_a_importer\`, `<id>.<ext>` et `photos.json`
+(`docs/photos-a-importer/`), commande `import-upload` puis `build`, source `upload:pierre`, crédit propre à chaque image (la source
+réelle), association contrôlée comme pour les marques, refus (moteur de recherche, filigrane annoncé, crédit de marque pour une image
+de tiers, attestations absentes), avertissement de génération, `purge upload:pierre`. **Barrière d'accès** : agents.md lu en premier ;
+un fichier de politique illisible arrête l'hôte sans le consigner. **Contrôle 12** : 11 sources en liste blanche, 53 tests négatifs ;
+purge testée sur `fabricant:solinco`, `fabricant:dunlop`, `fabricant:kirschbaum` et `upload:pierre`.
+
+**Changelog v2.3.29 → v2.3.30** — **D2 restreint : sept notes de confort recalées sur la rigidité mesurée (TWU) ;
+contrôles 22 et 23** (avis d'Opus 5.5 du 23/10/2026, points 1 et 6, Pierre : « je donne le La, vous exécutez » ; mesure Q de `tsa-measure`
+du 22/10 ; `tsa-core`). **Constat** : la note de confort /10 est une note de l'équipe, non mesurée, qui suit la rigidité du catalogue ; sept
+fiches, plus rigides selon la mesure TWU que la rigidité sur laquelle leur note avait été calée, dépassaient de plus de 1,0 point la
+droite de leur famille. **Règle** (`src/data/comfort-recalibration.ts`, appliquée une fois) : droite L2 (pente de la relation note ~
+rigidité du catalogue, recalée sur la série TWU), tolérance 1,0, note ramenée sur la droite, seulement si la mesure TWU est au moins la
+médiane de la famille (220 lb/in polyester, 162,3 multifilament : Isospeed Cream, Razor Soft et Element écartés) ; note harmonisée avec
+des avis de testeurs : seule la composante éditoriale est ramenée, puis la moyenne avec l'avis recalé est refaite (`harmonizedRating`,
+étape 4 de la méthode). **Notes** : Luxilon 4G 6,3 → 5,3, Solinco Mach-10 8,8 → 8,3, Babolat RPM Team 6,8 → 5,9 (harmonisées), Babolat
+Revenge 7 → 5,4, Tecnifibre Black Code 4S et Razor Code 7,5 → 6,4, Tecnifibre TGV 9,5 → 8,4. Jamais une note ne monte ; aucun seuil ne
+bouge (32 / 35 ; second filet « confort » < 55 / < 45, gardé tel quel). **Étiquette** : « note de confort recalée sur la rigidité mesurée
+(TWU) » ajoutée au libellé de nature des notes partout où elles s'affichent (FR : `stringRatingLabel`, fiche, cartes, comparateur,
+configurateur, statistiques, PDF ; EN : « comfort rating recalibrated on measured stiffness (TWU) », `rating-labels.js`, fiches générées,
+catalogue, comparateur, configurateur ; un fichier de nature sans la liste des fiches recalées est un format inattendu, repli
+« Rating not measured »). Elle s'ajoute aux libellés de nature d'Opus 5.5 (#144) ; aucune note /10 n'est dite « mesurée » : seule
+exception, exacte et unique, « rigidité mesurée (TWU) » / « measured stiffness (TWU) » de cette mention, où c'est la rigidité TWU qui
+est mesurée (contrôle 18 (a) et `audit:string-labels`, 2 tests négatifs chacun : « note de confort mesurée », « rigidité mesurée »
+sans « (TWU) »). **Mesure** (grille du contrôle 5, moteur réel, deux profils ; harnais de Q rejoué) : **0 alerte
+disparue**, +50 standard (Revenge 47, 4G 3) et +74 bras sensible (Black Code 4S 37, Razor Code 37) ; taux 7,12 → 7,16 % et 23,25 → 23,30 %.
+**Contrôles** de `audit:ratings` : 22 (règle rejouée sur l'instantané d'avant D2, droites et médianes recalculées, sélection complète,
+valeurs, étiquettes FR et EN, 0 alerte disparue, 11 tests négatifs) ; 23, permanent, sur l'instantané `data/reference/second-filet-
+2026-10-23.json` (`scripts/scraper/reference-second-filet.mts`) : aucune note de confort ne monte, ne disparaît ni n'apparaît sur une
+fiche « Non publié », aucune fiche ni raquette ne disparaît, aucune alerte bras de la grille ne disparaît (8 tests négatifs). Contrôles
+13 (composante éditoriale recalée), 13 bis (code `recalee-twu`), 18 (mention) et `audit:string-labels` (périmètre `tsa-measure`, délégué)
+suivent. **À reprendre par `tsa-redacteur`** : articles qui citent ces notes (Mach-10 « 8,8, le mieux noté en confort des 18 »,
+classement en confort des 18 polyesters testés) et le dossier `docs/redaction/coherence-chiffres-regle-c.md` (`redaction:valeurs` :
+1 écart, Mach-10 8,8 contre 8,3).
+
+**Changelog v2.3.30 → v2.3.31** — **Hybrides prémontés : composition établie, rigidité dérivée de leurs deux cordages et étiquetée ;
+contrôle 24** (avis d'Opus 5.5 du 23/10/2026, point 9 ; Pierre : « je donne le La, vous exécutez » ; `tsa-core` ; numérotée après la
+PR #147 (v2.3.30) ; contrôle numéroté 24, les 22 et 23 étant à #147). **Constat** : les 9 fiches de type « Hybrid » portaient une rigidité sans source,
+et 6 des 7 sets calculables étaient SOUS la valeur que le configurateur donne à leurs deux cordages montés à la main (rapport P du
+22/10). **Compositions lues sur des pages ouvertes** (`src/data/prepacked-hybrids.ts`, extraits et niveaux ; wilson.com, tecnifibre.com et
+head.com refusent les robots, rien n'a été contourné) : RPM Blast 125 + Touch VS 130 (babolat.com, L0 ; jauge 1.30/1.30 retirée) ; Duo
+Power = ALU Power 1.25 + NXT Power 1.30 (deux revendeurs indépendants ; jauges 1.25/1.25 → 1.25/1.30) ; **Duo Control = 4G Rough + NXT
+Control** (Tennis Warehouse ; la fiche décrivait le Duo Feel, Element + NXT) ; Champion's Choice et Champion's Choice Duo = boyau Wilson +
+ALU Power Rough (la seconde fiche disait Element + boyau : doublon probable, fusion à arbitrer) ; RPM Blast + Xcel, Razor Code + X-One
+et Ice Code + NRG2 introuvables (composition de la fiche, retrait à arbitrer) ; Head Gravity = deux co-polyesters non nommés (la fiche
+disait « poly + multi »). **Règle** : composition connue → rigidité de la fiche = celle que `setupFirmnessIndex` prête aux deux
+cordages à la même tension, max(60/40 ; moyenne), le plus haut des deux sens si l'ordre n'est pas fixé (8 sur 8 : ordre au choix ou non
+publié), arrondie au dixième supérieur, jamais sous la valeur d'avant ; composition non publiée → valeur de fiche conservée (alerte
+comprise), mention « composition non publiée, rigidité de fiche sans source », exclue des classements (`isStiffnessRankable`).
+**Valeurs** : Duo Control 188 → 222, Razor Code + X-One 180 → 212,5, RPM Blast + Xcel 192 → 206, Ice Code + NRG2 172 → 198,4, Duo Power
+175 → 196, RPM Blast + Touch VS 168 → 180,8, les deux Champion's Choice 165 et 158 → 178 ; Gravity 178 conservé. **Fiche FR** : rigidité
+marquée « (estimé) » et mention sous les caractéristiques (« Rigidité dérivée des deux cordages du set, A et B, comme le configurateur
+calcule un hybride… ; aucune mesure du set n'est publiée »). Descriptions corrigées (compositions, « équilibre parfait », « officiel »,
+« confort » d'Ice Code + NRG2, au-dessus de la médiane des hybrides, 196). **Effet** (grille du contrôle 5, `c2-effet-alertes.mts
+--base=a2cee22`) : alertes standard +20 (7,12 → 7,13 %), bras sensible +533 (23,25 → 23,63 %), `calculateCompatibility` +535, **0
+disparue**, 0 rigidité en baisse. **Contrôle 24** de `audit:ratings` : toute fiche « Hybrid » consignée, composants présents et non
+hybrides, rigidité = plus haut de la valeur d'avant et de la valeur dérivée recalculée, indice de la fiche jamais sous celui du moteur
+pour les deux cordages (8 RA × 6 tensions), composition non publiée immobile et hors classements, sources (URL https, niveau, date,
+extrait ≤ 40 mots), jauges, mention et « estimé » de la fiche FR ; 15 tests négatifs. **Couplage voulu** : la rigidité d'un set suit
+désormais celle de ses composants ; une baisse future d'un composant (4G Rough 262, TWU 216, dans les 13 baisses de l'avis du 23/10)
+fera échouer le contrôle 24 tant que le set n'est pas recalculé, donc compté dans les alertes retirées.
+**Changelog v2.3.31 → v2.3.32** — **Fiches G et S de l'inventaire photos : tamis, plans, poids et jauges corrigés sur source,
+cinq RA relevés sur mesure L1 (RDC ou TWU), Ripstick nommée « 100 300g (2025) », quatre générations établies ; RA par défaut :
+convention du site, à ±1 de la médiane** (avis d'Opus 5.5 du 23/10/2026, puis du 26/10/2026 sur les réserves R2 à R4 de la revue ;
+inventaire `AB_inventaire_photos`, décisions fiche par fiche `AC_fiches_g_s_v` ; `tsa-core` ; partie de la tête de la PR #145, fusionnée ; numérotée après
+#149, v2.3.31). **Constat** : 36 fiches bloquaient les photos faute
+de génération établie ou parce que leurs caractéristiques ne correspondaient à aucun produit trouvé. Pages ouvertes lues le 23/10
+(robot nommé, `robots.txt` / `agents.md` / `llms.txt`, 3 s par hôte ; head.com, wilson.com, tecnifibre.com, TWE non lus) ; faits V123
+à V142 du dossier du 23/10. **Changé** (10 fiches, 15 champs) : FX 500 Tour tamis 100 → 98 (trois pages d'essai, 2020, 2023, 2025) ; Prestige
+Tour plan 18x20 → 16x19 et RA 60 → 62 ; V8 Pro plan 16x19 → 18x20 et RA 64 → 67 (V-Feel 2020, RDC ; v3 chez TW US : 67) ; Ripstick nommée « Ripstick 100 300g
+(2025) » (ex-« Standard », id conservé) et RA 60 → 67 (2025, TWU ; la 2021 mesure 64 : pour son propriétaire, indice surestimé
+d'environ 1 point, sur-alerte assumée) ; Extreme Standard RA 65 → 66 (2022 et 2024 mesurées 66) ; TF40 305 RA 63 → 64 (page d'essai 16x19, RDC ; TW US : 64) ; EZONE Junior 25 (100 in²,
+230 g) et 26 (16x18, 240 g), Pure Aero Junior 25 (235 g), Pro Stacked (jauges 1.20, 1.30, 1.35) sur la page du fabricant. **Tenus** :
+FX 500 Tour RA 67 (65 mesuré sur la génération en vente : baisse) et Pure Strike 100 16x20 RA 64 (61 mesuré : baisse) jusqu'à la revue
+de `tsa-measure`. **Générations établies sans changement** (provenance `held`) : Blade Standard = Blade 98 16x19 v7 (2019), FX 500 =
+2023, SX 300 Tour = 2020, Warrior 100 (300g) = Textreme Warrior 100. **Règle des mesures L1** (R2, précise Q-1 du 10/10) :
+**une mesure RDC d'une page d'essai TW est L1**, comme le « Flex Rating Test » TWU (même grandeur, le RA cordé, mesurée par un
+instrument ; la fiche produit d'un revendeur reste L2) ; **une hausse admet la mesure d'une génération voisine si une valeur L2
+concorde** ; **une baisse exige la mesure de la génération exacte** (et, inchangé, la revue de `tsa-measure` et la liste des alertes
+retirées). TF40 305 et V8 Pro en relèvent ; le dossier du 23/10 dit « L1 (RDC) » (9 faits) ou « L1 (TWU) » (7) fait par fait et le
+contrôle 14 bis vérifie ce libellé sur l'extrait cité (3 tests négatifs, plus un pour la génération retirée du nom de la Ripstick).
+**Effet** (grille du contrôle 5, `fiches-effet-alertes.mts`), sur `main` e7df5da
+(après #149) : +164 alertes standard, +362 bras sensible, +213 `calculateCompatibility`, **0 disparue** (Ripstick +79 / +181 / +108,
+V8 Pro +43 / +91 / +47, Prestige Tour +14 / +41 / +26, TF40 +15 / +22 / +10, Extreme +13 / +27 / +22), dont hybrides prémontés seuls
++0 / +11 / +12 : leur rigidité, relevée par #149, s'ajoute aux RA relevés ici. Avant #149 : +164 / +351 / +203 (Ripstick +79 / +175 /
++103, V8 Pro +43 / +87 / +45, Prestige Tour +14 / +41 / +25, TF40 +15 / +22 / +9, Extreme +13 / +26 / +21). Aucune donnée de cette PR
+ne change entre les deux mesures. **RA par défaut** (R4) : ces hausses portent la médiane
+des 100 RA publiés de 64 à 65 ; `DEFAULT_RACQUET_RA` reste à 64, **convention du site, non mesurée** (le recaler élèverait l'indice
+des 29 raquettes sans RA, toutes juniors : +319 / +841 / +377 alertes sur 31 146 montages, sans rien savoir de nouveau sur elles).
+Le contrôle 1 exige que la convention reste à ±1 de la médiane mesurée (au-delà, l'arbitrage est rouvert ; 6 tests négatifs, 3
+témoins) et que `RA_RANGE.median` la recopie. Libellés : le comparateur dit « RA non publié : indice calculé avec un RA par défaut de
+64 (convention du site, non mesurée) » au lieu de « RA estimé à 64 (médiane mesurée) », la fiche raquette « un RA par défaut
+(convention du site, non mesurée) » au lieu de « la médiane mesurée sur le catalogue » ; commentaires de `racquet-scoring.ts`,
+`advanced-rcs.ts` et `racquets-database.ts` alignés ; aucun calcul touché. `compare/page.tsx` et `racquets/[slug]/page.tsx` relèvent
+de `tsa-acquisition` : retouchés ici parce qu'aucune nouvelle PR ne s'ouvre (consigne de Pierre du 26/10/2026). Le mot « médiane » de
+la charte F7 relève de la PR charte de Pierre.
+
+**Changelog v2.3.32 → v2.3.33** — **Tableau des paliers du §1 : la colonne « Lecture » qualifie l'indice, plus
 un public de santé** (avis Opus 5.5 du 23/10/2026, points 7, 8 et 3 ; PR « Pierre seul éditeur », `tsa-core`). **Constat** : la
 colonne associait des paliers à des publics (« < 20 : Bras sensibles, débutants », « > 35 : Risque tennis elbow ») : les rédacteurs
 la recopiaient en avis conditionnés par un état de santé (relevé E-h2, article next gen). Bornes alignées sur `getStringRecommendation`,
@@ -1112,10 +1254,14 @@ corrigé dans la même PR.
   et 21 ter de `audit:ratings`. Les `rcsScore` enregistrés avant la mise en ligne gardent, pour un hybride, l'ancienne définition : les
   moyennes « RCS moyen » des configurations enregistrées (panneau du configurateur, `/statistics`, `storage.getStats`) mêlent les deux
   définitions tant que ces configurations existent ; aucune migration, aucune alerte ne lit ce champ.
+- **Notes de confort contredites par la mesure, recalées (D2 restreint, 23/10/2026)** : 7 fiches, uniquement à la baisse, étiquetées
+  « note de confort recalée sur la rigidité mesurée (TWU) » partout où la note s'affiche. Garde-fous : contrôle 22 (règle) et contrôle 23
+  (aucune note de confort ne monte, aucune alerte bras ne disparaît par rapport à la référence du 23/10/2026) de `audit:ratings`.
 - Export PDF, thème sombre, i18n FR/EN livrés.
 - Photos produit Tennis Warehouse (29/09/2026), Tennis Warehouse Europe et
-  sites officiels des fabricants (10/10/2026) : 65/129 raquettes, 60/179
-  cordages, hébergées chez nous, FR (125 fiches EN sur 310 comprises) ;
+  sites officiels des fabricants (10/10 et 22/10/2026) : 75/129 raquettes, 65/179
+  cordages, hébergées chez nous, FR (140 fiches EN sur 308 comprises) ; envois
+  manuels de Pierre possibles (`import-upload`, source `upload:pierre`, aucun à ce jour) ;
   drapeau `PRODUCT_IMAGES_ENABLED` et commande `purge` (globale ou par source,
   ex. `purge fabricant:wilson`) pour le retrait ; associations vérifiées par
   script (tamis, plan de cordage, RA, poids, jauge, coloris), quarantaine sinon,
@@ -1124,7 +1270,12 @@ corrigé dans la même PR.
   Pierre du 10/10/2026, en connaissance du risque. Tennis-Point : collecte
   refusée (429), aucune photo. Fabricants : head.com (429) et luxilon.com (403)
   ont refusé le robot, wilson.com, babolat.com, tecnifibre.com et yonex.com
-  l'ont accepté (14 photos).
+  l'ont accepté (14 photos le 10/10, 12 le 22/10) ; depuis le 22/10, wilson.com,
+  tecnifibre.com, toroline.com, shop.solincosports.com, diademsports.com,
+  gammasports.com et volkltennis.com sont consignés (agents.md : Web Bot Auth exigé,
+  non fourni) ; les photos Wilson et Tecnifibre restent en place jusqu'à leur
+  remplacement (Pierre, 23/10/2026) ; solincosports.com, us.dunlopsports.com et
+  kirschbaum-shop.de ouverts (3 photos, GO de Pierre du 23/10/2026).
 - Notes de raquette (décision de Pierre du 10/10/2026) : **aucune note déduite
   des caractéristiques** n'est affichée, nulle part (comparateur, configurateur,
   PDF Premium, FR et EN). Raquette évaluée : « Avis de testeurs (synthèse) »,
@@ -1585,4 +1736,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.3.26 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.3.33 — Tennis String Advisor — « Mesurer avant d'affirmer. »*

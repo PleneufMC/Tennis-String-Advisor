@@ -5,9 +5,9 @@
   "articles": [
     {
       "fichier": "public/blog/actualite-materiel-tennis-2026-guerre-du-spin.html",
-      "empreinte": "sha256:f5f0347a0bb589f7a00c3f44b01df72205e8813715bb5b0d7eef40d812eb3d8b",
-      "depuis": "2026-10-11",
-      "motif": "Antérieur à la règle images du 10/10/2026 ; corrigé le 10/10/2026 (PR #102 : valeurs produit alignées sur la base, urgence d'exactitude) — visuel de corps à créer, première mission de l’équipe éditoriale ; JSON-LD du <head> corrigé le 11/10/2026 (logo éditeur en 404 remplacé ; corps inchangé)"
+      "empreinte": "sha256:ec3727248ce16e1e33e677f451bd72c6fc6dce3125b5a44171b303e902f0afe1",
+      "depuis": "2026-10-26",
+      "motif": "Antérieur à la règle images du 10/10/2026 ; corrigé le 10/10/2026 (PR #102 : valeurs produit alignées sur la base, urgence d'exactitude) — visuel de corps à créer, première mission de l’équipe éditoriale ; JSON-LD du <head> corrigé le 11/10/2026 (logo éditeur en 404 remplacé ; corps inchangé) ; corrigé le 23/10/2026 (passages « bras » réécrits au gabarit F7 v1.2, PR #150 ; relecture du pigiste appliquée le 26/10/2026 (effet « vibrations » attribué à la marque, date au 26/10/2026 ; #150) ; visuel de corps toujours à créer)"
     },
     {
       "fichier": "public/blog/challengers-sinner-alcaraz-2026.html",
@@ -17,45 +17,45 @@
     },
     {
       "fichier": "public/blog/combien-de-temps-dure-un-cordage.html",
-      "empreinte": "sha256:50c60c8b66cc97ce31504417b4c804c973022fae27f70f02eaa6994121ef89a0",
-      "depuis": "2026-10-10",
-      "motif": "Antérieur à la règle images du 10/10/2026 : couverture conforme, visuel de corps à créer (première mission de l’équipe éditoriale)"
+      "empreinte": "sha256:532459b8e0167bf9a512033a1ec5021d98e33c7df9afa1c5948f4fa0b5e732ef",
+      "depuis": "2026-10-23",
+      "motif": "Antérieur à la règle images du 10/10/2026 : couverture conforme, visuel de corps à créer (première mission de l’équipe éditoriale) ; corrigé le 22/10/2026 (avis conditionnés par la santé réécrits en constats chiffrés, charte F7 v1.2, urgence d'exactitude ; visuel de corps toujours à créer) ; puis outils décrits tels qu'ils sont, même jour ; renouvelée le 23/10/2026 : tableau symptôme → action réécrit le 23/10/2026 (douleur : « consultez un professionnel de santé », tsa-redacteur) et dates au 23/10/2026 (tsa-acquisition), PR #136 ; visuel de corps toujours à créer ; puis corrections finales du pigiste et de l'avis Opus 5.5, 23/10/2026"
     },
     {
       "fichier": "public/blog/materiel-next-gen-fonseca-mensik-cobolli-jodar.html",
-      "empreinte": "sha256:76c116c40177c5464d48ae915353813069ab2ea6b6db5a0ec46357cda800ff86",
-      "depuis": "2026-10-11",
-      "motif": "Antérieur à la règle images du 10/10/2026 ; corrigé le 10/10/2026 (PR #116 : rigidités, indices et rangs alignés sur la base après la règle C et le lot 3, urgence d'exactitude) — visuel de corps à créer, première mission de l’équipe éditoriale ; JSON-LD du <head> corrigé le 11/10/2026 (logo éditeur en 404 remplacé ; corps inchangé)"
+      "empreinte": "sha256:9a1e6702493c7a97928da24c0c23103bed9fc970139f123e601b6f35cef68a96",
+      "depuis": "2026-10-23",
+      "motif": "Antérieur à la règle images du 10/10/2026 ; corrigé le 10/10/2026 (PR #116 : rigidités, indices et rangs alignés sur la base après la règle C et le lot 3, urgence d'exactitude) — visuel de corps à créer, première mission de l’équipe éditoriale ; JSON-LD du <head> corrigé le 11/10/2026 (logo éditeur en 404 remplacé ; corps inchangé) ; corrigé le 22/10/2026 (avis conditionnés par la santé réécrits en constats chiffrés, charte F7 v1.2, urgence d'exactitude ; visuel de corps toujours à créer) ; puis outils décrits tels qu'ils sont, même jour ; renouvelée le 23/10/2026 : head aligné sur le corps et dates (tsa-acquisition), puis dernières corrections du rédacteur, toutes du 22/10/2026 (PR #136) ; visuel de corps toujours à créer ; puis corrections finales du pigiste et de l'avis Opus 5.5, 23/10/2026 ; puis article:modified_time aligné sur dateModified, 23/10/2026"
     },
     {
       "fichier": "public/blog/meilleur-cordage-polyester-2026.html",
-      "empreinte": "sha256:9b420e3854cd0135f16994fb7b34c5d50314bdf567c3e695ddf01f712a89af43",
-      "depuis": "2026-10-11",
-      "motif": "Antérieur à la règle images du 10/10/2026 ; corrigé le 10/10/2026 (PR #116 : rigidités, indices et rangs alignés sur la base après la règle C et le lot 3, urgence d'exactitude) — visuel de corps à créer, première mission de l’équipe éditoriale ; JSON-LD du <head> corrigé le 11/10/2026 (réponse n° 1 du FAQPage alignée sur le texte visible ; corps inchangé)"
+      "empreinte": "sha256:84370ce01876447b75879593f3aa9d83d2834f23cc1e01d3b02f5cc1a95cabec",
+      "depuis": "2026-10-26",
+      "motif": "Antérieur à la règle images du 10/10/2026 ; corrigé le 10/10/2026 (PR #116 : rigidités, indices et rangs alignés sur la base après la règle C et le lot 3, urgence d'exactitude) — visuel de corps à créer, première mission de l’équipe éditoriale ; JSON-LD du <head> corrigé le 11/10/2026 (réponse n° 1 du FAQPage alignée sur le texte visible ; corps inchangé) ; corrigé le 23/10/2026 (note et rang de confort du Mach-10 après D2, #147 ; FAQ « bras sensible », encadré et critère « bras » réécrits au gabarit F7 v1.2 le même jour (#150) ; relecture du pigiste appliquée le 26/10/2026 (rangs et qualificatifs de rigidité limités aux rigidités mesurées, Confidential compris, date au 26/10/2026 ; #150) ; visuel de corps toujours à créer)"
     },
     {
       "fichier": "public/blog/meilleures-raquettes-tennis-2026.html",
-      "empreinte": "sha256:6c7fd82cf3f5b17ddb915fe0b02a816a66b7ff8cb26484cdcf68645576d7e58f",
-      "depuis": "2026-10-11",
-      "motif": "Antérieur à la règle images du 10/10/2026 ; corrigé le 10/10/2026 (PR #116 : rigidités, indices et rangs alignés sur la base après la règle C et le lot 3, urgence d'exactitude) — visuel de corps à créer, première mission de l’équipe éditoriale ; JSON-LD du <head> corrigé le 11/10/2026 (réponse n° 1 du FAQPage alignée sur le texte visible ; corps inchangé)"
+      "empreinte": "sha256:72fcb978b60df685a6075140d0192e032548088b63a1ffbb00afe76305c32f08",
+      "depuis": "2026-10-23",
+      "motif": "Antérieur à la règle images du 10/10/2026 ; corrigé le 10/10/2026 (PR #116 : rigidités, indices et rangs alignés sur la base après la règle C et le lot 3, urgence d'exactitude) — visuel de corps à créer, première mission de l’équipe éditoriale ; JSON-LD du <head> corrigé le 11/10/2026 (réponse n° 1 du FAQPage alignée sur le texte visible ; corps inchangé) ; corrigé le 22/10/2026 (repères du bras sensible réécrits en constats chiffrés, charte F7 v1.2, urgence d'exactitude ; visuel de corps toujours à créer) ; puis outils, FAQ « bras sensible » et passages hors plan, même jour ; renouvelée le 23/10/2026 : FAQ « bras sensible » réécrite le 23/10/2026 (montage cité à côté de chaque indice, tsa-redacteur), dates au 23/10/2026 et keywords « bras sensible » retirés (tsa-acquisition), PR #135 ; visuel de corps toujours à créer"
     },
     {
       "fichier": "public/blog/tension-cordage-hiver.html",
-      "empreinte": "sha256:bf9abde42109c38868f6fb9e42112bd3e509a19327187449b54ecbfe69f0e1e0",
-      "depuis": "2026-10-10",
-      "motif": "Antérieur à la règle images du 10/10/2026 : couverture conforme, visuel de corps à créer (première mission de l’équipe éditoriale)"
+      "empreinte": "sha256:842e2355fa8d37280f011f7427e07f8a1989ef7c23eaf429d4525361388cecc3",
+      "depuis": "2026-10-23",
+      "motif": "Antérieur à la règle images du 10/10/2026 : couverture conforme, visuel de corps à créer (première mission de l’équipe éditoriale) ; corrigé le 22/10/2026 (allégations de santé retirées du protocole, charte F7 v1.2, urgence d'exactitude ; visuel de corps toujours à créer) ; renouvelée le 23/10/2026 : dates de mise à jour (dateModified, sitemap) posées le 22/10/2026 par tsa-acquisition (PR #132) ; corps inchangé, visuel de corps toujours à créer ; renouvelée le 23/10/2026 : médiane des multifilaments 162,3 → 162,9 lb/in après #145 (Kirschbaum Touch Multifibre, mesure TWU), date de mise à jour au 23/10/2026 ; visuel de corps toujours à créer"
     },
     {
       "fichier": "public/en/blog/best-polyester-tennis-strings-2026.html",
-      "empreinte": "sha256:ececf92a1937f94d9327cc5da6c2e7c1615f3a56409aa97fcdc754e47bbe7b80",
-      "depuis": "2026-10-11",
-      "motif": "Antérieur à la règle images du 10/10/2026 ; corrigé le 10/10/2026 (PR #116 : rigidités, indices et rangs alignés sur la base après la règle C et le lot 3, urgence d'exactitude) — visuel de corps à créer, première mission de l’équipe éditoriale ; JSON-LD du <head> corrigé le 11/10/2026 (réponse n° 1 du FAQPage alignée sur le texte visible ; corps inchangé)"
+      "empreinte": "sha256:34d71029ae60aefdaffbe31acc8cbbea523ad575fffa259fd89a7cb9e9b9cfe1",
+      "depuis": "2026-10-26",
+      "motif": "Antérieur à la règle images du 10/10/2026 ; corrigé le 10/10/2026 (PR #116 : rigidités, indices et rangs alignés sur la base après la règle C et le lot 3, urgence d'exactitude) — visuel de corps à créer, première mission de l’équipe éditoriale ; JSON-LD du <head> corrigé le 11/10/2026 (réponse n° 1 du FAQPage alignée sur le texte visible ; corps inchangé) ; corrigé le 23/10/2026 (note et rang de confort du Mach-10 après D2, #147 ; FAQ « bras sensible », encadré et critère « bras » réécrits au gabarit F7 v1.2 le même jour (#150) ; relecture du pigiste appliquée le 26/10/2026 (rangs et qualificatifs de rigidité limités aux rigidités mesurées, Confidential compris, date au 26/10/2026 ; #150) ; visuel de corps toujours à créer)"
     },
     {
       "fichier": "public/en/blog/best-tennis-racquets-2026.html",
-      "empreinte": "sha256:56b501a2960e580a17032beadb6e18024cab1f1564baa2a2a9b4743473c0889f",
-      "depuis": "2026-10-11",
-      "motif": "Antérieur à la règle images du 10/10/2026 ; corrigé le 10/10/2026 (PR #116 : rigidités, indices et rangs alignés sur la base après la règle C et le lot 3, urgence d'exactitude) — visuel de corps à créer, première mission de l’équipe éditoriale ; JSON-LD du <head> corrigé le 11/10/2026 (réponse n° 1 du FAQPage alignée sur le texte visible ; corps inchangé)"
+      "empreinte": "sha256:89f837b2f5d8d47a124581fae191762da1a96ce870ca45a60c52a388d56aeef6",
+      "depuis": "2026-10-23",
+      "motif": "Antérieur à la règle images du 10/10/2026 ; corrigé le 10/10/2026 (PR #116 : rigidités, indices et rangs alignés sur la base après la règle C et le lot 3, urgence d'exactitude) — visuel de corps à créer, première mission de l’équipe éditoriale ; JSON-LD du <head> corrigé le 11/10/2026 (réponse n° 1 du FAQPage alignée sur le texte visible ; corps inchangé) ; corrigé le 22/10/2026 (repères du bras sensible réécrits en constats chiffrés, charte F7 v1.2, urgence d'exactitude ; visuel de corps toujours à créer) ; puis outils, FAQ « bras sensible » et passages hors plan, même jour ; renouvelée le 23/10/2026 : FAQ « sensitive arm » réécrite le 23/10/2026 (montage cité à côté de chaque indice, tsa-redacteur), dates au 23/10/2026 et keyword « for tennis elbow » retiré (tsa-acquisition), PR #135 ; visuel de corps toujours à créer"
     },
     {
       "fichier": "public/en/blog/challengers-sinner-alcaraz-2026.html",
@@ -65,21 +65,21 @@
     },
     {
       "fichier": "public/en/blog/how-long-do-tennis-strings-last.html",
-      "empreinte": "sha256:6f3e36b2f2f4a1b7ca1f311bf88487f0bd35e93410e5da3ef8feacde7b0cb547",
-      "depuis": "2026-10-10",
-      "motif": "Antérieur à la règle images du 10/10/2026 : couverture conforme, visuel de corps à créer (première mission de l’équipe éditoriale)"
+      "empreinte": "sha256:f263d431585caa45ce79e5b8e2b5d7858eea6a3c2a6d81e20ff2c887198093ed",
+      "depuis": "2026-10-23",
+      "motif": "Antérieur à la règle images du 10/10/2026 : couverture conforme, visuel de corps à créer (première mission de l’équipe éditoriale) ; corrigé le 22/10/2026 (avis conditionnés par la santé réécrits en constats chiffrés, charte F7 v1.2, urgence d'exactitude ; visuel de corps toujours à créer) ; puis outils décrits tels qu'ils sont, même jour ; renouvelée le 23/10/2026 : tableau symptom → action réécrit le 23/10/2026 (pain: « See a health professional », tsa-redacteur) et dates au 23/10/2026 (tsa-acquisition), PR #136 ; visuel de corps toujours à créer ; puis corrections finales du pigiste et de l'avis Opus 5.5, 23/10/2026"
     },
     {
       "fichier": "public/en/blog/next-gen-tennis-racquets-fonseca-mensik-cobolli-jodar.html",
-      "empreinte": "sha256:ffc803e8e2fa371a4b3d27d408040a169026aee1ea1f55c039c4ecaee9887699",
-      "depuis": "2026-10-11",
-      "motif": "Antérieur à la règle images du 10/10/2026 : couverture conforme, visuel de corps à créer (première mission de l’équipe éditoriale) ; JSON-LD du <head> corrigé le 11/10/2026 (logo éditeur en 404 remplacé ; corps inchangé)"
+      "empreinte": "sha256:34207cd1363dea95e395e1e23e8b2610bb8f8c277693cb46788ed490023316f7",
+      "depuis": "2026-10-23",
+      "motif": "Antérieur à la règle images du 10/10/2026 : couverture conforme, visuel de corps à créer (première mission de l’équipe éditoriale) ; JSON-LD du <head> corrigé le 11/10/2026 (logo éditeur en 404 remplacé ; corps inchangé) ; corrigé le 23/10/2026 (passages « bras » réécrits au gabarit F7 v1.2, PR #150 ; visuel de corps toujours à créer)"
     },
     {
       "fichier": "public/en/blog/tennis-string-tension-cold-weather.html",
-      "empreinte": "sha256:454018158491e8a44c93131edda2294e7a6060d200c9c2c400f7989f4c004272",
-      "depuis": "2026-10-11",
-      "motif": "Antérieur à la règle images du 10/10/2026 : couverture conforme, visuel de corps à créer (première mission de l’équipe éditoriale) ; JSON-LD du <head> corrigé le 11/10/2026 (réponse n° 3 du FAQPage alignée sur le texte visible ; corps inchangé)"
+      "empreinte": "sha256:c13853edf5daace745687eda0130c9a32f8a53c446c15d0718d135ca4c1b52f1",
+      "depuis": "2026-10-23",
+      "motif": "Antérieur à la règle images du 10/10/2026 : couverture conforme, visuel de corps à créer (première mission de l’équipe éditoriale) ; JSON-LD du <head> corrigé le 11/10/2026 (réponse n° 3 du FAQPage alignée sur le texte visible ; corps inchangé) ; corrigé le 22/10/2026 (allégations de santé retirées du protocole, charte F7 v1.2, urgence d'exactitude ; visuel de corps toujours à créer) ; outils EN décrits tels qu'ils sont, même jour ; renouvelée le 23/10/2026 : dates de mise à jour (dateModified, sitemap) posées le 22/10/2026 par tsa-acquisition (PR #132) ; corps inchangé, visuel de corps toujours à créer ; renouvelée le 23/10/2026 : médiane des multifilaments 162,3 → 162,9 lb/in après #145 (Kirschbaum Touch Multifibre, mesure TWU), date de mise à jour au 23/10/2026 ; visuel de corps toujours à créer"
     }
   ]
 }

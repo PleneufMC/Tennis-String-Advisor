@@ -49,6 +49,7 @@ import {
   type HarmonizedField,
   type TesterCriterion,
 } from '../src/data/tester-ratings';
+import { COMFORT_RECALIBRATED, COMFORT_RECALIBRATION_RULE } from '../src/data/comfort-recalibration';
 import { calculateAdvancedRcs, stringTypeToFamily } from '../src/lib/advanced-rcs';
 import {
   DEFAULT_RACQUET_RA,
@@ -84,7 +85,7 @@ const fail = (msg: string) => failures.push(msg);
 const ok = (msg: string) => notes.push(`  ok   ${msg}`);
 
 // ---------------------------------------------------------------------------
-// 1. Le RA par défaut doit être la médiane MESURÉE, et unique.
+// 1. Le RA par défaut (convention) reste à ±1 de la médiane MESURÉE, et unique.
 // ---------------------------------------------------------------------------
 {
   const published = racquetsDatabase
@@ -93,14 +94,61 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
     .sort((a, b) => a - b);
   const median = published[Math.floor(published.length / 2)];
 
-  if (DEFAULT_RACQUET_RA !== median) {
-    fail(
-      `DEFAULT_RACQUET_RA = ${DEFAULT_RACQUET_RA} alors que la médiane mesurée ` +
-        `des ${published.length} RA publiés est ${median}. Recaler la constante ` +
-        `(ou justifier l'écart) dans lib/racquet-scoring.ts.`
-    );
+  // Le RA par défaut est une CONVENTION du site (64, non mesurée), choisie le 08/08/2026 comme médiane des RA publiés. Elle doit
+  // rester à ±1 de la médiane mesurée : la médiane oscille entre 64 et 65 au gré des corrections de RA sur mesure L1 (65 depuis les
+  // hausses V8 Pro et Ripstick du 23/10/2026 ; deux baisses en attente la ramèneraient à 64). Au-delà d'un point, l'arbitrage est
+  // rouvert (avis d'Opus 5.5 du 26/10/2026, R4 de la revue de #152). Recaler à 65 élèverait l'indice des 29 raquettes sans RA, toutes
+  // juniors (+319 alertes standard, +841 bras sensible, +377 compatibilité sur 31 146 montages), sans rien savoir de nouveau sur elles.
+  const DEFAULT_RA_BAND = 1;
+  const defaultRaVerdict = (defaultRa: number, ras: readonly number[]): string | null => {
+    const sorted = ras.filter((v) => Number.isFinite(v)).sort((a, b) => a - b);
+    if (sorted.length === 0) return 'aucun RA publié : médiane indéfinie';
+    const m = sorted[Math.floor(sorted.length / 2)];
+    if (!Number.isFinite(defaultRa)) return `RA par défaut non fini (${defaultRa})`;
+    const gap = Math.abs(defaultRa - m);
+    return gap <= DEFAULT_RA_BAND
+      ? null
+      : `DEFAULT_RACQUET_RA = ${defaultRa} à ${gap} points de la médiane mesurée des ${sorted.length} RA publiés (${m}) : ` +
+          `au-delà de ±${DEFAULT_RA_BAND}, rouvrir l'arbitrage de la convention (lib/racquet-scoring.ts)`;
+  };
+  const verdict = defaultRaVerdict(DEFAULT_RACQUET_RA, published);
+  if (verdict !== null) {
+    fail(verdict);
   } else {
-    ok(`RA par défaut = médiane mesurée (${median}) sur ${published.length} raquettes`);
+    ok(
+      `RA par défaut ${DEFAULT_RACQUET_RA} (convention du site), médiane mesurée ${median} sur ${published.length} raquettes : ` +
+        `écart ${Math.abs(DEFAULT_RACQUET_RA - median)}, dans la bande ±${DEFAULT_RA_BAND}`
+    );
+  }
+  if (RA_RANGE.median !== DEFAULT_RACQUET_RA) {
+    fail(`RA_RANGE.median = ${RA_RANGE.median} ≠ DEFAULT_RACQUET_RA = ${DEFAULT_RACQUET_RA} : le comparateur afficherait une autre valeur par défaut que celle du calcul`);
+  } else {
+    ok(`RA_RANGE.median = DEFAULT_RACQUET_RA (${DEFAULT_RACQUET_RA}), valeur citée par le comparateur`);
+  }
+  // Tests négatifs : un écart de 2 points, dans un sens ou dans l'autre, une valeur non finie et une base vide doivent échouer ;
+  // un écart de 0 ou 1 point doit passer (témoins). La base réelle, déplacée de ±2 points, doit aussi échouer.
+  {
+    const shifted = (d: number) => published.map((v) => v + d);
+    const negatives: Array<[string, number, readonly number[]]> = [
+      ['médiane 66, défaut 64', 64, [60, 64, 66, 66, 72]],
+      ['médiane 62, défaut 64', 64, [57, 60, 62, 64, 70]],
+      ['base réelle +2', DEFAULT_RACQUET_RA, shifted(DEFAULT_RACQUET_RA + 2 - median)],
+      ['base réelle −2', DEFAULT_RACQUET_RA, shifted(DEFAULT_RACQUET_RA - 2 - median)],
+      ['défaut NaN', Number.NaN, published],
+      ['base vide', DEFAULT_RACQUET_RA, []],
+    ];
+    const witnesses: Array<[string, number, readonly number[]]> = [
+      ['médiane 65, défaut 64', 64, [60, 64, 65, 66, 72]],
+      ['médiane 63, défaut 64', 64, [57, 62, 63, 64, 70]],
+      ['médiane 64, défaut 64', 64, [57, 63, 64, 66, 70]],
+    ];
+    const missed = negatives.filter(([, d, ras]) => defaultRaVerdict(d, ras) === null).map(([n]) => n);
+    const refused = witnesses.filter(([, d, ras]) => defaultRaVerdict(d, ras) !== null).map(([n]) => n);
+    if (missed.length > 0 || refused.length > 0) {
+      fail(`contrôle 1, bande ±${DEFAULT_RA_BAND} : tests négatifs non détectés [${missed.join(' ; ')}], témoins refusés [${refused.join(' ; ')}]`);
+    } else {
+      ok(`contrôle 1, bande ±${DEFAULT_RA_BAND} : ${negatives.length} tests négatifs détectés, ${witnesses.length} témoins acceptés`);
+    }
   }
 
   if (RA_RANGE.min !== published[0] || RA_RANGE.max !== published[published.length - 1]) {
@@ -1060,24 +1108,77 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
 {
   const before = failures.length;
   const { PRODUCT_IMAGES, PRODUCT_IMAGE_CREDITS } = await import('../src/data/product-images');
-  const SOURCE_HOSTS: Record<string, { page: string; image: string }> = {
-    'tennis-warehouse': { page: 'https://www.tennis-warehouse.com/', image: 'https://img.tennis-warehouse.com/' },
-    'tennis-warehouse-europe': { page: 'https://www.tenniswarehouse-europe.com/', image: 'https://img.tenniswarehouse-europe.com/' },
-    'tennis-point': { page: 'https://www.tennis-point.fr/products/', image: 'https://cdn.shopify.com/s/files/1/0638/1885/8538/' },
-    'fabricant:wilson': { page: 'https://www.wilson.com/en-us/products/', image: 'https://www.wilson.com/cdn/shop/files/' },
-    'fabricant:babolat': { page: 'https://www.babolat.com/fr/', image: 'https://media.babolat.com/image/upload/' },
-    'fabricant:tecnifibre': { page: 'https://www.tecnifibre.com/products/', image: 'https://cdn.shopify.com/s/files/1/0907/5425/3144/files/' },
-    'fabricant:yonex': { page: 'https://www.yonex.com/tennis/', image: 'https://www.yonex.com/media/catalog/product/' },
+  // Liste blanche : pour chaque source, les préfixes de page et d'image admis. Une source absente
+  // (Head et Luxilon, fermés au robot, ou tout revendeur sans décision de Pierre) est refusée.
+  // Babolat : site FR et, depuis le 22/10/2026, site US (produit absent du site FR).
+  const SOURCE_HOSTS: Record<string, { pages: string[]; images: string[] }> = {
+    'tennis-warehouse': { pages: ['https://www.tennis-warehouse.com/'], images: ['https://img.tennis-warehouse.com/'] },
+    'tennis-warehouse-europe': { pages: ['https://www.tenniswarehouse-europe.com/'], images: ['https://img.tenniswarehouse-europe.com/'] },
+    'tennis-point': { pages: ['https://www.tennis-point.fr/products/'], images: ['https://cdn.shopify.com/s/files/1/0638/1885/8538/'] },
+    'fabricant:wilson': { pages: ['https://www.wilson.com/en-us/products/'], images: ['https://www.wilson.com/cdn/shop/files/'] },
+    'fabricant:babolat': { pages: ['https://www.babolat.com/fr/', 'https://www.babolat.com/us/'], images: ['https://media.babolat.com/image/upload/'] },
+    'fabricant:tecnifibre': { pages: ['https://www.tecnifibre.com/products/'], images: ['https://cdn.shopify.com/s/files/1/0907/5425/3144/files/'] },
+    'fabricant:yonex': { pages: ['https://www.yonex.com/tennis/'], images: ['https://www.yonex.com/media/catalog/product/'] },
+    // Lot du 22/10/2026 : sites dont agents.md et llms.txt ne refusent pas ce robot.
+    'fabricant:solinco': { pages: ['https://solincosports.com/equipment/'], images: ['https://solincosports.com/wp-content/uploads/'] },
+    'fabricant:dunlop': { pages: ['https://us.dunlopsports.com/dunlop/tennis/'], images: ['https://us.dunlopsports.com/on/demandware.static/'] },
+    'fabricant:kirschbaum': { pages: ['https://www.kirschbaum-shop.de/'], images: ['https://www.kirschbaum-shop.de/out/pictures/'] },
+    // Envois manuels de Pierre : toute page https, image https ou fichier envoyé (« upload:<fichier> ») ;
+    // contrôles propres plus bas (crédit par image, ni moteur de recherche ni filigrane, crédit honnête).
+    'upload:pierre': { pages: ['https://'], images: ['https://', 'upload:'] },
   };
   // Hôtes d'images de toutes les sources : jamais appelés par l'application ni par les fiches EN.
-  const IMAGE_HOSTS_RE = /img\.tennis-?warehouse(-europe)?\.com|cdn\.shopify\.com\/s\/files|wilson\.com\/cdn\/shop|media\.babolat\.com|yonex\.com\/media\/catalog/;
+  const IMAGE_HOSTS_RE = /img\.tennis-?warehouse(-europe)?\.com|cdn\.shopify\.com\/s\/files|wilson\.com\/cdn\/shop|media\.babolat\.com|yonex\.com\/media\/catalog|solincosports\.com\/wp-content|dunlopsports\.com\/on\/demandware|kirschbaum-shop\.de\/out\/pictures/;
+  const SEARCH_ENGINE_RE = /(^|\.)(google|bing|yandex|duckduckgo|baidu|qwant|yahoo|ecosia|startpage|tineye)\./i;
+  const BRANDS = [...new Set([...racquetsDatabase, ...stringsDatabase].map((x) => x.brand))];
+  const squash = (x: string) => x.toLowerCase().replace(/ö/g, 'o').replace(/[^a-z0-9]/g, '');
   const { existsSync, readdirSync, statSync } = await import('node:fs');
   const racquetIds = new Set(racquetsDatabase.map((r) => r.id));
-  const stringIds = new Set(stringsDatabase.map((s) => s.id));
+  const stringById = new Map(stringsDatabase.map((s) => [s.id, s]));
+  type PhotoEntry = (typeof PRODUCT_IMAGES)[string];
+  // Contrôles d'une entrée (provenance, crédit, légende de produit voisin), rejoués plus bas sur des
+  // copies altérées : un garde-fou muet fait échouer l'audit.
+  const entryIssues = (id: string, e: PhotoEntry, credits: Readonly<Record<string, string>>): string[] => {
+    const issues: string[] = [];
+    const hosts = SOURCE_HOSTS[e.source];
+    if (!hosts) return [`photo ${id} : source inattendue ${e.source}`];
+    if (!credits[e.source]) issues.push(`photo ${id} : aucun libellé de crédit pour la source ${e.source}`);
+    if (!hosts.pages.some((h) => e.sourcePageUrl.startsWith(h))) issues.push(`photo ${id} : page source invalide pour ${e.source}`);
+    if (!hosts.images.some((h) => e.sourceImageUrl.startsWith(h))) issues.push(`photo ${id} : image source invalide pour ${e.source}`);
+    if (!e.twProduct) issues.push(`photo ${id} : intitulé du produit source absent (association non auditable)`);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(e.retrievedAt)) issues.push(`photo ${id} : date de collecte invalide`);
+    // Crédit propre à l'image : réservé aux envois manuels, obligatoire pour eux, et honnête (le nom d'une
+    // marque seulement pour une image prise sur un site de cette marque).
+    if (e.source !== 'upload:pierre' && e.credit !== undefined) issues.push(`photo ${id} : crédit propre à l'image hors envoi manuel`);
+    if (e.source === 'upload:pierre') {
+      const host = (() => { try { return new URL(e.sourcePageUrl).hostname; } catch { return ''; } })();
+      if (!e.credit?.trim()) issues.push(`photo ${id} : envoi manuel sans crédit propre (la source réelle)`);
+      if (!host || SEARCH_ENGINE_RE.test(host)) issues.push(`photo ${id} : page d'origine absente ou moteur de recherche (${host || '?'})`);
+      if (/watermark|filigrane/i.test(`${e.sourcePageUrl} ${e.sourceImageUrl}`)) issues.push(`photo ${id} : URL qui annonce un filigrane`);
+      const brand = BRANDS.find((b) => squash(b) === squash(e.credit ?? ''));
+      if (brand && !squash(host).includes(squash(brand))) issues.push(`photo ${id} : crédit « ${e.credit} » pour une image prise sur ${host}`);
+    }
+    // Produit voisin (22/10/2026) : une autre jauge seulement si la fiche la liste ; un autre coloris
+    // seulement si la fiche n'en fixe aucun (aucune fiche raquette n'a de coloris). La légende dit ce
+    // que la photo montre.
+    const str = stringById.get(id);
+    if (e.shownGauge !== undefined) {
+      const gauges = new Set((str?.gauges ?? []).flatMap((g) => g.split('/')));
+      if (!str) issues.push(`photo ${id} : « jauge présentée » sur une raquette`);
+      else if (!/^\d\.\d{2}$/.test(e.shownGauge) || !gauges.has(e.shownGauge)) {
+        issues.push(`photo ${id} : jauge présentée ${e.shownGauge} absente de la fiche (${(str.gauges ?? []).join(', ')})`);
+      }
+    }
+    if (e.shownColour !== undefined) {
+      if (str?.color) issues.push(`photo ${id} : coloris présenté « ${e.shownColour} » alors que la fiche fixe « ${str.color} »`);
+      else if (!e.shownColour.trim()) issues.push(`photo ${id} : coloris présenté vide`);
+    }
+    return issues;
+  };
   let bytes = 0;
   const listed = new Set<string>();
   for (const [id, e] of Object.entries(PRODUCT_IMAGES)) {
-    const folder = racquetIds.has(id) ? 'racquets' : stringIds.has(id) ? 'strings' : null;
+    const folder = racquetIds.has(id) ? 'racquets' : stringById.has(id) ? 'strings' : null;
     if (!folder) { fail(`photo ${id} : aucun produit de ce nom dans la base`); continue; }
     if (e.file !== `/images/products/${folder}/${id}.webp`) fail(`photo ${id} : chemin inattendu ${e.file}`);
     const disk = `public${e.file}`;
@@ -1086,13 +1187,89 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     const size = statSync(disk).size;
     bytes += size;
     if (size > 120_000) fail(`photo ${id} : ${Math.round(size / 1024)} Ko (> 120 Ko)`);
-    const hosts = SOURCE_HOSTS[e.source];
-    if (!hosts) { fail(`photo ${id} : source inattendue ${e.source}`); continue; }
-    if (!PRODUCT_IMAGE_CREDITS[e.source]) fail(`photo ${id} : aucun libellé de crédit pour la source ${e.source}`);
-    if (!e.sourcePageUrl.startsWith(hosts.page)) fail(`photo ${id} : page source invalide pour ${e.source}`);
-    if (!e.sourceImageUrl.startsWith(hosts.image)) fail(`photo ${id} : image source invalide pour ${e.source}`);
-    if (!e.twProduct) fail(`photo ${id} : intitulé du produit source absent (association non auditable)`);
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(e.retrievedAt)) fail(`photo ${id} : date de collecte invalide`);
+    entryIssues(id, e, PRODUCT_IMAGE_CREDITS).forEach(fail);
+  }
+  // Tests négatifs, un jeu par source de la liste blanche : une entrée témoin (réelle si la source a des
+  // photos) doit passer, puis être refusée avec une page ou une image hors de la liste, et sans crédit.
+  {
+    const negatives: Array<[string, string[], string]> = [];
+    let witnesses = 0;
+    const multiGauge = stringsDatabase.find((s) => (s.gauges ?? []).length > 1 && s.color)!;
+    // Entrée témoin construite depuis la liste blanche : le contrôle ne dépend pas des photos présentes
+    // (une source purgée doit laisser l'audit vert).
+    const synthetic = (source: string, id: string): PhotoEntry => ({
+      file: `/images/products/${racquetIds.has(id) ? 'racquets' : 'strings'}/${id}.webp`, width: 1, height: 1, retrievedAt: '2026-10-22', source,
+      sourcePageUrl: `${SOURCE_HOSTS[source].pages[0]}${source === 'upload:pierre' ? 'www.exemple-photographe.test/' : ''}temoin`,
+      sourceImageUrl: `${SOURCE_HOSTS[source].images[0]}temoin.jpg`, twProduct: 'témoin',
+      ...(source === 'upload:pierre' ? { credit: 'Exemple Photographe' } : {}),
+    } as PhotoEntry);
+    for (const source of Object.keys(SOURCE_HOSTS)) {
+      const real = Object.entries(PRODUCT_IMAGES).find(([, e]) => e.source === source);
+      const [id, base] = real ?? [multiGauge.id, synthetic(source, multiGauge.id)];
+      const credits: Record<string, string> = { ...PRODUCT_IMAGE_CREDITS, [source]: PRODUCT_IMAGE_CREDITS[source] ?? 'Témoin' };
+      const witness = entryIssues(id, base, credits);
+      if (witness.length) fail(`photos produit : témoin de la source ${source} refusé (${witness.join(' ; ')})`);
+      else witnesses++;
+      const noCredit = Object.fromEntries(Object.entries(credits).filter(([k]) => k !== source));
+      if (source === 'upload:pierre') {
+        // Toute page https est admise : les négatifs portent sur le crédit, les moteurs et le filigrane.
+        negatives.push(
+          [`${source} : page en http`, entryIssues(id, { ...base, sourcePageUrl: 'http://www.exemple-photographe.test/x' }, credits), 'page source invalide'],
+          [`${source} : crédit propre manquant`, entryIssues(id, { ...base, credit: undefined }, credits), 'sans crédit propre'],
+          [`${source} : page de moteur de recherche`, entryIssues(id, { ...base, sourcePageUrl: 'https://www.google.com/imgres?x' }, credits), 'moteur de recherche'],
+          [`${source} : image filigranée annoncée`, entryIssues(id, { ...base, sourceImageUrl: 'https://img.exemple.test/watermark/x.jpg' }, credits), 'filigrane'],
+          [`${source} : marque créditée pour une image de tiers`, entryIssues(id, { ...base, credit: 'Head', sourcePageUrl: 'https://www.exemple-revendeur.test/head-speed' }, credits), 'pour une image prise sur'],
+        );
+        continue;
+      }
+      negatives.push(
+        [`${source} : page hors liste blanche`, entryIssues(id, { ...base, sourcePageUrl: 'https://www.exemple-revendeur.test/produit' }, credits), 'page source invalide'],
+        [`${source} : image hors liste blanche`, entryIssues(id, { ...base, sourceImageUrl: 'https://cdn.exemple-revendeur.test/image.jpg' }, credits), 'image source invalide'],
+        [`${source} : crédit manquant`, entryIssues(id, base, noCredit), 'aucun libellé de crédit'],
+        [`${source} : crédit propre hors envoi manuel`, entryIssues(id, { ...base, credit: 'Quelqu’un' }, credits), 'hors envoi manuel'],
+      );
+    }
+    const bId = multiGauge.id;
+    const bEntry = synthetic('fabricant:babolat', bId);
+    const strEntry = bEntry;
+    // Crédits du témoin : la table générée ne liste que les sources présentes au manifeste (purge comprise).
+    const bCredits = { ...PRODUCT_IMAGE_CREDITS, 'fabricant:babolat': 'Babolat' };
+    negatives.push(
+      ['Luxilon fermé (403) présenté comme source', entryIssues(bId, { ...bEntry, source: 'fabricant:luxilon', sourcePageUrl: 'https://www.luxilon.com/en-us/product/x' }, { ...PRODUCT_IMAGE_CREDITS, 'fabricant:luxilon': 'Luxilon' }), 'source inattendue'],
+      ['Head fermé (429) présenté comme source', entryIssues(bId, { ...bEntry, source: 'fabricant:head', sourcePageUrl: 'https://www.head.com/x' }, { ...PRODUCT_IMAGE_CREDITS, 'fabricant:head': 'Head' }), 'source inattendue'],
+      ['Babolat : site d’un autre pays que FR et US', entryIssues(bId, { ...bEntry, sourcePageUrl: 'https://www.babolat.com/de/x/101576.html' }, bCredits), 'page source invalide'],
+      ['jauge présentée absente de la fiche', entryIssues(multiGauge.id, { ...strEntry, shownGauge: '1.18' }, bCredits), 'absente de la fiche'],
+      ['jauge présentée sur une raquette', entryIssues(racquetsDatabase[0].id, { ...synthetic('fabricant:babolat', racquetsDatabase[0].id), shownGauge: '1.25' }, bCredits), 'sur une raquette'],
+      ['coloris présenté sur une fiche qui fixe un coloris', entryIssues(multiGauge.id, { ...strEntry, shownColour: 'Pink' }, bCredits), 'alors que la fiche fixe'],
+      ['coloris présenté vide (raquette)', entryIssues(racquetsDatabase[0].id, { ...synthetic('fabricant:babolat', racquetsDatabase[0].id), shownColour: ' ' }, bCredits), 'coloris présenté vide'],
+    );
+    // Témoin : raquette (sans coloris de fiche) photographiée dans un des coloris de la page, avec la légende.
+    const racquetColour = entryIssues(racquetsDatabase[0].id, { ...synthetic('fabricant:babolat', racquetsDatabase[0].id), shownColour: 'Espresso Brown' }, bCredits);
+    if (racquetColour.length) fail(`photos produit : témoin « coloris présenté sur une raquette » refusé (${racquetColour.join(' ; ')})`);
+    else witnesses++;
+    // Témoin : fiche sans coloris (aucune au catalogue aujourd'hui), le coloris présenté est admis.
+    const blank = '__temoin-sans-coloris__';
+    stringById.set(blank, { ...multiGauge, id: blank, color: undefined } as (typeof stringsDatabase)[number]);
+    const accepted = entryIssues(blank, { ...strEntry, shownColour: 'Black' }, bCredits);
+    stringById.delete(blank);
+    if (accepted.length) fail(`photos produit : témoin « coloris présenté sur une fiche sans coloris » refusé (${accepted.join(' ; ')})`);
+    else witnesses++;
+    for (const [name, found, needle] of negatives) {
+      if (!found.some((i) => i.includes(needle))) fail(`photos produit : garde-fou muet sur « ${name} » (${needle})`);
+    }
+    // Légende FR : le composant lit les deux champs et les annonce tels quels.
+    const captionIssues = (src: string): string[] => [
+      ...(/Photo : \{image\.credit \?\? productImageCredit\(image\.source\)\}/.test(src) ? [] : ['crédit propre à l\'image non lu par le composant FR']),
+      ...(/image\.shownGauge\s*&&[^\n]*jauge présentée : \{image\.shownGauge/.test(src) ? [] : ['légende « jauge présentée » absente du composant FR']),
+      ...(/image\.shownColour\s*&&[^\n]*coloris présenté : \{image\.shownColour\}/.test(src) ? [] : ['légende « coloris présenté » absente du composant FR']),
+    ];
+    const fig = readFileSync('src/components/product/product-image.tsx', 'utf8');
+    captionIssues(fig).forEach((i) => fail(`photos produit : ${i}`));
+    if (!captionIssues(fig.replace('jauge présentée', 'jauge')).length) fail('photos produit : garde-fou muet sur la légende FR retirée');
+    if (failures.length === before) {
+      ok(`photos produit : ${Object.keys(SOURCE_HOSTS).length} sources en liste blanche, ${witnesses} témoins acceptés, ${negatives.length + 1} tests négatifs détectés ` +
+        '(page ou image hors liste et crédit manquant pour chaque source, envois manuels : crédit propre, moteur, filigrane, marque créditée à tort ; Head et Luxilon, Babolat hors FR/US, jauge ou coloris présentés hors règle ou vides, légende et crédit FR)');
+    }
   }
   for (const folder of ['racquets', 'strings']) {
     const dir = `public/images/products/${folder}`;
@@ -1125,26 +1302,30 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     const { images } = await loadProductImages(process.cwd());
     const { racquets: enR, strings: enS } = buildCatalog(racquetsDatabase, stringsDatabase);
     let shown = 0;
+    let captioned = 0;
     let illustrated = 0;
     for (const [kind, list, render] of [['racquets', enR, racquetPage], ['strings', enS, stringPage]] as const) {
       for (const item of list as Array<{ id: string }>) {
         const html: string = (render as (x: unknown, i: unknown) => string)(item, images);
-        const expected = (images as Record<string, { file: string }>)[item.id];
+        const expected = (images as Record<string, { file: string; shownGauge?: string; shownColour?: string }>)[item.id];
         const ld = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].map((m) => m[1]).join('\n');
         if (/"image"|\/images\/products\//.test(ld)) fail(`fiche EN ${kind}/${item.id} : photo propagée dans le JSON-LD`);
         if (/og:image/.test(html)) fail(`fiche EN ${kind}/${item.id} : og:image présent`);
         if (IMAGE_HOSTS_RE.test(html)) fail(`fiche EN ${kind}/${item.id} : hotlink vers la source`);
         if (expected) {
-          const credit = (PRODUCT_IMAGE_CREDITS as Record<string, string>)[(expected as unknown as { source: string }).source];
+          const credit = (expected as unknown as { credit?: string }).credit
+            ?? (PRODUCT_IMAGE_CREDITS as Record<string, string>)[(expected as unknown as { source: string }).source];
           if (!html.includes(`<img src="${expected.file}"`)) fail(`fiche EN ${kind}/${item.id} : photo validée non affichée`);
           else if (!credit || !html.includes(`Photo: ${credit}`)) fail(`fiche EN ${kind}/${item.id} : crédit « Photo: ${credit} » absent`);
-          else shown++;
+          else if (expected.shownGauge && !html.includes(`gauge shown: ${expected.shownGauge} mm`)) fail(`fiche EN ${kind}/${item.id} : légende « gauge shown » absente`);
+          else if (expected.shownColour && !html.includes(`colour shown: ${expected.shownColour}`)) fail(`fiche EN ${kind}/${item.id} : légende « colour shown » absente`);
+          else { shown++; if (expected.shownGauge || expected.shownColour) captioned++; }
         } else if (!html.includes('data-product-image="illustration"')) {
           fail(`fiche EN ${kind}/${item.id} : ni photo ni illustration`);
         } else illustrated++;
       }
     }
-    ok(`fiches EN : ${shown} photo(s) affichée(s), ${illustrated} illustration(s), aucune photo en JSON-LD/og:image`);
+    ok(`fiches EN : ${shown} photo(s) affichée(s) dont ${captioned} avec la légende du produit voisin, ${illustrated} illustration(s), aucune photo en JSON-LD/og:image`);
   }
   if (failures.length === before) {
     const n = Object.keys(PRODUCT_IMAGES).length;
@@ -1173,7 +1354,8 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     const avg = crit.reduce((a, c) => a + e.raw20[c], 0) / crit.length;
     if (Math.abs(avg - e.docxAverage20) > 0.005) fail(`notes testeurs : ${id} moyenne source ${avg} ≠ ${e.docxAverage20}`);
     for (const f of fields) {
-      const expected = harmonizedRating(e, f);
+      // D2 (23/10/2026) : note de confort recalée, la composante éditoriale est la valeur recalée (méthode, étape 4).
+      const expected = harmonizedRating(e, f, f === 'comfort' ? COMFORT_RECALIBRATED[id]?.editorialAfter : undefined);
       if (s[f] !== expected) fail(`notes testeurs : ${id}.${f} = ${s[f]} au catalogue, ${expected} attendu par la provenance`);
     }
   }
@@ -1205,7 +1387,9 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
 //     ou un cordage inconnu ; (b) un code ne se recalcule plus depuis les données (note
 //     retouchée, score TW modifié, « tw » sans reprise systématique) ; (c) une revue est
 //     mal formée ou citée par aucune fiche ; (d) une surface du site lit la provenance
-//     (code de src/ hors données, générateurs EN, catalogue EN, fiches EN). Chaque garde
+//     (code de src/ hors données, générateurs EN, catalogue EN, fiches EN), ou l'export
+//     catalog.json porte un code ou une clé de provenance au lieu de la seule nature
+//     (`rating_basis`, 22/10/2026). Chaque garde
 //     est rejouée sur une copie altérée : un garde-fou muet fait échouer l'audit.
 {
   const before = failures.length;
@@ -1236,6 +1420,8 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
       const comps: Array<[Field, boolean, string | null]> = [];
       for (const f of published) {
         const harm = !!tester && HARM.includes(f);
+        // D2 (23/10/2026) : la note de confort recalée vient de la droite de comfort-recalibration.ts, plus d'une comparaison à TW.
+        if (f === 'comfort' && Object.prototype.hasOwnProperty.call(COMFORT_RECALIBRATED, s.id)) { comps.push([f, harm, 'recalee-twu']); continue; }
         const v = harm ? tester.before10[f as HarmonizedField] : s[f];
         if (v === undefined) { comps.push([f, harm, null]); continue; }
         const cats = P.FIELD_TO_TW[f];
@@ -1259,7 +1445,7 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
       }
       const systematic = comps.filter(([, , c]) => c === 'identique').length >= P.MIN_IDENTICAL_FOR_TW;
       for (const [f, harm, c] of comps) {
-        const base = c === null ? null : c === 'identique' && systematic ? 'tw' : `inconnue:${c}`;
+        const base = c === null ? null : c === 'recalee-twu' ? c : c === 'identique' && systematic ? 'tw' : `inconnue:${c}`;
         const expected = base === null ? 'testeurs' : harm ? `harmonisee+${base}` : base;
         if (e.fields[f] !== expected) issues.push(`${s.id}.${f} : « ${e.fields[f]} » enregistré, « ${expected} » recalculé depuis les données`);
       }
@@ -1287,6 +1473,20 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
   const enStrings = buildCatalog(racquetsDatabase, stringsDatabase).strings as Array<{ id: string }>;
   const published = [serializeCatalog(buildCatalog(racquetsDatabase, stringsDatabase)), ...enStrings.map((x) => (stringPage as (s: unknown) => string)(x))].join('\n');
   for (const p of reviewPaths) if (published.includes(p)) issues.push(`URL de revue TW publiée sur le site (catalogue ou fiche EN) : ${p}`);
+  // (d bis, 22/10/2026) l'export catalog.json porte la NATURE des notes (`rating_basis`), jamais un code de provenance ni une clé
+  // qui en annonce une : la nature se déduit de la liste des 18, pas de ce fichier.
+  const PROVENANCE_CODE = /^(tw|testeurs|inconnue:[a-z-]+|harmonisee\+[a-z:-]+)$/;
+  const exportLeaks = (json: string): string[] => {
+    const found: string[] = [];
+    JSON.parse(json, (k, v) => {
+      if (/provenance|reviews?$/i.test(k)) found.push(`clé « ${k} » dans l'export`);
+      if (typeof v === 'string' && PROVENANCE_CODE.test(v)) found.push(`code de provenance « ${k} = ${v} » dans l'export`);
+      return v;
+    });
+    return found;
+  };
+  const exported = serializeCatalog(buildCatalog(racquetsDatabase, stringsDatabase));
+  issues.push(...exportLeaks(exported));
   issues.forEach((i) => fail(`provenance des notes : ${i}`));
   // Tests négatifs : chaque altération doit être détectée.
   const triax = stringsDatabase.find((s) => s.id === 'tecnifibre-triax')!;
@@ -1300,6 +1500,8 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     ["provenance d'une note absente", checkProvenance(stringsDatabase, ghost, P.TW_REVIEWS), 'solinco-revolution.versatility'],
     ['égalité isolée promue en reprise TW', checkProvenance(stringsDatabase, promoted, P.TW_REVIEWS), 'luxilon-original.control'],
     ['composant du site lisant la provenance', scanDisplay([{ path: 'src/app/x.tsx', src: "import { STRING_RATINGS_PROVENANCE } from '@/data/string-ratings-provenance';" }]), 'src/app/x.tsx'],
+    ["export : nature remplacée par un code de provenance", exportLeaks(exported.replace('"rating_basis":"editorial"', '"rating_basis":"inconnue:ecart"')), 'inconnue:ecart'],
+    ["export : clé de provenance ajoutée", exportLeaks(exported.replace('"rating_basis":', '"rating_provenance":"x","rating_basis":')), 'rating_provenance'],
   ];
   for (const [name, found, needle] of negatives) {
     if (!found.some((i) => i.includes(needle))) fail(`provenance des notes : garde-fou muet sur « ${name} » (${needle})`);
@@ -1308,8 +1510,8 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     const codes = Object.values(P.STRING_RATINGS_PROVENANCE).flatMap((e) => Object.values(e.fields)) as string[];
     const n = (re: RegExp) => codes.filter((c) => re.test(c)).length;
     ok(`provenance des notes : ${Object.keys(P.STRING_RATINGS_PROVENANCE).length} cordages, ${codes.length} notes publiées décrites ` +
-      `(${n(/^tw$/)} reprises TW établies, ${n(/^harmonisee\+/)} harmonisées, ${n(/^testeurs$/)} testeurs seuls, ${n(/^inconnue:/)} de source inconnue), ` +
-      `${Object.keys(P.TW_REVIEWS).length} revues TW, recalcul identique, aucune surface du site ne lit la provenance, ${negatives.length} tests négatifs détectés`);
+      `(${n(/^tw$/)} reprises TW établies, ${n(/^harmonisee\+/)} harmonisées, ${n(/^testeurs$/)} testeurs seuls, ${n(/^inconnue:/)} de source inconnue, ${n(/recalee-twu$/)} notes de confort recalées sur la rigidité mesurée, D2), ` +
+      `${Object.keys(P.TW_REVIEWS).length} revues TW, recalcul identique, aucune surface du site ne lit la provenance, l'export ne porte que la nature des notes, ${negatives.length} tests négatifs détectés`);
   }
 }
 
@@ -1862,24 +2064,53 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
 // faute de preuve. Échoue si : (a) le catalogue ne porte pas la valeur consignée (« après », ou valeur tenue pour un champ
 // « held ») ou une fiche perd son id public ; (b) un fait cité est absent du dossier copié dans le dépôt, d'un autre niveau,
 // sans la valeur (énoncé, valeur ou extrait) ou, pour un champ changé, de statut « signal » / « introuvable » ; (c) un RA
-// change sans MESURE L1 (Q-1 : TW US et TWE sont du même groupe) ou baisse sans revue `tsa-measure` ; (d) l'édition annoncée
-// n'est pas dans le nom ; (e) une surface du site lit la provenance. Chaque garde est rejouée sur une copie altérée.
+// change sans MESURE L1 (Q-1 : TW US et TWE sont du même groupe ; L1 = page d'essai TW, RDC ou TWU, règle du 26/10/2026) ou baisse
+// sans revue `tsa-measure` ; (d) l'édition annoncée n'est pas dans le nom ; (e) une surface du site lit la provenance ; (f) une mesure
+// L1 du dossier du 23/10/2026 (V117 et suivants) ne dit pas son instrument ou le contredit. Chaque garde est rejouée sur une copie altérée.
 {
   const before = failures.length;
   const AP = await import('../src/data/racquet-alignment-provenance');
   type AProv = Readonly<Record<string, (typeof AP.RACQUET_ALIGNMENT)[string]>>;
-  type Row = { level: string; status: string; text: string };
+  type Row = { level: string; status: string; text: string; instrument: string; extract: string };
   type AItem = { id: string; variant?: string; gauges?: string[] } & Record<string, unknown>;
   const norm = (x: string) => x.toLowerCase().replace(/[\s ]/g, '').replace(/×/g, 'x');
   const readRows = (md: string): Map<string, Row> => {
     const rows = new Map<string, Row>();
     for (const m of md.matchAll(/^\| (V\d{2,3}) \|(.*)\|\s*$/gm)) {
       const cells = m[2].replace(/\\\|/g, '\u0001').split('|').map((c) => c.trim());
-      rows.set(m[1], { level: cells[2].split(/[\s(]/)[0], status: cells[cells.length - 1].replace(/\*/g, ''), text: norm([cells[0], cells[1], cells[5]].join(' ')) }); // énoncé, valeur, extrait : ni « Recoupement » ni « Base TSA »
+      rows.set(m[1], {
+        level: cells[2].split(/[\s(]/)[0], status: cells[cells.length - 1].replace(/\*/g, ''),
+        text: norm([cells[0], cells[1], cells[5]].join(' ')), // énoncé, valeur, extrait : ni « Recoupement » ni « Base TSA »
+        instrument: (/\((RDC|TWU)\)/.exec(cells[2]) ?? ['', ''])[1], extract: cells[5] ?? '',
+      });
     }
     return rows;
   };
-  const dossierRows = readRows(existsSync(AP.ALIGNMENT_DOSSIER) ? readFileSync(AP.ALIGNMENT_DOSSIER, 'utf8') : '');
+  // Plusieurs dossiers (veille du 10/10/2026, écarts de fiche du 23/10/2026) : numérotation continue, un numéro en double échoue.
+  const mergeDossiers = (texts: readonly string[]): { rows: Map<string, Row>; dup: string[] } => {
+    const rows = new Map<string, Row>();
+    const dup: string[] = [];
+    for (const t of texts) for (const [k, v] of readRows(t)) { if (rows.has(k)) dup.push(k); rows.set(k, v); }
+    return { rows, dup };
+  };
+  const dossiers = mergeDossiers(AP.ALIGNMENT_DOSSIERS.map((p) => (existsSync(p) ? readFileSync(p, 'utf8') : '')));
+  AP.ALIGNMENT_DOSSIERS.filter((p) => !existsSync(p)).forEach((p) => fail(`fiches alignées : dossier ${p} absent du dépôt`));
+  dossiers.dup.forEach((k) => fail(`fiches alignées : fait ${k} numéroté dans deux dossiers`));
+  const dossierRows = dossiers.rows;
+  // (f) Règle des mesures L1 (avis d'Opus 5.5 du 26/10/2026, R2 de la revue de #152) : une mesure RDC d'une page d'essai TW est L1, comme le
+  // « Flex Rating Test » TWU ; depuis le dossier du 23/10/2026, chaque mesure L1 dit laquelle (« L1 (RDC) » ou « L1 (TWU) ») et l'extrait cité
+  // ne la contredit pas. Le dossier du 10/10/2026, copie telle quelle de la veille, n'est pas concerné.
+  const checkInstruments = (rows: Map<string, Row>): string[] => {
+    const issues: string[] = [];
+    for (const [k, r] of rows) {
+      if (Number(k.slice(1)) < 117 || r.level !== 'L1') continue;
+      if (r.instrument !== 'RDC' && r.instrument !== 'TWU') issues.push(`${k} : mesure L1 sans instrument (« L1 (RDC) » ou « L1 (TWU) »)`);
+      else if (/\bRDC\b/.test(r.extract) && r.instrument !== 'RDC') issues.push(`${k} : extrait RDC, libellé « L1 (${r.instrument}) »`);
+      else if (/Flex Rating Test/i.test(r.extract) && r.instrument !== 'TWU') issues.push(`${k} : extrait « Flex Rating Test », libellé « L1 (${r.instrument}) »`);
+    }
+    return issues;
+  };
+  checkInstruments(dossierRows).forEach((i) => fail(`fiches alignées : ${i}`));
   const checkAlignment = (items: readonly AItem[], prov: AProv, rows: Map<string, Row> = dossierRows): string[] => {
     const issues: string[] = [];
     const val = (it: AItem, f: string) => (f === 'gauges' ? it.gauges?.join(',') : it[f]);
@@ -1945,9 +2176,16 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     ['édition absente du nom (Pure Aero Team « Team »)', checkAlignment(setItem(races, 'babolat-pure-aero-team', { variant: 'Team' }), R0), 'n\'est pas dans le nom'],
     ['id public perdu (Clash 100 Pro)', checkAlignment(races.filter((x) => x.id !== 'wilson-clash-100-pro-v2'), R0), 'fiche absente du catalogue'],
     ['dossier absent du dépôt', checkAlignment(races, R0, new Map()), 'absent du dossier'],
+    ['fait numéroté dans deux dossiers', mergeDossiers(['| V01 | a | b | L0 | u | d | e | r | x | **confirmé** |', '| V01 | a | b | L0 | u | d | e | r | x | **confirmé** |']).dup, 'V01'],
+    ['RA tenu remis à la valeur du constructeur (CX 200 -> 65)', checkAlignment(setItem(races, 'dunlop-cx-200', { stiffness: 65 }), R0), 'dunlop-cx-200.stiffness : 65 ≠ 66'],
+    ['nom du cordage ramené à son ancienne graphie (Touch Multifiber)', checkAlignment(setItem(strs, 'kirschbaum-touch-multifiber', { model: 'Touch Multifiber' }), S0), 'kirschbaum-touch-multifiber.model'],
     ['1.30 retirée de la Poly Tour Strike', checkAlignment(setItem(strs, 'yonex-poly-tour-strike', { gauges: ['1.20', '1.25'] }), S0), 'yonex-poly-tour-strike.gauges'],
     ['1.35 réintroduite sur la RPM Team', checkAlignment(setItem(strs, 'babolat-rpm-team', { gauges: ['1.25', '1.30', '1.35'] }), S0), 'babolat-rpm-team.gauges'],
     ['surface qui importe la provenance', scanAlign([{ path: 'src/app/x.tsx', src: "import { RACQUET_ALIGNMENT } from '@/data/racquet-alignment-provenance';" }]), 'src/app/x.tsx'],
+    ['mesure L1 sans instrument', checkInstruments(readRows('| V150 | a | b | L1 | u | d | « Flex Rating Test 60 » | r | x | **confirmé** |')), 'V150 : mesure L1 sans instrument'],
+    ['extrait RDC libellé TWU', checkInstruments(readRows('| V151 | a | b | L1 (TWU) | u | d | « Babolat RDC Ratings Score Grade Flex Rating 64 » | r | x | **confirmé** |')), 'V151 : extrait RDC'],
+    ['extrait TWU libellé RDC', checkInstruments(readRows('| V152 | a | b | L1 (RDC) | u | d | « Lab Data Score Grade Flex Rating Test 64 » | r | x | **confirmé** |')), 'V152 : extrait « Flex Rating Test »'],
+    ['génération retirée du nom (Ripstick « Standard »)', checkAlignment(setItem(races, 'prince-ripstick-standard', { variant: 'Standard' }), R0), 'prince-ripstick-standard.variant'],
   ];
   for (const [name, found, needle] of negatives) {
     if (!found.some((i) => i.includes(needle))) fail(`fiches alignées : garde-fou muet sur « ${name} » (${needle})`);
@@ -1958,8 +2196,9 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     const nFacts = [...Object.values(R0), ...Object.values(S0)].reduce(
       (n, a) => n + Object.values(a.changes).reduce((m, c) => m + c.facts.length, 0) + Object.values(a.held).reduce((m, h) => m + h.facts.length, 0), 0);
     const nRa = Object.values(R0).filter((a) => a.changes.stiffness).length;
-    ok(`fiches alignées : ${nR} raquettes en provenance (${changed} modifiées, ${nR - changed} tenues faute de preuve), ${Object.keys(S0).length} cordages (jauges, coloris), ` +
-      `${nFacts} faits retrouvés dans le dossier (niveau, valeur, statut), ${nRa} RA changés tous sur mesure L1, aucune baisse de RA, aucune surface ne lit la provenance, ${negatives.length} tests négatifs détectés`);
+    const l1 = [...dossierRows].filter(([k, r]) => Number(k.slice(1)) >= 117 && r.level === 'L1').map(([, r]) => r.instrument);
+    ok(`fiches alignées : ${nR} raquettes en provenance (${changed} modifiées, ${nR - changed} tenues faute de preuve), ${Object.keys(S0).length} cordages (nom, jauges, coloris), ` +
+      `${nFacts} faits retrouvés dans ${AP.ALIGNMENT_DOSSIERS.length} dossiers (niveau, valeur, statut ; ${dossierRows.size} faits, aucun numéro en double), ${nRa} RA changés tous sur mesure L1, aucune baisse de RA, instrument dit pour les ${l1.length} mesures L1 du 23/10 (${l1.filter((i) => i === 'RDC').length} RDC, ${l1.filter((i) => i === 'TWU').length} TWU), aucune surface ne lit la provenance, ${negatives.length} tests négatifs détectés`);
   }
 }
 
@@ -2032,7 +2271,7 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
 // ---------------------------------------------------------------------------
 // 18. NATURE DES NOTES DE CORDAGE — ÉTIQUETÉE SUR CHAQUE SURFACE FRANÇAISE
 //     (principe décidé par Pierre le 10/10/2026 : « garder les notes et les étiqueter partout » ;
-//      formulation des libellés et de la mention proposée par l'orchestrateur, pas encore validée)
+//      formulation des libellés et de la mention tranchée par Opus 5.5 le 23/10/2026, délégation de l'orchestrateur)
 // ---------------------------------------------------------------------------
 // Les notes /10 des cordages ne sont pas des mesures (PR #103 : 12 notes sur 1 182 viennent
 // de Tennis Warehouse, l'origine de 1 062 est inconnue). Elles s'affichent donc avec leur
@@ -2054,7 +2293,10 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
 // (e) en exécution, le PDF d'une configuration (données assemblées, puis rendu enregistré
 //     par un jsPDF factice) omet l'étiquette des notes imprimées ;
 // (f) la description du catalogue (métadonnées) promet des notes ;
-// (g) un des tests négatifs permanents ne détecte plus l'altération qu'il plante.
+// (g) un des tests négatifs permanents ne détecte plus l'altération qu'il plante ;
+// (h) (22/10/2026) un cordage n'a pas la même nature en FR (ce module) et dans l'export catalog.json lu par les pages EN ;
+// (i) (22/10/2026) un cordage sans note (les 7 Toroline du lot 3, option A) reçoit, sur sa fiche, ses cartes ou son PDF, une
+//     barre, un zéro, un NaN ou moins de « Non publié » que de notes absentes.
 // Affichage seulement : aucune note ni aucun calcul n'est touché. La provenance détaillée
 // des notes n'est lue par aucun de ces fichiers (contrôle 13 bis, qui scanne tout src/).
 {
@@ -2063,21 +2305,41 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
   const { default: React } = await import('react');
   (globalThis as { React?: unknown }).React ??= React; // JSX « classique » sous tsx (Next : runtime automatique)
   const { renderToStaticMarkup } = await import('react-dom/server');
-  type Nature = 'editorial' | 'harmonized' | 'none';
+  type Nature = 'editorial' | 'harmonized' | 'third_party' | 'none';
   // Les cinq notes affichées (comme côté EN) : « sans note » = aucune des cinq n'est publiée.
   const FIELDS5 = ['control', 'comfort', 'spin', 'power', 'durability'] as const;
   const EXPECT: Readonly<Record<Nature, string>> = {
-    editorial: 'Appréciation éditoriale TSA',
-    harmonized: 'Appréciation éditoriale TSA, harmonisée avec des avis de testeurs',
+    editorial: "Note de l'équipe TSA, non mesurée",
+    harmonized: "Moyenne de la note de l'équipe TSA et d'avis de testeurs publiés, non mesurée",
+    third_party: "Note reprise, en tout ou en partie, d'un test publié par un revendeur, non mesurée",
     none: 'Non publié',
   };
   const NOTICE =
-    "Appréciation de l'équipe, non mesurée en laboratoire. La rigidité (lb/in) est la donnée du cordage utilisée par le RCS.";
-  const PROPOSED = 'formulation proposée le 10/10/2026, pas encore validée par Pierre : la changer ici ET dans src/lib/string-rating-nature.ts, en connaissance de cause';
+    "Notes /10 non mesurées : la nature de chaque note est indiquée à côté. L'indice RCS n'utilise que la rigidité (lb/in) ; l'alerte bras peut aussi se déclencher sur la note de confort.";
+  const OVERALL = 'Moyenne de quatre notes non mesurées : performance, contrôle, confort, durabilité';
+  const PROPOSED = 'formulation tranchée par Opus 5.5 le 23/10/2026 : la changer ici ET dans src/lib/string-rating-nature.ts, sur nouvel arbitrage';
 
-  // (a) textes figés (formulation proposée, à valider), sans chaîne de testeurs ni Tennis Warehouse, sans « rigidité mesurée ».
-  for (const k of ['editorial', 'harmonized', 'none'] as const) {
+  // (a) textes figés, sans chaîne de testeurs ni revendeur nommé, sans « rigidité mesurée », et jamais « mesurée » sans négation :
+  //     aucune note /10 n'est une mesure.
+  if (N.STRING_OVERALL_RATING_LABEL !== OVERALL) fail(`nature des notes : libellé de la note globale = « ${N.STRING_OVERALL_RATING_LABEL} » (${PROPOSED})`);
+  const affirmsMeasure = (t: string) => /(?<!non )mesur/i.test(t);
+  for (const t of [...Object.values(N.STRING_RATING_LABELS), N.STRING_RATINGS_NOTICE, N.STRING_OVERALL_RATING_LABEL]) {
+    if (affirmsMeasure(t)) fail(`nature des notes : « ${t} » présente une note comme mesurée`);
+  }
+  for (const k of ['editorial', 'harmonized', 'third_party', 'none'] as const) {
     if (N.STRING_RATING_LABELS[k] !== EXPECT[k]) fail(`nature des notes : libellé « ${k} » = « ${N.STRING_RATING_LABELS[k]} », « ${EXPECT[k]} » attendu (${PROPOSED})`);
+  }
+  // Mention D2 (23/10/2026) : texte figé, et TWU n'y est que la source de la mesure de rigidité (« rigidité mesurée (TWU) »).
+  const D2_LABEL = 'note de confort recalée sur la rigidité mesurée (TWU)';
+  if (N.COMFORT_RECALIBRATED_LABEL !== D2_LABEL || COMFORT_RECALIBRATION_RULE.label !== D2_LABEL) {
+    fail(`nature des notes : mention D2 « ${N.COMFORT_RECALIBRATED_LABEL} », « ${D2_LABEL} » attendue`);
+  }
+  // Seule exception, exacte et unique, à « mesurée » sans négation : « rigidité mesurée (TWU) » de la mention D2, où c'est la
+  // rigidité TWU qui est mesurée, jamais la note (avis d'Opus 5.5 du 23/10/2026 : AA point 1, AH « Mot à proscrire »).
+  const D2_MEASURED_STIFFNESS = 'rigidité mesurée (TWU)';
+  const d2AffirmsMeasure = (t: string) => affirmsMeasure(t.split(D2_MEASURED_STIFFNESS).join(''));
+  if (d2AffirmsMeasure(N.COMFORT_RECALIBRATED_LABEL)) {
+    fail(`nature des notes : mention D2 « ${N.COMFORT_RECALIBRATED_LABEL} » présente une note comme mesurée (seule « ${D2_MEASURED_STIFFNESS} » est admise)`);
   }
   if (N.STRING_RATINGS_NOTICE !== NOTICE) {
     fail(`nature des notes : la mention a changé — « ${N.STRING_RATINGS_NOTICE} » (${PROPOSED})`);
@@ -2091,24 +2353,40 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     fail('nature des notes : la mention affirme que la rigidité est mesurée — faux tant que le chantier C2 (réappariement TWU sur (modèle, jauge), PR #105) n’a pas couvert le catalogue (règle 3) ; adapter ce contrôle à ce moment-là');
   }
 
-  // (b) la nature se déduit des notes publiées et de la liste des 18.
+  // (b) la nature se déduit des notes publiées, de la liste des 18 et de la provenance : `third_party` dès qu'une note affichée est
+  //     `tw` ou `harmonisee+tw`. La liste dérivée lue par les surfaces doit être exactement ce recalcul (dans les deux sens).
   const harmonizedIds = new Set(Object.keys(STRING_TESTER_RATINGS));
+  const { STRING_RATINGS_PROVENANCE: PROV } = await import('../src/data/string-ratings-provenance');
+  const { THIRD_PARTY_RATED_STRING_IDS } = await import('../src/data/string-ratings-third-party');
+  const recomputeThirdParty = (prov: typeof PROV): string[] =>
+    Object.entries(prov).filter(([, e]) => FIELDS5.some((f) => e.fields[f] === 'tw' || e.fields[f] === 'harmonisee+tw')).map(([id]) => id).sort();
+  const thirdPartyIds = new Set(recomputeThirdParty(PROV));
+  const thirdPartyListFindings = (list: readonly string[], prov: typeof PROV): string[] => {
+    const want = recomputeThirdParty(prov);
+    const got = [...list].sort();
+    return want.join() === got.join() ? [] : [`liste des notes reprises [${got.join(', ')}] ≠ recalcul depuis la provenance [${want.join(', ')}]`];
+  };
+  for (const msg of thirdPartyListFindings(THIRD_PARTY_RATED_STRING_IDS, PROV)) fail(`nature des notes : ${msg}`);
   const expectedNature = (s: (typeof stringsDatabase)[number]): Nature =>
-    FIELDS5.every((f) => s[f] === undefined) ? 'none' : harmonizedIds.has(s.id) ? 'harmonized' : 'editorial';
-  const natureCount: Record<Nature, number> = { editorial: 0, harmonized: 0, none: 0 };
+    FIELDS5.every((f) => s[f] === undefined) ? 'none' : thirdPartyIds.has(s.id) ? 'third_party' : harmonizedIds.has(s.id) ? 'harmonized' : 'editorial';
+  const natureCount: Record<Nature, number> = { editorial: 0, harmonized: 0, third_party: 0, none: 0 };
   for (const s of stringsDatabase) {
     const n = N.stringRatingNature(s);
     natureCount[n]++;
     if (n !== expectedNature(s)) fail(`nature des notes : ${s.id} classé « ${n} », « ${expectedNature(s)} » attendu`);
     const label = N.stringRatingLabel(s);
-    if ((n === 'none') !== (label === null) || (label !== null && label !== EXPECT[n])) fail(`nature des notes : ${s.id} (${n}) porte l’étiquette « ${label} »`);
+    // D2 (23/10/2026) : une note de confort recalée sur la rigidité mesurée ajoute sa mention à l'étiquette, partout.
+    const recal = n !== 'none' && s.comfort !== undefined && Object.prototype.hasOwnProperty.call(COMFORT_RECALIBRATED, s.id);
+    const wantLabel = n === 'none' ? null : recal ? `${EXPECT[n]} ; ${D2_LABEL}` : EXPECT[n];
+    if (label !== wantLabel) fail(`nature des notes : ${s.id} (${n}) porte l’étiquette « ${label} », « ${wantLabel} » attendue`);
   }
   for (const id of harmonizedIds) {
     const s = stringsDatabase.find((x) => x.id === id);
-    if (s && N.stringRatingNature(s) !== 'harmonized') fail(`nature des notes : ${id} (18 harmonisés) n’est pas classé « harmonized »`);
+    if (s && !thirdPartyIds.has(id) && N.stringRatingNature(s) !== 'harmonized') fail(`nature des notes : ${id} (18 harmonisés) n’est pas classé « harmonized »`);
   }
-  if (natureCount.harmonized !== harmonizedIds.size) fail(`nature des notes : ${natureCount.harmonized} fiches harmonisées pour ${harmonizedIds.size} en provenance`);
-  if (natureCount.editorial + natureCount.harmonized + natureCount.none !== stringsDatabase.length) fail('nature des notes : une fiche sans nature');
+  const harmonizedOnly = [...harmonizedIds].filter((id) => !thirdPartyIds.has(id)).length;
+  if (natureCount.harmonized !== harmonizedOnly) fail(`nature des notes : ${natureCount.harmonized} fiches harmonisées pour ${harmonizedOnly} en provenance (hors notes reprises)`);
+  if (natureCount.editorial + natureCount.harmonized + natureCount.third_party + natureCount.none !== stringsDatabase.length) fail('nature des notes : une fiche sans nature');
   // Sémantique sur des fiches synthétiques (le catalogue actuel est « tout ou rien » et ne l'éprouve pas) : chacune des
   // cinq notes affichées suffit à faire « une note » ; performance, polyvalence et innovation n'en font pas une à elles
   // seules (elles ne s'affichent pas seules) ; un identifiant harmonisé sans note reste « sans note ».
@@ -2188,18 +2466,28 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
   for (const file of srcTs) for (const msg of undeclaredFindings(file, readFileSync(file, 'utf8'))) fail(`nature des notes : ${msg}`);
 
   // (d) exécution : fiche et carte (pleine, compacte) de CHAQUE cordage, rendues côté serveur.
-  const labelTag = (n: Nature) => `>${EXPECT[n]}<`;
-  const renderFindings = (surface: string, id: string, html: string, nature: Nature): string[] => {
+  // Texte tel que React l'écrit dans le HTML (l'apostrophe des libellés devient &#x27;).
+  const htmlText = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#x27;');
+  // D2 (23/10/2026) : l'étiquette d'une note de confort recalée porte en plus la mention, sur chaque surface rendue.
+  const labelTag = (n: Nature, recal = false) => `>${htmlText(`${EXPECT[n]}${recal ? ` ; ${D2_LABEL}` : ''}`)}<`;
+  const isRecal = (s: (typeof stringsDatabase)[number]) => Object.prototype.hasOwnProperty.call(COMFORT_RECALIBRATED, s.id);
+  const RATED = ['editorial', 'harmonized', 'third_party'] as const;
+  // (i) notes affichées par surface : une fiche sans note dit « Non publié » autant de fois, sans barre, zéro ni NaN.
+  const NONE_LINES: Readonly<Record<string, number>> = { fiche: 5, carte: 5, 'carte compacte': 4 };
+  const renderFindings = (surface: string, id: string, html: string, nature: Nature, recal = false): string[] => {
     const found: string[] = [];
     if (nature === 'none') {
-      if (html.includes('data-rating-nature=') || html.includes('Appréciation')) found.push(`${surface} ${id} : étiquette affichée pour un cordage sans note`);
+      if (html.includes('data-rating-nature=') || RATED.some((k) => html.includes(htmlText(EXPECT[k])))) found.push(`${surface} ${id} : étiquette affichée pour un cordage sans note`);
       if (!html.includes('Non publié')) found.push(`${surface} ${id} : « Non publié » absent`);
+      const missing = (html.match(/Non publié(?!e)/g) ?? []).length;
+      if (missing < (NONE_LINES[surface] ?? 1)) found.push(`${surface} ${id} : ${missing} « Non publié » pour ${NONE_LINES[surface]} notes absentes`);
+      if (/NaN|sur 10"|>0\.0</.test(html)) found.push(`${surface} ${id} : barre, zéro ou NaN rendu pour une note absente`);
       return found;
     }
-    if (!html.includes(`data-rating-nature="${nature}"`) || !html.includes(labelTag(nature))) {
-      found.push(`${surface} ${id} : étiquette « ${EXPECT[nature]} » absente alors que des notes sont rendues`);
+    if (!html.includes(`data-rating-nature="${nature}"`) || !html.includes(labelTag(nature, recal))) {
+      found.push(`${surface} ${id} : étiquette « ${EXPECT[nature]}${recal ? ` ; ${D2_LABEL}` : ''} » absente alors que des notes sont rendues`);
     }
-    for (const other of ['editorial', 'harmonized'] as const) {
+    for (const other of RATED) {
       if (other !== nature && html.includes(labelTag(other))) found.push(`${surface} ${id} : étiquette d’une autre nature (« ${EXPECT[other]} »)`);
     }
     return found;
@@ -2208,6 +2496,11 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
   const { StringCard } = await import('../src/components/product/string-card');
   let renders = 0;
   let sample: { fiche: string; id: string } | null = null;
+  let sampleNone: { fiche: string; card: string; id: string } | null = null;
+  let sampleOverall: { card: string; id: string } | null = null;
+  // Note globale ★ de la carte : dérivée, elle porte son libellé si (et seulement si) elle s'affiche.
+  const overallFindings = (id: string, card: string, shown: boolean): string[] =>
+    shown === (card.includes('data-overall-rating-label') && card.includes(htmlText(OVERALL))) ? [] : [`carte ${id} : note globale ${shown ? 'sans' : 'absente mais avec'} son libellé`];
   const renderBad: string[] = [];
   for (const s of stringsDatabase) {
     const n = N.stringRatingNature(s);
@@ -2215,9 +2508,14 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     const card = renderToStaticMarkup(React.createElement(StringCard, { string: s }));
     const compact = renderToStaticMarkup(React.createElement(StringCard, { string: s, compact: true }));
     renders += 3;
-    renderBad.push(...renderFindings('fiche', s.id, fiche, n), ...renderFindings('carte', s.id, card, n), ...renderFindings('carte compacte', s.id, compact, n));
+    const rc = isRecal(s);
+    renderBad.push(...renderFindings('fiche', s.id, fiche, n, rc), ...renderFindings('carte', s.id, card, n, rc), ...renderFindings('carte compacte', s.id, compact, n, rc));
     if (n !== 'none' && !fiche.includes('data-rating-notice="full"')) renderBad.push(`fiche ${s.id} : mention absente sous « Notes de jeu »`);
     if (n === 'harmonized' && !sample) sample = { fiche, id: s.id };
+    if (n === 'none' && !sampleNone) sampleNone = { fiche, card, id: s.id };
+    const overallShown = s.performance !== undefined && s.control !== undefined && s.comfort !== undefined && s.durability !== undefined;
+    renderBad.push(...overallFindings(s.id, card, overallShown));
+    if (overallShown && !sampleOverall) sampleOverall = { card, id: s.id };
   }
   if (renderBad.length > 0) fail(`nature des notes : ${renderBad.length} défaut(s) de rendu serveur (fiche, carte pleine, carte compacte), par exemple : ${renderBad.slice(0, 3).join(' | ')}`);
 
@@ -2270,6 +2568,11 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
       if (!lines.some((l) => l.includes(`Notes /10 du cordage : ${NOTICE}`))) found.push(`${name} : mention absente de la méthodologie imprimée`);
     }
     if (!anyLabel && (text.includes('Appréciation') || text.includes('non mesurée en laboratoire'))) found.push(`${name} : étiquette ou mention imprimée pour des notes qui n’existent pas`);
+    // (i) montant sans note : les cinq notes imprimées « non publie » (libellé historique du PDF), ni zéro, ni valeur, ni NaN.
+    if (main === 'none' && cross === null) {
+      if (lines.filter((l) => l === 'non publie').length !== 5) found.push(`${name} : les cinq notes absentes ne sont pas toutes imprimées « non publie »`);
+      if (/NaN|\d[.,]\d\/10/.test(text)) found.push(`${name} : une note (zéro, valeur ou NaN) imprimée pour un cordage sans note`);
+    }
     return found;
   };
   const pdfCases: Array<[string, string, string | null, Nature, Nature | null]> = [
@@ -2278,6 +2581,8 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     ['PDF montant éditorial', editorialCross.id, null, 'editorial', null],
   ];
   if (noneString) pdfCases.push(['PDF cordage sans note', noneString.id, null, 'none', null]);
+  const thirdPartyString = stringsDatabase.find((s) => N.stringRatingNature(s) === 'third_party');
+  if (thirdPartyString) pdfCases.push(['PDF montant à note reprise d’un revendeur', thirdPartyString.id, null, 'third_party', null]);
   const pdfRuns: Array<{ data: Awaited<ReturnType<typeof pdfFor>>['data']; text: string }> = [];
   for (const [name, main, cross, nm, nc] of pdfCases) {
     const run = await pdfFor(main, cross);
@@ -2299,6 +2604,18 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
   const layoutSource = readFileSync(LAYOUT, 'utf8');
   for (const msg of layoutFindings(layoutSource)) fail(`nature des notes : ${msg}`);
 
+  // (h) même nature en FR (ce module) et dans l'export catalog.json lu par les pages EN (public/js/rating-labels.js).
+  const EN_OF: Readonly<Record<Nature, string>> = { editorial: 'editorial', harmonized: 'harmonised', third_party: 'third_party', none: 'none' };
+  type ExportRow = { id: string; rating_basis?: string };
+  const natureMismatch = (rows: readonly ExportRow[]): string[] =>
+    stringsDatabase.flatMap((s) => {
+      const r = rows.find((x) => x.id === s.id);
+      return r?.rating_basis === EN_OF[N.stringRatingNature(s)] ? [] : [`${s.id} : « ${N.stringRatingNature(s)} » en FR, « ${r?.rating_basis} » dans l’export`];
+    });
+  const exportRows = buildCatalog(racquetsDatabase, stringsDatabase).strings as ExportRow[];
+  const mismatched = natureMismatch(exportRows);
+  if (mismatched.length > 0) fail(`nature des notes : ${mismatched.length} cordage(s) de nature différente en FR et dans l’export EN, par exemple ${mismatched.slice(0, 3).join(' | ')}`);
+
   // (g) tests négatifs permanents : chaque altération plantée doit être détectée.
   const srcOf = (f: string) => sources.get(f) ?? '';
   const planted: Array<[string, string[]]> = [
@@ -2309,8 +2626,8 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     ['étiquette retirée du PDF (données)', surfaceFindings('src/lib/pdf-configuration-data.ts', srcOf('src/lib/pdf-configuration-data.ts').replace(/\bstringRatingLabel\(/g, 'noop('))],
     ['étiquette citée en commentaire seulement', surfaceFindings('src/app/statistics/page.tsx', srcOf('src/app/statistics/page.tsx').replace(/<StringRatingLabel\b/g, '// <StringRatingLabel').replace(/STRING_RATING_LABELS\[/g, '// STRING_RATING_LABELS['))],
     ['surface non déclarée', undeclaredFindings('src/app/top/page.tsx', "import { stringsDatabase } from '@/data/strings-database';\nexport default () => stringsDatabase.map((s) => s.control.toFixed(1));")],
-    ['fiche rendue sans étiquette', sample ? renderFindings('fiche', sample.id, sample.fiche.split(EXPECT.harmonized).join(''), 'harmonized') : []],
-    ['fiche rendue avec l’étiquette d’une autre nature', sample ? renderFindings('fiche', sample.id, sample.fiche.split(EXPECT.harmonized).join(EXPECT.editorial), 'harmonized') : []],
+    ['fiche rendue sans étiquette', sample ? renderFindings('fiche', sample.id, sample.fiche.split(htmlText(EXPECT.harmonized)).join(''), 'harmonized') : []],
+    ['fiche rendue avec l’étiquette d’une autre nature', sample ? renderFindings('fiche', sample.id, sample.fiche.split(htmlText(EXPECT.harmonized)).join(htmlText(EXPECT.editorial)), 'harmonized') : []],
     ['étiquette sur un cordage sans note', renderFindings('carte', 'sans-note', `<p data-rating-nature="editorial">${EXPECT.editorial}</p>Non publié`, 'none')],
     ['PDF imprimé sans étiquette', pdfFindings('PDF', pdfRuns[0].data, pdfRuns[0].text.split(EXPECT.harmonized).join(''), 'harmonized', null)],
     ['PDF imprimé sans mention', pdfFindings('PDF', pdfRuns[0].data, pdfRuns[0].text.split(NOTICE).join(''), 'harmonized', null)],
@@ -2319,14 +2636,27 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     ['PDF : mention retirée de la méthodologie', pdfFindings('PDF', pdfRuns[0].data, pdfRuns[0].text.split('\n').filter((l) => !l.includes('Notes /10 du cordage')).join('\n'), 'harmonized', null)],
     ['PDF hybride : étiquette du travers retirée', pdfFindings('PDF', pdfRuns[1].data, pdfRuns[1].text.split('\n').filter((l) => !l.includes('Travers')).join('\n'), 'harmonized', 'editorial')],
     ['description du catalogue annonçant des notes', layoutFindings(layoutSource.replace('de chaque référence', 'de chaque référence ; contrôle, confort, effet et durabilité quand la note existe'))],
+    ['export EN : cordage harmonisé exporté « editorial »', natureMismatch(exportRows.map((r) => (r.id === harmonizedMain.id ? { ...r, rating_basis: 'editorial' } : r)))],
+    ['export EN sans nature', natureMismatch(exportRows.map(({ id }) => ({ id })))],
+    ['fiche sans note rendue avec une barre à zéro', sampleNone ? renderFindings('fiche', sampleNone.id, sampleNone.fiche.replace('Non publié', '<div role="img" aria-label="Contrôle : 0 sur 10"></div>'), 'none') : []],
+    ['carte sans note avec une note globale NaN', sampleNone ? renderFindings('carte', sampleNone.id, `${sampleNone.card}<span>NaN</span>`, 'none') : []],
+    ['export EN : Triax (note reprise) exporté « editorial »', natureMismatch(exportRows.map((r) => (r.id === 'tecnifibre-triax' ? { ...r, rating_basis: 'editorial' } : r)))],
+    ['liste des notes reprises sans Triax', thirdPartyListFindings(THIRD_PARTY_RATED_STRING_IDS.filter((id) => id !== 'tecnifibre-triax'), PROV)],
+    ['note `tw` ajoutée à une fiche hors liste', thirdPartyListFindings(THIRD_PARTY_RATED_STRING_IDS, { ...PROV, 'luxilon-original': { ...PROV['luxilon-original'], fields: { ...PROV['luxilon-original'].fields, control: 'tw' } } })],
+    ['libellé affirmant une note mesurée', affirmsMeasure('Note de l’équipe TSA, mesurée en laboratoire') ? ['mesurée'] : []],
+    ['mention D2 : note de confort dite mesurée', d2AffirmsMeasure('note de confort mesurée') ? ['mesurée'] : []],
+    ['mention D2 : « rigidité mesurée » sans « (TWU) »', d2AffirmsMeasure('note de confort recalée sur la rigidité mesurée') ? ['mesurée'] : []],
+    ['carte : note globale sans son libellé', sampleOverall ? overallFindings(sampleOverall.id, sampleOverall.card.split(htmlText(OVERALL)).join(''), true) : []],
+    ['PDF sans note : zéro imprimé', noneString ? pdfFindings('PDF', pdfRuns[3].data, pdfRuns[3].text.replace('non publie', '0.0/10'), 'none', null) : []],
   ];
   for (const [name, hits] of planted) if (hits.length === 0) fail(`nature des notes : garde-fou muet sur « ${name} »`);
 
   if (failures.length === before) {
-    ok(`nature des notes : ${stringsDatabase.length} cordages = ${natureCount.harmonized} harmonisés + ${natureCount.editorial} à note éditoriale + ${natureCount.none} sans note ; ` +
-      `textes figés (formulation proposée, à valider par Pierre ; aucune chaîne de testeurs, ni TW, ni « rigidité mesurée ») ; description du catalogue sans promesse de note ; ${Object.keys(SURFACES).length} surfaces déclarées portent l’étiquette ` +
+    ok(`nature des notes : ${stringsDatabase.length} cordages = ${natureCount.harmonized} harmonisés + ${natureCount.third_party} à note reprise d’un revendeur (liste = recalcul depuis la provenance) + ${natureCount.editorial} de l’équipe + ${natureCount.none} sans note ; ` +
+      `textes figés (formulation tranchée par Opus 5.5 ; aucune chaîne de testeurs ni revendeur nommé, jamais « mesurée » sans négation) ; note globale ★ libellée sur chaque carte qui l’affiche ; description du catalogue sans promesse de note ; ${Object.keys(SURFACES).length} surfaces déclarées portent l’étiquette ` +
       `et aucune surface de ${srcTs.length} fichiers src/ n’est restée hors liste ; ${renders} rendus serveur (fiche + carte pleine + carte compacte) étiquetés selon la nature ; ` +
-      `${pdfCases.length} PDF vérifiés (données et texte imprimé) ; ${planted.length} tests négatifs détectés`);
+      `${pdfCases.length} PDF vérifiés (données et texte imprimé) ; même nature en FR et dans l’export EN (${exportRows.length} cordages) ; ` +
+      `${natureCount.none} sans note : « Non publié » à chaque note, ni barre, ni zéro, ni NaN (fiche, cartes, PDF) ; ${planted.length} tests négatifs détectés`);
   }
 }
 
@@ -2685,7 +3015,7 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     ['« prévention des blessures »', on(softMulti.id, { description: 'Réputé pour la prévention des blessures.' }), 'parle de santé'],
     ['confort promis sur le 2e polyester le plus rigide', on('babolat-rpm-team', { description: 'Polyester avec bon équilibre entre spin, contrôle et confort.' }), 'plus rigide que la médiane'],
     ['« le plus confortable des multifilaments » au-dessus de la médiane', on('tecnifibre-tgv', { description: 'PU400 technology : 400% d\'élasticité. Le plus confortable des multifilaments.' }), 'plus rigide que la médiane'],
-    ['« excellent toucher » au-dessus de la médiane', on('tecnifibre-xr3', { description: 'Multifilament avec âme en polyuréthane pour un excellent toucher.' }), 'plus rigide que la médiane'],
+    ['« excellent toucher » au-dessus de la médiane', on('wilson-nxt', { description: 'Multifilament avec âme en polyuréthane pour un excellent toucher.' }), 'plus rigide que la médiane'], // NXT 173,7 : XR3 (162,9) est devenu la médiane le 23/10/2026
     ['« sensation multifilament » sur un polyester durci', on('luxilon-element', { description: 'Multi-Mono technology : sensation multifilament dans structure monofilament.', stiffness: 232 }), 'plus rigide que la médiane'],
     ['douceur promise quand l\'alerte standard se déclenche (sous la médiane)', on(softMulti.id, alertingSoft), 'alerte bras standard'],
     ['rang de rigidité inexact (3e au lieu de 2e)', on('babolat-rpm-team', { description: 'Troisième polyester le plus rigide du catalogue.' }), 'rang de rigidité inexact'],
@@ -3849,6 +4179,238 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
 }
 
 // ---------------------------------------------------------------------------
+// 21 quinquies. NOTES /10 SANS VALEUR COMBLÉE — configurateur et catalogue EN (23/10/2026)
+// Décision (avis d'Opus 5.5 du 23/10/2026, AH §2 et §3 ; tsa-acquisition, propriétaire de public/en) : une note /10 ou un prix
+// absents ne sont jamais remplacés par un nombre, ni pour choisir, ni pour trier, ni pour filtrer, ni pour afficher (règle 3).
+// (a) Aucun `|| <nombre>` ni `?? <nombre>` sur un champ de note (comfort, spin, control, durability, power) dans public/ (HTML
+//     et JS, blog compris), ni dans pickBestString du configurateur EN, ni dans la barre de note du catalogue EN (ratingBar).
+// (b) pickBestString du configurateur EN, évalué tel quel avec chaque critère de la page, le tirage du top 3 forcé sur ses
+//     trois rangs : un cordage sans note injecté en tête du catalogue n'est jamais choisi ; le cordage choisi a l'une des trois
+//     meilleures notes du critère (recalcul indépendant) ; sur une liste où une note comblée à 5 le placerait en tête, il
+//     n'est pas choisi non plus ; sans aucun candidat noté : aucun cordage et « No rated string matches these criteria. ».
+// (c) La raison d'un cordage choisi par une note nomme la nature de SA note (TSARatingLabels.label du cordage choisi) ; tout appel de
+//     pickBestString passe par ratedStringView, sauf dans la branche de la douleur déclarée (remplacée par la PR #148 :
+//     cordage le moins rigide, contrôle 21 quater).
+// (d) Catalogue EN : tris par prix et par note avec les fiches sans prix ou sans note en fin de liste dans les deux sens ;
+//     prix maximal : un prix absent ne passe pas (comme filterStrings en FR) ; phrase des filtres « … the ratings out of 10
+//     shown on each card (not measured). ».
+{
+  const beforeQ5 = failures.length;
+  const CONFQ5 = 'public/en/configurator.html';
+  const CATQ5 = 'public/en/strings.html';
+  const NUM_FALLBACK = /(?:\|\||\?\?)\s*-?\d/;
+  const FIELD_FALLBACK = /\b(?:comfort|spin|control|durability|power)\b\)?\s*(?:\|\||\?\?)\s*-?\d/;
+  const NO_RATED = 'No rated string matches these criteria.';
+  const CARD_SENTENCE = 'The spin, control, comfort and durability filters and sort options use the ratings out of 10 shown on each card (not measured). ';
+  let confQ5 = '';
+  let catQ5 = '';
+  try {
+    confQ5 = readFileSync(CONFQ5, 'utf8').replace(/\r\n/g, '\n');
+    catQ5 = readFileSync(CATQ5, 'utf8').replace(/\r\n/g, '\n');
+  } catch (e) {
+    fail(`notes sans valeur comblée (EN) : fichier illisible (${(e as Error).message})`);
+  }
+  if (confQ5 && catQ5) {
+    const stringsQ5: any[] = buildCatalog(racquetsDatabase, stringsDatabase).strings;
+    const sliceQ5 = (src: string, start: string, end: string): string | null => {
+      const i = src.indexOf(start);
+      const j = i < 0 ? -1 : src.indexOf(end, i + start.length);
+      return i < 0 || j < 0 ? null : src.slice(i, j + end.length);
+    };
+    // Fonction seule ; stringPickNote est déclarée par l'évaluation : le contrôle tourne aussi sur une page qui ne la
+    // déclare pas (main avant cette PR).
+    const pickerOf = (html: string) => sliceQ5(html, 'function pickBestString(criteria) {', "return picked;\n    }\n");
+    const reasonOf = (html: string) => sliceQ5(html, 'function ratedStringView(s, criterion) {', '\n    }\n');
+    const barOf = (html: string) => sliceQ5(html, 'function ratingBar(label, value) {', '\n    }\n');
+    const filterOf = (html: string) => sliceQ5(html, 'function filterStrings() {', '\n      renderStrings();\n    }\n');
+    const criteriaOf = (html: string): any[] =>
+      [...html.matchAll(/stringCriteria = (\{[^{}]*\});/g)].map((m) => new Function(`return (${m[1]});`)());
+    const KEYS: Array<[string, string]> = [['preferComfort', 'comfort'], ['preferSpin', 'spin'], ['preferControl', 'control']];
+    const unrated = (type: string) => ({ id: 'test-sans-note', brand: 'Test', model: 'Unrated', type, stiffness: 200, spin: null, control: null, comfort: null, power: null, durability: null, price_eur: null });
+    const rated = (id: string, type: string, v: number) => ({ id, brand: 'Test', model: id, type, stiffness: 150, spin: v, control: v, comfort: v, power: v, durability: v, price_eur: 10 });
+
+    // (a) Repli numérique sur un champ de note, partout dans public/, et dans les deux fonctions qui manipulent une note anonyme.
+    const scanFallbacks = (file: string, src: string): string[] =>
+      src
+        .split('\n')
+        .map((l, i) => [l, i + 1] as [string, number])
+        .filter(([l]) => FIELD_FALLBACK.test(l))
+        .map(([l, n]) => `${file}:${n} : note /10 remplacée par un nombre (« ${l.trim().slice(0, 100)} »)`);
+    const walkQ5 = (d: string): string[] =>
+      readdirSync(d).flatMap((n) => (statSync(`${d}/${n}`).isDirectory() ? walkQ5(`${d}/${n}`) : [`${d}/${n}`]));
+    const publicFiles = walkQ5('public').filter((f) => /\.(?:html|js|mjs)$/.test(f));
+    for (const f of publicFiles) scanFallbacks(f, readFileSync(f, 'utf8')).forEach((m) => fail(m));
+    const bodyIssues = (html: string, catHtml: string): string[] => {
+      const out: string[] = [];
+      const picker = pickerOf(html);
+      const bar = barOf(catHtml);
+      if (picker === null) out.push(`${CONFQ5} : pickBestString introuvable, relire le contrôle 21 quinquies`);
+      else if (NUM_FALLBACK.test(picker)) out.push(`${CONFQ5} : pickBestString remplace une valeur absente par un nombre`);
+      if (bar === null) out.push(`${CATQ5} : ratingBar introuvable, relire le contrôle 21 quinquies`);
+      else if (NUM_FALLBACK.test(bar)) out.push(`${CATQ5} : ratingBar remplace une note absente par un nombre`);
+      return out;
+    };
+
+    // (b) pickBestString évalué tel quel ; (c) raison et appels.
+    let picksQ5 = 0;
+    const pickerIssues = (html: string): string[] => {
+      const out: string[] = [];
+      const add = (m: string) => { if (out.length < 10) out.push(`${CONFQ5} : ${m}`); };
+      const picker = pickerOf(html);
+      if (picker === null) return [`${CONFQ5} : pickBestString introuvable, relire le contrôle 21 quinquies`];
+      const criteria = criteriaOf(html);
+      if (criteria.length < 5) add(`${criteria.length} critères de cordage seulement, relire le contrôle 21 quinquies`);
+      const run = (db: any[], crit: any, k: number) => {
+        const M = Object.create(Math);
+        M.random = () => k;
+        const api = new Function('stringsDB', 'console', 'Math', `let stringPickNote = null;\n${picker}\nreturn { picked: pickBestString(${JSON.stringify(crit)}), note: stringPickNote };`)(
+          db, { log() {} }, M);
+        return api as { picked: any; note: string | null };
+      };
+      for (const crit of criteria) {
+        const keys = KEYS.filter(([flag]) => crit[flag]).map(([, key]) => key);
+        if (keys.length === 0) continue;
+        const key = keys[keys.length - 1];
+        const type = crit.types?.[0] ?? 'Polyester';
+        const typed = stringsQ5.filter((s) => !crit.types || crit.types.some((t: string) => String(s.type ?? '').toLowerCase().includes(t.toLowerCase())));
+        const ratedVals = typed.filter((s) => keys.every((x) => typeof s[x] === 'number')).map((s) => s[key]).sort((a, b) => b - a);
+        const third = ratedVals[Math.min(2, ratedVals.length - 1)];
+        for (const k of [0, 0.34, 0.67, 0.99]) {
+          const real = run([unrated(type), ...stringsQ5], crit, k);
+          picksQ5++;
+          if (!real.picked) add(`critère ${JSON.stringify(crit)} : aucun cordage choisi sur le catalogue`);
+          else if (real.picked.id === 'test-sans-note') add(`critère ${JSON.stringify(crit)} : le cordage sans note injecté en tête est choisi`);
+          else if (!keys.every((x) => typeof real.picked[x] === 'number') || real.picked[key] < third) {
+            add(`critère ${JSON.stringify(crit)} : ${real.picked.id} (${key} ${real.picked[key]}) n'est pas parmi les trois meilleures notes (${ratedVals.slice(0, 3).join(', ')})`);
+          }
+          const low = run([unrated(type), rated('test-note-4', type, 4), rated('test-note-3', type, 3)], crit, k);
+          if (!low.picked || low.picked.id === 'test-sans-note') add(`critère ${JSON.stringify(crit)} : liste où une note comblée à 5 passerait en tête, choisi ${low.picked?.id ?? 'aucun'}`);
+        }
+        const none = run([unrated(type)], crit, 0);
+        if (none.picked || none.note !== NO_RATED) add(`critère ${JSON.stringify(crit)} : sans candidat noté, choisi ${none.picked?.id ?? 'aucun'}, note « ${none.note} »`);
+      }
+      const reason = reasonOf(html);
+      if (reason === null) add('ratedStringView introuvable, relire le contrôle 21 quinquies');
+      else {
+        // Libellé témoin propre à chaque cordage : la raison doit porter celui du cordage choisi, tel que label(s) le rend.
+        const labels = { label: (s: any) => `nature de ${s.id}` };
+        const view = new Function('stringView', 'TSARatingLabels', `${reason}\nreturn ratedStringView;`)((s: any, r: string) => (s ? { reason: r } : null), labels);
+        for (const s of stringsQ5.filter((x) => typeof x.comfort === 'number').slice(0, 20)) {
+          const want = `Criterion (nature de ${s.id}).`;
+          if (view(s, 'Criterion')?.reason !== want) { add(`raison : « ${view(s, 'Criterion')?.reason} » au lieu de « ${want} »`); break; }
+        }
+        if (view(null, 'Criterion') !== null) add('raison : un cordage absent produit une fiche');
+      }
+      const painStart = html.indexOf('// PRIORITY 2');
+      const painEnd = html.indexOf('// PRIORITY 3', painStart);
+      const outsidePain = painStart < 0 || painEnd < 0 ? html : html.slice(0, painStart) + html.slice(painEnd);
+      const calls = [...outsidePain.matchAll(/(\w+)\(pickBestString\(/g)].map((m) => m[1]);
+      if (calls.length === 0) add('aucun appel de pickBestString trouvé, relire le contrôle 21 quinquies');
+      const bad = calls.filter((c) => c !== 'ratedStringView');
+      if (bad.length > 0) add(`${bad.length} cordage(s) choisi(s) par une note sans nature dans la raison (${bad.join(', ')}(pickBestString(…)))`);
+      if (!/showGenerateError\(!string && stringPickNote\b/.test(html)) add('la note « No rated string… » n\'est plus affichée quand aucun cordage noté ne reste');
+      return out;
+    };
+
+    // (d) Catalogue EN : filterStrings évalué tel quel sur le catalogue, chaque tri et le prix maximal.
+    let sortsQ5 = 0;
+    const catalogIssues = (html: string): string[] => {
+      const out: string[] = [];
+      const add = (m: string) => { if (out.length < 10) out.push(`${CATQ5} : ${m}`); };
+      if (!html.includes(`ratingNote.textContent = '${CARD_SENTENCE}' + TSARatingLabels.NOTE;`)) add('phrase des filtres et des tris absente ou modifiée');
+      if (/TSA editorial ratings out of 10/.test(html)) add('phrase « TSA editorial ratings out of 10 » encore présente');
+      const src = filterOf(html);
+      if (src === null) return [...out, `${CATQ5} : filterStrings introuvable, relire le contrôle 21 quinquies`];
+      const run = (values: Record<string, string>) => {
+        const doc = { getElementById: (id: string) => ({ value: values[id] ?? '' }) };
+        return new Function('document', 'allStrings', 'updateActiveFilters', 'renderStrings', `let filteredStrings = [];\n${src}\nfilterStrings();\nreturn filteredStrings;`)(
+          doc, stringsQ5, () => {}, () => {}) as any[];
+      };
+      const SORTS: Array<[string, string, number]> = [
+        ['price-asc', 'price_eur', 1], ['price-desc', 'price_eur', -1], ['spin-desc', 'spin', -1],
+        ['control-desc', 'control', -1], ['comfort-desc', 'comfort', -1], ['durability-desc', 'durability', -1],
+      ];
+      for (const [sort, field, dir] of SORTS) {
+        sortsQ5++;
+        const list = run({ sortFilter: sort });
+        const firstAbsent = list.findIndex((s) => typeof s[field] !== 'number');
+        const present = firstAbsent < 0 ? list : list.slice(0, firstAbsent);
+        if (list.slice(present.length).some((s) => typeof s[field] === 'number')) add(`tri ${sort} : une fiche sans ${field} n'est pas en fin de liste`);
+        if (present.some((s, i) => i > 0 && dir * (s[field] - present[i - 1][field]) < 0)) add(`tri ${sort} : ordre faux sur les fiches renseignées`);
+        if (list.length !== stringsQ5.length) add(`tri ${sort} : ${list.length} fiches au lieu de ${stringsQ5.length}`);
+      }
+      const capped = run({ sortFilter: 'brand', priceFilter: '20' });
+      if (capped.some((s) => typeof s.price_eur !== 'number' || s.price_eur > 20)) add('prix maximal 20 € : une fiche sans prix ou plus chère passe le filtre');
+      return out;
+    };
+
+    bodyIssues(confQ5, catQ5).forEach((m) => fail(m));
+    pickerIssues(confQ5).forEach((m) => fail(m));
+    catalogIssues(catQ5).forEach((m) => fail(m));
+    const realPicks = picksQ5;
+    const realSorts = sortsQ5;
+    const ratedCriteria = criteriaOf(confQ5).filter((c) => KEYS.some(([flag]) => c[flag])).length;
+    const absentPrices = stringsQ5.filter((s) => typeof s.price_eur !== 'number').length;
+    const absentRatings = stringsQ5.filter((s) => typeof s.comfort !== 'number').length;
+
+    // Tests négatifs : chaque altération doit être détectée ; témoins positifs : chaque variante neutre doit être acceptée.
+    let detectedQ5 = 0;
+    let acceptedQ5 = 0;
+    const once = (s: string, find: string, rep: string): string | null => (s.includes(find) ? s.replace(find, () => rep) : null);
+    const NEG: Array<[string, 'conf' | 'cat', Array<[string, string]>]> = [
+      ['note comblée à 5 rétablie dans pickBestString', 'conf', [
+        ["const rated = candidates.filter(s => typeof s[key] === 'number');", 'const rated = candidates;'],
+        ['candidates = rated.sort((a, b) => b[key] - a[key]);', 'candidates = rated.sort((a, b) => (b[key] || 5) - (a[key] || 5));'],
+      ]],
+      ['cordages sans note gardés (lus comme 0)', 'conf', [["const rated = candidates.filter(s => typeof s[key] === 'number');", 'const rated = candidates;']]],
+      ['note « aucun cordage noté » jamais posée', 'conf', [["if (candidates.length > 0 && rated.length === 0) stringPickNote = 'No rated string matches these criteria.';", '']]],
+      ['raison sans la nature de la note', 'conf', [["return stringView(s, s ? criterion + ' (' + TSARatingLabels.label(s) + ').' : '');", "return stringView(s, s ? criterion + '.' : '');"]]],
+      ['cordage choisi par une note sans ratedStringView', 'conf', [["string = ratedStringView(pickBestString(stringCriteria), 'One of the polyester strings with the highest control rating in the catalog');", "string = stringView(pickBestString(stringCriteria), 'One of the polyester strings with the highest control rating in the catalog.');"]]],
+      ['tri prix croissant : prix absent lu comme 0', 'cat', [["case 'price-asc': return absentLast(a.price_eur, b.price_eur, 1);", "case 'price-asc': return a.price_eur - b.price_eur;"]]],
+      ['tri confort : note absente lue comme 0 (en tête si croissant)', 'cat', [["case 'comfort-desc': return absentLast(a.comfort, b.comfort, -1);", "case 'comfort-desc': return (a.comfort ?? 0) - (b.comfort ?? 0);"]]],
+      ['prix maximal : prix absent accepté', 'cat', [["if (maxPrice && !(typeof string.price_eur === 'number' && string.price_eur <= parseInt(maxPrice))) return false;", 'if (maxPrice && string.price_eur > parseInt(maxPrice)) return false;']]],
+      ['barre de note : note absente comblée à 0', 'cat', [["${typeof value === 'number' ? `<div class=\"rating-fill ${getRatingColor(value)}\" style=\"width: ${value * 10}%\"></div>` : ''}", '<div class="rating-fill ${getRatingColor(value)}" style="width: ${(value ?? 0) * 10}%"></div>']]],
+      ['phrase « TSA editorial ratings » rétablie', 'cat', [[CARD_SENTENCE, 'The spin, control, comfort and durability filters and sort options use TSA editorial ratings out of 10. ']]],
+    ];
+    for (const [name, target, edits] of NEG) {
+      let m: string | null = target === 'conf' ? confQ5 : catQ5;
+      for (const [find, rep] of edits) m = m === null ? null : once(m, find, rep);
+      if (m === null) { fail(`notes sans valeur comblée : prémisse du test négatif « ${name} » fausse (motif absent)`); continue; }
+      const found = target === 'conf' ? [...bodyIssues(m, catQ5), ...pickerIssues(m)] : [...bodyIssues(confQ5, m), ...catalogIssues(m)];
+      if (found.length > 0) detectedQ5++;
+      else fail(`notes sans valeur comblée : garde-fou muet sur « ${name} »`);
+    }
+    // Balayage : un repli sur un champ de note ajouté à un fichier de public/js doit être vu ; une note lue sans repli ou un
+    // repli sur un compteur ne le sont pas.
+    if (scanFallbacks('public/js/x.js', 'const c = (s.comfort ?? 0) * 10;').length > 0) detectedQ5++;
+    else fail('notes sans valeur comblée : garde-fou muet sur « repli ?? 0 sur comfort dans public/js »');
+    if (scanFallbacks('public/js/x.js', "const c = typeof s.comfort === 'number' ? s.comfort : null;\nconst n = profile.count || 0;").length === 0) acceptedQ5++;
+    else fail('notes sans valeur comblée : témoin positif « note lue sans repli, compteur à 0 » rejeté à tort');
+    const POS: Array<[string, 'conf' | 'cat', string, string]> = [
+      ['raison reformulée', 'conf', "'One of the polyester strings with the highest control rating in the catalog'", "'A polyester string among the three best control ratings in the catalog'"],
+      ['comparateur « absent en fin » écrit autrement', 'cat', 'if (!hasX || !hasY) return hasX === hasY ? 0 : (hasX ? -1 : 1);', 'if (!hasX || !hasY) return Number(hasY) - Number(hasX);'],
+    ];
+    for (const [name, target, find, rep] of POS) {
+      const m = once(target === 'conf' ? confQ5 : catQ5, find, rep);
+      if (m === null) { fail(`notes sans valeur comblée : prémisse du témoin positif « ${name} » fausse (motif absent)`); continue; }
+      const found = target === 'conf' ? [...bodyIssues(m, catQ5), ...pickerIssues(m)] : [...bodyIssues(confQ5, m), ...catalogIssues(m)];
+      if (found.length === 0) acceptedQ5++;
+      else fail(`notes sans valeur comblée : témoin positif « ${name} » rejeté à tort : ${found[0]}`);
+    }
+
+    if (failures.length === beforeQ5) {
+      ok(
+        `notes sans valeur comblée (EN) : aucun repli numérique sur une note dans ${publicFiles.length} fichiers de public/, ni dans pickBestString ni ratingBar ; ` +
+          `configurateur : pickBestString évalué tel quel (${ratedCriteria} critères de la page triés par une note, ${realPicks} tirages forcés sur le catalogue), cordage sans note injecté en tête jamais choisi, ` +
+          `choix parmi les trois meilleures notes, « ${NO_RATED} » sans candidat noté, raison avec la nature de la note ; ` +
+          `catalogue : ${realSorts} tris évalués tels quels sur ${stringsQ5.length} fiches, ${absentPrices} fiches sans prix et ${absentRatings} sans note en fin de liste, prix maximal sans fiche non chiffrée, phrase des filtres à jour ; ` +
+          `${detectedQ5} tests négatifs détectés, ${acceptedQ5} témoins positifs acceptés`
+      );
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
 // 21 bis. PDF : la méthodologie imprimée cite les deux seuils d'alerte bras, lus dans le moteur
 //         (option C de l'arbitrage de la PR #124, décision de l'orchestrateur du 11/10/2026)
 // ---------------------------------------------------------------------------
@@ -4239,6 +4801,287 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
 }
 
 // ---------------------------------------------------------------------------
+// 21 quater. CONFIGURATEUR EN — douleur déclarée : la tension affichée est CALCULÉE, sous le seuil d'alerte bras sensible (23/10/2026)
+// Décision (avis d'Opus 5.5 du 23/10/2026, point 5 ; tsa-acquisition, propriétaire de public/en) : le conseil « 21-23 kg »
+// pour un bras sensible, sans aucune source, est retiré. La page dit à la place jusqu'à quelle tension N l'indice du montage
+// qu'elle propose reste sous le seuil d'alerte bras sensible, et montre l'indice à cette tension.
+// (a) Le bloc <seuil-bras-sensible> de public/en/configurator.html, évalué TEL QUEL avec le moteur statique EN, donne sur
+//     toutes les raquettes à RA connu × tous les cordages du catalogue (catalog.json, buildCatalog) la même N qu'un recalcul
+//     indépendant par calculateRCS (src/data), sur la plage du curseur de tension de rcs-calculator.html : indice à N sous le
+//     seuil, à N + un pas au seuil ou au-dessus ; « toute la plage » et « aucune tension » exacts ; la valeur et la phrase
+//     affichées portent les indices du recalcul ; seuil = ARM_ALERT_SENSITIVE (sondé dans calculateAdvancedRcs) = HEALTH_ALERT_SENSITIVE_RCS du moteur EN ;
+//     cordage proposé = le moins rigide du catalogue, sa rigidité de fiche citée (le statut « mesure TWU » n'est pas lisible
+//     par une surface : provenance et table par jauge leur sont fermées par les garde-fous de tsa-core).
+// (b) Les montages que la branche peut proposer (raquettes de RA ≤ son plafond × cordage le moins rigide) passent sous le seuil.
+// (c) Plus aucune tension fixe pour une douleur déclarée : la branche n'écrit aucune tension en dur et ne trie plus par note
+//     de confort ; aucune chaîne des pages EN hors blog ni de public/js ne met une tension fixe à côté d'un bras sensible ou
+//     d'une douleur.
+{
+  const beforeQ21 = failures.length;
+  const PAGEQ21 = 'public/en/configurator.html';
+  const ENGINEQ21 = 'public/js/rcs-calculator-en.js';
+  const CALCQ21 = 'public/en/rcs-calculator.html';
+  let pageQ21 = '';
+  let engineSrcQ21 = '';
+  let calcHtmlQ21 = '';
+  try {
+    pageQ21 = readFileSync(PAGEQ21, 'utf8').replace(/\r\n/g, '\n');
+    engineSrcQ21 = readFileSync(ENGINEQ21, 'utf8').replace(/\r\n/g, '\n');
+    calcHtmlQ21 = readFileSync(CALCQ21, 'utf8');
+  } catch (e) {
+    fail(`seuil bras sensible (configurateur EN) : fichier illisible (${(e as Error).message})`);
+  }
+  if (pageQ21 && engineSrcQ21 && calcHtmlQ21) {
+    const loadEngineQ21 = (src: string): any =>
+      new Function('window', 'document', `${src}; return typeof RCS !== 'undefined' ? RCS : window.RCS;`)({}, { addEventListener() {} });
+    const OPENQ21 = '// <seuil-bras-sensible>';
+    const CLOSEQ21 = '// </seuil-bras-sensible>';
+    const blockOfQ21 = (html: string): string | null => {
+      const i = html.indexOf(OPENQ21);
+      const j = html.indexOf(CLOSEQ21);
+      if (i < 0 || j < i || html.indexOf(OPENQ21, i + 1) >= 0) return null;
+      return html.slice(i, j);
+    };
+    const BRANCH_OPEN = "if (currentSelections.physical === 'bras' || currentSelections.physical === 'epaule') {";
+    const branchOfQ21 = (html: string): string | null => {
+      const i = html.indexOf(BRANCH_OPEN);
+      const j = html.indexOf('// PRIORITY 3', i);
+      return i < 0 || j < 0 ? null : html.slice(i, j);
+    };
+    const catalogQ21: any = buildCatalog(racquetsDatabase, stringsDatabase);
+    const racqQ21: any[] = catalogQ21.racquets.filter((r: any) => typeof r.stiffness === 'number');
+    const strQ21: any[] = catalogQ21.strings.filter((s: any) => typeof s.stiffness === 'number');
+    const SQ21 = ARM_ALERT_SENSITIVE;
+    const sliderQ21 = /id="tensionSlider"[^>]*min="([\d.]+)"[^>]*max="([\d.]+)"[^>]*step="([\d.]+)"/.exec(calcHtmlQ21);
+    const RANGEQ21 = sliderQ21 ? { min: Number(sliderQ21[1]), max: Number(sliderQ21[2]), step: Number(sliderQ21[3]) } : null;
+    if (!RANGEQ21) fail(`${CALCQ21} : curseur de tension introuvable, relire le contrôle 21 quater`);
+    const tallyQ21 = { combos: 0, mid: 0, whole: 0, none: 0, proposals: 0 };
+
+    // (a) et (b) : le bloc de la page contre le recalcul indépendant ; renvoie les écarts (vide = conforme).
+    const checkPageQ21 = (html: string, engine: any, count = false): string[] => {
+      const issues: string[] = [];
+      const add = (m: string) => { if (issues.length < 12) issues.push(m); };
+      const block = blockOfQ21(html);
+      if (block === null) return ['bloc <seuil-bras-sensible> absent ou en double dans la page'];
+      let api: any;
+      try {
+        api = new Function(`${block}\nreturn { SENSITIVE_TENSION_RANGE, pickLowestStiffnessString, sensitiveTensionLimit, sensitiveTension };`)();
+      } catch (e) {
+        return [`bloc illisible (${(e as Error).message})`];
+      }
+      if (engine.HEALTH_ALERT_SENSITIVE_RCS !== SQ21) add(`seuil : HEALTH_ALERT_SENSITIVE_RCS du moteur EN (${engine.HEALTH_ALERT_SENSITIVE_RCS}) ≠ seuil bras sensible sondé dans calculateAdvancedRcs (${SQ21})`);
+      const R = api.SENSITIVE_TENSION_RANGE;
+      if (!RANGEQ21 || R.min !== RANGEQ21.min || R.max !== RANGEQ21.max || R.step !== RANGEQ21.step) {
+        add(`plage : la page raisonne sur ${JSON.stringify(R)}, le curseur du calculateur RCS sur ${JSON.stringify(RANGEQ21)}`);
+      }
+      const ref = RANGEQ21 ?? R;
+      const steps = Math.round((ref.max - ref.min) / ref.step);
+      for (const r of racqQ21) {
+        for (const s of strQ21) {
+          const idx = (t: number) => calculateRCS(r.stiffness, s.stiffness, t);
+          let refN: number | null = null;
+          let blocked = false;
+          let prev = -Infinity;
+          for (let i = 0; i <= steps; i++) {
+            const t = ref.min + i * ref.step;
+            const x = idx(t);
+            if (x < prev) add(`recalcul : indice non monotone en tension (${r.id} × ${s.id} à ${t} kg)`);
+            prev = x;
+            if (!blocked && x < SQ21) refN = t;
+            else blocked = true;
+          }
+          const L = api.sensitiveTensionLimit(engine, r.stiffness, s.stiffness);
+          if (count) tallyQ21.combos++;
+          if (L.n !== refN) { add(`tension : ${r.id} × ${s.id}, la page dit N = ${L.n}, le recalcul N = ${refN}`); continue; }
+          if (L.threshold !== SQ21) add(`seuil : la page compare à ${L.threshold} au lieu de ${SQ21}`);
+          const out = api.sensitiveTension(engine, r.stiffness, s.stiffness);
+          const shown = engine.calculate(r.stiffness, s.stiffness, out.numValue).rcs;
+          if (shown !== idx(out.numValue)) add(`indice montré : ${shown} au lieu de ${idx(out.numValue)} (${r.id} × ${s.id} à ${out.numValue} kg)`);
+          if (!String(out.title).includes(`(${SQ21})`) || !String(out.reason).includes(`(index ${SQ21})`)) add(`texte : le seuil ${SQ21} n'est pas cité (${r.id} × ${s.id})`);
+          if (refN === null) {
+            if (count) tallyQ21.none++;
+            if (!L.none || idx(ref.min) < SQ21) add(`aucune tension : cas mal établi (${r.id} × ${s.id})`);
+            if (out.value !== `None from ${ref.min} to ${ref.max} kg` || out.numValue !== ref.min || !out.reason.includes(`it is ${idx(ref.min)} at ${ref.min} kg`)) {
+              add(`texte « aucune tension » faux : ${r.id} × ${s.id} → « ${out.value} »`);
+            }
+          } else if (refN === ref.max) {
+            if (count) tallyQ21.whole++;
+            if (!L.whole || idx(ref.max) >= SQ21) add(`toute la plage : cas mal établi (${r.id} × ${s.id})`);
+            if (out.value !== `Whole range (${ref.min}-${ref.max} kg)` || out.numValue !== ref.max || !out.reason.includes(`${idx(ref.max)} at ${ref.max} kg`)) {
+              add(`texte « toute la plage » faux : ${r.id} × ${s.id} → « ${out.value} »`);
+            }
+          } else {
+            if (count) tallyQ21.mid++;
+            if (idx(refN) >= SQ21) add(`à N = ${refN} kg l'indice ${idx(refN)} n'est pas sous ${SQ21} (${r.id} × ${s.id})`);
+            if (idx(refN + ref.step) < SQ21) add(`à N + ${ref.step} kg l'indice reste sous ${SQ21} (${r.id} × ${s.id})`);
+            const want = `${idx(refN)} at ${refN} kg, ${idx(refN + ref.step)} at ${refN + ref.step} kg`;
+            if (out.value !== `Up to ${refN} kg` || out.numValue !== refN || !out.reason.includes(want)) {
+              add(`texte « jusqu'à N kg » faux : ${r.id} × ${s.id} → « ${out.value} » (attendu « Up to ${refN} kg » et « ${want} »)`);
+            }
+          }
+        }
+      }
+      // Cordage proposé : le moins rigide du catalogue.
+      const lowest = api.pickLowestStiffnessString(catalogQ21.strings);
+      const minStiff = Math.min(...strQ21.map((s) => s.stiffness));
+      if (!lowest || lowest.stiffness !== minStiff) add(`cordage proposé : ${lowest ? `${lowest.id} (${lowest.stiffness} lb/in)` : 'aucun'} au lieu du moins rigide (${minStiff} lb/in)`);
+      // (b) Ce que la branche peut proposer : raquettes de RA ≤ son plafond × cordage le moins rigide, sous le seuil.
+      const branch = branchOfQ21(html);
+      const cap = branch ? /maxStiffness:\s*(\d+)/.exec(branch) : null;
+      if (!cap) add('branche de la douleur déclarée : plafond de RA introuvable, relire le contrôle 21 quater');
+      else if (lowest) {
+        for (const r of racqQ21.filter((x) => x.stiffness <= Number(cap[1]))) {
+          if (count) tallyQ21.proposals++;
+          if (api.sensitiveTensionLimit(engine, r.stiffness, lowest.stiffness).none) add(`proposition : ${r.id} × ${lowest.id} ne passe sous ${SQ21} à aucune tension`);
+        }
+      }
+      return issues;
+    };
+
+    // (c1) La branche de la douleur déclarée : contrainte de seuil, aucune tension en dur, plus de tri par note de confort.
+    const branchIssuesQ21 = (html: string): string[] => {
+      const b = branchOfQ21(html);
+      if (b === null) return ['branche : la branche de la douleur déclarée est introuvable, relire le contrôle 21 quater'];
+      const issues: string[] = [];
+      if (!b.includes("rcsProfile = 'tennis_elbow'")) issues.push("branche : le profil tennis_elbow (seuil 32) n'est plus posé");
+      if (!/tension = sensitiveTension\(RCS, racquet\.stiffness, string\.stiffness\)/.test(b)) issues.push('branche : la tension ne vient plus du calcul sensitiveTension');
+      if (/if \([^\n]*\)\s*\{\s*tension = sensitiveTension\(/.test(b)) issues.push('branche : tension calculée sous condition, la tension héritée du niveau peut rester affichée');
+      if (!/pickLowestStiffnessString\(stringsDB\)/.test(b)) issues.push("branche : le cordage n'est plus le moins rigide du catalogue");
+      if (/tension\s*=\s*\{/.test(b) || /numValue:\s*\d/.test(b) || /\d{2}(?:\.\d)?\s*(?:-|–|to)\s*\d{2}(?:\.\d)?\s*kg/.test(b)) issues.push('branche : tension fixe écrite en dur');
+      if (/pickBestString\(/.test(b)) issues.push('branche : cordage choisi par pickBestString (tri par note, non mesurée)');
+      if (!b.includes("'Lowest stiffness in our catalogue: ' + lowest.stiffness + ' lb/in, the value of its string page")) {
+        issues.push('branche : la raison du cordage ne cite plus sa rigidité de fiche');
+      }
+      if (/TWU measurement/.test(b)) issues.push('branche : « mesure TWU » affirmé sans source lisible par la page');
+      return issues;
+    };
+
+    // (c2) Aucune chaîne des pages EN hors blog ni de public/js ne met une tension fixe (deux chiffres, kg ou lb) à côté d'un bras
+    //      sensible ou d'une douleur. Une tension calculée (${…} kg) ou un levier (« 1 kg ») ne sont pas des tensions fixes.
+    const FIXED_KG = /(?<![\w${}.])\d{2}(?:[.,]\d)?(?:\s*(?:-|–|to|à)\s*\d{2}(?:[.,]\d)?)?\s*(?:kg|lbs?)\b/;
+    const ARMQ21 = /sensitive[- ](?:arm|shoulder)|tennis[ _]elbow|elbow pain|painful arm|arm pain|shoulder pain|bras sensible|douleur|coude/i;
+    const JS_STRINGS = /'(?:[^'\\\n]|\\.)*'|"(?:[^"\\\n]|\\.)*"|`(?:[^`\\]|\\.)*`/g;
+    const noCommentsQ21 = (js: string) => js.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|[^:'"\\\w])\/\/[^\n]*/g, '$1');
+    const jsStringsQ21 = (js: string): string[] => [...noCommentsQ21(js).matchAll(JS_STRINGS)].map((m) => m[0]);
+    const chunksOfQ21 = (file: string, src: string): string[] => {
+      if (file.endsWith('.js')) return jsStringsQ21(src);
+      const scripts = [...src.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[1]);
+      const rest = src
+        .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, ' ')
+        .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, ' ')
+        .replace(/<!--[\s\S]*?-->/g, ' ');
+      return [
+        ...scripts.flatMap(jsStringsQ21),
+        ...[...rest.matchAll(/>([^<>]+)</g)].map((m) => m[1]),
+        ...[...rest.matchAll(/"[^"\n]*"/g)].map((m) => m[0]),
+      ];
+    };
+    const scanFixedQ21 = (file: string, src: string): string[] =>
+      chunksOfQ21(file, src)
+        .filter((c) => FIXED_KG.test(c) && ARMQ21.test(c))
+        .map((c) => `${file} : tension fixe à côté d'un bras sensible ou d'une douleur (« ${c.replace(/\s+/g, ' ').slice(0, 90)} »)`);
+    const SCANQ21 = [
+      ...readdirSync('public/en').filter((f) => f.endsWith('.html')).map((f) => `public/en/${f}`),
+      ...readdirSync('public/js').filter((f) => f.endsWith('.js')).map((f) => `public/js/${f}`),
+    ];
+
+    const engineQ21 = loadEngineQ21(engineSrcQ21);
+    const realIssues = checkPageQ21(pageQ21, engineQ21, true);
+    realIssues.forEach((i) => fail(`${PAGEQ21} : ${i}`));
+    branchIssuesQ21(pageQ21).forEach((i) => fail(`${PAGEQ21} : ${i}`));
+    let scanned = 0;
+    for (const f of SCANQ21) {
+      scanned++;
+      scanFixedQ21(f, readFileSync(f, 'utf8')).forEach((i) => fail(i));
+    }
+
+    // Tests négatifs : chaque altération doit être détectée ; témoins positifs : chaque variante neutre doit être acceptée.
+    const replaceOnceQ21 = (s: string, find: string, rep: string): string | null => (s.includes(find) ? s.replace(find, () => rep) : null);
+    let detectedQ21 = 0;
+    let acceptedQ21 = 0;
+    const PAGE_NEG: Array<[string, string, string]> = [
+      ['N d\'un pas trop haut (≤ au lieu de <)', 'if (engine.calculate(ra, stiffness, t).rcs < threshold) n = t;', 'if (engine.calculate(ra, stiffness, t).rcs <= threshold) n = t;'],
+      ['seuil standard (35) au lieu du seuil bras sensible', 'const threshold = engine.HEALTH_ALERT_SENSITIVE_RCS;', 'const threshold = engine.HEALTH_ALERT_RCS;'],
+      ['plage tronquée à 28 kg', 'const SENSITIVE_TENSION_RANGE = { min: 18, max: 30, step: 0.5 };', 'const SENSITIVE_TENSION_RANGE = { min: 18, max: 28, step: 0.5 };'],
+      ['phrase : indice cité à N + 1 kg', "L.indexNext + ' at ' + (L.n + r.step) + ' kg.'", "L.indexNext + ' at ' + (L.n + 1) + ' kg.'"],
+      ['cordage le plus RIGIDE au lieu du moins rigide', 'if (!best || s.stiffness < best.stiffness) best = s;', 'if (!best || s.stiffness > best.stiffness) best = s;'],
+      ['indice montré à la tension minimale dans le cas « jusqu\'à N »', "return { title: title, value: 'Up to ' + L.n + ' kg', numValue: L.n,", "return { title: title, value: 'Up to ' + L.n + ' kg', numValue: r.min,"],
+      ['marqueur du bloc retiré', OPENQ21, '// seuil'],
+    ];
+    const BRANCH_NEG: Array<[string, string, string]> = [
+      ['tension fixe « 21-23 kg » rétablie', 'tension = sensitiveTension(RCS, racquet.stiffness, string.stiffness);', "tension = { value: '21-23 kg', numValue: 22, reason: 'Lower tension.' };"],
+      ['cordage rechoisi par note de confort', 'const lowest = pickLowestStiffnessString(stringsDB);', "const lowest = pickBestString({ types: ['Multifilament'], preferComfort: true });"],
+      ['profil tennis_elbow retiré', "rcsProfile = 'tennis_elbow';", "rcsProfile = 'club';"],
+      ['tension calculée sous condition (repli sur la tension du niveau)', 'tension = sensitiveTension(RCS, racquet.stiffness, string.stiffness);', 'if (racquet && string && racquet.stiffness !== null && string.stiffness !== null) {\n          tension = sensitiveTension(RCS, racquet.stiffness, string.stiffness);\n        }'],
+      ['raison du cordage sans sa rigidité', "'Lowest stiffness in our catalogue: ' + lowest.stiffness + ' lb/in, the value of its string page", "'Lowest-stiffness string, the value of its string page"],
+      ['« mesure TWU » affirmé', "the value of its string page (the stiffness the RCS index uses).", "a TWU measurement."],
+    ];
+    const ENGINE_NEG_SRC = "'For a sensitive arm, string at 21-23 kg.'";
+    const POSITIVES: Array<[string, string, string]> = [
+      ['phrase de fin reformulée', "' Each kg changes the index by 0.5 point.", "' One kg of tension moves the index by half a point."],
+      ['titre reformulé, seuil cité', "const title = 'Tension and the alert threshold (' + L.threshold + ')';", "const title = 'Tension below the alert threshold (' + L.threshold + ')';"],
+    ];
+    for (const [name, find, rep] of PAGE_NEG) {
+      const m = replaceOnceQ21(pageQ21, find, rep);
+      if (m === null) { fail(`${PAGEQ21} : prémisse du test négatif « ${name} » fausse (motif absent)`); continue; }
+      if (checkPageQ21(m, engineQ21).length > 0) detectedQ21++;
+      else fail(`${PAGEQ21} : garde-fou muet sur « ${name} »`);
+    }
+    for (const [name, find, rep] of BRANCH_NEG) {
+      const m = replaceOnceQ21(pageQ21, find, rep);
+      if (m === null) { fail(`${PAGEQ21} : prémisse du test négatif « ${name} » fausse (motif absent)`); continue; }
+      if (branchIssuesQ21(m).length > 0) detectedQ21++;
+      else fail(`${PAGEQ21} : garde-fou muet sur « ${name} »`);
+    }
+    // Moteur : seuil bras sensible changé (31) sans toucher à la page : la page doit diverger du recalcul.
+    const engMut = replaceOnceQ21(engineSrcQ21, 'HEALTH_ALERT_SENSITIVE_RCS: 32,', 'HEALTH_ALERT_SENSITIVE_RCS: 31,');
+    if (engMut === null) fail(`${ENGINEQ21} : prémisse du test négatif « seuil du moteur à 31 » fausse (motif absent)`);
+    else if (checkPageQ21(pageQ21, loadEngineQ21(engMut)).length > 0) detectedQ21++;
+    else fail(`${ENGINEQ21} : garde-fou muet sur « seuil du moteur à 31 »`);
+    // Balayage : une tension fixe pour un bras sensible ajoutée au moteur EN doit être vue ; un levier « 1 kg » ne l'est pas.
+    if (scanFixedQ21(ENGINEQ21, `${engineSrcQ21}\nconst x = ${ENGINE_NEG_SRC};`).length > 0) detectedQ21++;
+    else fail(`${ENGINEQ21} : garde-fou muet sur « tension fixe pour un bras sensible ajoutée au moteur »`);
+    if (scanFixedQ21(ENGINEQ21, `${engineSrcQ21}\nconst y = 'For a sensitive arm, 1 kg less lowers the index by 0.5 point.';\nconst z = \`For a sensitive arm: \${n} kg\`;`).length === 0) acceptedQ21++;
+    else fail(`${ENGINEQ21} : témoin positif « levier de 1 kg et tension calculée » rejeté à tort`);
+    // Balayage des pages : une tension fixe pour une douleur en texte HTML, dans une chaîne d'un script ou dans un attribut
+    // doit être vue ; la même dans un commentaire de script (jamais affiché) ne l'est pas.
+    const SCAN_NEGQ21: Array<[string, string, string]> = [
+      ['texte HTML', '</body>', '<p>For a sensitive arm, string at 21-23 kg.</p>\n</body>'],
+      ['chaîne d\'un script', OPENQ21, `const adviceQ21 = 'Elbow pain? String at 22 kg.';\n    ${OPENQ21}`],
+      ['attribut', '</body>', '<meta name="description" content="Tennis elbow: string at 21 kg">\n</body>'],
+    ];
+    for (const [name, find, rep] of SCAN_NEGQ21) {
+      const m = replaceOnceQ21(pageQ21, find, rep);
+      if (m === null) { fail(`${PAGEQ21} : prémisse du test négatif « balayage, ${name} » fausse (motif absent)`); continue; }
+      if (scanFixedQ21(PAGEQ21, m).length > 0) detectedQ21++;
+      else fail(`${PAGEQ21} : garde-fou muet sur « tension fixe pour une douleur, ${name} »`);
+    }
+    const commentedQ21 = replaceOnceQ21(pageQ21, OPENQ21, `// ancien conseil « 21-23 kg » pour un bras sensible, retiré\n    ${OPENQ21}`);
+    if (commentedQ21 !== null && scanFixedQ21(PAGEQ21, commentedQ21).length === 0) acceptedQ21++;
+    else fail(`${PAGEQ21} : témoin positif « tension citée dans un commentaire de script » rejeté à tort`);
+    for (const [name, find, rep] of POSITIVES) {
+      const m = replaceOnceQ21(pageQ21, find, rep);
+      if (m === null) { fail(`${PAGEQ21} : prémisse du témoin positif « ${name} » fausse (motif absent)`); continue; }
+      const found = [...checkPageQ21(m, engineQ21), ...branchIssuesQ21(m)];
+      if (found.length === 0) acceptedQ21++;
+      else fail(`${PAGEQ21} : témoin positif « ${name} » rejeté à tort : ${found[0]}`);
+    }
+
+    if (failures.length === beforeQ21) {
+      ok(
+        `configurateur EN, douleur déclarée : tension calculée sous le seuil d'alerte bras sensible (${SQ21} = seuil bras sensible sondé dans calculateAdvancedRcs = HEALTH_ALERT_SENSITIVE_RCS du moteur EN) ; ` +
+          `bloc de la page évalué tel quel avec le moteur EN sur ${tallyQ21.combos} montages (${racqQ21.length} raquettes à RA connu × ${strQ21.length} cordages), ` +
+          `plage du curseur ${RANGEQ21?.min}-${RANGEQ21?.max} kg par ${RANGEQ21?.step} : N identique au recalcul par calculateRCS (« jusqu'à N kg » ${tallyQ21.mid}, ` +
+          `toute la plage ${tallyQ21.whole}, aucune tension ${tallyQ21.none}), indice à N sous ${SQ21} et à N + ${RANGEQ21?.step} kg au seuil ou au-dessus, valeur et phrase ` +
+          `affichées exactes ; cordage proposé = le moins rigide du catalogue, rigidité de fiche citée ; ${tallyQ21.proposals} raquettes proposables sous le seuil ; ` +
+          `aucune tension fixe dans la branche ni à côté d'un bras sensible dans ${scanned} fichiers (public/en hors blog, public/js) ; ` +
+          `${detectedQ21} tests négatifs détectés, ${acceptedQ21} témoins positifs acceptés`
+      );
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
 // 21 ter. HYBRIDES : UN SEUL INDICE, celui que l'alerte lit, que la page affiche et que le PDF imprime (22/10/2026)
 // ---------------------------------------------------------------------------
 // Constat : pour un hybride, la page affichait un « RCS Moyen » (moyenne des indices des montants, pris à la tension MOYENNE, et des
@@ -4509,6 +5352,406 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
         );
       }
     }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 22. D2 RESTREINT : NOTES DE CONFORT RECALÉES SUR LA RIGIDITÉ MESURÉE (TWU), 23/10/2026
+// ---------------------------------------------------------------------------
+// Décision : avis d'Opus 5.5 du 23/10/2026, point 1, option (c). Une note de confort qui dépasse de plus de 1,0 point la droite
+// L2 de sa famille est ramenée sur la droite, seulement si la mesure TWU de la fiche est au moins la médiane de rigidité de la
+// famille ; pour une note harmonisée avec des avis de testeurs, seule la composante éditoriale est ramenée, puis la moyenne avec
+// l'avis recalé est refaite (`harmonizedRating`). Jamais une note ne monte, aucun seuil ne bouge. Ce bloc échoue si :
+//   (a) une entrée de `comfort-recalibration.ts` ne respecte pas la règle (mesure TWU de la fiche, écart à la droite, médiane,
+//       nouvelle note = droite arrondie, ou moyenne refaite pour une note harmonisée ; note d'avant = note harmonisée d'avant) ;
+//       ou si la note du catalogue n'est pas la nouvelle note, ou si une note monte ou ne bouge pas ;
+//   (b) les droites ou les médianes figées ne sont pas celles du catalogue d'AVANT D2, reconstruit depuis l'instantané de
+//       référence du 23/10/2026 (`data/reference/second-filet-2026-10-23.json`) en y remettant les notes d'avant ;
+//   (c) la sélection n'est pas complète : une fiche de l'instantané relève de la règle sans être dans la table, ou l'inverse ;
+//   (d) D2 fait disparaître une alerte bras (grille du contrôle 5, moteur réel, deux profils : catalogue d'avant contre catalogue
+//       courant), ou les libellés ne portent pas la mention (FR : contrôle 18 ; EN : `rating-labels.js`, audit:string-labels).
+// Les tests négatifs rejouent ces gardes sur des copies altérées de la table, de la règle et du catalogue.
+{
+  const before22 = failures.length;
+  const REF22 = 'data/reference/second-filet-2026-10-23.json';
+  type Rule = typeof COMFORT_RECALIBRATION_RULE;
+  type Table = Readonly<Record<string, (typeof COMFORT_RECALIBRATED)[string]>>;
+  type RefString = { type: string; stiffness: number; twu: number | null; comfort: number | null };
+  type RefRacquet = { ra: number; weight: number | null };
+  type Ref = { strings: Record<string, RefString>; racquets: Record<string, RefRacquet> };
+  const FAMILIES = ['Polyester', 'Multifilament'] as const;
+  const rnd1 = (x: number) => Math.floor(x * 10 + 0.5) / 10;
+  const median = (v: number[]) => { const s = [...v].sort((a, b) => a - b); const n = s.length; return n % 2 ? s[(n - 1) / 2] : (s[n / 2 - 1] + s[n / 2]) / 2; };
+  const slopeOf = (xs: number[], ys: number[]) => {
+    const mx = xs.reduce((a, b) => a + b, 0) / xs.length;
+    const my = ys.reduce((a, b) => a + b, 0) / ys.length;
+    let sxy = 0;
+    let sxx = 0;
+    xs.forEach((x, i) => { sxy += (x - mx) * (ys[i] - my); sxx += (x - mx) ** 2; });
+    return sxy / sxx;
+  };
+  let ref: Ref | null = null;
+  try {
+    ref = JSON.parse(readFileSync(REF22, 'utf8')) as Ref;
+  } catch (e) {
+    fail(`D2 : instantané de référence ${REF22} illisible (${(e as Error).message})`);
+  }
+  type Cat = readonly (typeof stringsDatabase)[number][];
+  const checkD2 = (table: Table, rule: Rule, catalog: Cat, refStrings: Record<string, RefString>) => {
+    const issues: string[] = [];
+    const lineOf = (fam: keyof Rule['lines'], twu: number) => rule.lines[fam].intercept + rule.lines[fam].slope * twu;
+    // (a) chaque entrée
+    for (const [id, e] of Object.entries(table)) {
+      const s = catalog.find((x) => x.id === id);
+      if (!s) { issues.push(`${id} : dans la table D2, absent du catalogue`); continue; }
+      if (s.type !== e.family) issues.push(`${id} : famille ${s.type} au catalogue, ${e.family} dans la table`);
+      const tab = s.stiffnessByGauge ? Object.values(s.stiffnessByGauge) : [];
+      const twu = tab.length > 0 ? Math.max(...tab) : null;
+      if (twu !== e.twu) issues.push(`${id} : mesure TWU ${twu} au catalogue (la plus rigide des jauges mesurées), ${e.twu} dans la table`);
+      const line = lineOf(e.family, e.twu);
+      if (!(e.before - line > rule.tolerance + 1e-9)) issues.push(`${id} : note d'avant ${e.before} à moins de ${rule.tolerance} de la droite (${line.toFixed(3)}) : hors règle`);
+      if (!(e.twu >= rule.medians[e.family])) issues.push(`${id} : mesure TWU ${e.twu} sous la médiane des ${e.family} (${rule.medians[e.family]}) : hors règle (D2 restreint)`);
+      const tester = STRING_TESTER_RATINGS[id];
+      let want: number;
+      if (tester) {
+        if (e.editorialBefore !== tester.before10.comfort) issues.push(`${id} : composante éditoriale d'avant ${e.editorialBefore}, ${tester.before10.comfort} dans tester-ratings.ts`);
+        const edWant = Math.min(tester.before10.comfort ?? Infinity, rnd1(line));
+        if (e.editorialAfter !== edWant) issues.push(`${id} : composante éditoriale recalée ${e.editorialAfter}, ${edWant} attendue (droite arrondie, jamais au-dessus de l'ancienne)`);
+        if (e.before !== harmonizedRating(tester, 'comfort')) issues.push(`${id} : note d'avant ${e.before}, ${harmonizedRating(tester, 'comfort')} = note harmonisée d'avant`);
+        want = harmonizedRating(tester, 'comfort', edWant);
+      } else {
+        if (e.editorialBefore !== undefined || e.editorialAfter !== undefined) issues.push(`${id} : composante éditoriale renseignée pour une note qui n'est pas harmonisée`);
+        want = rnd1(line);
+      }
+      if (e.after !== want) issues.push(`${id} : nouvelle note ${e.after}, ${want} attendue par la règle${tester ? ' (moyenne refaite avec l\'avis des testeurs)' : ' (droite arrondie au dixième)'}`);
+      if (!(e.after < e.before)) issues.push(`${id} : note ${e.before} -> ${e.after} : une note D2 ne fait que baisser`);
+      if (s.comfort !== e.after) issues.push(`${id} : note de confort ${s.comfort} au catalogue, ${e.after} attendue (table D2)`);
+    }
+    // (b) droites et médianes, recalculées sur le catalogue d'AVANT D2 (instantané, notes d'avant remises) ; (c) sélection complète
+    const pre = Object.entries(refStrings).map(([id, r]) => ({ id, ...r, comfort: table[id] ? table[id].before : r.comfort }));
+    const excluded: string[] = [];
+    for (const fam of FAMILIES) {
+      const all = pre.filter((r) => r.type === fam);
+      const rated = all.filter((r) => r.comfort !== null);
+      const withT = rated.filter((r) => r.twu !== null);
+      const slope = slopeOf(rated.map((r) => r.stiffness), rated.map((r) => r.comfort as number));
+      const intercept = withT.reduce((a, r) => a + (r.comfort as number), 0) / withT.length - slope * (withT.reduce((a, r) => a + (r.twu as number), 0) / withT.length);
+      if (Math.abs(slope - rule.lines[fam].slope) > 1e-9 || Math.abs(intercept - rule.lines[fam].intercept) > 1e-9) {
+        issues.push(`droite ${fam} figée ${rule.lines[fam].intercept} + ${rule.lines[fam].slope} × TWU, ${intercept} + ${slope} × TWU recalculée sur le catalogue d'avant D2`);
+      }
+      const med = median(all.map((r) => r.stiffness));
+      if (med !== rule.medians[fam]) issues.push(`médiane ${fam} figée ${rule.medians[fam]}, ${med} recalculée`);
+      for (const r of withT) {
+        const over = (r.comfort as number) - lineOf(fam, r.twu as number) > rule.tolerance + 1e-9;
+        const sel = over && (r.twu as number) >= rule.medians[fam];
+        if (over && !sel) excluded.push(r.id);
+        if (sel !== Object.prototype.hasOwnProperty.call(table, r.id)) issues.push(`${r.id} : ${sel ? 'relève de D2 mais absente de la table' : 'dans la table mais hors règle'}`);
+      }
+    }
+    for (const id of Object.keys(table)) if (!(id in refStrings)) issues.push(`${id} : absent de l'instantané de référence`);
+    return { issues, excluded };
+  };
+  // (d) alertes : catalogue d'avant D2 contre catalogue courant, moteur réel, grille du contrôle 5.
+  const isArm22 = (w: string) => /bras|elbow/i.test(w);
+  const alertsDelta = (comfortBefore: (s: (typeof stringsDatabase)[number]) => number | undefined, catalog: Cat) => {
+    const out = { std: { added: 0, gone: 0 }, sen: { added: 0, gone: 0 }, n: 0 };
+    for (const r of racquetsDatabase) {
+      const ra = effectiveRacquetRA(r);
+      for (const s of catalog) {
+        const c0 = comfortBefore(s);
+        if (c0 === s.comfort) continue; // même note : mêmes alertes
+        for (const t of TENSIONS) {
+          for (const [k, armSensitive] of [['std', false], ['sen', true]] as const) {
+            const base = { racquetStiffness: ra, racquetWeight: r.weight, racquetHeadSize: r.headSize, mainStringStiffness: s.stiffness, mainStringFamily: stringTypeToFamily(s.type), mainTension: t, profile: { armSensitive } };
+            const a0 = calculateAdvancedRcs({ ...base, mainRatings: { comfort: c0 } }).warnings.some(isArm22);
+            const a1 = calculateAdvancedRcs({ ...base, mainRatings: { comfort: s.comfort } }).warnings.some(isArm22);
+            if (a0 && !a1) out[k].gone++;
+            if (!a0 && a1) out[k].added++;
+          }
+          out.n++;
+        }
+      }
+    }
+    return out;
+  };
+  if (ref) {
+    const refStrings = ref.strings;
+    const real = checkD2(COMFORT_RECALIBRATED, COMFORT_RECALIBRATION_RULE, stringsDatabase, refStrings);
+    real.issues.forEach((i) => fail(`D2 : ${i}`));
+    const delta = alertsDelta((s) => COMFORT_RECALIBRATED[s.id]?.before ?? s.comfort, stringsDatabase);
+    if (delta.std.gone + delta.sen.gone > 0) fail(`D2 : ${delta.std.gone} alerte(s) standard et ${delta.sen.gone} bras sensible disparue(s) : une note D2 ne doit que baisser`);
+    // Libellé EN : la mention de la règle est celle de public/js/rating-labels.js (contrat mot pour mot : audit:string-labels).
+    const { createRequire } = await import('node:module');
+    const EN = createRequire(import.meta.url)('../public/js/rating-labels.js') as { RECALIBRATED?: string; labelOf?: (s: unknown, h: unknown, t: unknown, r: unknown) => string };
+    if (EN.RECALIBRATED !== COMFORT_RECALIBRATION_RULE.labelEn) fail(`D2 : mention EN « ${EN.RECALIBRATED} » dans rating-labels.js, « ${COMFORT_RECALIBRATION_RULE.labelEn} » dans la règle`);
+    const recalIds = new Set(Object.keys(COMFORT_RECALIBRATED));
+    const harmIds = new Set(Object.keys(STRING_TESTER_RATINGS));
+    const { THIRD_PARTY_RATED_STRING_IDS: thirdIds } = await import('../src/data/string-ratings-third-party');
+    for (const s of stringsDatabase) {
+      const lab = EN.labelOf ? EN.labelOf({ id: s.id, comfort: s.comfort ?? null, control: s.control ?? null, spin: s.spin ?? null, power: s.power ?? null, durability: s.durability ?? null }, harmIds, new Set(thirdIds), recalIds) : '';
+      if (recalIds.has(s.id) !== lab.endsWith(`; ${COMFORT_RECALIBRATION_RULE.labelEn}`)) fail(`D2 : libellé EN de ${s.id} « ${lab} » (mention attendue sur les fiches recalées et elles seules)`);
+    }
+    // Tests négatifs : chaque altération DOIT être détectée.
+    let detected = 0;
+    const T = COMFORT_RECALIBRATED;
+    const withEntry = (id: string, patch: Record<string, unknown>) => ({ ...T, [id]: { ...T[id], ...patch } }) as Table;
+    const withCatalog = (id: string, comfort: number) => stringsDatabase.map((s) => (s.id === id ? { ...s, comfort } : s));
+    const iso = stringsDatabase.find((s) => s.id === 'isospeed-cream');
+    const negatives: Array<[string, () => string[], string]> = [
+      ['note D2 relevée dans la table (Revenge 5,4 -> 7,0)', () => checkD2(withEntry('babolat-revenge', { after: 7.0 }), COMFORT_RECALIBRATION_RULE, stringsDatabase, refStrings).issues, 'babolat-revenge'],
+      ['note harmonisée écrasée par la droite (4G 5,3 -> 5,0, sans la moyenne testeurs)', () => checkD2(withEntry('luxilon-4g', { after: 5.0 }), COMFORT_RECALIBRATION_RULE, stringsDatabase, refStrings).issues, 'moyenne refaite'],
+      ['composante éditoriale d\'avant fausse (Mach-10 8 -> 9)', () => checkD2(withEntry('solinco-mach-10', { editorialBefore: 9 }), COMFORT_RECALIBRATION_RULE, stringsDatabase, refStrings).issues, 'composante éditoriale d\'avant'],
+      ['fiche souple ajoutée (Isospeed Cream, sous la médiane)', () => checkD2({ ...T, 'isospeed-cream': { family: 'Polyester', twu: 177.7, before: iso?.comfort ?? 9.5, after: 8.4 } }, COMFORT_RECALIBRATION_RULE, stringsDatabase, refStrings).issues, 'sous la médiane'],
+      ['fiche retirée de la table (TGV)', () => { const { ['tecnifibre-tgv']: _gone, ...rest } = T; void _gone; return checkD2(rest, COMFORT_RECALIBRATION_RULE, stringsDatabase, refStrings).issues; }, 'droite Multifilament'],
+      ['tolérance abaissée à 0,5 sans appliquer la règle', () => checkD2(T, { ...COMFORT_RECALIBRATION_RULE, tolerance: 0.5 } as unknown as Rule, stringsDatabase, refStrings).issues, 'relève de D2 mais absente'],
+      ['pente de la droite polyester modifiée', () => checkD2(T, { ...COMFORT_RECALIBRATION_RULE, lines: { ...COMFORT_RECALIBRATION_RULE.lines, Polyester: { ...COMFORT_RECALIBRATION_RULE.lines.Polyester, slope: -0.03 } } } as unknown as Rule, stringsDatabase, refStrings).issues, 'droite Polyester'],
+      ['médiane multifilament modifiée', () => checkD2(T, { ...COMFORT_RECALIBRATION_RULE, medians: { ...COMFORT_RECALIBRATION_RULE.medians, Multifilament: 170 } } as unknown as Rule, stringsDatabase, refStrings).issues, 'médiane Multifilament'],
+      ['note du catalogue remise à sa valeur d\'avant (Revenge 7)', () => checkD2(T, COMFORT_RECALIBRATION_RULE, withCatalog('babolat-revenge', 7), refStrings).issues, 'au catalogue, 5.4 attendue'],
+      ['note du catalogue harmonisée écrasée (Mach-10 7,0)', () => checkD2(T, COMFORT_RECALIBRATION_RULE, withCatalog('solinco-mach-10', 7.0), refStrings).issues, 'au catalogue, 8.3 attendue'],
+      ['D2 qui relève une note (Razor Code 7,5 -> 9,0 : alertes disparues)', () => { const d = alertsDelta((s) => (s.id === 'tecnifibre-razor-code' ? 6.4 : s.comfort), withCatalog('tecnifibre-razor-code', 9.0)); return d.std.gone + d.sen.gone > 0 ? ['alerte(s) disparue(s)'] : []; }, 'disparue'],
+    ];
+    for (const [name, run, needle] of negatives) {
+      let found: string[] = [];
+      try {
+        found = run();
+      } catch (e) {
+        fail(`D2 : test négatif « ${name} » inexécutable (${(e as Error).message})`);
+        continue;
+      }
+      if (found.some((i) => i.includes(needle))) detected++;
+      else fail(`D2 : garde-fou muet sur « ${name} » (motif attendu « ${needle} »${found.length ? `, trouvé : ${found[0].slice(0, 90)}` : ''})`);
+    }
+    // Témoin positif : la table réordonnée passe.
+    const reordered = Object.fromEntries(Object.entries(T).reverse()) as Table;
+    const witness = checkD2(reordered, COMFORT_RECALIBRATION_RULE, stringsDatabase, refStrings).issues;
+    if (witness.length > 0) fail(`D2 : témoin positif « table réordonnée » rejeté à tort : ${witness[0]}`);
+    if (failures.length === before22) {
+      const lines = Object.entries(T).map(([id, e]) => `${id} ${e.before} -> ${e.after}${e.editorialAfter !== undefined ? ` (éditoriale ${e.editorialBefore} -> ${e.editorialAfter})` : ''}`).join(', ');
+      ok(
+        `D2 : ${Object.keys(T).length} notes de confort recalées sur la rigidité mesurée (${lines}) ; droites L2 et médianes recalculées sur le catalogue d'avant D2 ; ` +
+          `sélection complète (écartées par la médiane : ${real.excluded.join(', ')}) ; alertes de la grille du contrôle 5 : 0 disparue, ` +
+          `+${delta.std.added} standard et +${delta.sen.added} bras sensible ajoutées ; mention FR et EN sur les fiches recalées et elles seules ; ${detected} tests négatifs détectés, 1 témoin positif accepté`
+      );
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 23. SECOND FILET : AUCUNE NOTE DE CONFORT NE MONTE, AUCUNE ALERTE NE DISPARAÎT (référence du 23/10/2026)
+// ---------------------------------------------------------------------------
+// Garde-fou asymétrique (avis d'Opus 5.5 du 23/10/2026, point 6) : le second filet « confort » de l'alerte bras lit une note
+// éditoriale, non mesurée ; elle peut descendre (D2), jamais monter sans mesure et sans GO. Plus généralement, une alerte bras ne
+// disparaît pas en silence (règle 2). Référence : `data/reference/second-filet-2026-10-23.json` (rigidité, mesure TWU, note de
+// confort de chaque cordage ; RA effectif et poids de chaque raquette ; `scripts/scraper/reference-second-filet.mts`). Ce bloc
+// échoue si, par rapport à la référence : une note de confort monte, disparaît, ou apparaît sur une fiche « Non publié » (valeur
+// comblée) ; une fiche ou une raquette disparaît ; ou une alerte bras de la grille du contrôle 5 disparaît (moteur réel, deux
+// profils, mêmes entrées que la référence sauf les données changées). Exceptions : liste explicite, datée, motivée, avec le GO de
+// Pierre ; vide à ce jour ; une exception inutilisée échoue. Tests négatifs sur des copies altérées du catalogue.
+{
+  const before23 = failures.length;
+  const REF23 = 'data/reference/second-filet-2026-10-23.json';
+  const EXCEPTIONS23: ReadonlyArray<{ id: string; date: string; motive: string; go: string }> = [];
+  type RefS = { type: string; stiffness: number; twu: number | null; comfort: number | null };
+  type RefR = { ra: number; weight: number | null };
+  let ref: { strings: Record<string, RefS>; racquets: Record<string, RefR> } | null = null;
+  try {
+    ref = JSON.parse(readFileSync(REF23, 'utf8'));
+  } catch (e) {
+    fail(`second filet : référence ${REF23} illisible (${(e as Error).message})`);
+  }
+  type CurS = { id: string; type: string; stiffness: number; comfort: number | null };
+  type CurR = { id: string; ra: number; weight: number | null };
+  const isArm23 = (w: string) => /bras|elbow/i.test(w);
+  const check23 = (strings: readonly CurS[], racquets: readonly CurR[]) => {
+    const issues: string[] = [];
+    const used = new Set<string>();
+    const excepted = (id: string) => { const hit = EXCEPTIONS23.some((x) => x.id === id); if (hit) used.add(id); return hit; };
+    const sById = new Map(strings.map((s) => [s.id, s]));
+    const rById = new Map(racquets.map((r) => [r.id, r]));
+    for (const [id, r] of Object.entries(ref!.strings)) {
+      const s = sById.get(id);
+      if (!s) { if (!excepted(id)) issues.push(`${id} : fiche retirée depuis la référence (ses alertes disparaissent)`); continue; }
+      if (r.comfort !== null && s.comfort === null && !excepted(id)) issues.push(`${id} : note de confort retirée (${r.comfort} -> non publiée) : le second filet de la fiche disparaît`);
+      if (r.comfort !== null && s.comfort !== null && s.comfort > r.comfort + 1e-9 && !excepted(id)) issues.push(`${id} : note de confort relevée (${r.comfort} -> ${s.comfort}) sans mesure ni GO`);
+      if (r.comfort === null && s.comfort !== null && !excepted(id)) issues.push(`${id} : note de confort créée (${s.comfort}) sur une fiche « Non publié » : valeur comblée`);
+    }
+    for (const id of Object.keys(ref!.racquets)) if (!rById.has(id) && !excepted(id)) issues.push(`${id} : raquette retirée depuis la référence (ses alertes disparaissent)`);
+    let gone = 0;
+    let added = 0;
+    let example = '';
+    for (const [rid, r0] of Object.entries(ref!.racquets)) {
+      const r1 = rById.get(rid);
+      if (!r1) continue;
+      for (const [sid, s0] of Object.entries(ref!.strings)) {
+        const s1 = sById.get(sid);
+        if (!s1) continue;
+        if (r0.ra === r1.ra && r0.weight === r1.weight && s0.stiffness === s1.stiffness && s0.comfort === s1.comfort && s0.type === s1.type) continue;
+        for (const t of TENSIONS) {
+          for (const armSensitive of [false, true]) {
+            const inp = (r: RefR | CurR, s: RefS | CurS) => ({
+              racquetStiffness: r.ra, racquetWeight: r.weight ?? undefined, mainStringStiffness: s.stiffness, mainStringFamily: stringTypeToFamily(s.type),
+              mainRatings: { comfort: s.comfort ?? undefined }, mainTension: t, profile: { armSensitive },
+            });
+            const a0 = calculateAdvancedRcs(inp(r0, s0)).warnings.some(isArm23);
+            const a1 = calculateAdvancedRcs(inp(r1, s1)).warnings.some(isArm23);
+            if (a0 && !a1 && !excepted(sid) && !excepted(rid)) { gone++; if (!example) example = `${rid} + ${sid} à ${t} kg (${armSensitive ? 'bras sensible' : 'standard'})`; }
+            if (!a0 && a1) added++;
+          }
+        }
+      }
+    }
+    if (gone > 0) issues.push(`${gone} alerte(s) bras disparue(s) depuis la référence, par exemple ${example}`);
+    for (const x of EXCEPTIONS23) if (!used.has(x.id)) issues.push(`exception inutilisée : ${x.id} (${x.date})`);
+    return { issues, gone, added };
+  };
+  if (ref) {
+    const curS: CurS[] = stringsDatabase.map((s) => ({ id: s.id, type: s.type, stiffness: s.stiffness, comfort: s.comfort ?? null }));
+    const curR: CurR[] = racquetsDatabase.map((r) => ({ id: r.id, ra: effectiveRacquetRA(r), weight: r.weight ?? null }));
+    const real = check23(curS, curR);
+    real.issues.forEach((i) => fail(`second filet : ${i}`));
+    const mod = (id: string, patch: Partial<CurS>) => curS.map((s) => (s.id === id ? { ...s, ...patch } : s));
+    const aRacquet = curR.find((r) => r.ra === 66)!;
+    const negatives: Array<[string, () => string[], string]> = [
+      ['note de confort relevée (Revenge 5,4 -> 7,0)', () => check23(mod('babolat-revenge', { comfort: 7.0 }), curR).issues, 'note de confort relevée'],
+      ['note relevée : alertes disparues (Revenge 5,4 -> 7,0)', () => check23(mod('babolat-revenge', { comfort: 7.0 }), curR).issues, 'alerte(s) bras disparue(s)'],
+      ['note de confort retirée (Revenge)', () => check23(mod('babolat-revenge', { comfort: null }), curR).issues, 'note de confort retirée'],
+      ['note créée sur une fiche « Non publié » (O-Toro)', () => check23(mod(curS.find((s) => s.comfort === null)!.id, { comfort: 7 }), curR).issues, 'note de confort créée'],
+      ['rigidité baissée (4G 286,9 -> 265)', () => check23(mod('luxilon-4g', { stiffness: 265 }), curR).issues, 'alerte(s) bras disparue(s)'],
+      ['fiche retirée (4G)', () => check23(curS.filter((s) => s.id !== 'luxilon-4g'), curR).issues, 'fiche retirée'],
+      [`RA baissé (${aRacquet.id} 66 -> 60)`, () => check23(curS, curR.map((r) => (r.id === aRacquet.id ? { ...r, ra: 60 } : r))).issues, 'alerte(s) bras disparue(s)'],
+      ['raquette retirée', () => check23(curS, curR.filter((r) => r.id !== aRacquet.id)).issues, 'raquette retirée'],
+    ];
+    let detected = 0;
+    for (const [name, run, needle] of negatives) {
+      const found = run();
+      if (found.some((i) => i.includes(needle))) detected++;
+      else fail(`second filet : garde-fou muet sur « ${name} » (motif attendu « ${needle} »${found.length ? `, trouvé : ${found[0].slice(0, 90)}` : ''})`);
+    }
+    // Témoins positifs : une note qui descend encore, une rigidité qui monte (seulement des alertes ajoutées).
+    const lower = check23(mod('babolat-revenge', { comfort: 5.0 }), curR);
+    const stiffer = check23(mod('luxilon-alu-power', { stiffness: 240 }), curR);
+    let accepted = 0;
+    if (lower.issues.length > 0 || lower.added === 0) fail(`second filet : témoin positif « note qui descend » rejeté ou sans effet (${lower.issues[0] ?? `${lower.added} ajoutée`})`);
+    else accepted++;
+    if (stiffer.issues.length > 0 || stiffer.added === 0) fail(`second filet : témoin positif « rigidité qui monte » rejeté ou sans effet (${stiffer.issues[0] ?? `${stiffer.added} ajoutée`})`);
+    else accepted++;
+    if (failures.length === before23) {
+      ok(
+        `second filet : par rapport à la référence du 23/10/2026 (${Object.keys(ref.strings).length} cordages, ${Object.keys(ref.racquets).length} raquettes), aucune note de confort ` +
+          `relevée, retirée ni créée, aucune fiche ni raquette retirée, 0 alerte bras disparue (${real.added} ajoutée(s)) ; aucune exception ; ` +
+          `${detected} tests négatifs détectés, ${accepted} témoins positifs acceptés`
+      );
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 24. HYBRIDES PRÉMONTÉS : composition du set et rigidité dérivée (23/10/2026)
+// ---------------------------------------------------------------------------
+// src/data/prepacked-hybrids.ts consigne, pour chaque fiche de type « Hybrid », la composition du set et sa source (point 9 de l'avis
+// d'Opus 5.5 du 23/10/2026). Échoue si : (a) une fiche « Hybrid » n'y figure pas, ou une entrée ne désigne aucune fiche « Hybrid » ;
+// (b) un composant manque, est lui-même un hybride ou figure deux fois ; (c) la rigidité d'un set à composition connue n'est pas le plus
+// haut de sa valeur d'avant et de la valeur dérivée de ses composants, recalculée, ou, sur une grille de RA et de tensions, l'indice de
+// la fiche est SOUS celui que le moteur (`setupFirmnessIndex`) donne aux deux cordages montés à la même tension (le plus haut des sens
+// permis) ; (d) un set à composition non publiée a bougé, nomme des composants ou entre dans les classements ; (e) une source n'a pas
+// d'URL https, de niveau, de date ou d'extrait de 1 à 40 mots, une composition « publiée » n'a aucune source, une composition « fiche »
+// en cite une ; (f) les jauges consignées ne sont pas celles de la fiche ; (g) la fiche FR ne marque pas la rigidité dérivée « estimé »
+// ou n'affiche pas la mention, ou la mention ne dit pas « dérivée » avec les deux cordages, ou « composition non publiée … sans source ».
+{
+  const before24 = failures.length;
+  const PH = await import('../src/data/prepacked-hybrids');
+  const { setupFirmnessIndex, rcsIndex } = await import('../src/lib/advanced-rcs');
+  type PEntry = (typeof PH.PREPACKED_HYBRIDS)[string];
+  type PItem = { id: string; type: string; stiffness: number; gauges: string[]; brand: string; model: string };
+  const PAGE_22 = 'src/app/tennis-strings/[slug]/page.tsx';
+  const RAS_22 = [55, 58, 61, 64, 66, 68, 70, 72];
+  const TENS_22 = [18, 20, 22, 24, 26, 28];
+  let above22 = 0;
+  const checkPrepacked = (items: readonly PItem[], table: Readonly<Record<string, PEntry>>, pageSrc: string): string[] => {
+    const issues: string[] = [];
+    const byId = new Map(items.map((x) => [x.id, x]));
+    const label = (x: string) => (byId.get(x) ? `${byId.get(x)!.brand} ${byId.get(x)!.model}` : x);
+    for (const s of items) if (s.type === 'Hybrid' && !table[s.id]) issues.push(`${s.id} : fiche « Hybrid » sans composition consignée`);
+    for (const [id, e] of Object.entries(table)) {
+      const s = byId.get(id);
+      if (!s || s.type !== 'Hybrid') { issues.push(`${id} : entrée qui ne désigne aucune fiche « Hybrid »`); continue; }
+      for (const src of e.sources) {
+        if (!/^https:\/\/\S+$/.test(src.url)) issues.push(`${id} : source sans URL https`);
+        if (!['L0', 'L2', 'L3'].includes(src.level)) issues.push(`${id} : niveau de source « ${src.level} »`);
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(src.read)) issues.push(`${id} : date de lecture absente`);
+        const words = src.excerpt.trim().split(/\s+/).filter(Boolean).length;
+        if (words === 0 || words > 40) issues.push(`${id} : extrait de ${words} mots (1 à 40)`);
+      }
+      if (e.composition === 'publiee' && e.sources.length === 0) issues.push(`${id} : composition « publiée » sans source`);
+      if (e.composition === 'fiche' && e.sources.length > 0) issues.push(`${id} : composition « fiche » qui cite une source`);
+      if (!e.note.trim()) issues.push(`${id} : motif absent`);
+      if (e.gauges && e.gauges.join(',') !== s.gauges.join(',')) issues.push(`${id} : jauges ${s.gauges.join(', ')} ≠ ${e.gauges.join(', ')} consignées`);
+      const notice = PH.prepackedHybridNotice(id, label) ?? '';
+      if (e.composition === 'non-publiee') {
+        if (e.components !== null) issues.push(`${id} : composition non publiée mais composants nommés`);
+        if (s.stiffness !== e.before) issues.push(`${id} : rigidité ${s.stiffness} ≠ ${e.before} (composition non publiée : valeur de fiche conservée)`);
+        if (PH.isStiffnessRankable(s)) issues.push(`${id} : composition non publiée mais classable`);
+        if (!/composition non publiée/i.test(notice) || !/sans source/.test(notice)) issues.push(`${id} : mention « composition non publiée, rigidité de fiche sans source » absente`);
+        continue;
+      }
+      if (!e.components) { issues.push(`${id} : composants absents`); continue; }
+      const [a, b] = e.components;
+      const ca = byId.get(a), cb = byId.get(b);
+      if (!ca || !cb) { issues.push(`${id} : composant ${!ca ? a : b} absent du catalogue`); continue; }
+      if (a === b) issues.push(`${id} : deux fois le même composant`);
+      if (ca.type === 'Hybrid' || cb.type === 'Hybrid') issues.push(`${id} : un composant est lui-même un hybride`);
+      const derived = PH.prepackedHybridStiffness(ca.stiffness, cb.stiffness, e.orderFixed);
+      const expected = Math.max(e.before, derived);
+      if (Math.abs(s.stiffness - expected) > 1e-9) issues.push(`${id} : rigidité ${s.stiffness} ≠ ${expected} (plus haut de ${e.before} et de la valeur dérivée de ${a} ${ca.stiffness} et ${b} ${cb.stiffness})`);
+      const orders: [number, number][] = e.orderFixed ? [[ca.stiffness, cb.stiffness]] : [[ca.stiffness, cb.stiffness], [cb.stiffness, ca.stiffness]];
+      grid: for (const ra of RAS_22) for (const t of TENS_22) {
+        const eng = Math.max(...orders.map(([m, c]) => setupFirmnessIndex({ racquetStiffness: ra, mainStringStiffness: m, crossStringStiffness: c, mainTension: t, crossTension: t }).rcs));
+        const mine = rcsIndex(ra, s.stiffness, t);
+        if (mine < eng) { issues.push(`${id} : indice ${mine} sous ${eng}, celui du moteur pour ${a} et ${b} à RA ${ra}, ${t} kg`); break grid; }
+        if (mine > eng) above22++;
+      }
+      if (PH.isStiffnessRankable(s) !== (e.composition === 'publiee')) issues.push(`${id} : classable alors que la composition n'est pas publiée, ou l'inverse`);
+      if (!/dérivée/.test(notice) || !notice.includes(label(a)) || !notice.includes(label(b))) issues.push(`${id} : mention sans « dérivée » ou sans les deux cordages`);
+    }
+    if (!/prepackedHybridNotice\(/.test(pageSrc) || !/data-testid="prepacked-hybrid-notice"/.test(pageSrc)) issues.push('fiche FR : la mention des hybrides prémontés n\'est pas affichée');
+    if (!/estimated:\s*Boolean\(PREPACKED_HYBRIDS\[string\.id\]\?\.components\)/.test(pageSrc)) issues.push('fiche FR : rigidité dérivée non marquée « estimé »');
+    return issues;
+  };
+  const items22 = stringsDatabase as unknown as PItem[];
+  const T0 = PH.PREPACKED_HYBRIDS;
+  const page22 = existsSync(PAGE_22) ? readFileSync(PAGE_22, 'utf8') : '';
+  checkPrepacked(items22, T0, page22).forEach((i) => fail(`hybrides prémontés : ${i}`));
+  const nAbove = above22;
+  const set22 = (id: string, patch: Partial<PItem>) => items22.map((x) => (x.id === id ? { ...x, ...patch } : x));
+  const with22 = (id: string, patch: Partial<PEntry>) => ({ ...T0, [id]: { ...T0[id], ...patch } });
+  const without22 = Object.fromEntries(Object.entries(T0).filter(([k]) => k !== 'wilson-duo-power'));
+  const src22 = T0['wilson-duo-control'].sources[0];
+  const neg24: Array<[string, string[], string]> = [
+    ['fiche « Hybrid » sans entrée', checkPrepacked(items22, without22, page22), 'wilson-duo-power : fiche « Hybrid » sans composition'],
+    ['rigidité dérivée non appliquée (Duo Control 188)', checkPrepacked(set22('wilson-duo-control', { stiffness: 188 }), T0, page22), 'wilson-duo-control : rigidité 188 ≠ 222'],
+    ['baisse sous la valeur d\'avant', checkPrepacked(items22, with22('wilson-duo-power', { before: 230 }), page22), 'wilson-duo-power : rigidité 196 ≠ 230'],
+    ['sens défavorable fixé à tort (Ice Code + NRG2)', checkPrepacked(items22, with22('tecnifibre-hybrid-ice-code-nrg2', { orderFixed: true, components: ['tecnifibre-nrg2', 'tecnifibre-ice-code'] }), page22), 'tecnifibre-hybrid-ice-code-nrg2 : rigidité 198.4 ≠ 192.6'],
+    ['composant absent', checkPrepacked(items22, with22('wilson-duo-control', { components: ['x-inexistant', 'wilson-nxt-control'] }), page22), 'composant x-inexistant absent'],
+    ['composant hybride', checkPrepacked(items22, with22('wilson-duo-control', { components: ['wilson-duo-power', 'wilson-nxt-control'] }), page22), 'lui-même un hybride'],
+    ['composition non publiée qui bouge', checkPrepacked(set22('head-gravity-hybrid', { stiffness: 190 }), T0, page22), 'valeur de fiche conservée'],
+    ['composition non publiée qui nomme des composants', checkPrepacked(items22, with22('head-gravity-hybrid', { components: ['head-lynx', 'head-hawk'] }), page22), 'composants nommés'],
+    ['source sans URL https', checkPrepacked(items22, with22('wilson-duo-control', { sources: [{ ...src22, url: 'tennis-warehouse.com/x' }] }), page22), 'sans URL https'],
+    ['extrait de plus de 40 mots', checkPrepacked(items22, with22('wilson-duo-control', { sources: [{ ...src22, excerpt: 'mot '.repeat(41) }] }), page22), 'extrait de 41 mots'],
+    ['composition publiée sans source', checkPrepacked(items22, with22('wilson-duo-control', { sources: [] }), page22), 'publiée » sans source'],
+    ['composition de fiche qui cite une source', checkPrepacked(items22, with22('tecnifibre-hybrid-ice-code-nrg2', { sources: [src22] }), page22), 'composition « fiche » qui cite'],
+    ['jauges ramenées à 1.25/1.25 (Duo Power)', checkPrepacked(set22('wilson-duo-power', { gauges: ['1.25/1.25'] }), T0, page22), 'wilson-duo-power : jauges'],
+    ['fiche FR sans mention', checkPrepacked(items22, T0, page22.replace(/data-testid="prepacked-hybrid-notice"/g, '')), 'mention des hybrides prémontés n\'est pas affichée'],
+    ['fiche FR sans « estimé »', checkPrepacked(items22, T0, page22.replace(/estimated:\s*Boolean\(PREPACKED_HYBRIDS\[string\.id\]\?\.components\)/, 'estimated: false')), 'non marquée « estimé »'],
+  ];
+  for (const [name, found, needle] of neg24) {
+    if (!found.some((i) => i.includes(needle))) fail(`hybrides prémontés : garde-fou muet sur « ${name} » (${needle})`);
+  }
+  if (failures.length === before24) {
+    const v = Object.values(T0);
+    const n = (c: string) => v.filter((e) => e.composition === c).length;
+    ok(`hybrides prémontés : ${v.length} fiches « Hybrid » consignées (${n('publiee')} à composition publiée, ${n('fiche')} à composition de fiche, set introuvable, ${n('non-publiee')} non publiée : valeur conservée, hors classements) ; ` +
+      `rigidité = plus haut de la valeur d'avant et de la valeur dérivée des deux cordages, recalculée ; indice de la fiche jamais sous celui du moteur pour les deux cordages à la même tension (${RAS_22.length} RA × ${TENS_22.length} tensions ; ${nAbove} montage(s) au-dessus, par l'arrondi au dixième supérieur) ; ` +
+      `sources (URL, niveau, date, extrait), jauges et mention de la fiche FR vérifiées ; ${neg24.length} tests négatifs détectés`);
   }
 }
 

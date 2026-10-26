@@ -149,7 +149,8 @@ export const racquetsDatabase: TennisRacquet[] = [
     brand: 'Head',
     model: 'Extreme',
     variant: 'Standard',
-    stiffness: 65,
+    // 23/10/2026 (faits V40 (veille du 10/10) de docs/redaction/veille-2026-10-23-ecarts-de-fiche.md) : Extreme MP, RA de la fiche sous toutes les générations mesurées (2022 et 2024 : 66, TWU) ; RA 65 -> 66 (hausse, mesure L1).
+    stiffness: 66,
     weight: 300,
     headSize: 100,
     stringPattern: '16x19',
@@ -347,10 +348,11 @@ export const racquetsDatabase: TennisRacquet[] = [
     brand: 'Head',
     model: 'Prestige',
     variant: 'Tour',
-    stiffness: 60,
+    // 23/10/2026 (faits V126 à V128 de docs/redaction/veille-2026-10-23-ecarts-de-fiche.md) : toutes les Prestige Tour lues sont en 16x19 (2021, 2023) ; génération 2023 en vente : RA 62 (TWU) ; plan 18x20 -> 16x19, RA 60 -> 62 (hausse, L1). Poids non cordé non publié : 305 conservé.
+    stiffness: 62,
     weight: 305,
     headSize: 95,
-    stringPattern: '18x20',
+    stringPattern: '16x19',
     category: 'Classic Player',
     playerLevel: ['Pro'],
     description: 'Tamis compact pour contrôle chirurgical.',
@@ -518,8 +520,10 @@ export const racquetsDatabase: TennisRacquet[] = [
     id: 'prince-ripstick-standard',
     brand: 'Prince',
     model: 'Ripstick',
-    variant: 'Standard',
-    stiffness: 60,
+    variant: '100 300g (2025)',
+    // 23/10/2026 (faits V131 et V132 de docs/redaction/veille-2026-10-23-ecarts-de-fiche.md) : Ripstick 100 300g, seconde génération (2025) : TWU 67, 100 in², 16x18 (fiche TW) ; la première (2021) mesurait 64 ; RA 60 -> 67 (hausse, L1).
+    // 26/10/2026 (avis d'Opus 5.5, R3 de la revue de #152) : génération NOMMÉE (ex-« Standard », id conservé) : 67 n'est exact que pour la 2025 ; pour une 2021 (64, RDC), indice surestimé d'environ 1 point, sur-alerte assumée (règle C).
+    stiffness: 67,
     weight: 300,
     headSize: 100,
     stringPattern: '16x18',
@@ -577,7 +581,8 @@ export const racquetsDatabase: TennisRacquet[] = [
     brand: 'Tecnifibre',
     model: 'TF40',
     variant: '305',
-    stiffness: 63,
+    // 23/10/2026 (faits V133 de docs/redaction/veille-2026-10-23-ecarts-de-fiche.md) : TF40 305 16x19 mesurée 64 (page d'essai TW, mesure RDC) ; même RA en L2 (V36, V37) ; génération en vente : V3, mêmes caractéristiques ; RA 63 -> 64 (hausse, L1 ; règle des mesures L1 du 26/10/2026 : génération voisine, L2 concordante).
+    stiffness: 64,
     weight: 305,
     headSize: 98,
     stringPattern: '16x19',
@@ -1459,9 +1464,10 @@ export const racquetsDatabase: TennisRacquet[] = [
     brand: 'Dunlop',
     model: 'FX',
     variant: '500 Tour',
+    // 23/10/2026 (faits V123 à V125 de docs/redaction/veille-2026-10-23-ecarts-de-fiche.md) : toutes les FX 500 Tour mesurées sont en 98 in² (2020, 2023, 2025) : tamis 100 -> 98 ; RA 67 tenu (69 en 2020, 65 en 2023 et 2025 : baisse soumise à la revue tsa-measure).
     stiffness: 67,
     weight: 305,
-    headSize: 100,
+    headSize: 98,
     stringPattern: '16x19',
     category: 'Modern Player',
     playerLevel: ['Advanced', 'Pro'],
@@ -1503,10 +1509,11 @@ export const racquetsDatabase: TennisRacquet[] = [
     brand: 'Völkl',
     model: 'V8',
     variant: 'Pro',
-    stiffness: 64,
+    // 23/10/2026 (faits V129 et V130 de docs/redaction/veille-2026-10-23-ecarts-de-fiche.md) : toutes les V8 Pro lues sont en 18x20 (V-Feel 2020, v3) : plan 16x19 -> 18x20 ; RA 64 -> 67 (V-Feel 2020 mesurée 67 à la RDC, v3 67 chez TW US ; hausse ; règle des mesures L1 du 26/10/2026 : génération voisine, L2 concordante).
+    stiffness: 67,
     weight: 305,
     headSize: 100,
-    stringPattern: '16x19',
+    stringPattern: '18x20',
     category: 'Modern Player',
     playerLevel: ['Advanced'],
     description: 'Völkl V8 Pro, all-court équilibré avec toucher et stabilité.',
@@ -1609,7 +1616,8 @@ export const racquetsDatabase: TennisRacquet[] = [
     model: 'Pure Aero',
     variant: 'Junior 25"',
     stiffness: null,
-    weight: 240,
+    // 23/10/2026 (faits V136 de docs/redaction/veille-2026-10-23-ecarts-de-fiche.md) : Pure Aero Junior 25 Gen9 (Babolat : 98 in², « 235 g +/- 7 g ») ; poids 240 -> 235.
+    weight: 235,
     headSize: 98,
     length: 25,
     balance: 315,
@@ -1885,8 +1893,9 @@ export const racquetsDatabase: TennisRacquet[] = [
     model: 'EZONE',
     variant: 'Junior 25"',
     stiffness: null,
-    weight: 240,
-    headSize: 98,
+    // 23/10/2026 (faits V134 de docs/redaction/veille-2026-10-23-ecarts-de-fiche.md) : Yonex 08EZJ25G : 100 sq.in., 230 g, 16 x 18 ; tamis 98 -> 100, poids 240 -> 230.
+    weight: 230,
+    headSize: 100,
     length: 25,
     balance: 315,
     stringPattern: '16x18',
@@ -1901,12 +1910,13 @@ export const racquetsDatabase: TennisRacquet[] = [
     model: 'EZONE',
     variant: 'Junior 26"',
     stiffness: null,
-    weight: 255,
+    // 23/10/2026 (faits V135 de docs/redaction/veille-2026-10-23-ecarts-de-fiche.md) : Yonex 08EZJ26G : 100 sq.in., 240 g, 16 x 18 ; plan 16x19 -> 16x18, poids 255 -> 240.
+    weight: 240,
     headSize: 100,
     length: 26,
     balance: 320,
     swingWeight: 240,
-    stringPattern: '16x19',
+    stringPattern: '16x18',
     category: 'Junior',
     playerLevel: ['Intermediate', 'Advanced'],
     description: 'EZONE Junior 26" — balle jaune, 10-12 ans. La gamme d\'Alcaraz/Osaka pour les jeunes compétiteurs.',
@@ -2193,7 +2203,7 @@ export function calculateCompatibility(
   let score = 70; // Score de base
   let recommendation = '';
 
-  // RA effectif : médiane observée (64) si la donnée constructeur est absente.
+  // RA effectif : RA par défaut (64, convention du site, non mesurée) si la donnée constructeur est absente.
   // Valeur alignée sur DEFAULT_RACQUET_RA de lib/racquet-scoring.ts. On évite
   // ici un import pour ne pas créer de dépendance depuis la couche données.
   const racquetStiffness = racquet.stiffness ?? 64;

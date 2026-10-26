@@ -402,7 +402,7 @@
                   <span class="text-gray-500 dark:text-gray-400">${label}</span>
                   <span class="font-medium dark:text-white">${TSACatalog.display(value, '/10')}</span>
                 </div>
-                <div class="rating-bar"><div class="rating-fill ${getRatingColor(value)}" style="width: ${(value ?? 0) * 10}%"></div></div>
+                <div class="rating-bar">${typeof value === 'number' ? `<div class="rating-fill ${getRatingColor(value)}" style="width: ${value * 10}%"></div>` : ''}</div>
               </div>`;
     }
 
@@ -416,7 +416,7 @@
             </div>`;
       }
       return `
-            <p class="text-xs font-medium text-gray-700 dark:text-gray-300 mb-3" data-rating-basis="${basis}">${TSARatingLabels.LABEL[basis]}</p>
+            <p class="text-xs font-medium text-gray-700 dark:text-gray-300 mb-3" data-rating-basis="${basis}">${TSARatingLabels.label(string)}</p>
             <div class="space-y-3 mb-4">${ratingBar('Spin', string.spin)}${ratingBar('Control', string.control)}${ratingBar('Comfort', string.comfort)}${ratingBar('Durability', string.durability)}
             </div>`;
     }
@@ -427,7 +427,7 @@
         // Les libellés (cordages harmonisés) se chargent avec le catalogue : jamais de note sans libellé.
         const [{ strings: data }] = await Promise.all([TSACatalog.load(), TSARatingLabels.load()]);
         const ratingNote = document.getElementById('ratingNote');
-        ratingNote.textContent = 'The spin, control, comfort and durability filters and sort options use TSA editorial ratings out of 10. ' + TSARatingLabels.NOTE;
+        ratingNote.textContent = 'The spin, control, comfort and durability filters and sort options use the ratings out of 10 shown on each card (not measured). ' + TSARatingLabels.NOTE;
         ratingNote.classList.remove('hidden');
 
         allStrings = data;
@@ -532,7 +532,7 @@
         if (brand && string.brand !== brand) return false;
         if (type && string.type !== type) return false;
         if (minComfort && string.comfort < parseFloat(minComfort)) return false;
-        if (maxPrice && string.price_eur > parseInt(maxPrice)) return false;
+        if (maxPrice && !(typeof string.price_eur === 'number' && string.price_eur <= parseInt(maxPrice))) return false;
         if (minSpin && string.spin < parseFloat(minSpin)) return false;
         if (minControl && string.control < parseFloat(minControl)) return false;
         if (minDurability && string.durability < parseFloat(minDurability)) return false;
@@ -549,16 +549,23 @@
         return true;
       });
       
-      // Sort results
+      // Sort results. Prix ou note absents : en fin de liste dans les deux sens, jamais lus comme 0 (comme
+      // compareOptionalAsc et compareOptionalDesc du catalogue FR).
+      const absentLast = (x, y, dir) => {
+        const hasX = typeof x === 'number';
+        const hasY = typeof y === 'number';
+        if (!hasX || !hasY) return hasX === hasY ? 0 : (hasX ? -1 : 1);
+        return dir * (x - y);
+      };
       filteredStrings.sort((a, b) => {
         switch (sortFilter) {
           case 'brand': return a.brand.localeCompare(b.brand);
-          case 'price-asc': return a.price_eur - b.price_eur;
-          case 'price-desc': return b.price_eur - a.price_eur;
-          case 'spin-desc': return b.spin - a.spin;
-          case 'control-desc': return b.control - a.control;
-          case 'comfort-desc': return b.comfort - a.comfort;
-          case 'durability-desc': return b.durability - a.durability;
+          case 'price-asc': return absentLast(a.price_eur, b.price_eur, 1);
+          case 'price-desc': return absentLast(a.price_eur, b.price_eur, -1);
+          case 'spin-desc': return absentLast(a.spin, b.spin, -1);
+          case 'control-desc': return absentLast(a.control, b.control, -1);
+          case 'comfort-desc': return absentLast(a.comfort, b.comfort, -1);
+          case 'durability-desc': return absentLast(a.durability, b.durability, -1);
           default: return 0;
         }
       });

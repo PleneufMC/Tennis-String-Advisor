@@ -10,6 +10,7 @@ import { stringRatingNature } from '@/lib/string-rating-nature';
 import { resolveSiteUrl } from '@/lib/seo/route-metadata';
 import { getAlternateUrl } from '@/lib/i18n/route-map';
 import { ARM_ALERT_RCS } from '@/lib/advanced-rcs';
+import { PREPACKED_HYBRIDS, prepackedHybridNotice } from '@/data/prepacked-hybrids';
 
 /**
  * Fiche cordage individuelle (Phase 3 SEO, audit du 13/08/2026).
@@ -78,9 +79,15 @@ export default function StringPage({ params }: { params: { slug: string } }) {
   const name = `${string.brand} ${string.model}`;
   const siteUrl = resolveSiteUrl();
 
+  // Hybride prémonté (règle 3) : rigidité dérivée de ses deux cordages, ou rigidité de fiche sans source si la composition n'est pas
+  // publiée ; la mention le dit sous les caractéristiques (src/data/prepacked-hybrids.ts).
+  const hybridNotice = prepackedHybridNotice(string.id, (id) => {
+    const c = stringsDatabase.find((x) => x.id === id);
+    return c ? `${c.brand} ${c.model}` : id;
+  });
   const specs: Spec[] = [
     { label: 'Type', value: string.type },
-    { label: 'Rigidité', value: string.stiffness, unit: 'lb/in' },
+    { label: 'Rigidité', value: string.stiffness, unit: 'lb/in', estimated: Boolean(PREPACKED_HYBRIDS[string.id]?.components) },
     {
       label: 'Tension recommandée',
       value: string.recommendedTension
@@ -180,6 +187,11 @@ export default function StringPage({ params }: { params: { slug: string } }) {
           Caractéristiques
         </h2>
         <SpecList specs={specs} />
+        {hybridNotice && (
+          <p className="mt-3 text-sm text-slate-600 dark:text-slate-400" data-testid="prepacked-hybrid-notice">
+            {hybridNotice}
+          </p>
+        )}
       </section>
 
       <section className="mt-10">

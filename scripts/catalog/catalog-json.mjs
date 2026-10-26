@@ -12,7 +12,11 @@
  * Règles :
  *   - aucune valeur comblée : un champ absent du TS vaut `null` dans le JSON ;
  *   - aucune provenance testeurs : seuls `racquetsDatabase` et `stringsDatabase`
- *     sont sérialisés (les fichiers *tester-ratings* ne sont pas lus) ;
+ *     sont sérialisés ; seuls les identifiants des cordages harmonisés et des cordages
+ *     à note reprise sont lus (par `rating-basis.mjs`), pour la nature des notes ;
+ *   - les notes /10 des cordages portent leur nature (`rating_basis`, libellés et
+ *     mention dans `meta`), comme sur toutes les surfaces (décision de Pierre du
+ *     10/10/2026 : « garder les notes et les étiqueter partout ») ;
  *   - sortie déterministe (pas d'horodatage) : `audit:ratings` la régénère en
  *     mémoire et la compare octet pour octet au fichier servi.
  */
@@ -21,6 +25,7 @@ import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { RATING_LABELS, ratingBasisOf } from '../en-products/rating-basis.mjs';
 
 export const CATALOG_JSON_PATH = 'public/data/catalog.json';
 export const CATALOG_SCHEMA_VERSION = 1;
@@ -71,6 +76,8 @@ export function toEnString(s) {
     power: n(s.power),
     versatility: n(s.versatility),
     innovation: n(s.innovation),
+    // Nature des notes ci-dessus : 'editorial', 'harmonised', 'third_party' ou 'none', par la fonction des fiches EN ; jamais la provenance.
+    rating_basis: ratingBasisOf(s),
     tension_min: n(s.recommendedTension?.min),
     tension_max: n(s.recommendedTension?.max),
     price_eur: n(s.price?.europe),
@@ -96,6 +103,9 @@ export function buildCatalog(racquetsDatabase, stringsDatabase) {
       generator: 'scripts/catalog/build-catalog-json.mjs',
       notice: 'Generated at build time from the TypeScript catalogue. Do not edit by hand.',
       counts: { racquets: racquets.length, strings: strings.length },
+      // Libellés et mention de référence (public/js/rating-labels.js), pour lire `rating_basis` sans charger une page.
+      rating_labels: RATING_LABELS.LABEL,
+      ratings_notice: RATING_LABELS.NOTE,
     },
     racquets,
     strings,
