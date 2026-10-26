@@ -1195,7 +1195,15 @@
         });
         console.log(`  Type filter (${criteria.types.join(', ')}): ${beforeCount} → ${candidates.length}`);
       }
-      
+
+      // Rigidité maximale (contrainte dure, calculée par stringStiffnessCeiling) : seuls restent les cordages dont la rigidité
+      // de fiche est connue et ne dépasse pas ce plafond ; une rigidité absente n'est jamais supposée sûre (règle 3).
+      if (typeof criteria.maxStiffness === 'number') {
+        const beforeCount = candidates.length;
+        candidates = candidates.filter(s => typeof s.stiffness === 'number' && s.stiffness <= criteria.maxStiffness);
+        console.log(`  Max stiffness filter (${criteria.maxStiffness}): ${beforeCount} → ${candidates.length}`);
+      }
+
       // Tri par une note /10 (confort, puis effet, puis contrôle, dans cet ordre comme avant) : seuls les cordages qui ONT
       // cette note sont classés, aucune note n'est comblée (règle 3 ; avis d'Opus 5.5 du 23/10/2026). Sans candidat noté,
       // aucun cordage n'est choisi au nom de sa note.
@@ -1216,19 +1224,36 @@
     // <seuil-bras-sensible> Bloc évalué tel quel par le contrôle 21 quater d'audit:ratings (scripts/qa-ratings.mts).
     // Le statut de la rigidité (mesure TWU ou non) n'est pas lu ici : la provenance et la table par jauge sont fermées aux
     // surfaces (garde-fous de tsa-core) ; la page dit la valeur de la fiche, comme l'étiquetage du site.
-    // Douleur déclarée : aucune tension conseillée (aucune source n'en fixe une pour un bras douloureux), mais un constat
-    // calculé par le moteur statique sur le montage proposé (avis d'Opus 5.5 du 23/10/2026, point 5).
+    // Aucun montage proposé n'est en alerte (PR « santé » du 26/10/2026) : le cordage est choisi parmi ceux dont l'indice, calculé
+    // par le moteur à la tension la plus haute de la plage proposée, reste sous le plus bas des deux seuils d'alerte (32, bras
+    // sensible). Une douleur déclarée ne change ni la raquette, ni le cordage, ni la tension : elle pose le profil `tennis_elbow`
+    // (seuil 32) et ajoute un constat chiffré sur le montage proposé (charte F7 : aucun conseil dont la condition est un état de santé).
     // Plage de tension du calculateur RCS EN (curseur de rcs-calculator.html : 18 à 30 kg, pas de 0,5 kg).
     const SENSITIVE_TENSION_RANGE = { min: 18, max: 30, step: 0.5 };
 
-    // Cordage de rigidité de fiche la plus basse du catalogue ; à égalité, le premier dans l'ordre du catalogue.
-    function pickLowestStiffnessString(strings) {
-      let best = null;
-      for (const s of strings || []) {
-        if (typeof s.stiffness !== 'number') continue;
-        if (!best || s.stiffness < best.stiffness) best = s;
+    // Plus haute rigidité de cordage (pas de 0,1 lb/in, de 50 à 400 lb/in) à laquelle l'indice du montage, calculé par le moteur
+    // à cette tension, reste sous le seuil d'alerte bras sensible. L'indice croît avec la rigidité (recherche dichotomique) :
+    // passé le premier cordage qui atteint le seuil, tous l'atteignent. null si même un cordage de 50 lb/in l'atteint.
+    function stringStiffnessCeiling(engine, ra, tensionKg) {
+      const threshold = engine.HEALTH_ALERT_SENSITIVE_RCS;
+      const below = (i) => engine.calculate(ra, i / 10, tensionKg).rcs < threshold;
+      let lo = 500;
+      let hi = 4000;
+      if (!below(lo)) return null;
+      if (below(hi)) return hi / 10;
+      while (hi - lo > 1) {
+        const mid = Math.floor((lo + hi) / 2);
+        if (below(mid)) lo = mid;
+        else hi = mid;
       }
-      return best;
+      return lo / 10;
+    }
+
+    // Critères de cordage augmentés de la rigidité maximale qui laisse le montage sous le seuil, à la tension la plus haute de
+    // la plage proposée. Sans raquette ou sans plafond, plus aucun cordage ne passe : la page le dit, elle ne propose pas un montage en alerte.
+    function withSafeStiffness(engine, criteria, racquet, tensionKg) {
+      const ceiling = racquet ? stringStiffnessCeiling(engine, racquet.stiffness, tensionKg) : null;
+      return Object.assign({}, criteria, { maxStiffness: ceiling === null ? -1 : ceiling });
     }
 
     // Plus haute tension de la plage (pas de 0,5 kg) à laquelle l'indice du montage, calculé par le moteur, reste sous le
@@ -1255,28 +1280,23 @@
       };
     }
 
-    // Ce que la page affiche pour une douleur déclarée : titre, valeur, phrase, et la tension à laquelle l'indice est montré.
-    function sensitiveTension(engine, ra, stiffness) {
+    // Constat affiché pour une douleur déclarée, calculé par le moteur sur le montage proposé (tensionKg = tension la plus haute de
+    // la plage proposée) : l'indice, sa distance au seuil et la tension jusqu'à laquelle il reste sous le seuil. Ni conseil, ni matériel.
+    function armAlertNote(engine, ra, stiffness, tensionKg) {
       const L = sensitiveTensionLimit(engine, ra, stiffness);
       const r = SENSITIVE_TENSION_RANGE;
-      const head = 'Arm or shoulder pain declared: the configurator applies the sensitive-arm alert threshold (index ' + L.threshold +
-        '). With this racquet (RA ' + ra + ') and this string (' + stiffness + ' lb/in), ';
-      const tail = ' Each kg changes the index by 0.5 point. No study we know of gives a tension for a painful arm: this is a calculation ' +
-        'on the index, not a medical recommendation. If pain persists, see a health professional.';
-      const title = 'Tension and the alert threshold (' + L.threshold + ')';
-      if (L.none) {
-        return { title: title, value: 'None from ' + r.min + ' to ' + r.max + ' kg', numValue: r.min, limit: L,
-          reason: head + 'no tension from ' + r.min + ' to ' + r.max + ' kg keeps the index below ' + L.threshold + ': it is ' +
-            L.indexNext + ' at ' + r.min + ' kg.' + tail };
-      }
-      if (L.whole) {
-        return { title: title, value: 'Whole range (' + r.min + '-' + r.max + ' kg)', numValue: r.max, limit: L,
-          reason: head + 'the index stays below ' + L.threshold + ' over the whole ' + r.min + ' to ' + r.max + ' kg range: ' +
-            L.indexAtN + ' at ' + r.max + ' kg.' + tail };
-      }
-      return { title: title, value: 'Up to ' + L.n + ' kg', numValue: L.n, limit: L,
-        reason: head + 'the index stays below ' + L.threshold + ' up to ' + L.n + ' kg: ' + L.indexAtN + ' at ' + L.n + ' kg, ' +
-          L.indexNext + ' at ' + (L.n + r.step) + ' kg.' + tail };
+      const index = engine.calculate(ra, stiffness, tensionKg).rcs;
+      const gap = L.threshold - index;
+      const head = 'Arm or shoulder pain declared: the sensitive-arm alert threshold (index ' + L.threshold + ') applies. ' +
+        'This answer changes neither the racquet, nor the string, nor the tension proposed. ' +
+        'Index of this montage (RA ' + ra + ', ' + stiffness + ' lb/in) at ' + tensionKg + ' kg: ' + index + ', ' +
+        (gap > 0 ? gap + ' point' + (gap === 1 ? '' : 's') + ' below the threshold. ' : 'not below the threshold. ');
+      const tail = ' Each kg changes the index by 0.5 point. This is a calculation on the index, not a medical recommendation. ' +
+        'If pain persists, see a health professional.';
+      if (L.none) return head + 'No tension from ' + r.min + ' to ' + r.max + ' kg keeps the index below ' + L.threshold + '.' + tail;
+      if (L.whole) return head + 'It stays below ' + L.threshold + ' over the whole ' + r.min + ' to ' + r.max + ' kg range.' + tail;
+      return head + 'It stays below ' + L.threshold + ' up to ' + L.n + ' kg (' + L.indexAtN + ' at ' + L.n + ' kg, ' +
+        L.indexNext + ' at ' + (L.n + r.step) + ' kg).' + tail;
     }
     // </seuil-bras-sensible>
 
@@ -1285,7 +1305,7 @@
     // anciens replis codés en dur étaient périmés, et le RCS était calculé
     // dessus. Champ absent : « Not published » (TSACatalog.display).
     const DEFAULT_RACQUET_ID = 'babolat-pure-drive-standard';
-    const DEFAULT_STRING_ID = 'babolat-rpm-blast';
+    const DEFAULT_STRING_ID = 'babolat-hybrid-rpm-blast-vs-touch';
 
     function catalogById(list, id) {
       return (list || []).find(item => item.id === id) || null;
@@ -1394,11 +1414,13 @@
       // niveau non renseigné) : couple désigné par son id, lu dans le catalogue.
       let racquet = racquetView(catalogById(racquetsDB, DEFAULT_RACQUET_ID), 'Default racquet for answers that match no dedicated rule.');
       let string = stringView(catalogById(stringsDB, DEFAULT_STRING_ID), 'Default string for answers that match no dedicated rule.');
-      let tension = { value: '23-25 kg', numValue: 24, reason: 'Mid-range tension (23-25 kg).' };
+      let tension = { value: '23-25 kg', numValue: 24, maxKg: 25, reason: 'Mid-range tension (23-25 kg).' };
       let rcsProfile = null;
       
       let racquetCriteria = {};
       let stringCriteria = {};
+      // Les cordages proposés sont choisis parmi ceux qui laissent l'indice sous le seuil d'alerte (withSafeStiffness) : la raison le dit.
+      const SAFE_CLAUSE = ' among those that keep the index below ' + RCS.HEALTH_ALERT_SENSITIVE_RCS + ' at this racquet and tension';
 
       // PRIORITY 1: Adjust for LEVEL (débutant needs confort!)
       if (currentSelections.level === 'debutant') {
@@ -1413,11 +1435,11 @@
           types: ['Multifilament', 'Natural Gut'],
           preferComfort: true
         };
-        tension = { value: '20-22 kg', numValue: 21, reason: 'Low tension (20-22 kg): the RCS index goes down as the tension goes down.' };
+        tension = { value: '20-22 kg', numValue: 21, maxKg: 22, reason: 'Low tension (20-22 kg): the RCS index goes down as the tension goes down.' };
         rcsProfile = 'debutant';
         
         racquet = racquetView(pickBestRacquet(racquetCriteria), 'Flexible, light racquet: RA 66 or below, light or tweener category.');
-        string = ratedStringView(pickBestString(stringCriteria), 'Multifilament or natural gut, string families that are less stiff than polyester on average: one of those with the highest comfort rating in the catalog');
+        string = ratedStringView(pickBestString(withSafeStiffness(RCS, stringCriteria, racquet, tension.maxKg)), 'Multifilament or natural gut, string families that are less stiff than polyester on average: one of those with the highest comfort rating' + SAFE_CLAUSE);;
       } else if (currentSelections.level === 'intermediaire') {
         racquetCriteria = {
           level: 'Intermediate',
@@ -1429,36 +1451,15 @@
           types: ['Multifilament', 'Hybrid'],
           preferComfort: true
         };
-        tension = { value: '22-24 kg', numValue: 23, reason: 'Mid-range tension (22-24 kg).' };
+        tension = { value: '22-24 kg', numValue: 23, maxKg: 24, reason: 'Mid-range tension (22-24 kg).' };
         rcsProfile = 'club';
         
         racquet = racquetView(pickBestRacquet(racquetCriteria), 'Tweener or modern-player category, RA 60 to 67.');
-        string = ratedStringView(pickBestString(stringCriteria), 'One of the multifilament or hybrid strings with the highest comfort rating in the catalog');
+        string = ratedStringView(pickBestString(withSafeStiffness(RCS, stringCriteria, racquet, tension.maxKg)), 'One of the multifilament or hybrid strings with the highest comfort rating' + SAFE_CLAUSE);
       }
 
-      // PRIORITY 2: Adjust for physical issues (OVERRIDES level for safety)
-      // Une douleur déclarée (bras ou épaule) pose le profil `tennis_elbow` : le seuil d'alerte bras sensible (32), comme la case
-      // du configurateur FR. La recommandation s'exprime en contrainte de seuil, jamais en matériel « pour bras sensible » :
-      // cordage de rigidité la plus basse du catalogue (valeur de fiche dite, plus de tri par note de confort, note
-      // éditoriale non mesurée), raquette de RA 66 ou moins, et la tension jusqu'à laquelle l'indice reste sous 32.
-      if (currentSelections.physical === 'bras' || currentSelections.physical === 'epaule') {
-        rcsProfile = 'tennis_elbow';
-        racquetCriteria = {
-          level: currentSelections.level === 'debutant' ? 'Beginner' : 'Intermediate',
-          category: ['Tweener', 'Light', 'Comfort'],
-          maxStiffness: 66, // Increased from 64 to include comfort racquets (65-66 RA)
-          preferComfort: true
-        };
-
-        racquet = racquetView(pickBestRacquet(racquetCriteria), 'RA 66 or below, tweener, light or comfort category: one of the three lowest RA in these categories.');
-        const lowest = pickLowestStiffnessString(stringsDB);
-        string = stringView(lowest, lowest ? 'Lowest stiffness in our catalogue: ' + lowest.stiffness + ' lb/in, the value of its string page (the stiffness the RCS index uses).' : '');
-        // Toujours calculée : pickBestRacquet ne propose que des RA connus, et le cordage le moins rigide a une rigidité de fiche.
-        // Aucune tension héritée du niveau ne reste affichée pour une douleur déclarée.
-        tension = sensitiveTension(RCS, racquet.stiffness, string.stiffness);
-      }
-      // PRIORITY 3: Customize based on style (ONLY for advanced/competition players)
-      else if (currentSelections.level === 'avance' || currentSelections.level === 'competition') {
+      // PRIORITY 2: Customize based on style (ONLY for advanced/competition players)
+      if (currentSelections.level === 'avance' || currentSelections.level === 'competition') {
         if (currentSelections.style === 'puissance') {
           racquetCriteria = {
             level: currentSelections.level === 'avance' ? 'Advanced' : 'Pro',
@@ -1469,11 +1470,11 @@
             types: ['Polyester', 'Co-Polyester'],
             preferControl: true
           };
-          tension = { value: '24-26 kg', numValue: 25, reason: 'Upper mid-range tension (24-26 kg).' };
+          tension = { value: '24-26 kg', numValue: 25, maxKg: 26, reason: 'Upper mid-range tension (24-26 kg).' };
           rcsProfile = 'competiteur';
           
           racquet = racquetView(pickBestRacquet(racquetCriteria), 'Power or modern-player category, RA 66 or above.');
-          string = ratedStringView(pickBestString(stringCriteria), 'One of the polyester or co-polyester strings with the highest control rating in the catalog');
+          string = ratedStringView(pickBestString(withSafeStiffness(RCS, stringCriteria, racquet, tension.maxKg)), 'One of the polyester or co-polyester strings with the highest control rating' + SAFE_CLAUSE);
         } else if (currentSelections.style === 'controle') {
           racquetCriteria = {
             level: currentSelections.level === 'avance' ? 'Advanced' : 'Pro',
@@ -1483,11 +1484,11 @@
             types: ['Polyester'],
             preferControl: true
           };
-          tension = { value: '25-27 kg', numValue: 26, reason: 'High tension (25-27 kg).' };
+          tension = { value: '25-27 kg', numValue: 26, maxKg: 27, reason: 'High tension (25-27 kg).' };
           rcsProfile = 'confirme';
           
           racquet = racquetView(pickBestRacquet(racquetCriteria), 'Control or classic-player category.');
-          string = ratedStringView(pickBestString(stringCriteria), 'One of the polyester strings with the highest control rating in the catalog');
+          string = ratedStringView(pickBestString(withSafeStiffness(RCS, stringCriteria, racquet, tension.maxKg)), 'One of the polyester strings with the highest control rating' + SAFE_CLAUSE);
         } else if (currentSelections.style === 'spin') {
           racquetCriteria = {
             level: currentSelections.level === 'avance' ? 'Advanced' : 'Pro',
@@ -1497,11 +1498,11 @@
             types: ['Polyester', 'Co-Polyester'],
             preferSpin: true
           };
-          tension = { value: '23-25 kg', numValue: 24, reason: 'Mid-range tension (23-25 kg).' };
+          tension = { value: '23-25 kg', numValue: 24, maxKg: 25, reason: 'Mid-range tension (23-25 kg).' };
           rcsProfile = 'club';
           
           racquet = racquetView(pickBestRacquet(racquetCriteria), 'Modern-player or spin category.');
-          string = ratedStringView(pickBestString(stringCriteria), 'One of the polyester or co-polyester strings with the highest spin rating in the catalog');
+          string = ratedStringView(pickBestString(withSafeStiffness(RCS, stringCriteria, racquet, tension.maxKg)), 'One of the polyester or co-polyester strings with the highest spin rating' + SAFE_CLAUSE);
         }
       }
 
@@ -1512,6 +1513,20 @@
           ? stringPickNote + ' Change one answer and try again.'
           : 'No recommendation is available for this profile yet. Change one answer and try again.');
         return;
+      }
+
+      // Rempart : aucun montage proposé n'est en alerte, même si une donnée du catalogue change (défaut compris). L'indice est celui
+      // du moteur à la tension la plus haute de la plage proposée.
+      if (RCS.calculate(racquet.stiffness, string.stiffness, tension.maxKg).rcs >= RCS.HEALTH_ALERT_SENSITIVE_RCS) {
+        showGenerateError('No recommendation is available for this profile yet. Change one answer and try again.');
+        return;
+      }
+
+      // Une douleur déclarée (bras ou épaule) active l'alerte et rien d'autre : profil `tennis_elbow` (seuil 32, comme la case du
+      // configurateur FR) et un constat chiffré. Le matériel et la tension ne dépendent pas de cette réponse (charte F7).
+      if (currentSelections.physical === 'bras' || currentSelections.physical === 'epaule') {
+        rcsProfile = 'tennis_elbow';
+        tension = Object.assign({}, tension, { reason: tension.reason + ' ' + armAlertNote(RCS, racquet.stiffness, string.stiffness, tension.maxKg) });
       }
 
       // Update UI - Racquet
