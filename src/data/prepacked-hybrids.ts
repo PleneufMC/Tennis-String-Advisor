@@ -15,7 +15,7 @@
  * fiche annonçait, étiqueté comme tel. Composition non publiée (aucun cordage nommé) : valeur de la fiche conservée, alerte comprise,
  * mention « composition non publiée, rigidité de fiche sans source », exclue des classements (`isStiffnessRankable`).
  *
- * Le contrôle 22 de `audit:ratings` recalcule chaque valeur, la compare au moteur sur une grille et vérifie sources, jauges et mention.
+ * Le contrôle 24 de `audit:ratings` recalcule chaque valeur, la compare au moteur sur une grille et vérifie sources, jauges et mention.
  */
 
 export interface PrepackedSource {

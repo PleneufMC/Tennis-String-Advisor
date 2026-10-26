@@ -1417,10 +1417,15 @@ export const stringsDatabase: TennisString[] = [
   {
     id: 'kirschbaum-touch-multifiber',
     brand: 'Kirschbaum',
-    model: 'Touch Multifiber',
+    // Nom et jauges officiels (23/10/2026, kirschbaum-shop.de, faits V117 et V118 de docs/redaction/veille-2026-10-23-ecarts-de-fiche.md) :
+    // « Touch Multifibre », « Durchmesser 1.25, 1.30 und 1.35 mm » ; la fiche disait « Multifiber », 1.30 seule. Id conservé.
+    model: 'Touch Multifibre',
     type: 'Multifilament',
-    gauges: ['1.30'],
-    stiffness: 160,
+    gauges: ['1.25', '1.30', '1.35'],
+    // Rigidité (23/10/2026) : TWU « Kirschbaum Touch Multifibre 17 (1.25) » = 165,7 lb/in (jauge 1.25), règle C (jauge la plus rigide mesurée, 2 jauges sur 3) ; remplace 160, sans source. Provenance : src/data/string-stiffness-provenance.ts.
+    stiffness: 165.7,
+    stiffnessByGauge: { '1.25': 165.7, '1.30': 161.7 },
+    stiffnessByGaugeSuspect: true,
     performance: 8.0,
     control: 7.6,
     comfort: 8.8,
@@ -1431,7 +1436,7 @@ export const stringsDatabase: TennisString[] = [
     power: 8.4,
     recommendedTension: { min: 22, max: 27 },
     price: { europe: 15, usa: 16 },
-    description: 'Multifilament artisanal allemand, toucher soyeux et confort marqué. Peu connu mais très apprécié des cordeurs.',
+    description: 'Multifilament allemand : âme multifilament en polyamide, toronnée, sous gaine polyuréthane. Peu connu mais très apprécié des cordeurs.',
     color: 'Natural'
   },
   {

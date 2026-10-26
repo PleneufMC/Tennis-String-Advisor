@@ -1,15 +1,15 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.3.28
+> **Version** : 2.3.31
 > **Date** : 23 octobre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
 > **Branche de référence** : `main` (seule branche longue ; la production Netlify en déploie)
 > **Repo** : https://github.com/PleneufMC/Tennis-String-Advisor.git
 
-**Changelog v2.3.27 → v2.3.28** — **Hybrides prémontés : composition établie, rigidité dérivée de leurs deux cordages et étiquetée ;
-contrôle 22** (avis d'Opus 5.5 du 23/10/2026, point 9 ; Pierre : « je donne le La, vous exécutez » ; `tsa-core` ; numérotée après la
-PR #145, v2.3.27, à renuméroter si elle fusionne avant). **Constat** : les 9 fiches de type « Hybrid » portaient une rigidité sans source,
+**Changelog v2.3.30 → v2.3.31** — **Hybrides prémontés : composition établie, rigidité dérivée de leurs deux cordages et étiquetée ;
+contrôle 24** (avis d'Opus 5.5 du 23/10/2026, point 9 ; Pierre : « je donne le La, vous exécutez » ; `tsa-core` ; numérotée après la
+PR #147 (v2.3.30) ; contrôle numéroté 24, les 22 et 23 étant à #147). **Constat** : les 9 fiches de type « Hybrid » portaient une rigidité sans source,
 et 6 des 7 sets calculables étaient SOUS la valeur que le configurateur donne à leurs deux cordages montés à la main (rapport P du
 22/10). **Compositions lues sur des pages ouvertes** (`src/data/prepacked-hybrids.ts`, extraits et niveaux ; wilson.com, tecnifibre.com et
 head.com refusent les robots, rien n'a été contourné) : RPM Blast 125 + Touch VS 130 (babolat.com, L0 ; jauge 1.30/1.30 retirée) ; Duo
@@ -27,12 +27,63 @@ marquée « (estimé) » et mention sous les caractéristiques (« Rigidité dé
 calcule un hybride… ; aucune mesure du set n'est publiée »). Descriptions corrigées (compositions, « équilibre parfait », « officiel »,
 « confort » d'Ice Code + NRG2, au-dessus de la médiane des hybrides, 196). **Effet** (grille du contrôle 5, `c2-effet-alertes.mts
 --base=a2cee22`) : alertes standard +20 (7,12 → 7,13 %), bras sensible +533 (23,25 → 23,63 %), `calculateCompatibility` +535, **0
-disparue**, 0 rigidité en baisse. **Contrôle 22** de `audit:ratings` : toute fiche « Hybrid » consignée, composants présents et non
+disparue**, 0 rigidité en baisse. **Contrôle 24** de `audit:ratings` : toute fiche « Hybrid » consignée, composants présents et non
 hybrides, rigidité = plus haut de la valeur d'avant et de la valeur dérivée recalculée, indice de la fiche jamais sous celui du moteur
 pour les deux cordages (8 RA × 6 tensions), composition non publiée immobile et hors classements, sources (URL https, niveau, date,
 extrait ≤ 40 mots), jauges, mention et « estimé » de la fiche FR ; 15 tests négatifs. **Couplage voulu** : la rigidité d'un set suit
 désormais celle de ses composants ; une baisse future d'un composant (4G Rough 262, TWU 216, dans les 13 baisses de l'avis du 23/10)
-fera échouer le contrôle 22 tant que le set n'est pas recalculé, donc compté dans les alertes retirées.
+fera échouer le contrôle 24 tant que le set n'est pas recalculé, donc compté dans les alertes retirées.
+**Changelog v2.3.26 → v2.3.27** — **Écarts de fiche : Kirschbaum Touch Multifibre (nom, jauges, rigidité TWU) et Dunlop CX 200
+(RA tenu, deux valeurs sourcées) ; contrôle 14 bis sur deux dossiers** (avis d'Opus 5.5 du 23/10/2026, point 10 ; Pierre : « je donne le
+La, vous exécutez » ; `tsa-core`). **Kirschbaum** : le fabricant écrit « Touch Multifibre » et « Durchmesser 1.25, 1.30 und 1.35 mm »
+(kirschbaum-shop.de, L0) ; la fiche disait « Multifiber », 1.30 seule : nom et jauges alignés, id conservé. **Le nom faux cachait une
+mesure** : l'appariement strict ne trouvait pas les lignes TWU « Kirschbaum Touch Multifibre 16 » (1.30, 161,7 lb/in) et « 17 (1.25) »
+(165,7) ; la rigidité 160, sans source, devient 165,7 par la règle C (hausse ; série suspecte, garde (A) satisfaite ; table par jauge
+générée par `c2-par-jauge.mts`). Description sans « toucher soyeux et confort marqué » (contrôle 19 : la fiche dépasse la médiane des
+multifilaments, qui passe de 162,3 à 162,9). Effet : aucune alerte ajoutée ni retirée sur la grille du contrôle 5 (`c2-effet-alertes.mts
+--base=76f4d62`). **CX 200 (2024)** : RA de la fiche 66 ; constructeur 65 (us.dunlopsports.com, protocole non publié, L0) ; mesure TWU 64
+(page d'essai « Dunlop CX 200 2024 », Flex Rating Test, L1). Q-1 : un RA ne change que sur mesure L1, et 64 est une BAISSE : **RA 66 tenu**
+(`held`, deux faits cités) ; la baisse est mesurée (66 → 64 sur les 1 074 montages de la fiche : −22 alertes standard, −59 bras
+sensible, −34 `calculateCompatibility`, −22 palier « Très Ferme », 0 ajoutée ; 66 → 65 : −13 / −26 / −21 / −12) et attend la revue de
+`tsa-measure` (règle 2). **Contrôle 14 bis** : relit `ALIGNMENT_DOSSIERS` (veille du 10/10 et `docs/redaction/veille-2026-10-23-ecarts-de-fiche.md`,
+faits V117 à V122), échoue sur un numéro en double ou un dossier absent ; champ `model` alignable ; 3 tests négatifs ajoutés (20). Le
+témoin « excellent toucher » du contrôle 19 passe de XR3, devenue la médiane, à NXT (173,7).
+
+**Changelog v2.3.27 → v2.3.28** — **Photos produit, lot du 22/10/2026 : 12 images officielles,
+légende du produit voisin, politique d'accès lue avant toute requête** (demande de Pierre du 22/10/2026 : « rajouter toutes
+les photos de raquettes et cordages manquantes » ; sources bornées par l'orchestrateur ; `tsa-core`). **Couverture** 65 → **74/129
+raquettes**, 60 → **63/179 cordages**, **137 fiches EN sur 308** : Wilson 6 (Blade Feel Comp Jr 25, Burn V6 100LS, Clash 100 Pro V3,
+US Open Jr 21/23/25), Yonex 2 (EZONE 105, avec la légende « coloris présenté : Espresso Brown » ; VCORE 98 Tour), Tecnifibre 3 (Tempo
+285 V2, TGV, Multifeel), Babolat 1 (RPM Team), toutes de fiches alignées le 10/10 ou à caractéristiques identiques. **Quarantaines
+datées** : Pure Strike 100 16x20 (contre-vérification du 23/10 : génération de la fiche non établie, RA ± 3 non discriminante, même
+règle que TF40 305 et FX 500 2026), T-Fight 315S (seule vue entière au code article du 305S), 6 cordages Wilson de la collection officielle (jauge 1,32, coloris, montages hybrides
+différents), Dynamix VP (noir seulement). **Produit voisin** : une photo d'une autre jauge de la fiche porte la légende « jauge présentée :
+1,25 mm » (FR) / « gauge shown » (EN) ; un autre coloris n'est admis que sur une fiche sans coloris (« coloris présenté » / « colour shown », toute fiche raquette) ; une raquette
+voisine, jamais. **Accès** : `fetch` lit robots.txt (règles appliquées à chaque URL), agents.md et llms.txt avant la première requête ;
+User-Agent « automated agent ». **Incident** : agents.md et llms.txt de wilson.com et tecnifibre.com (modèle Shopify) exigent
+« Web Bot Auth » pour les requêtes serveur ; lus après la collecte du lot (consigne reçue en cours de lot) : hôtes consignés, plus
+aucune requête ; leurs 9 photos du lot **restent en place jusqu'à leur remplacement** par une image équivalente d'une
+source dont la politique d'accès le permet (décision de Pierre du 23/10/2026). **Contrôle 12** :
+liste blanche page/image par source (Babolat FR et US), témoins et tests négatifs par source, Head et Luxilon refusés, règles du produit
+voisin, indépendant des photos présentes ; `purge fabricant:<marque>` testée sur les 4 marques (audit vert, manifeste et images
+identiques après reconstruction).
+
+**Changelog v2.3.28 → v2.3.29** — **Photos produit, suite du lot du 22/10/2026 :
+nouvelles marques, procédure d'envoi manuel de Pierre** (consignes de l'orchestrateur du 22/10/2026 ; `tsa-core` ; **empilée sur
+la PR des 12 images**). **Couverture** 74 → **75/129 raquettes**, 63 → **65/179 cordages**, **140 fiches EN sur 308** : Dunlop CX 200
+(site US ; fiche décrite « CX 200 2024 », code article CX200-24 ; RA 65 publiée contre 66 sur la fiche, écart signalé à `tsa-core`), Solinco Confidential (coloris attesté sur le packshot et confirmé par son nom de fichier « …_GRY », « jauge présentée : 1,30 mm »), Kirschbaum Touch
+Multifibre (boutique de la marque, Impressum Kirschbaum Sportartikel GmbH) ; ces trois photos posées avec le GO de Pierre du 23/10/2026
+(« Aucun fabricant ne me reprochera de faire la publicité gratuite de son matériel »). **Sites consignés** (agents.md ou llms.txt exigent Web Bot
+Auth, lus avant toute page) : toroline.com, shop.solincosports.com, diademsports.com, gammasports.com, volkltennis.com ; **sans page
+produit** : princetennis.com, isosport.com (Isospeed) ; **politique illisible** (erreur TLS) : signum-pro.de, aucune requête ; **Wikimedia
+Commons** : 4 catégories lues, aucune photo à génération identifiable. Quarantaines datées : FX 500 (2026, RA non publiée : arbitrage),
+FX 500 Tour et SX 300 Tour (98 in², fiches 100), Outlast et X-Natural (coloris du packshot), Pro Stacked (1.25 non fabriquée),
+Evolution (bleu). **Envoi manuel** : dossier hors dépôt `Documents\TSA_photos_a_importer\`, `<id>.<ext>` et `photos.json`
+(`docs/photos-a-importer/`), commande `import-upload` puis `build`, source `upload:pierre`, crédit propre à chaque image (la source
+réelle), association contrôlée comme pour les marques, refus (moteur de recherche, filigrane annoncé, crédit de marque pour une image
+de tiers, attestations absentes), avertissement de génération, `purge upload:pierre`. **Barrière d'accès** : agents.md lu en premier ;
+un fichier de politique illisible arrête l'hôte sans le consigner. **Contrôle 12** : 11 sources en liste blanche, 53 tests négatifs ;
+purge testée sur `fabricant:solinco`, `fabricant:dunlop`, `fabricant:kirschbaum` et `upload:pierre`.
 
 **Changelog v2.3.25 → v2.3.26** — **Hybrides : un seul indice, celui que l'alerte lit, que le configurateur
 affiche et que le PDF imprime ; contrôle 21 ter** (décision (b)+(a) de l'orchestrateur du 22/10/2026, Pierre ayant délégué ; limite (4)
@@ -1129,8 +1180,9 @@ corrigé dans la même PR.
   définitions tant que ces configurations existent ; aucune migration, aucune alerte ne lit ce champ.
 - Export PDF, thème sombre, i18n FR/EN livrés.
 - Photos produit Tennis Warehouse (29/09/2026), Tennis Warehouse Europe et
-  sites officiels des fabricants (10/10/2026) : 65/129 raquettes, 60/179
-  cordages, hébergées chez nous, FR (125 fiches EN sur 310 comprises) ;
+  sites officiels des fabricants (10/10 et 22/10/2026) : 75/129 raquettes, 65/179
+  cordages, hébergées chez nous, FR (140 fiches EN sur 308 comprises) ; envois
+  manuels de Pierre possibles (`import-upload`, source `upload:pierre`, aucun à ce jour) ;
   drapeau `PRODUCT_IMAGES_ENABLED` et commande `purge` (globale ou par source,
   ex. `purge fabricant:wilson`) pour le retrait ; associations vérifiées par
   script (tamis, plan de cordage, RA, poids, jauge, coloris), quarantaine sinon,
@@ -1139,7 +1191,12 @@ corrigé dans la même PR.
   Pierre du 10/10/2026, en connaissance du risque. Tennis-Point : collecte
   refusée (429), aucune photo. Fabricants : head.com (429) et luxilon.com (403)
   ont refusé le robot, wilson.com, babolat.com, tecnifibre.com et yonex.com
-  l'ont accepté (14 photos).
+  l'ont accepté (14 photos le 10/10, 12 le 22/10) ; depuis le 22/10, wilson.com,
+  tecnifibre.com, toroline.com, shop.solincosports.com, diademsports.com,
+  gammasports.com et volkltennis.com sont consignés (agents.md : Web Bot Auth exigé,
+  non fourni) ; les photos Wilson et Tecnifibre restent en place jusqu'à leur
+  remplacement (Pierre, 23/10/2026) ; solincosports.com, us.dunlopsports.com et
+  kirschbaum-shop.de ouverts (3 photos, GO de Pierre du 23/10/2026).
 - Notes de raquette (décision de Pierre du 10/10/2026) : **aucune note déduite
   des caractéristiques** n'est affichée, nulle part (comparateur, configurateur,
   PDF Premium, FR et EN). Raquette évaluée : « Avis de testeurs (synthèse) »,
@@ -1600,4 +1657,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.3.28 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.3.31 — Tennis String Advisor — « Mesurer avant d'affirmer. »*

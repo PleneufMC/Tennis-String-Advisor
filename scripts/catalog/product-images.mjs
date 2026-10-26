@@ -49,10 +49,11 @@ export async function loadProductImages(repoRoot) {
   writeFileSync(file, js);
   try {
     const { PRODUCT_IMAGES, PRODUCT_IMAGE_CREDITS } = await import(pathToFileURL(file).href);
-    // Le crédit (« Photo : <source> ») vient de la table générée avec le manifeste : même libellé que le FR.
+    // Le crédit (« Photo : <source> ») vient de la table générée avec le manifeste : même libellé que le FR ;
+    // un envoi manuel porte son propre crédit (la source réelle), prioritaire.
     const credits = PRODUCT_IMAGE_CREDITS ?? {};
     const images = Object.fromEntries(
-      Object.entries(PRODUCT_IMAGES ?? {}).map(([id, e]) => [id, { ...e, credit: credits[e.source] ?? '' }]),
+      Object.entries(PRODUCT_IMAGES ?? {}).map(([id, e]) => [id, { ...e, credit: e.credit ?? credits[e.source] ?? '' }]),
     );
     return { enabled, images };
   } finally {
@@ -77,9 +78,11 @@ export function productFigureHtml(images, kind, id, name) {
   const e = productImageFor(images, kind, id);
   const kindLabel = kind === 'racquet' ? 'Racquet' : 'String';
   if (e) {
+    // Produit voisin (22/10/2026) : la légende dit la jauge ou le coloris réellement photographiés.
+    const shown = (e.shownGauge ? ` · gauge shown: ${esc(e.shownGauge)} mm` : '') + (e.shownColour ? ` · colour shown: ${esc(e.shownColour)}` : '');
     return `    <figure class="mt-6" data-product-image="photo">
       <div class="relative h-72 sm:h-80 overflow-hidden rounded-lg bg-white"><img src="${esc(e.file)}" alt="${esc(`${kindLabel} ${name}`)}" width="${e.width}" height="${e.height}" loading="eager" decoding="async" class="h-full w-full object-contain p-2"></div>
-${e.credit ? `      <figcaption class="mt-1.5 text-xs text-gray-600 dark:text-gray-400">Photo: ${esc(e.credit)}</figcaption>
+${e.credit ? `      <figcaption class="mt-1.5 text-xs text-gray-600 dark:text-gray-400">Photo: ${esc(e.credit)}${shown}</figcaption>
 ` : ''}    </figure>
 `;
   }
