@@ -41,9 +41,9 @@
     },
     {
       "fichier": "public/blog/tension-cordage-hiver.html",
-      "empreinte": "sha256:cd24cc47ba1440496164f276290bce0bcd1227e58588a06696034f557776e0e8",
+      "empreinte": "sha256:842e2355fa8d37280f011f7427e07f8a1989ef7c23eaf429d4525361388cecc3",
       "depuis": "2026-10-23",
-      "motif": "Antérieur à la règle images du 10/10/2026 : couverture conforme, visuel de corps à créer (première mission de l’équipe éditoriale) ; corrigé le 22/10/2026 (allégations de santé retirées du protocole, charte F7 v1.2, urgence d'exactitude ; visuel de corps toujours à créer) ; renouvelée le 23/10/2026 : dates de mise à jour (dateModified, sitemap) posées le 22/10/2026 par tsa-acquisition (PR #132) ; corps inchangé, visuel de corps toujours à créer"
+      "motif": "Antérieur à la règle images du 10/10/2026 : couverture conforme, visuel de corps à créer (première mission de l’équipe éditoriale) ; corrigé le 22/10/2026 (allégations de santé retirées du protocole, charte F7 v1.2, urgence d'exactitude ; visuel de corps toujours à créer) ; renouvelée le 23/10/2026 : dates de mise à jour (dateModified, sitemap) posées le 22/10/2026 par tsa-acquisition (PR #132) ; corps inchangé, visuel de corps toujours à créer ; renouvelée le 23/10/2026 : médiane des multifilaments 162,3 → 162,9 lb/in après #145 (Kirschbaum Touch Multifibre, mesure TWU), date de mise à jour au 23/10/2026 ; visuel de corps toujours à créer"
     },
     {
       "fichier": "public/en/blog/best-polyester-tennis-strings-2026.html",
@@ -77,9 +77,9 @@
     },
     {
       "fichier": "public/en/blog/tennis-string-tension-cold-weather.html",
-      "empreinte": "sha256:eb1386a0bde16a95b98428453ec998bdcd7bc3fcb255816da5b01dd257bdcebc",
+      "empreinte": "sha256:c13853edf5daace745687eda0130c9a32f8a53c446c15d0718d135ca4c1b52f1",
       "depuis": "2026-10-23",
-      "motif": "Antérieur à la règle images du 10/10/2026 : couverture conforme, visuel de corps à créer (première mission de l’équipe éditoriale) ; JSON-LD du <head> corrigé le 11/10/2026 (réponse n° 3 du FAQPage alignée sur le texte visible ; corps inchangé) ; corrigé le 22/10/2026 (allégations de santé retirées du protocole, charte F7 v1.2, urgence d'exactitude ; visuel de corps toujours à créer) ; outils EN décrits tels qu'ils sont, même jour ; renouvelée le 23/10/2026 : dates de mise à jour (dateModified, sitemap) posées le 22/10/2026 par tsa-acquisition (PR #132) ; corps inchangé, visuel de corps toujours à créer"
+      "motif": "Antérieur à la règle images du 10/10/2026 : couverture conforme, visuel de corps à créer (première mission de l’équipe éditoriale) ; JSON-LD du <head> corrigé le 11/10/2026 (réponse n° 3 du FAQPage alignée sur le texte visible ; corps inchangé) ; corrigé le 22/10/2026 (allégations de santé retirées du protocole, charte F7 v1.2, urgence d'exactitude ; visuel de corps toujours à créer) ; outils EN décrits tels qu'ils sont, même jour ; renouvelée le 23/10/2026 : dates de mise à jour (dateModified, sitemap) posées le 22/10/2026 par tsa-acquisition (PR #132) ; corps inchangé, visuel de corps toujours à créer ; renouvelée le 23/10/2026 : médiane des multifilaments 162,3 → 162,9 lb/in après #145 (Kirschbaum Touch Multifibre, mesure TWU), date de mise à jour au 23/10/2026 ; visuel de corps toujours à créer"
     }
   ]
 }

@@ -41,10 +41,30 @@ export const RATING_LABELS = nodeRequire('../../public/js/rating-labels.js');
 
 export const BASIS_JSON_PATH = 'public/data/string-rating-basis.json';
 export const TESTER_RATINGS_TS = 'src/data/tester-ratings.ts';
+export const THIRD_PARTY_TS = 'src/data/string-ratings-third-party.ts';
 export const COMFORT_RECALIBRATION_TS = 'src/data/comfort-recalibration.ts';
 
 const cache = new Map();
+const thirdPartyCache = new Map();
 const recalCache = new Map();
+
+/** Identifiants des cordages à note reprise d'un test de revendeur (liste dérivée, contrôle 18), lus dans le TypeScript. */
+export function thirdPartyStringIds(repoRoot = defaultRoot) {
+  if (thirdPartyCache.has(repoRoot)) return thirdPartyCache.get(repoRoot);
+  const ts = createRequire(path.join(repoRoot, 'package.json'))('typescript');
+  const js = ts.transpileModule(readFileSync(path.join(repoRoot, THIRD_PARTY_TS), 'utf8'), {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 },
+    fileName: THIRD_PARTY_TS,
+  }).outputText;
+  if (/^\s*import\s|\brequire\(/m.test(js)) throw new Error(`${THIRD_PARTY_TS} importe un autre module : lecteur à adapter`);
+  const sandbox = { exports: {} };
+  vm.runInNewContext(js, sandbox, { filename: THIRD_PARTY_TS, timeout: 5000 });
+  const ids = sandbox.exports.THIRD_PARTY_RATED_STRING_IDS;
+  if (!Array.isArray(ids)) throw new Error(`${THIRD_PARTY_TS} : THIRD_PARTY_RATED_STRING_IDS introuvable après transpilation`);
+  const set = new Set(ids);
+  thirdPartyCache.set(repoRoot, set);
+  return set;
+}
 
 /** Exportation `name` d'un module TypeScript de src/data SANS import, lue par transpilation isolée (module `vm`). */
 function readTsExport(repoRoot, file, name) {
@@ -95,14 +115,14 @@ export function harmonisedStringIds(repoRoot = defaultRoot) {
   return set;
 }
 
-/** 'none' | 'editorial' | 'harmonised' pour une ligne du catalogue (snake_case) ou une entrée TS. */
+/** 'none' | 'third_party' | 'harmonised' | 'editorial' pour une ligne du catalogue (snake_case) ou une entrée TS. */
 export function ratingBasisOf(s, repoRoot = defaultRoot) {
-  return RATING_LABELS.basisOf(s, harmonisedStringIds(repoRoot));
+  return RATING_LABELS.basisOf(s, harmonisedStringIds(repoRoot), thirdPartyStringIds(repoRoot));
 }
 
 /** Libellé complet d'une ligne du catalogue : nature des notes, plus la mention D2 si la note de confort a été recalée. */
 export function ratingLabelOf(s, repoRoot = defaultRoot) {
-  return RATING_LABELS.labelOf(s, harmonisedStringIds(repoRoot), recalibratedStringIds(repoRoot));
+  return RATING_LABELS.labelOf(s, harmonisedStringIds(repoRoot), thirdPartyStringIds(repoRoot), recalibratedStringIds(repoRoot));
 }
 
 /**
@@ -119,6 +139,8 @@ export function buildBasisFile(strings, repoRoot = defaultRoot) {
     if (!s) throw new Error(`cordage harmonisé absent du catalogue : ${id} (src/data/tester-ratings.ts)`);
     if (!RATING_LABELS.hasRating(s)) throw new Error(`cordage harmonisé sans aucune note publiée : ${id}`);
   }
+  const thirdParty = [...thirdPartyStringIds(repoRoot)].sort();
+  for (const id of thirdParty) if (!byId.get(id)) throw new Error(`cordage à note reprise absent du catalogue : ${id} (${THIRD_PARTY_TS})`);
   const recalibrated = [...recalibratedStringIds(repoRoot)].sort();
   for (const id of recalibrated) {
     const s = byId.get(id);
@@ -134,6 +156,7 @@ export function buildBasisFile(strings, repoRoot = defaultRoot) {
       count: ids.length,
     },
     harmonised: ids,
+    third_party: thirdParty,
     // D2 (23/10/2026) : cordages dont la note de confort a été recalée sur la rigidité mesurée (src/data/comfort-recalibration.ts).
     comfort_recalibrated: recalibrated,
   };
