@@ -49,6 +49,14 @@
  *  7 ter. REPLI DU CHARGEUR EN (23/10/2026) — public/js/rating-labels.js exécuté tel quel avec une liste des
  *     natures injoignable, puis d'un ancien format sans `third_party` : toute note porte « Rating not measured »,
  *     jamais une nature attribuée (« équipe » par défaut serait attribuer à TSA une note reprise d'un tiers).
+ *  2 bis. D2 (23/10/2026) — les cordages dont la note de confort a été recalée sur la rigidité
+ *     mesurée (src/data/comfort-recalibration.ts) portent, en plus du libellé de leur nature,
+ *     la mention CONTRACT.recalibrated, mot pour mot ; les autres ne la portent pas. La liste
+ *     lue par le générateur est celle de string-rating-basis.json (« comfort_recalibrated »). Seule
+ *     exception, exacte, à « measured » sans négation : « measured stiffness (TWU) » de cette mention
+ *     (la rigidité TWU est mesurée, la note ne l'est pas). Le chargeur EN lu (pages dynamiques) ajoute
+ *     la mention aux fiches recalées et à elles seules ; un fichier sans « comfort_recalibrated » est
+ *     un format inattendu : repli 7 ter.
  *  8. TESTS NÉGATIFS — chaque garde-fou est éprouvé sur une altération qui DOIT échouer
  *     (libellé retiré, faux libellé, libellé placé après les notes, note modifiée, note
  *     dans une meta, aggregateRating, note hors bloc, page sans libellés, liste
@@ -68,7 +76,7 @@ import path from 'node:path';
 import vm from 'node:vm';
 import { buildCatalog, loadTsCatalog } from './catalog/catalog-json.mjs';
 import { loadProductImages } from './catalog/product-images.mjs';
-import { BASIS_JSON_PATH, RATING_LABELS, TESTER_RATINGS_TS, THIRD_PARTY_TS, harmonisedStringIds, thirdPartyStringIds } from './en-products/rating-basis.mjs';
+import { BASIS_JSON_PATH, COMFORT_RECALIBRATION_TS, RATING_LABELS, TESTER_RATINGS_TS, THIRD_PARTY_TS, harmonisedStringIds, recalibratedStringIds, thirdPartyStringIds } from './en-products/rating-basis.mjs';
 import { stringPage } from './en-products/build-en-product-pages.mjs';
 
 const ROOT = process.cwd();
@@ -86,6 +94,8 @@ const CONTRACT = {
   // Repli si la liste des natures est injoignable : aucune nature attribuée, aucun auteur nommé (jamais « équipe »).
   unknown: 'Rating not measured',
   none: 'Not published',
+  // D2 du 23/10/2026 : mention ajoutée au libellé des cordages dont la note de confort a été recalée sur la rigidité mesurée.
+  recalibrated: 'comfort rating recalibrated on measured stiffness (TWU)',
   note: 'Ratings out of 10 are not measured; each rating shows its basis. The RCS index and the arm alert use stiffness (lb/in) only.',
   // Mention française (src/lib/string-rating-nature.ts) : sert au seul contrôle de dérive.
   noteFr: "Notes /10 non mesurées : la nature de chaque note est indiquée à côté. L'indice RCS n'utilise que la rigidité (lb/in) ; l'alerte bras peut aussi se déclencher sur la note de confort.",
@@ -95,6 +105,9 @@ const BASES = ['editorial', 'harmonised', 'third_party', 'unknown', 'none'];
 const NOTE_FR_LEAD = 'Notes /10 non mesurées';
 // Aucune note /10 n'est une mesure : « measured » sans négation est refusé dans les libellés et la mention.
 const AFFIRMS_MEASURE = /(?<!not )(?<!not laboratory-)measured/i;
+// Seule exception, exacte et unique : la mention D2, où « measured stiffness (TWU) » qualifie la rigidité TWU, jamais la note.
+const D2_MEASURED_STIFFNESS = 'measured stiffness (TWU)';
+const recalibratedAffirmsMeasure = (t) => AFFIRMS_MEASURE.test(t.split(D2_MEASURED_STIFFNESS).join(''));
 // Formules écartées : « la rigidité est la grandeur mesurée » n'est pas assurée pour les 181 fiches.
 const DISCARDED_RE = /measured quantity|grandeur mesur[ée]e/i;
 const NOTE_FIELDS = ['control', 'comfort', 'spin', 'power', 'durability'];
@@ -193,7 +206,7 @@ function ratingsSection(html) {
   return { start, end, html: html.slice(start, end) };
 }
 
-function ficheProblems(html, { id, row, expected }) {
+function ficheProblems(html, { id, row, expected, recal = false }) {
   const problems = [];
   const sec = ratingsSection(html);
   if (!sec) return [`${id} : bloc « Playing ratings (out of 10) » introuvable`];
@@ -206,7 +219,8 @@ function ficheProblems(html, { id, row, expected }) {
     const [, basis, inner] = basisTags[0];
     if (basis !== expected) problems.push(`${id} : nature « ${basis} » affichée, « ${expected} » attendue (liste des harmonisés, notes publiées)`);
     const shown = textOf(inner);
-    if (shown !== CONTRACT[basis]) problems.push(`${id} : libellé « ${shown} », « ${CONTRACT[basis]} » attendu`);
+    const want = recal && expected !== 'none' ? `${CONTRACT[basis]}; ${CONTRACT.recalibrated}` : CONTRACT[basis];
+    if (shown !== want) problems.push(`${id} : libellé « ${shown} », « ${want} » attendu`);
   }
   if (expected === 'none') {
     if (bars.length > 0) problems.push(`${id} : ${bars.length} note(s) affichée(s) pour un cordage sans note publiée`);
@@ -256,10 +270,12 @@ function frMetadataProblems(src) {
   return problems;
 }
 
-function basisFileProblems(json, expectedIds, expectedThirdParty = []) {
+function basisFileProblems(json, expectedIds, expectedThirdParty = [], expectedRecalibrated = [...recalibratedStringIds(ROOT)]) {
   const problems = [];
   if (!json || !Array.isArray(json.harmonised)) return [`${BASIS_JSON_PATH} : format inattendu`];
   if ([...(json.third_party ?? [])].sort().join() !== [...expectedThirdParty].sort().join()) problems.push(`${BASIS_JSON_PATH} : liste des notes reprises ≠ ${THIRD_PARTY_TS}`);
+  const recal = Array.isArray(json.comfort_recalibrated) ? [...json.comfort_recalibrated].sort().join() : null;
+  if (recal !== [...expectedRecalibrated].sort().join()) problems.push(`${BASIS_JSON_PATH} : « comfort_recalibrated » = ${recal ?? 'absent'}, ${[...expectedRecalibrated].sort().join()} attendu (${COMFORT_RECALIBRATION_TS})`);
   const got = [...json.harmonised].sort();
   const want = [...expectedIds].sort();
   for (const id of want) if (!got.includes(id)) problems.push(`${BASIS_JSON_PATH} : « ${id} » (harmonisé) absent`);
@@ -279,7 +295,9 @@ function labelsContractProblems(labels) {
   for (const k of BASES) {
     if (labels.LABEL[k] !== CONTRACT[k]) problems.push(`${LABELS_JS} : libellé « ${k} » = « ${labels.LABEL[k]} », « ${CONTRACT[k]} » attendu`);
   }
+  if (labels.RECALIBRATED !== CONTRACT.recalibrated) problems.push(`${LABELS_JS} : mention D2 = « ${labels.RECALIBRATED} », « ${CONTRACT.recalibrated} » attendue`);
   for (const t of [...Object.values(labels.LABEL), labels.NOTE]) if (AFFIRMS_MEASURE.test(t)) problems.push(`${LABELS_JS} : « ${t} » présente une note comme mesurée`);
+  if (recalibratedAffirmsMeasure(labels.RECALIBRATED)) problems.push(`${LABELS_JS} : mention D2 « ${labels.RECALIBRATED} » présente une note comme mesurée (seule « ${D2_MEASURED_STIFFNESS} » est admise)`);
   if (labels.NOTE !== CONTRACT.note) problems.push(`${LABELS_JS} : mention courte = « ${labels.NOTE} », « ${CONTRACT.note} » attendue`);
   if (labels.NOTE_FIELDS.join() !== NOTE_FIELDS.join()) problems.push(`${LABELS_JS} : NOTE_FIELDS = ${labels.NOTE_FIELDS.join()}, ${NOTE_FIELDS.join()} attendu`);
   // Les pages lisent l'URL ; le générateur écrit le chemin : les deux doivent désigner le même fichier.
@@ -351,6 +369,26 @@ async function fallbackProblems(labelsSrc, catalogRows, fetchImpl = () => Promis
   return problems;
 }
 
+/**
+ * Chargeur EN, liste des natures lue : chaque cordage porte le libellé de sa nature, plus la mention D2 s'il est recalé et
+ * affiche une note de confort (pages dynamiques : catalogue, comparateur, configurateur).
+ */
+async function loadedLabelProblems(labelsSrc, catalogRows, fetchImpl) {
+  const ctx = { console: { error() {}, log() {}, warn() {} }, fetch: fetchImpl };
+  vm.createContext(ctx);
+  vm.runInContext(labelsSrc, ctx, { filename: LABELS_JS });
+  const api = ctx.TSARatingLabels;
+  await api.load();
+  const problems = [];
+  for (const r of catalogRows) {
+    const basis = expectedOf(r);
+    const want = recalOf(r) ? `${CONTRACT[basis]}; ${CONTRACT.recalibrated}` : CONTRACT[basis];
+    const got = api.label(r);
+    if (got !== want) problems.push(`${LABELS_JS}, liste lue : ${r.id} étiqueté « ${got} », « ${want} » attendu`);
+  }
+  return problems;
+}
+
 /** Formule écartée (« la rigidité est la grandeur mesurée ») dans un texte de surface. */
 function discardedPhraseProblems(where, text) {
   const m = DISCARDED_RE.exec(text);
@@ -366,7 +404,7 @@ process.stdout.write('QA nature des notes des cordages (EN)\n');
 {
   const problems = labelsContractProblems(RATING_LABELS);
   if (problems.length) problems.forEach(fail);
-  else ok('libellés : les quatre libellés et la mention courte sont conformes, mot pour mot, aux libellés de référence (principe de Pierre du 10/10/2026, formulation tranchée par Opus 5.5 le 23/10/2026), aucun ne présente une note comme mesurée');
+  else ok('libellés : les quatre libellés, la mention D2 et la mention courte sont conformes, mot pour mot, aux libellés de référence (principe de Pierre du 10/10/2026, formulation tranchée par Opus 5.5 le 23/10/2026), aucun ne présente une note comme mesurée (seule exception, exacte : « measured stiffness (TWU) » de la mention D2)');
 }
 
 // 2. Cordages harmonisés ----------------------------------------------------
@@ -411,6 +449,19 @@ let fromFile = null;
 const harmonised = new Set(fromGenerator);
 const thirdParty = thirdPartyStringIds(ROOT);
 const expectedOf = (r) => (!hasRating(r) ? 'none' : thirdParty.has(r.id) ? 'third_party' : harmonised.has(r.id) ? 'harmonised' : 'editorial');
+// D2 : mention attendue sur une fiche recalée qui affiche une note de confort.
+const recalibratedIds = recalibratedStringIds(ROOT);
+const recalOf = (r) => recalibratedIds.has(r.id) && r.comfort !== null && r.comfort !== undefined && hasRating(r);
+{
+  const before = failures;
+  for (const id of recalibratedIds) {
+    const r = rowById.get(id);
+    if (!r) fail(`cordage recalé (D2) « ${id} » absent du catalogue`);
+    else if (!recalOf(r)) fail(`cordage recalé (D2) « ${id} » sans note de confort publiée`);
+  }
+  if (recalibratedIds.size === 0) fail(`${COMFORT_RECALIBRATION_TS} : aucune fiche recalée lue (format du fichier modifié ?)`);
+  if (failures === before) ok(`D2 : ${recalibratedIds.size} cordages à note de confort recalée, tous au catalogue avec une note de confort ; mention « ${CONTRACT.recalibrated} » attendue sur eux seuls`);
+}
 const { images } = await loadProductImages(ROOT);
 const rendered = new Map(rows.map((r) => [r.id, stringPage(r, images)]));
 {
@@ -423,7 +474,7 @@ const rendered = new Map(rows.map((r) => [r.id, stringPage(r, images)]));
     census[expected]++;
     if (expected !== 'none') notes += NOTE_FIELDS.length;
     const html = rendered.get(r.id);
-    ficheProblems(html, { id: r.id, row: r, expected }).forEach(fail);
+    ficheProblems(html, { id: r.id, row: r, expected, recal: recalOf(r) }).forEach(fail);
     const file = path.join(ROOT, FICHES_DIR, `${r.id}.html`);
     if (existsSync(file)) {
       onDisk++;
@@ -557,12 +608,23 @@ const catalogMem = buildCatalog(racquetsDatabase, stringsDatabase);
 // 7 ter. Repli du chargeur EN : liste des natures injoignable, ou d'un ancien format (sans `third_party`) ----------
 // Aucune nature attribuée, jamais « équipe » par défaut : ce serait attribuer à TSA une note reprise d'un tiers (règle 3).
 const labelsSrc = readFileSync(path.join(ROOT, LABELS_JS), 'utf8');
-const oldFormatFetch = () => Promise.resolve({ ok: true, json: () => Promise.resolve({ harmonised: [...fromGenerator] }) });
+const basisFetch = (data) => () => Promise.resolve({ ok: true, json: () => Promise.resolve(data) });
+const oldFormatFetch = basisFetch({ harmonised: [...fromGenerator], comfort_recalibrated: [...recalibratedIds] });
+// D2 : sans « comfort_recalibrated », une note recalée perdrait sa mention : format inattendu, même repli.
+const noRecalFetch = basisFetch({ harmonised: [...fromGenerator], third_party: [...thirdParty] });
+const fullFetch = basisFetch({ harmonised: [...fromGenerator], third_party: [...thirdParty], comfort_recalibrated: [...recalibratedIds] });
 const fallbackUnreachable = await fallbackProblems(labelsSrc, rows);
 const fallbackOldFormat = await fallbackProblems(labelsSrc, rows, oldFormatFetch);
-[...fallbackUnreachable, ...fallbackOldFormat].forEach(fail);
-if (fallbackUnreachable.length + fallbackOldFormat.length === 0) {
-  ok(`repli de ${LABELS_JS} (liste injoignable, ou sans third_party) : ${rows.filter(hasRating).length} cordages notés étiquetés « ${CONTRACT.unknown} », aucune nature attribuée, ${rows.filter((r) => !hasRating(r)).length} « ${CONTRACT.none} », erreur en console`);
+const fallbackNoRecal = await fallbackProblems(labelsSrc, rows, noRecalFetch);
+[...fallbackUnreachable, ...fallbackOldFormat, ...fallbackNoRecal].forEach(fail);
+if (fallbackUnreachable.length + fallbackOldFormat.length + fallbackNoRecal.length === 0) {
+  ok(`repli de ${LABELS_JS} (liste injoignable, sans third_party ou sans comfort_recalibrated) : ${rows.filter(hasRating).length} cordages notés étiquetés « ${CONTRACT.unknown} », aucune nature attribuée, ${rows.filter((r) => !hasRating(r)).length} « ${CONTRACT.none} », erreur en console`);
+}
+// Liste lue : mention D2 sur les fiches recalées et elles seules.
+{
+  const loaded = await loadedLabelProblems(labelsSrc, rows, fullFetch);
+  loaded.forEach(fail);
+  if (loaded.length === 0) ok(`chargeur ${LABELS_JS}, liste lue : ${rows.filter(recalOf).length} cordages recalés étiquetés avec la mention D2, aucun autre`);
 }
 // Altérations du repli, mesurées ici (le chargeur est asynchrone) et rejouées parmi les tests négatifs.
 const fallbackToTeam = await fallbackProblems(labelsSrc.replace("if (!state.ok) return hasRating(s) ? 'unknown' : 'none';", ''), rows);
@@ -571,6 +633,12 @@ const fallbackOldFormatAccepted = await fallbackProblems(
   rows,
   oldFormatFetch,
 );
+const fallbackNoRecalAccepted = await fallbackProblems(
+  labelsSrc.replace(' || !Array.isArray(data.comfort_recalibrated)', '').replace('new Set(data.comfort_recalibrated)', 'new Set(data.comfort_recalibrated || [])'),
+  rows,
+  noRecalFetch,
+);
+const loadedWithoutD2 = await loadedLabelProblems(labelsSrc.replace('state.ok ? state.recalibrated : null', 'null'), rows, fullFetch);
 
 // 8. Tests négatifs -----------------------------------------------------------
 {
@@ -585,7 +653,9 @@ const fallbackOldFormatAccepted = await fallbackProblems(
     process.stdout.write(`\nNON CONFORME — ${failures} échec(s), ${warnings} avertissement(s)\n`);
     process.exit(1);
   }
-  const ctx = (r) => ({ id: r.id, row: r, expected: expectedOf(r) });
+  const ctx = (r) => ({ id: r.id, row: r, expected: expectedOf(r), recal: recalOf(r) });
+  const R = rows.find((r) => recalOf(r));
+  const rHtml = R ? rendered.get(R.id) : null;
   // Une altération qui ne trouve pas sa cible ne prouverait rien : elle échoue bruyamment.
   const swap = (text, pattern, replacement) => {
     const hit = typeof pattern === 'string' ? text.includes(pattern) : pattern.test(text);
@@ -639,6 +709,11 @@ const fallbackOldFormatAccepted = await fallbackProblems(
     ['cordage non harmonisé dans la liste', () => basisFileProblems({ harmonised: [...fromGenerator, E.id] }, fromGenerator)],
     ['note dans la meta FR', () => frMetadataProblems(swap(frSource, 'Calculez le RCS de ce cordage avec votre raquette.`', 'Contrôle ${string.control}/10. Calculez le RCS de ce cordage avec votre raquette.`'))],
     ["note dans la meta d'une page FR construite", () => metadataProblems(swap(frBuilt ?? FR_PAGE_SAMPLE, /(<meta name="description" content=")/, '$1Contrôle 9/10. '), 'page FR')],
+    ['mention D2 retirée d\'une fiche recalée', () => ficheProblems(inSection(rHtml, (s) => swap(s, `; ${CONTRACT.recalibrated}`, '')), ctx(R))],
+    ['mention D2 sur une fiche non recalée', () => ficheProblems(inSection(eHtml, (s) => swap(s, `>${CONTRACT.editorial}<`, `>${CONTRACT.editorial}; ${CONTRACT.recalibrated}<`)), ctx(E))],
+    ['mention D2 reformulée', () => ficheProblems(inSection(rHtml, (s) => swap(s, CONTRACT.recalibrated, 'comfort rating measured (TWU)')), ctx(R))],
+    ['liste des recalées absente du fichier', () => basisFileProblems({ harmonised: fromGenerator }, fromGenerator)],
+    ['mention D2 du contrat modifiée', () => labelsContractProblems({ ...RATING_LABELS, RECALIBRATED: 'comfort rating measured by TWU' })],
     ['libellé du contrat modifié', () => labelsContractProblems({ ...RATING_LABELS, LABEL: { ...RATING_LABELS.LABEL, harmonised: 'TSA rating, harmonised' } })],
     ['URL de la liste des harmonisés ≠ fichier généré', () => labelsContractProblems({ ...RATING_LABELS, BASIS_URL: '/data/harmonised.json' })],
     [
@@ -665,6 +740,10 @@ const fallbackOldFormatAccepted = await fallbackProblems(
     ['libellé affirmant une note mesurée', () => labelsContractProblems({ ...RATING_LABELS, LABEL: { ...RATING_LABELS.LABEL, editorial: 'TSA team rating, laboratory measured' } })],
     ['liste injoignable : repli sur « équipe »', () => fallbackToTeam.filter((m) => m.includes(T.id) && m.includes(CONTRACT.editorial))],
     ['liste sans third_party acceptée : note reprise étiquetée « équipe »', () => fallbackOldFormatAccepted.filter((m) => m.includes(T.id) && m.includes(CONTRACT.editorial))],
+    ['liste sans comfort_recalibrated acceptée : nature attribuée à une fiche recalée', () => fallbackNoRecalAccepted.filter((m) => m.includes(R.id))],
+    ['chargeur lu : mention D2 absente des pages dynamiques', () => loadedWithoutD2.filter((m) => m.includes(R.id))],
+    ['mention D2 : note de confort dite mesurée', () => (recalibratedAffirmsMeasure('comfort rating measured (TWU)') ? ['measured'] : [])],
+    ['mention D2 : « measured stiffness » sans « (TWU) »', () => (recalibratedAffirmsMeasure('comfort rating recalibrated on measured stiffness') ? ['measured'] : [])],
     [
       'mention FR tronquée dans src/',
       () => frMentionProblems([{ path: 'src/x.tsx', src: "const NOTE = 'Notes /10 non mesurées : la nature de chaque note est indiquée à côté.';" }]).problems,
@@ -694,7 +773,7 @@ const fallbackOldFormatAccepted = await fallbackProblems(
   }
   if (failures === before) {
     ok(
-      `tests négatifs : ${negatives.length} altérations détectées (libellé, nature, ordre, note, meta, JSON-LD, page dynamique, liste, meta FR, contrat, ancienne mention, mention FR, export, notes reprises, « mesurée », repli) ; ` +
+      `tests négatifs : ${negatives.length} altérations détectées (libellé, nature, ordre, note, meta, JSON-LD, page dynamique, liste, meta FR, contrat, ancienne mention, mention FR, export, notes reprises, « mesurée », repli, D2) ; ` +
         `${controls.length} témoins positifs acceptés (mention FR bien écrite)`,
     );
   }
