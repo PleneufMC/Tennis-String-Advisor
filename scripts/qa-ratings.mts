@@ -5546,11 +5546,26 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
 // échoue si, par rapport à la référence : une note de confort monte, disparaît, ou apparaît sur une fiche « Non publié » (valeur
 // comblée) ; une fiche ou une raquette disparaît ; ou une alerte bras de la grille du contrôle 5 disparaît (moteur réel, deux
 // profils, mêmes entrées que la référence sauf les données changées). Exceptions : liste explicite, datée, motivée, avec le GO de
-// Pierre ; vide à ce jour ; une exception inutilisée échoue. Tests négatifs sur des copies altérées du catalogue.
+// Pierre ; 10 au 26/10/2026 (lot P6) ; une exception inutilisée échoue. Tests négatifs sur des copies altérées du catalogue.
 {
   const before23 = failures.length;
   const REF23 = 'data/reference/second-filet-2026-10-23.json';
-  const EXCEPTIONS23: ReadonlyArray<{ id: string; date: string; motive: string; go: string }> = [];
+  // P6 (26/10/2026) : rigidités abaissées à leur mesure TWU (règle C, trois critères de la mesure AD de tsa-measure), GO explicite de Pierre.
+  // Head Reflex MLT, Head RIP Control et Isospeed Control Classic baissent aussi, sans alerte à retirer sur cette grille : pas d'exception.
+  const P6_GO = "Pierre, GO explicite du 26/10/2026 (transmis par l'orchestrateur) : baisses P6";
+  const P6_MOTIVE = 'rigidité abaissée à la mesure TWU de la fiche (règle C ; mesure AD de tsa-measure du 23/10/2026 ; provenance string-stiffness-provenance.ts)';
+  const EXCEPTIONS23: ReadonlyArray<{ id: string; date: string; motive: string; go: string }> = [
+    { id: 'solinco-tour-bite-diamond-rough', date: '2026-10-26', motive: P6_MOTIVE, go: P6_GO },
+    { id: 'yonex-poly-tour-tough', date: '2026-10-26', motive: P6_MOTIVE, go: P6_GO },
+    { id: 'luxilon-4g-soft', date: '2026-10-26', motive: P6_MOTIVE, go: P6_GO },
+    { id: 'luxilon-4g-rough', date: '2026-10-26', motive: P6_MOTIVE, go: P6_GO },
+    { id: 'head-lynx', date: '2026-10-26', motive: P6_MOTIVE, go: P6_GO },
+    { id: 'luxilon-alu-power-soft', date: '2026-10-26', motive: P6_MOTIVE, go: P6_GO },
+    { id: 'luxilon-adrenaline-rough', date: '2026-10-26', motive: P6_MOTIVE, go: P6_GO },
+    { id: 'head-hawk-rough', date: '2026-10-26', motive: P6_MOTIVE, go: P6_GO },
+    { id: 'tecnifibre-ruff-code', date: '2026-10-26', motive: P6_MOTIVE, go: P6_GO },
+    { id: 'yonex-poly-tour-air', date: '2026-10-26', motive: P6_MOTIVE, go: P6_GO },
+  ];
   type RefS = { type: string; stiffness: number; twu: number | null; comfort: number | null };
   type RefR = { ra: number; weight: number | null };
   let ref: { strings: Record<string, RefS>; racquets: Record<string, RefR> } | null = null;
@@ -5638,7 +5653,7 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     if (failures.length === before23) {
       ok(
         `second filet : par rapport à la référence du 23/10/2026 (${Object.keys(ref.strings).length} cordages, ${Object.keys(ref.racquets).length} raquettes), aucune note de confort ` +
-          `relevée, retirée ni créée, aucune fiche ni raquette retirée, 0 alerte bras disparue (${real.added} ajoutée(s)) ; aucune exception ; ` +
+          `relevée, retirée ni créée, aucune fiche ni raquette retirée, 0 alerte bras disparue hors exceptions (${real.added} ajoutée(s)) ; ${EXCEPTIONS23.length} exception(s) datée(s), motivée(s), avec le GO de Pierre (${[...new Set(EXCEPTIONS23.map((x) => x.date))].join(', ')}) ; ` +
           `${detected} tests négatifs détectés, ${accepted} témoins positifs acceptés`
       );
     }
@@ -5701,7 +5716,10 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
       if (a === b) issues.push(`${id} : deux fois le même composant`);
       if (ca.type === 'Hybrid' || cb.type === 'Hybrid') issues.push(`${id} : un composant est lui-même un hybride`);
       const derived = PH.prepackedHybridStiffness(ca.stiffness, cb.stiffness, e.orderFixed);
-      const expected = Math.max(e.before, derived);
+      // Tenue (règle 2) : un composant a baissé sur mesure, le set garde sa valeur jusqu'à un GO ; une tenue inutile, sans date ou sans motif échoue.
+      const expected = e.held ? e.held.value : Math.max(e.before, derived);
+      if (e.held && !(e.held.value > Math.max(e.before, derived))) issues.push(`${id} : tenue inutile (${e.held.value} ≤ ${Math.max(e.before, derived)}, plus haut de la valeur d'avant et de la valeur dérivée)`);
+      if (e.held && (!/^\d{4}-\d{2}-\d{2}$/.test(e.held.date) || e.held.why.trim().length < 60)) issues.push(`${id} : tenue sans date ou sans motif`);
       if (Math.abs(s.stiffness - expected) > 1e-9) issues.push(`${id} : rigidité ${s.stiffness} ≠ ${expected} (plus haut de ${e.before} et de la valeur dérivée de ${a} ${ca.stiffness} et ${b} ${cb.stiffness})`);
       const orders: [number, number][] = e.orderFixed ? [[ca.stiffness, cb.stiffness]] : [[ca.stiffness, cb.stiffness], [cb.stiffness, ca.stiffness]];
       grid: for (const ra of RAS_22) for (const t of TENS_22) {
@@ -5741,6 +5759,9 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     ['composition de fiche qui cite une source', checkPrepacked(items22, with22('tecnifibre-hybrid-ice-code-nrg2', { sources: [src22] }), page22), 'composition « fiche » qui cite'],
     ['jauges ramenées à 1.25/1.25 (Duo Power)', checkPrepacked(set22('wilson-duo-power', { gauges: ['1.25/1.25'] }), T0, page22), 'wilson-duo-power : jauges'],
     ['fiche FR sans mention', checkPrepacked(items22, T0, page22.replace(/data-testid="prepacked-hybrid-notice"/g, '')), 'mention des hybrides prémontés n\'est pas affichée'],
+    ['tenue inutile (Duo Control tenu à 190, sous la valeur dérivée)', checkPrepacked(set22('wilson-duo-control', { stiffness: 190 }), with22('wilson-duo-control', { held: { ...T0['wilson-duo-control'].held!, value: 190 } }), page22), 'wilson-duo-control : tenue inutile'],
+    ['tenue sans motif', checkPrepacked(items22, with22('wilson-duo-control', { held: { ...T0['wilson-duo-control'].held!, why: '' } }), page22), 'tenue sans date ou sans motif'],
+    ['tenue retirée en silence (Duo Control laissé à 222)', checkPrepacked(items22, with22('wilson-duo-control', { held: undefined }), page22), 'wilson-duo-control : rigidité 222 ≠ 194.4'],
     ['fiche FR sans « estimé »', checkPrepacked(items22, T0, page22.replace(/estimated:\s*Boolean\(PREPACKED_HYBRIDS\[string\.id\]\?\.components\)/, 'estimated: false')), 'non marquée « estimé »'],
   ];
   for (const [name, found, needle] of neg24) {
@@ -5750,7 +5771,7 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     const v = Object.values(T0);
     const n = (c: string) => v.filter((e) => e.composition === c).length;
     ok(`hybrides prémontés : ${v.length} fiches « Hybrid » consignées (${n('publiee')} à composition publiée, ${n('fiche')} à composition de fiche, set introuvable, ${n('non-publiee')} non publiée : valeur conservée, hors classements) ; ` +
-      `rigidité = plus haut de la valeur d'avant et de la valeur dérivée des deux cordages, recalculée ; indice de la fiche jamais sous celui du moteur pour les deux cordages à la même tension (${RAS_22.length} RA × ${TENS_22.length} tensions ; ${nAbove} montage(s) au-dessus, par l'arrondi au dixième supérieur) ; ` +
+      `rigidité = plus haut de la valeur d'avant et de la valeur dérivée des deux cordages, recalculée, sauf ${v.filter((e) => e.held).length} tenue(s) datée(s) au-dessus (règle 2 : ${Object.keys(T0).filter((k) => T0[k].held).join(', ')}) ; indice de la fiche jamais sous celui du moteur pour les deux cordages à la même tension (${RAS_22.length} RA × ${TENS_22.length} tensions ; ${nAbove} montage(s) au-dessus, par l'arrondi au dixième supérieur) ; ` +
       `sources (URL, niveau, date, extrait), jauges et mention de la fiche FR vérifiées ; ${neg24.length} tests négatifs détectés`);
   }
 }
