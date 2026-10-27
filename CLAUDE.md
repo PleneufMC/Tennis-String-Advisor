@@ -1,6 +1,6 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.3.34
+> **Version** : 2.3.35
 > **Date** : 26 octobre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
@@ -30,7 +30,7 @@ raquettes**, 60 → **63/179 cordages**, **137 fiches EN sur 308** : Wilson 6 (B
 US Open Jr 21/23/25), Yonex 2 (EZONE 105, avec la légende « coloris présenté : Espresso Brown » ; VCORE 98 Tour), Tecnifibre 3 (Tempo
 285 V2, TGV, Multifeel), Babolat 1 (RPM Team), toutes de fiches alignées le 10/10 ou à caractéristiques identiques. **Quarantaines
 datées** : Pure Strike 100 16x20 (contre-vérification du 23/10 : génération de la fiche non établie, RA ± 3 non discriminante, même
-règle que TF40 305 et FX 500 2026), T-Fight 315S (seule vue entière au code article du 305S), 6 cordages Wilson de la collection officielle (jauge 1,32, coloris, montages hybrides
+règle que TF40 305 et FX 500 2026 ; génération établie le 26/10/2026 : la 2024, seule 100 en 16x20, V143 du dossier du 23/10), T-Fight 315S (seule vue entière au code article du 305S), 6 cordages Wilson de la collection officielle (jauge 1,32, coloris, montages hybrides
 différents), Dynamix VP (noir seulement). **Produit voisin** : une photo d'une autre jauge de la fiche porte la légende « jauge présentée :
 1,25 mm » (FR) / « gauge shown » (EN) ; un autre coloris n'est admis que sur une fiche sans coloris (« coloris présenté » / « colour shown », toute fiche raquette) ; une raquette
 voisine, jamais. **Accès** : `fetch` lit robots.txt (règles appliquées à chaque URL), agents.md et llms.txt avant la première requête ;
@@ -176,6 +176,27 @@ médiane 216,9, 15 plus souples et 18 plus fermes refaits, FAQ et JSON-LD), « c
 multifilament », « meilleur cordage polyester 2026 », « chaleur », « hiver » et le guide du matériel (indices recalculés : cadres de RA 57
 et 58, 28 à 29 au lieu de 29 ; de RA 69 à RA 57, 32 → 28 au lieu de 33 → 29) ; figures régénérées par `build-rigidite-figures.mts` (axe des polyesters 150-290) ; `dateModified`, sitemap
 et cartes des deux index alignés. Aucune note /10, formule ni seuil modifié ; libellés de nature des notes inchangés.
+
+**Changelog v2.3.34 → v2.3.35** — **Deux RA abaissés sur mesure TWU de la génération exacte (GO explicite de Pierre du 26/10/2026) ;
+trois baisses tenues faute de génération établie** (règle des mesures L1 de la v2.3.32 : une baisse exige la mesure L1 de la génération
+exacte ; `tsa-core`). **Appliqué** : Dunlop CX 200 RA 66 → 64 (page d'essai TWU « Dunlop CX 200 2024 », V121 ; la fiche nomme la CX 200 2024 ;
+Dunlop déclare 65, protocole non publié, autre nature) ; Babolat Pure Strike 100 16x20 RA 64 → 61 (page d'essai TWU de la 2024, V138 ; seule
+Pure Strike 100 en 16x20, « brand new model » de la 4e génération, V143 ; le « 65 ± 3 » de Babolat est un RA non cordé). Provenance : `changes` avec `loweringReview` (GO, mesure exacte,
+alertes chiffrées, revue indépendante AX). **Effet**, mesuré sur `main` après #153 (P6) (grille du contrôle 5 : 1 074 montages par
+raquette, 18 à 28 kg, moteur réel) : CX 200 −21 standard / −59 bras sensible / −36 `calculateCompatibility` ; Pure Strike −26 / −70 / −48 ;
+**total −47 / −129 / −84, 0 ajoutée** ; palier « Très Ferme » sur la grille du contrôle 8 (19 à 29 kg) : −24 et −32, total −56 ; grille
+complète : standard 6,54 → 6,51 %, sensible 23,02 → 22,93 %. Avant #153 : −52 / −134 / −86 et « Très Ferme » −64 (les cordages abaissés par
+P6 portaient une partie de ces alertes). **Tenu** (la fiche ne nomme aucune génération et une
+génération voisine mesure plus haut ou autant) : FX 500 Tour 67 (69 en 2020, 65 en 2023 et 2025 ; −30 / −57 / −33 si 65), Speed MP 61
+(60 en 2024, L1 ; 62 en 2022 selon le rapport AC, hors dossier ; −6 / −17 / −9 si 60), Instinct MP 65 (64 en 2025, L1 ; 65 en 2019 selon
+le même rapport ; −8 / −33 / −14 si 64) : une baisse exige la
+mesure de la génération exacte ; les nommer (comme la Ripstick) est un arbitrage. **Contrôles** : 14 bis, une baisse exige un fait L1 dont le RA
+MESURÉ (« Flex Rating (Test) N » de l'extrait, « RA N » ou nombre seul de la colonne « Valeur ») est la valeur écrite, jamais une sous-chaîne
+de la ligne (3 tests négatifs, dont la baisse sans GO et une Pure Strike à 59, lu dans « Balance Point 12.59 ») ; 23, deux exceptions
+datées, motivées, avec le GO, **bornées** au RA écrit (64, 61), sur le modèle de celles de P6 (bornées à la rigidité écrite) : une valeur plus
+basse, un retrait, un poids changé ou une exception sans date, motif ou GO échouent (5 tests négatifs) ; un montage qui ne diffère de la
+référence que par deux baisses autorisées (raquette et cordage exemptés) est excusé. La médiane haute des RA publiés (51e valeur, lue par le contrôle 1) reste 65 ; la médiane
+usuelle passe de 65 à 64,5 (la 50e valeur passe à 64) ; bande ±1 satisfaite. Aucun article ne cite le RA de ces deux fiches.
 
 **Changelog v2.3.25 → v2.3.26** — **Hybrides : un seul indice, celui que l'alerte lit, que le configurateur
 affiche et que le PDF imprime ; contrôle 21 ter** (décision (b)+(a) de l'orchestrateur du 22/10/2026, Pierre ayant délégué ; limite (4)
@@ -1752,4 +1773,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.3.34 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.3.35 — Tennis String Advisor — « Mesurer avant d'affirmer. »*

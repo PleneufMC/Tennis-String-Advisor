@@ -8,7 +8,8 @@
  * TW US seul établit reste un signal ; juniors au poids non cordé ; ids conservés).
  * `changes` : valeur avant/après et faits [numéro, niveau, fragment que la ligne du dossier doit contenir] qui
  * l'établissent. `held` : une autre valeur circule mais n'est PAS établie, le champ ne bouge pas. Une BAISSE de RA
- * exigerait `loweringReview` (mesure exacte, série non suspecte, revue `tsa-measure`) : aucune dans ce lot.
+ * exige `loweringReview` (mesure L1 de la génération exacte, GO, alertes retirées chiffrées, revue) : deux au 26/10/2026 (CX 200, Pure Strike
+ * 100 16x20), sur GO explicite de Pierre ; FX 500 Tour, Speed MP et Instinct MP restent tenus (génération de la fiche non établie).
  * NON AFFICHÉ : aucune surface ne lit ce fichier ; le contrôle 14 bis de `audit:ratings` relit le dossier et le vérifie.
  */
 
@@ -142,13 +143,11 @@ export const RACQUET_ALIGNMENT: Readonly<Record<string, Alignment>> = {
   },
   // Écarts de fiche du 23/10/2026 (dossier du 23/10, point 10 de l'avis d'Opus 5.5) : la mesure L1 établirait une BAISSE (66 -> 64).
   'dunlop-cx-200': {
-    changes: {},
-    held: {
-      stiffness: {
-        value: 66, facts: [['V120', 'L0', '65'], ['V121', 'L1', '64']],
-        why: 'CX 200 2024 : mesure TWU 64 (L1), constructeur 65 (protocole non publié) ; la baisse 66 -> 64 retire des alertes : mesurée dans la PR, en attente de la revue tsa-measure (règle 2)',
-      },
-    },
+    changes: { stiffness: { before: 66, after: 64, facts: [['V121', 'L1', '64']] } },
+    held: {},
+    loweringReview:
+      'GO explicite de Pierre du 26/10/2026 (transmis par l\'orchestrateur) ; mesure L1 (TWU) de la génération exacte, CX 200 2024 nommée par la fiche (V121 : 64) ; Dunlop déclare 65 (V120, L0, protocole ' +
+      'non publié : autre nature) ; alertes retirées chiffrées dans la PR #154 ; revue indépendante AX du 26/10/2026 (valeurs, générations et alertes vérifiées ; réserves corrigées sur la branche)',
   },
   // Fiches G et S du 23/10/2026 (AC_fiches_g_s_v, dossier du 23/10, V123 à V142).
   'dunlop-fx-500-tour': {
@@ -194,8 +193,11 @@ export const RACQUET_ALIGNMENT: Readonly<Record<string, Alignment>> = {
     held: {},
   },
   'babolat-pure-strike-100-16x20': {
-    changes: {},
-    held: { stiffness: { value: 64, facts: [['V138', 'L1', '61']], why: 'seule Pure Strike 100 en 16x20 : la 2024, mesurée 61 (TWU) ; Babolat déclare 65 ± 3 non cordé (autre nature) ; baisse 64 -> 61 soumise à la revue tsa-measure (règle 2)' } },
+    changes: { stiffness: { before: 64, after: 61, facts: [['V138', 'L1', '61'], ['V143', 'L3', 'brand new model']] } },
+    held: {},
+    loweringReview:
+      'GO explicite de Pierre du 26/10/2026 (transmis par l\'orchestrateur) ; mesure L1 (TWU) de la génération exacte : la seule Pure Strike 100 en 16x20 est la 2024, nouveau modèle de la 4e génération (V143) ; mesure V138 : 61 ; ' +
+      'Babolat déclare 65 ± 3 non cordé (autre nature, jamais saisi) ; alertes retirées chiffrées dans la PR #154 ; revue indépendante AX du 26/10/2026 (valeurs, générations et alertes vérifiées ; réserves corrigées sur la branche)',
   },
   // Générations établies, fiches justes (aucun champ changé) : le nom reste, la génération est consignée ici et dans le dossier.
   'wilson-blade-standard': {

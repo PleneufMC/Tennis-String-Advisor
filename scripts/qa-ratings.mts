@@ -95,8 +95,9 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
   const median = published[Math.floor(published.length / 2)];
 
   // Le RA par défaut est une CONVENTION du site (64, non mesurée), choisie le 08/08/2026 comme médiane des RA publiés. Elle doit
-  // rester à ±1 de la médiane mesurée : la médiane oscille entre 64 et 65 au gré des corrections de RA sur mesure L1 (65 depuis les
-  // hausses V8 Pro et Ripstick du 23/10/2026 ; deux baisses en attente la ramèneraient à 64). Au-delà d'un point, l'arbitrage est
+  // rester à ±1 de la médiane mesurée : la médiane oscille entre 64 et 65 au gré des corrections de RA sur mesure L1. Le contrôle lit la
+  // médiane HAUTE (`published[floor(n/2)]`, la 51e des 100 valeurs) : 65 depuis les hausses V8 Pro et Ripstick du 23/10/2026, toujours 65
+  // après les baisses CX 200 et Pure Strike du 26/10/2026, qui portent la 50e valeur à 64 (médiane usuelle 64,5). Au-delà d'un point, l'arbitrage est
   // rouvert (avis d'Opus 5.5 du 26/10/2026, R4 de la revue de #152). Recaler à 65 élèverait l'indice des 29 raquettes sans RA, toutes
   // juniors (+319 alertes standard, +841 bras sensible, +377 compatibilité sur 31 146 montages), sans rien savoir de nouveau sur elles.
   const DEFAULT_RA_BAND = 1;
@@ -116,7 +117,7 @@ const ok = (msg: string) => notes.push(`  ok   ${msg}`);
     fail(verdict);
   } else {
     ok(
-      `RA par défaut ${DEFAULT_RACQUET_RA} (convention du site), médiane mesurée ${median} sur ${published.length} raquettes : ` +
+      `RA par défaut ${DEFAULT_RACQUET_RA} (convention du site), médiane haute mesurée ${median} (valeur n° ${Math.floor(published.length / 2) + 1} sur ${published.length} raquettes ; médiane usuelle ${(published[published.length / 2 - 1] + published[published.length / 2]) / 2}) : ` +
         `écart ${Math.abs(DEFAULT_RACQUET_RA - median)}, dans la bande ±${DEFAULT_RA_BAND}`
     );
   }
@@ -2071,7 +2072,7 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
   const before = failures.length;
   const AP = await import('../src/data/racquet-alignment-provenance');
   type AProv = Readonly<Record<string, (typeof AP.RACQUET_ALIGNMENT)[string]>>;
-  type Row = { level: string; status: string; text: string; instrument: string; extract: string };
+  type Row = { level: string; status: string; text: string; instrument: string; extract: string; value: string };
   type AItem = { id: string; variant?: string; gauges?: string[] } & Record<string, unknown>;
   const norm = (x: string) => x.toLowerCase().replace(/[\s ]/g, '').replace(/×/g, 'x');
   const readRows = (md: string): Map<string, Row> => {
@@ -2081,7 +2082,7 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
       rows.set(m[1], {
         level: cells[2].split(/[\s(]/)[0], status: cells[cells.length - 1].replace(/\*/g, ''),
         text: norm([cells[0], cells[1], cells[5]].join(' ')), // énoncé, valeur, extrait : ni « Recoupement » ni « Base TSA »
-        instrument: (/\((RDC|TWU)\)/.exec(cells[2]) ?? ['', ''])[1], extract: cells[5] ?? '',
+        instrument: (/\((RDC|TWU)\)/.exec(cells[2]) ?? ['', ''])[1], extract: cells[5] ?? '', value: cells[1] ?? '',
       });
     }
     return rows;
@@ -2111,6 +2112,11 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     return issues;
   };
   checkInstruments(dossierRows).forEach((i) => fail(`fiches alignées : ${i}`));
+  const measuredRa = (r: Row): number[] => [
+    ...[...r.extract.matchAll(/Flex Rating(?: Test)? (\d{2})\b/g)].map((m) => Number(m[1])),
+    ...[...r.value.matchAll(/\bRA (\d{2})\b/g)].map((m) => Number(m[1])),
+    ...(/^\d{2}$/.test(r.value.trim()) ? [Number(r.value.trim())] : []),
+  ];
   const checkAlignment = (items: readonly AItem[], prov: AProv, rows: Map<string, Row> = dossierRows): string[] => {
     const issues: string[] = [];
     const val = (it: AItem, f: string) => (f === 'gauges' ? it.gauges?.join(',') : it[f]);
@@ -2133,6 +2139,12 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
         if (f === 'stiffness' && !c.facts.some(([, level]) => level === 'L1')) issues.push(`${id}.stiffness : RA changé sans mesure L1 (Q-1 : un RA que TW US seul établit reste un signal)`);
         if (f === 'stiffness' && (c.after as number) < (c.before as number) && !a.loweringReview) {
           issues.push(`${id}.stiffness : baisse de RA ${c.before} -> ${c.after} sans mesure exacte, série non suspecte ni revue tsa-measure`);
+        }
+        // Une BAISSE exige la mesure L1 de la génération exacte (règle du 26/10/2026) : un fait L1 dont le RA MESURÉ est la valeur écrite. Le RA mesuré
+        // se lit dans l'extrait, après « Flex Rating » (TWU : « Flex Rating Test 61 » ; RDC : « Flex Rating 64 »), ou dans la colonne « Valeur »
+        // (« RA 61 », ou un nombre seul) ; jamais comme sous-chaîne de la ligne (« Balance Point 12.59 » ne dit pas 59 : revue de #154, défaut 1).
+        if (f === 'stiffness' && (c.after as number) < (c.before as number) && !c.facts.some(([v, level]) => level === 'L1' && rows.get(v) !== undefined && measuredRa(rows.get(v)!).includes(c.after as number))) {
+          issues.push(`${id}.stiffness : baisse de RA ${c.before} -> ${c.after} sans mesure L1 de cette valeur`);
         }
       }
       for (const [f, h] of Object.entries(a.held)) {
@@ -2177,7 +2189,10 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     ['id public perdu (Clash 100 Pro)', checkAlignment(races.filter((x) => x.id !== 'wilson-clash-100-pro-v2'), R0), 'fiche absente du catalogue'],
     ['dossier absent du dépôt', checkAlignment(races, R0, new Map()), 'absent du dossier'],
     ['fait numéroté dans deux dossiers', mergeDossiers(['| V01 | a | b | L0 | u | d | e | r | x | **confirmé** |', '| V01 | a | b | L0 | u | d | e | r | x | **confirmé** |']).dup, 'V01'],
-    ['RA tenu remis à la valeur du constructeur (CX 200 -> 65)', checkAlignment(setItem(races, 'dunlop-cx-200', { stiffness: 65 }), R0), 'dunlop-cx-200.stiffness : 65 ≠ 66'],
+    ['RA abaissé sur mesure remis à la valeur du constructeur (CX 200 -> 65)', checkAlignment(setItem(races, 'dunlop-cx-200', { stiffness: 65 }), R0), 'dunlop-cx-200.stiffness : 65 ≠ 64'],
+    ['baisse de RA sans mesure L1 de la valeur écrite (CX 200 -> 63)', checkAlignment(setItem(races, 'dunlop-cx-200', { stiffness: 63 }), { ...R0, 'dunlop-cx-200': { ...R0['dunlop-cx-200'], changes: { stiffness: { before: 66, after: 63, facts: [['V121', 'L1', '64']] } } } }), 'sans mesure L1 de cette valeur'],
+    ['baisse à une valeur que la ligne ne mesure pas (Pure Strike 64 -> 59, « 12.59 » du point d\'équilibre de V138)', checkAlignment(setItem(races, 'babolat-pure-strike-100-16x20', { stiffness: 59 }), { ...R0, 'babolat-pure-strike-100-16x20': { ...R0['babolat-pure-strike-100-16x20'], changes: { stiffness: { before: 64, after: 59, facts: [['V138', 'L1', '59']] } } } }), 'babolat-pure-strike-100-16x20.stiffness : baisse de RA 64 -> 59 sans mesure L1 de cette valeur'],
+    ['baisse de RA sans GO ni revue (Pure Strike 100 16x20)', checkAlignment(races, { ...R0, 'babolat-pure-strike-100-16x20': { ...R0['babolat-pure-strike-100-16x20'], loweringReview: undefined } }), 'babolat-pure-strike-100-16x20.stiffness : baisse de RA 64 -> 61 sans mesure exacte'],
     ['nom du cordage ramené à son ancienne graphie (Touch Multifiber)', checkAlignment(setItem(strs, 'kirschbaum-touch-multifiber', { model: 'Touch Multifiber' }), S0), 'kirschbaum-touch-multifiber.model'],
     ['1.30 retirée de la Poly Tour Strike', checkAlignment(setItem(strs, 'yonex-poly-tour-strike', { gauges: ['1.20', '1.25'] }), S0), 'yonex-poly-tour-strike.gauges'],
     ['1.35 réintroduite sur la RPM Team', checkAlignment(setItem(strs, 'babolat-rpm-team', { gauges: ['1.25', '1.30', '1.35'] }), S0), 'babolat-rpm-team.gauges'],
@@ -2196,9 +2211,10 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     const nFacts = [...Object.values(R0), ...Object.values(S0)].reduce(
       (n, a) => n + Object.values(a.changes).reduce((m, c) => m + c.facts.length, 0) + Object.values(a.held).reduce((m, h) => m + h.facts.length, 0), 0);
     const nRa = Object.values(R0).filter((a) => a.changes.stiffness).length;
+    const nLow = Object.values(R0).filter((a) => a.changes.stiffness && (a.changes.stiffness.after as number) < (a.changes.stiffness.before as number)).length;
     const l1 = [...dossierRows].filter(([k, r]) => Number(k.slice(1)) >= 117 && r.level === 'L1').map(([, r]) => r.instrument);
     ok(`fiches alignées : ${nR} raquettes en provenance (${changed} modifiées, ${nR - changed} tenues faute de preuve), ${Object.keys(S0).length} cordages (nom, jauges, coloris), ` +
-      `${nFacts} faits retrouvés dans ${AP.ALIGNMENT_DOSSIERS.length} dossiers (niveau, valeur, statut ; ${dossierRows.size} faits, aucun numéro en double), ${nRa} RA changés tous sur mesure L1, aucune baisse de RA, instrument dit pour les ${l1.length} mesures L1 du 23/10 (${l1.filter((i) => i === 'RDC').length} RDC, ${l1.filter((i) => i === 'TWU').length} TWU), aucune surface ne lit la provenance, ${negatives.length} tests négatifs détectés`);
+      `${nFacts} faits retrouvés dans ${AP.ALIGNMENT_DOSSIERS.length} dossiers (niveau, valeur, statut ; ${dossierRows.size} faits, aucun numéro en double), ${nRa} RA changés tous sur mesure L1 (dont ${nLow} baisse(s), chacune sur la mesure L1 de la valeur écrite, avec GO et revue consignés), instrument dit pour les ${l1.length} mesures L1 du 23/10 (${l1.filter((i) => i === 'RDC').length} RDC, ${l1.filter((i) => i === 'TWU').length} TWU), aucune surface ne lit la provenance, ${negatives.length} tests négatifs détectés`);
   }
 }
 
@@ -5546,7 +5562,8 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
 // échoue si, par rapport à la référence : une note de confort monte, disparaît, ou apparaît sur une fiche « Non publié » (valeur
 // comblée) ; une fiche ou une raquette disparaît ; ou une alerte bras de la grille du contrôle 5 disparaît (moteur réel, deux
 // profils, mêmes entrées que la référence sauf les données changées). Exceptions : liste explicite, datée, motivée, avec le GO de
-// Pierre ; 10 au 26/10/2026 (lot P6) ; une exception inutilisée échoue. Tests négatifs sur des copies altérées du catalogue.
+// Pierre ; 12 au 26/10/2026 (10 cordages du lot P6, 2 RA abaissés sur mesure L1 de la génération exacte) ; une exception inutilisée
+// échoue. Tests négatifs sur des copies altérées du catalogue.
 {
   const before23 = failures.length;
   const REF23 = 'data/reference/second-filet-2026-10-23.json';
@@ -5554,10 +5571,13 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
   // Head Reflex MLT, Head RIP Control et Isospeed Control Classic baissent aussi, sans alerte à retirer sur cette grille : pas d'exception.
   const P6_GO = "Pierre, GO explicite du 26/10/2026 (transmis par l'orchestrateur) : baisses P6";
   const P6_MOTIVE = 'rigidité abaissée à la mesure TWU de la fiche (règle C ; mesure AD de tsa-measure du 23/10/2026 ; provenance string-stiffness-provenance.ts)';
-  // Une exception est BORNÉE : elle n'excuse que la disparition d'une alerte due à la baisse de la rigidité de ce cordage à la valeur écrite
-  // (`stiffness`), quand rien d'autre n'a changé dans le montage (raquette, note de confort, type). Elle ne couvre jamais une note de confort
-  // relevée, retirée ou créée, ni le retrait de la fiche, ni une autre baisse de rigidité (revue indépendante de #153, défaut n° 1).
-  const EXCEPTIONS23: ReadonlyArray<{ id: string; stiffness: number; date: string; motive: string; go: string }> = [
+  // 26/10/2026 : RA abaissés sur mesure L1 de la génération exacte (provenance racquet-alignment-provenance.ts, loweringReview), GO explicite de Pierre.
+  const RA_GO = "Pierre, GO explicite du 26/10/2026 (transmis par l'orchestrateur) : baisses de RA mesurées par TWU";
+  // Une exception est BORNÉE : elle n'excuse que la disparition d'une alerte due à la baisse de la valeur écrite (`ra` d'une raquette,
+  // `stiffness` d'un cordage), quand l'alerte existe encore avec la valeur d'avant et que rien d'autre n'a bougé (poids de la raquette ;
+  // type et note de confort du cordage). Une valeur plus basse, une note de confort relevée, retirée ou créée, un retrait de fiche restent
+  // détectés (revues indépendantes de #153 et #154). Date, motif et GO sont exigés.
+  const EXCEPTIONS23: ReadonlyArray<{ id: string; ra?: number; stiffness?: number; date: string; motive: string; go: string }> = [
     { id: 'solinco-tour-bite-diamond-rough', stiffness: 192.6, date: '2026-10-26', motive: P6_MOTIVE, go: P6_GO },
     { id: 'yonex-poly-tour-tough', stiffness: 193.7, date: '2026-10-26', motive: P6_MOTIVE, go: P6_GO },
     { id: 'luxilon-4g-soft', stiffness: 217.2, date: '2026-10-26', motive: P6_MOTIVE, go: P6_GO },
@@ -5568,6 +5588,8 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     { id: 'head-hawk-rough', stiffness: 201.2, date: '2026-10-26', motive: P6_MOTIVE, go: P6_GO },
     { id: 'tecnifibre-ruff-code', stiffness: 207.5, date: '2026-10-26', motive: P6_MOTIVE, go: P6_GO },
     { id: 'yonex-poly-tour-air', stiffness: 154.9, date: '2026-10-26', motive: P6_MOTIVE, go: P6_GO },
+    { id: 'dunlop-cx-200', ra: 64, date: '2026-10-26', motive: 'RA 66 -> 64, mesure TWU de la CX 200 2024 (V121), génération nommée par la fiche', go: RA_GO },
+    { id: 'babolat-pure-strike-100-16x20', ra: 61, date: '2026-10-26', motive: 'RA 64 -> 61, mesure TWU de la Pure Strike 100 16x20 2024 (V138), seule génération en 16x20', go: RA_GO },
   ];
   type RefS = { type: string; stiffness: number; twu: number | null; comfort: number | null };
   type RefR = { ra: number; weight: number | null };
@@ -5585,15 +5607,20 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     const used = new Set<string>();
     for (const x of exceptions) {
       if (!/^\d{4}-\d{2}-\d{2}$/.test(x.date) || x.motive.trim().length < 20 || !x.go.trim()) issues.push(`exception ${x.id} : date, motif ou GO absent`);
+      if ((x.ra === undefined) === (x.stiffness === undefined)) issues.push(`exception ${x.id} : ni RA ni rigidité bornés (un seul des deux)`);
     }
-    // Disparition excusée seulement si : type et note de confort du cordage inchangés, rigidité abaissée à la valeur écrite, et l'alerte existe
-    // encore avec la raquette d'aujourd'hui et la rigidité d'avant (`stillWithOld`) : c'est la baisse de rigidité, et elle seule, qui la retire.
-    const excused = (sid: string, s0: RefS, s1: CurS, stillWithOld: boolean) => {
-      const x = exceptions.find((e) => e.id === sid);
-      const hit = x !== undefined && stillWithOld && s0.type === s1.type && s0.comfort === s1.comfort &&
-        s1.stiffness === x.stiffness && s1.stiffness < s0.stiffness;
-      if (hit) used.add(sid);
-      return hit;
+    // `armWith(r, s)` : l'alerte existe-t-elle pour ce montage ? Sert à vérifier que la valeur d'avant, seule, la portait encore.
+    const excused = (rid: string, sid: string, r0: RefR, r1: CurR, s0: RefS, s1: CurS, armWith: (r: RefR | CurR, s: RefS | CurS) => boolean) => {
+      const xr = exceptions.find((e) => e.id === rid && e.ra !== undefined);
+      const xs = exceptions.find((e) => e.id === sid && e.stiffness !== undefined);
+      const okR = xr !== undefined && r1.ra === xr.ra && r1.ra < r0.ra && r0.weight === r1.weight;
+      const okS = xs !== undefined && s0.type === s1.type && s0.comfort === s1.comfort && s1.stiffness === xs.stiffness && s1.stiffness < s0.stiffness;
+      if (okR && armWith({ ...r1, ra: r0.ra }, s1)) { used.add(rid); return true; }
+      if (okS && armWith(r1, { ...s1, stiffness: s0.stiffness })) { used.add(sid); return true; }
+      // Les deux baisses autorisées ensemble (raquette ET cordage exemptés, rien d'autre de changé) : le montage ne diffère de la référence
+      // que par elles.
+      if (okR && okS) { used.add(rid); used.add(sid); return true; }
+      return false;
     };
     const sById = new Map(strings.map((s) => [s.id, s]));
     const rById = new Map(racquets.map((r) => [r.id, r]));
@@ -5623,7 +5650,8 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
             });
             const a0 = calculateAdvancedRcs(inp(r0, s0)).warnings.some(isArm23);
             const a1 = calculateAdvancedRcs(inp(r1, s1)).warnings.some(isArm23);
-            if (a0 && !a1 && !excused(sid, s0, s1, calculateAdvancedRcs(inp(r1, s0)).warnings.some(isArm23))) { gone++; if (!example) example = `${rid} + ${sid} à ${t} kg (${armSensitive ? 'bras sensible' : 'standard'})`; }
+            const armWith = (r: RefR | CurR, s: RefS | CurS) => calculateAdvancedRcs(inp(r, s)).warnings.some(isArm23);
+            if (a0 && !a1 && !excused(rid, sid, r0, r1, s0, s1, armWith)) { gone++; if (!example) example = `${rid} + ${sid} à ${t} kg (${armSensitive ? 'bras sensible' : 'standard'})`; }
             if (!a0 && a1) added++;
           }
         }
@@ -5656,6 +5684,11 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
       ['fiche exemptée : rigidité abaissée sous la valeur écrite (4G Rough 216 -> 200)', () => check23(mod('luxilon-4g-rough', { stiffness: 200 }), curR).issues, 'alerte(s) bras disparue(s)'],
       ['fiche exemptée : RA d\'une raquette abaissé en même temps', () => check23(curS, curR.map((r) => (r.id === aRacquet.id ? { ...r, ra: 60 } : r))).issues, 'alerte(s) bras disparue(s)'],
       ['exception sans GO', () => check23(curS, curR, EXCEPTIONS23.map((x, i) => (i === 0 ? { ...x, go: '' } : x))).issues, 'date, motif ou GO absent'],
+      ['raquette exemptée : RA abaissé sous la valeur écrite (CX 200 64 -> 62)', () => check23(curS, curR.map((r) => (r.id === 'dunlop-cx-200' ? { ...r, ra: 62 } : r))).issues, 'alerte(s) bras disparue(s)'],
+      ['raquette exemptée : retirée du catalogue (Pure Strike 100 16x20)', () => check23(curS, curR.filter((r) => r.id !== 'babolat-pure-strike-100-16x20')).issues, 'babolat-pure-strike-100-16x20 : raquette retirée'],
+      ['raquette exemptée : poids changé en même temps (CX 200 à 340 g)', () => check23(curS, curR.map((r) => (r.id === 'dunlop-cx-200' ? { ...r, weight: 340 } : r))).issues, 'exception inutilisée : dunlop-cx-200'],
+      ['exception sans date, motif ni GO', () => check23(curS, curR, EXCEPTIONS23.map((x, i) => (i === 0 ? { ...x, date: '', motive: '', go: '' } : x))).issues, 'date, motif ou GO absent'],
+      ['exception sans valeur bornée', () => check23(curS, curR, EXCEPTIONS23.map((x, i) => (i === 0 ? { ...x, ra: undefined, stiffness: undefined } : x))).issues, 'ni RA ni rigidité bornés'],
     ];
     let detected = 0;
     for (const [name, run, needle] of negatives) {
@@ -5674,7 +5707,7 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     if (failures.length === before23) {
       ok(
         `second filet : par rapport à la référence du 23/10/2026 (${Object.keys(ref.strings).length} cordages, ${Object.keys(ref.racquets).length} raquettes), aucune note de confort ` +
-          `relevée, retirée ni créée, aucune fiche ni raquette retirée, 0 alerte bras disparue hors exceptions (${real.added} ajoutée(s)) ; ${EXCEPTIONS23.length} exception(s) datée(s), motivée(s), avec le GO de Pierre (${[...new Set(EXCEPTIONS23.map((x) => x.date))].join(', ')}), bornées à la seule baisse de rigidité à la valeur écrite ; ` +
+          `relevée, retirée ni créée, aucune fiche ni raquette retirée, 0 alerte bras disparue hors exceptions (${real.added} ajoutée(s)) ; ${EXCEPTIONS23.length} exception(s) datée(s), motivée(s), avec le GO de Pierre (${[...new Set(EXCEPTIONS23.map((x) => x.date))].join(', ')}), bornées à la seule baisse de la valeur écrite ; ` +
           `${detected} tests négatifs détectés, ${accepted} témoins positifs acceptés`
       );
     }
