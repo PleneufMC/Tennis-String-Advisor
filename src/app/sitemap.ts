@@ -57,7 +57,7 @@ const BLOG_ARTICLES: Array<{ slug: string; modified: string }> = [
   // 301 vers le classement 2026, cf. redirects() de next.config.js.
   { slug: 'plan-de-cordage-tennis.html', modified: '2026-10-22' },
   { slug: 'jauge-cordage-tennis.html', modified: '2026-10-23' },
-  { slug: 'guide-tension-cordage-tennis.html', modified: '2026-10-23' },
+  { slug: 'guide-tension-cordage-tennis.html', modified: '2026-11-12' },
   { slug: 'cordage-tennis-elbow.html', modified: '2026-10-26' },
   { slug: 'guide-materiel-tennis.html', modified: '2026-10-26' },
   { slug: 'analyse-setups-atp-top-20.html', modified: '2026-10-22' },
@@ -106,7 +106,7 @@ const EN_BLOG_ARTICLES: Array<{ slug: string; modified: string }> = [
   { slug: 'tennis-string-gauge.html', modified: '2026-10-23' },
   { slug: 'tennis-string-pattern.html', modified: '2026-10-23' },
   { slug: 'polyester-vs-multifilament-strings.html', modified: '2026-10-26' },
-  { slug: 'tennis-string-tension-guide.html', modified: '2026-10-26' },
+  { slug: 'tennis-string-tension-guide.html', modified: '2026-11-12' },
   // Article chaleur (28/08/2026), appairé en hreflang avec
   // /blog/cordage-tennis-chaleur.html.
   { slug: 'tennis-strings-heat-tension.html', modified: '2026-10-26' },

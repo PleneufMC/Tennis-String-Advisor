@@ -57,7 +57,6 @@ page.
 
 | Fichier | Source | Auteur | Licence | Données reprises de | Date |
 |---|---|---|---|---|---|
-| schema-perte-tension-24h-fr.svg / -en.svg | Schéma maison | Tennis String Advisor | Propriété TSA | Tableau « perte de tension 24 h » du guide des tensions (TWU, Human Kinetics, The Racquet Man) | 29/09/2026 |
 | schema-snapback-fr.svg / -en.svg | Schéma maison | Tennis String Advisor | Propriété TSA | Aucune donnée chiffrée (principe du snapback) | 29/09/2026 |
 | schema-jauge-diametres-fr.svg / -en.svg | Schéma maison | Tennis String Advisor | Propriété TSA | Tableau jauge ↔ millimètres de l'article sur la jauge | 29/09/2026 |
 | schema-plan-16x19-18x20-fr.svg / -en.svg | Schéma maison | Tennis String Advisor | Propriété TSA | Nombre de montants et de travers ; espacements non à l'échelle | 29/09/2026 |
