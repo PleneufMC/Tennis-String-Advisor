@@ -125,6 +125,8 @@ const EN_BLOG_ARTICLES: Array<{ slug: string; modified: string }> = [
   { slug: 'best-tennis-racquets-2026.html', modified: '2026-10-23' },
   // Adapté du FR cordage-polyester-tennis-elbow (09/10/2026), appairé en hreflang.
   { slug: 'polyester-strings-tennis-elbow.html', modified: '2026-10-26' },
+  // Adapté du FR cordage-terre-battue (12/11/2026), appairé en hreflang.
+  { slug: 'tennis-strings-for-clay-courts.html', modified: '2026-11-12' },
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
