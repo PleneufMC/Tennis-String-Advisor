@@ -7,7 +7,7 @@
 | Branche | `agent/redaction/guide-tension-cordage-tennis`, partie de `main` @ `ceafe7a` |
 | Ouvert le | 2026-11-12 |
 | Demande d'origine | Ligne `2026-W46-1` de « TSA · Idées d'articles » (score 3,84) ; Pierre, 12/11/2026 12:21 : « travailles là dessus » |
-| Statut | faits (phase 1, 12/11/2026) · rédaction FR + EN (12/11/2026) · PR ouverte le 12/11/2026 · **GO de Pierre attendu** (fusion = mise en ligne) |
+| Statut | faits (phase 1, 12/11/2026) · rédaction FR + EN (12/11/2026) · PR #158 ouverte le 12/11/2026 · **GO de Pierre attendu** (fusion = mise en ligne) |
 | Mise à jour planifiée | sans objet (pas d'année dans le titre ni le slug ; la section datée « pros 2024-2025 » est à retirer, voir F35-F37) |
 
 > Règles : `docs/redaction/CHARTE.md`. Régime de preuve **A** : chaque valeur vient d'une page ouverte le 2026-11-12, ou de la base (`src/data/`, relevé TWU versionné) lue au commit `ceafe7a`.
