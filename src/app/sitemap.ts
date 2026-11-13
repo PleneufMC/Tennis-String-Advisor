@@ -58,6 +58,8 @@ const BLOG_ARTICLES: Array<{ slug: string; modified: string }> = [
   { slug: 'plan-de-cordage-tennis.html', modified: '2026-10-22' },
   { slug: 'jauge-cordage-tennis.html', modified: '2026-10-23' },
   { slug: 'guide-tension-cordage-tennis.html', modified: '2026-11-12' },
+  // Satellite du guide : même consigne, tamis différent (13/11/2026)
+  { slug: 'comparer-deux-montages-cordage-tension.html', modified: '2026-11-13' },
   { slug: 'cordage-tennis-elbow.html', modified: '2026-10-26' },
   { slug: 'guide-materiel-tennis.html', modified: '2026-10-26' },
   { slug: 'analyse-setups-atp-top-20.html', modified: '2026-10-22' },
@@ -107,6 +109,8 @@ const EN_BLOG_ARTICLES: Array<{ slug: string; modified: string }> = [
   { slug: 'tennis-string-pattern.html', modified: '2026-10-23' },
   { slug: 'polyester-vs-multifilament-strings.html', modified: '2026-10-26' },
   { slug: 'tennis-string-tension-guide.html', modified: '2026-11-12' },
+  // Adapté du FR comparer-deux-montages-cordage-tension (13/11/2026), appairé en hreflang.
+  { slug: 'compare-two-string-setups-same-tension.html', modified: '2026-11-13' },
   // Article chaleur (28/08/2026), appairé en hreflang avec
   // /blog/cordage-tennis-chaleur.html.
   { slug: 'tennis-strings-heat-tension.html', modified: '2026-10-26' },
