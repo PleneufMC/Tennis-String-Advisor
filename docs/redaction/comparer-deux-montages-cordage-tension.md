@@ -161,8 +161,6 @@ Aucune relevée : les valeurs produit citées (F34 à F36) viennent de la base e
 | I3 | corps, §1 | 2 (graphique) | barres « même cadre, même 60 lb, trois cordages » : 69, 78, 80 unités RDC (F6) | trois points seulement ; ouvrir d'autres essais de la série avant d'en ajouter |
 | I4 | corps, §4 | 2 (tableau HTML) | paires de raquettes de même RA et leur indice (F34) | valeurs à rejouer par `redaction:valeurs` |
 
----
-
 **Décisions (phase 2, 13/11/2026)** — voie 2 partout (dessin maison, aucune photo, aucune image générée par un modèle) :
 
 - **I1, couverture** : `couverture-comparer-deux-montages-fr.webp` / `-en.webp`, 1200 × 630, générées par `scripts/blog-covers/build-covers.py --only couverture-comparer-deux-montages` (motif `motif_two_heads` ajouté ; `--only` ajouté pour ne pas réécrire les autres couvertures avec une autre police). Deux tamis génériques, aucun chiffre. Légende : « Illustration : Tennis String Advisor ».
@@ -330,7 +328,7 @@ exit 0
 | A20 | « La balle change peu » | §5 | F27 (+2,7 %, écart-type ≈ 10 km/h) ; DISSENSUS F26, F28 | défendue ; la phrase sur le banc TWU (F23) a été **coupée** |
 | A21 | Tendre les travers 4 lb au-dessus des montants : aucune source primaire trouvée | §6 | F31 | défendue ; une phrase et un renvoi au guide |
 | A22 | La tension d'un pro ne vaut pas pour une raquette du commerce ; aucun chiffre publié sans deux sources | FAQ 4, limites | F37, F38 ; charte F4 | défendue ; aucun joueur nommé, aucun chiffre |
-| A23 | Deux raquettes du même modèle : selon TWU, l'égalité des mesures a un sens | Conclusion | F24 | défendue (même modèle seulement) |
+| A23 | Selon TWU, deux raquettes du même modèle au tamis de même raideur devraient jouer pareil | Conclusion | F24 | défendue (même modèle seulement) |
 | A24 | Protocole en cinq étapes ; entre deux cadres, chaque raquette a sa propre référence | §6, conclusion | F9, F22, F4 | défendue ; aucun pas chiffré inventé |
 
 ### Test de glissance (charte §3)
