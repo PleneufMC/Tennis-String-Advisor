@@ -68,6 +68,8 @@ page.
 | schema-tennis-elbow-hierarchie-confort-fr.svg | Schéma maison | Tennis String Advisor | Propriété TSA | Classement et étoiles du tableau 2.1 de l'article tennis elbow | 29/09/2026 |
 | schema-tennis-elbow-zones-tension-fr.svg | Schéma maison | Tennis String Advisor | Propriété TSA | 20–24 kg, 2–4 kg, > 26 kg de la section 2.2 de l'article tennis elbow | 29/09/2026 |
 | schema-profils-cordage-fr.svg | Schéma maison | Tennis String Advisor | Propriété TSA | Aucune donnée chiffrée (profils cités dans les articles terre battue et nouveautés) | 29/09/2026 |
+| schema-raideur-tamis-trois-cordages-fr.svg / -en.svg | Schéma maison, généré par `scripts/blog-covers/build-schemas-comparer-montages.py` | Tennis String Advisor | Propriété TSA | Raideur du tamis de trois cordages sur un même cadre à 60 lb, à la pose (69, 78, 80 unités RDC) et 24 h après (65, 71, 73) : essais de cordage USRSA repris par Tennis Warehouse, non datés (dossier `comparer-deux-montages-cordage-tension`, F4 et F6) | 13/11/2026 |
+| schema-meme-consigne-deux-tamis-fr.svg / -en.svg | Schéma maison, généré par le même script | Tennis String Advisor | Propriété TSA | Aucune donnée chiffrée : schéma de principe, non à l'échelle (aucune mesure n'isole l'effet de la taille du tamis, F18) | 13/11/2026 |
 
 ## Graphiques générés depuis la base
 
@@ -94,6 +96,7 @@ image).
 | couverture-meilleur-cordage-polyester-2026-fr.webp / -en.webp | Générée | Tennis String Advisor | Propriété TSA | Coupe de principe d'un faisceau de monofilaments | meilleur-cordage-polyester-2026 (FR), best-polyester-tennis-strings-2026 (EN) | 09/10/2026 |
 | couverture-polyester-tennis-elbow-fr.webp / -en.webp | Générée | Tennis String Advisor | Propriété TSA | Jauge de fermeté en cinq zones, sans graduation chiffrée | cordage-polyester-tennis-elbow (FR), polyester-strings-tennis-elbow (EN) | 09/10/2026 |
 | couverture-blog-fr.webp / -en.webp | Générée | Tennis String Advisor | Propriété TSA | Tamis de cordage et balle | og:image de /blog/ et /en/blog/ | 09/10/2026 |
+| couverture-comparer-deux-montages-fr.webp / -en.webp | Générée le 13/11/2026 par le même script (`--only couverture-comparer-deux-montages`), sous Linux : police DejaVu Sans, et non Segoe UI | Tennis String Advisor | Propriété TSA | Deux tamis génériques de tailles différentes, corde centrale soulignée ; aucun chiffre | comparer-deux-montages-cordage-tension (FR), compare-two-string-setups-same-tension (EN) | 13/11/2026 |
 
 ## Illustrations générées
 

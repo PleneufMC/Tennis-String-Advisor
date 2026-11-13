@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" width="640" height="360">
+<title>Raideur du tamis sur un même cadre à 60 lb, selon le cordage</title>
+<symbol id="schema" viewBox="0 0 640 360">
+<g font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif">
+<rect x="30.0" y="14" width="16" height="16" rx="3" style="fill:var(--tsa-a1,#047857)"/>
+<text x="54.0" y="28.0" font-size="17" text-anchor="start" font-weight="normal" fill="currentColor">juste après la pose</text>
+<rect x="300.0" y="14" width="16" height="16" rx="3" style="fill:var(--tsa-a3,#1d4ed8)"/>
+<text x="324.0" y="28.0" font-size="17" text-anchor="start" font-weight="normal" fill="currentColor">24 h plus tard, sans jouer</text>
+<line x1="30.0" y1="76.0" x2="30.0" y2="122.0" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1;fill:none"/>
+<line x1="30.0" y1="154.0" x2="30.0" y2="200.0" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1;fill:none"/>
+<line x1="30.0" y1="232.0" x2="30.0" y2="278.0" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1;fill:none"/>
+<text x="30.0" y="314.0" font-size="17" text-anchor="middle" font-weight="normal" style="fill:var(--tsa-muted,#4b5563)">0</text>
+<line x1="147.8" y1="76.0" x2="147.8" y2="122.0" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1;fill:none"/>
+<line x1="147.8" y1="154.0" x2="147.8" y2="200.0" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1;fill:none"/>
+<line x1="147.8" y1="232.0" x2="147.8" y2="278.0" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1;fill:none"/>
+<text x="147.8" y="314.0" font-size="17" text-anchor="middle" font-weight="normal" style="fill:var(--tsa-muted,#4b5563)">20</text>
+<line x1="265.6" y1="76.0" x2="265.6" y2="122.0" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1;fill:none"/>
+<line x1="265.6" y1="154.0" x2="265.6" y2="200.0" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1;fill:none"/>
+<line x1="265.6" y1="232.0" x2="265.6" y2="278.0" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1;fill:none"/>
+<text x="265.6" y="314.0" font-size="17" text-anchor="middle" font-weight="normal" style="fill:var(--tsa-muted,#4b5563)">40</text>
+<line x1="383.3" y1="76.0" x2="383.3" y2="122.0" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1;fill:none"/>
+<line x1="383.3" y1="154.0" x2="383.3" y2="200.0" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1;fill:none"/>
+<line x1="383.3" y1="232.0" x2="383.3" y2="278.0" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1;fill:none"/>
+<text x="383.3" y="314.0" font-size="17" text-anchor="middle" font-weight="normal" style="fill:var(--tsa-muted,#4b5563)">60</text>
+<line x1="501.1" y1="76.0" x2="501.1" y2="122.0" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1;fill:none"/>
+<line x1="501.1" y1="154.0" x2="501.1" y2="200.0" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1;fill:none"/>
+<line x1="501.1" y1="232.0" x2="501.1" y2="278.0" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1;fill:none"/>
+<text x="501.1" y="314.0" font-size="17" text-anchor="middle" font-weight="normal" style="fill:var(--tsa-muted,#4b5563)">80</text>
+<text x="30.0" y="342.0" font-size="17" text-anchor="start" font-weight="normal" style="fill:var(--tsa-muted,#4b5563)">Raideur du tamis, en unités de l'appareil RDC</text>
+<text x="30.0" y="72.0" font-size="17" text-anchor="start" font-weight="600" fill="currentColor">Tourna Poly Big Hitter 16 · monofilament « poly »</text>
+<path d="M30.0,80.0 H432.3 Q436.3,80.0 436.3,84.0 V94.0 Q436.3,98.0 432.3,98.0 H30.0 Z" style="fill:var(--tsa-a1,#047857)"/>
+<text x="444.3" y="94.0" font-size="17" text-anchor="start" font-weight="600" fill="currentColor">69</text>
+<path d="M30.0,100.0 H408.8 Q412.8,100.0 412.8,104.0 V114.0 Q412.8,118.0 408.8,118.0 H30.0 Z" style="fill:var(--tsa-a3,#1d4ed8)"/>
+<text x="420.8" y="114.0" font-size="17" text-anchor="start" font-weight="600" fill="currentColor">65</text>
+<text x="30.0" y="150.0" font-size="17" text-anchor="start" font-weight="600" fill="currentColor">Prince Synthetic Gut Original Gold 16 · nylon (témoin)</text>
+<path d="M30.0,158.0 H485.3 Q489.3,158.0 489.3,162.0 V172.0 Q489.3,176.0 485.3,176.0 H30.0 Z" style="fill:var(--tsa-a1,#047857)"/>
+<text x="497.3" y="172.0" font-size="17" text-anchor="start" font-weight="600" fill="currentColor">78</text>
+<path d="M30.0,178.0 H444.1 Q448.1,178.0 448.1,182.0 V192.0 Q448.1,196.0 444.1,196.0 H30.0 Z" style="fill:var(--tsa-a3,#1d4ed8)"/>
+<text x="456.1" y="192.0" font-size="17" text-anchor="start" font-weight="600" fill="currentColor">71</text>
+<text x="30.0" y="228.0" font-size="17" text-anchor="start" font-weight="600" fill="currentColor">Head FiberGel Power 16 · multifilament</text>
+<path d="M30.0,236.0 H497.1 Q501.1,236.0 501.1,240.0 V250.0 Q501.1,254.0 497.1,254.0 H30.0 Z" style="fill:var(--tsa-a1,#047857)"/>
+<text x="509.1" y="250.0" font-size="17" text-anchor="start" font-weight="600" fill="currentColor">80</text>
+<path d="M30.0,256.0 H455.9 Q459.9,256.0 459.9,260.0 V270.0 Q459.9,274.0 455.9,274.0 H30.0 Z" style="fill:var(--tsa-a3,#1d4ed8)"/>
+<text x="467.9" y="270.0" font-size="17" text-anchor="start" font-weight="600" fill="currentColor">73</text>
+</g>
+</symbol>
+<use href="#schema" width="640" height="360"/>
+</svg>

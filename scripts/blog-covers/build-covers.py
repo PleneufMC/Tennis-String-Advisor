@@ -6,13 +6,16 @@ couleurs du site (vert Tailwind green-600/emerald-900), un motif dessiné
 (tamis de cordage générique, coupe de monofilament, jauge de fermeté) et le
 titre de l'article. Chaque fichier est listé dans public/blog/images/CREDITS.md.
 
-Usage : python scripts/blog-covers/build-covers.py
+Usage : python scripts/blog-covers/build-covers.py [--only <début du nom de fichier>]
+  --only ne régénère que les couvertures dont le nom commence par ce préfixe
+  (les autres fichiers ne sont pas réécrits : la police dépend de la machine).
 Polices : Segoe UI (Windows) si présente, sinon DejaVu Sans (Linux).
 """
 from __future__ import annotations
 
 import math
 import os
+import sys
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
@@ -127,6 +130,30 @@ def motif_grid(img: Image.Image) -> None:
     img.paste(layer, (0, 0), layer)
 
 
+def motif_two_heads(img: Image.Image) -> None:
+    """Deux tamis génériques de tailles différentes, côte à côte : même cordage, cordes plus ou moins longues."""
+    layer, d = overlay(img)
+
+    def head(cx: int, cy: int, rx: int, ry: int, step: int) -> None:
+        n = rx // step
+        for i in range(-n, n + 1):
+            dx = i * step
+            h = ry * math.sqrt(max(0.0, 1 - (dx / rx) ** 2))
+            d.line([(cx + dx, cy - h), (cx + dx, cy + h)], fill=(255, 255, 255, 120), width=3 * S)
+        m = ry // step
+        for j in range(-m, m + 1):
+            dy = j * step
+            w = rx * math.sqrt(max(0.0, 1 - (dy / ry) ** 2))
+            d.line([(cx - w, cy + dy), (cx + w, cy + dy)], fill=(255, 255, 255, 95), width=3 * S)
+        # corde centrale en couleur d'accent : c'est sa longueur qui change d'un tamis à l'autre
+        d.line([(cx, cy - ry), (cx, cy + ry)], fill=ACCENT + (255,), width=6 * S)
+        d.ellipse([cx - rx, cy - ry, cx + rx, cy + ry], outline=(255, 255, 255, 235), width=14 * S)
+
+    head(795 * S, 335 * S, 95 * S, 125 * S, 19 * S)
+    head(1045 * S, 300 * S, 125 * S, 165 * S, 19 * S)
+    img.paste(layer, (0, 0), layer)
+
+
 def ball(d: ImageDraw.ImageDraw, bx: int, by: int, br: int) -> None:
     """Balle de tennis générique : disque et deux coutures incurvées."""
     d.ellipse([bx - br, by - br, bx + br, by + br], fill=ACCENT + (255,))
@@ -190,6 +217,10 @@ COVERS = [
      "Cordage polyester et tennis elbow", "Triés par rigidité et par indice RCS, pas par note"),
     ("couverture-polyester-tennis-elbow-en.webp", motif_gauge, "Sensitive arm",
      "Polyester strings and tennis elbow", "Sorted by stiffness and RCS index, not by score"),
+    ("couverture-comparer-deux-montages-fr.webp", motif_two_heads, "Tension",
+     "Même tension, tamis différent", "Comparer deux montages de cordage sans se tromper"),
+    ("couverture-comparer-deux-montages-en.webp", motif_two_heads, "Tension",
+     "Same tension, different head", "How to compare two string setups without fooling yourself"),
     ("couverture-blog-fr.webp", motif_grid, "Blog",
      "Cordage, tension et confort du bras", "Guides et analyses fondés sur des mesures publiées"),
     ("couverture-blog-en.webp", motif_grid, "Blog",
@@ -199,7 +230,10 @@ COVERS = [
 
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
+    only = sys.argv[sys.argv.index("--only") + 1] if "--only" in sys.argv else None
     for name, motif, kicker, title, subtitle in COVERS:
+        if only and not name.startswith(only):
+            continue
         img = background()
         motif(img)
         text_block(img, kicker, title, subtitle, "tennisstringadvisor.org")

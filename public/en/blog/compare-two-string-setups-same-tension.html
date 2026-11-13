@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>String Tension and Head Size: How to Compare Two Setups</title>
+  <meta name="description" content="String tension and head size: the same reference tension does not give the same stringbed firmness. What is measured, what is not, and how to compare.">
+  <meta name="keywords" content="string tension and head size, compare string setups, how to measure string tension, stringbed stiffness, same tension different racquet">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://tennisstringadvisor.org/en/blog/compare-two-string-setups-same-tension.html">
+  <link rel="alternate" hreflang="fr" href="https://tennisstringadvisor.org/blog/comparer-deux-montages-cordage-tension.html">
+  <link rel="alternate" hreflang="en" href="https://tennisstringadvisor.org/en/blog/compare-two-string-setups-same-tension.html">
+  <link rel="alternate" hreflang="x-default" href="https://tennisstringadvisor.org/blog/comparer-deux-montages-cordage-tension.html">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Same Tension, Different Head Size: How to Compare Two String Setups">
+  <meta property="og:description" content="The same reference tension does not give the same firmness from one racquet to the next. What is measured, what is not, and a protocol to compare two setups.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://tennisstringadvisor.org/en/blog/compare-two-string-setups-same-tension.html">
+  <meta property="og:site_name" content="Tennis String Advisor">
+  <meta property="og:image" content="https://tennisstringadvisor.org/blog/images/couverture-comparer-deux-montages-en.webp">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Illustration: two stringbeds of different sizes side by side, with the title “Same tension, different head”">
+  <meta property="article:published_time" content="2026-11-13">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Same Tension, Different Head Size: How to Compare Two String Setups">
+  <meta name="twitter:description" content="The same reference tension does not give the same firmness from one racquet to the next. What is measured, what is not, and how to compare.">
+  <meta name="twitter:image" content="https://tennisstringadvisor.org/blog/images/couverture-comparer-deux-montages-en.webp">
+  <meta name="twitter:image:alt" content="Illustration: two stringbeds of different sizes side by side, with the title “Same tension, different head”">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            tennis: { green: '#16a34a', dark: '#0d1117', light: '#f0fdf4' }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Schema.org Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://tennisstringadvisor.org/#organization",
+        "name": "Tennis String Advisor",
+        "url": "https://tennisstringadvisor.org/",
+        "description": "Independent expertise on tennis strings, racquets and setup for competitive players."
+      },
+      {
+        "@type": "Person",
+        "@id": "https://tennisstringadvisor.org/#pierre-fermanian",
+        "name": "Pierre Fermanian",
+        "jobTitle": "Founder and writer",
+        "worksFor": { "@id": "https://tennisstringadvisor.org/#organization" },
+        "knowsAbout": ["Tennis strings", "String tension", "Racquet stiffness", "Tennis equipment"]
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://tennisstringadvisor.org/#website-en",
+        "url": "https://tennisstringadvisor.org/en/",
+        "name": "Tennis String Advisor",
+        "publisher": { "@id": "https://tennisstringadvisor.org/#organization" },
+        "inLanguage": "en"
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": "https://tennisstringadvisor.org/en/blog/compare-two-string-setups-same-tension.html#breadcrumb",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://tennisstringadvisor.org/en/" },
+          { "@type": "ListItem", "position": 2, "name": "Blog", "item": "https://tennisstringadvisor.org/en/blog/" },
+          { "@type": "ListItem", "position": 3, "name": "Comparing Two String Setups" }
+        ]
+      },
+      {
+        "@type": "BlogPosting",
+        "@id": "https://tennisstringadvisor.org/en/blog/compare-two-string-setups-same-tension.html#article",
+        "headline": "Same String Tension, Different Head Size: How to Compare Two Setups",
+        "image": "https://tennisstringadvisor.org/blog/images/couverture-comparer-deux-montages-en.webp",
+        "description": "String tension and head size: the same reference tension does not give the same stringbed firmness. What is measured, what is not, and how to compare.",
+        "inLanguage": "en",
+        "datePublished": "2026-11-13",
+        "dateModified": "2026-11-13",
+        "author": { "@id": "https://tennisstringadvisor.org/#pierre-fermanian" },
+        "publisher": { "@id": "https://tennisstringadvisor.org/#organization" },
+        "isPartOf": { "@id": "https://tennisstringadvisor.org/#website-en" },
+        "breadcrumb": { "@id": "https://tennisstringadvisor.org/en/blog/compare-two-string-setups-same-tension.html#breadcrumb" },
+        "mainEntityOfPage": "https://tennisstringadvisor.org/en/blog/compare-two-string-setups-same-tension.html",
+        "keywords": "string tension and head size, compare string setups, how to measure string tension, stringbed stiffness",
+        "articleSection": "Strings",
+        "citation": [
+          { "@type": "ScholarlyArticle", "name": "Measurements of string tension in a tennis racket", "author": "Rod Cross, Rob Bower", "isPartOf": "Sports Engineering, 4, pp. 165-175", "datePublished": "2001", "url": "https://www.physics.usyd.edu.au/~cross/CrossBower.pdf" },
+          { "@type": "CreativeWork", "name": "Measuring String Tension", "author": "Rod Cross", "publisher": "University of Sydney", "datePublished": "2006-07", "url": "https://www.physics.usyd.edu.au/~cross/StringTension.pdf" },
+          { "@type": "CreativeWork", "name": "String Stiffness", "author": "Crawford Lindsey", "publisher": "Tennis Warehouse University", "url": "https://twu.tennis-warehouse.com/learning_center/stringstiffness.php" },
+          { "@type": "ScholarlyArticle", "name": "Player sensitivity to changes in string tension in a tennis racket", "author": "Rob Bower, Rod Cross", "isPartOf": "Journal of Science and Medicine in Sport, 6(1), pp. 120-131", "datePublished": "2003", "url": "https://opus.lib.uts.edu.au/handle/10453/4756" },
+          { "@type": "ScholarlyArticle", "name": "Elite tennis player sensitivity to changes in string tension and the effect on resulting ball dynamics", "author": "Rob Bower, Rod Cross", "isPartOf": "Sports Engineering, 11, pp. 31-36", "datePublished": "2008", "url": "https://link.springer.com/article/10.1007/s12283-008-0006-z" },
+          { "@type": "ScholarlyArticle", "name": "String tension effects on tennis ball rebound speed and accuracy during playing conditions", "author": "Rob Bower, Rod Cross", "isPartOf": "Journal of Sports Sciences, 23(7), pp. 765-771", "datePublished": "2005", "url": "https://opus.lib.uts.edu.au/handle/10453/4445" },
+          { "@type": "CreativeWork", "name": "Tennis Stringing Patterns Compared: 2-Knot vs 4-Knot", "author": "G. Medri", "publisher": "Racketpedia", "datePublished": "2024-08-01", "url": "https://www.racketpedia.com/en-GB/editorials/tennis-stringing-patterns-2-knot-vs-4-knot" }
+        ]
+      },
+      {
+        "@type": "FAQPage",
+        "@id": "https://tennisstringadvisor.org/en/blog/compare-two-string-setups-same-tension.html#faq",
+        "inLanguage": "en",
+        "mainEntity": [
+          { "@type": "Question", "name": "Should I string tighter on a larger head?", "acceptedAnswer": { "@type": "Answer", "text": "The direction is known: at equal tension, longer strings make a softer stringbed, so a larger head tends to call for a higher reference tension. No published measurement we could open says by how much: work by trial, measuring each setup the same way." } },
+          { "@type": "Question", "name": "How do I measure the tension of my strings?", "acceptedAnswer": { "@type": "Answer", "text": "You cannot read the reference tension back; you measure the stringbed: its vibration frequency (an app or an ERT-type device), how far it gives under a load, or one string's tension with a two-prong gauge. These readings track one racquet over time; they do not compare two different frames." } },
+          { "@type": "Question", "name": "Does a frequency app give the real tension?", "acceptedAnswer": { "@type": "Answer", "text": "No. Turning a frequency into a tension takes the head area and the mass of the strings, so the value shown depends on what you enter. On one racquet the change is meaningful: 10% less tension means 5% less frequency." } },
+          { "@type": "Question", "name": "Does a pro's string tension apply to my racquet?", "acceptedAnswer": { "@type": "Answer", "text": "No. A tension figure only means something with the frame, string, machine and delay that go with it, and professionals' frames almost always differ from the retail models. We publish no player tension that is not confirmed by two independent sources." } }
+        ]
+      }
+    ]
+  }
+  </script>
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-YSSLHJ5WYD"></script>
+  <script src="/js/analytics.js"></script>
+
+  <style>
+    /* Plain-CSS fallbacks so typography renders with the Tailwind CDN build */
+    .article-content h2 { font-size: 1.5rem; line-height: 2rem; font-weight: 700; color: #111827; margin-top: 2.5rem; margin-bottom: 1rem; padding-bottom: .5rem; border-bottom: 1px solid #e5e7eb; }
+    .article-content h3 { font-size: 1.25rem; line-height: 1.75rem; font-weight: 600; color: #1f2937; margin-top: 2rem; margin-bottom: .75rem; }
+    .article-content p { color: #374151; line-height: 1.75; margin-bottom: 1rem; }
+    .article-content ul, .article-content ol { margin: 1rem 0 1rem 1.5rem; }
+    .article-content ul { list-style: disc; }
+    .article-content ol { list-style: decimal; }
+    .article-content li { margin-bottom: .5rem; color: #374151; }
+    .article-content a { color: #059669; text-decoration: underline; text-underline-offset: 2px; }
+    .article-content a:hover { color: #047857; }
+    .article-content table { width: 100%; border-collapse: collapse; margin: 1.5rem 0 1rem; font-size: .95rem; }
+    .article-content thead th { background-color: #059669; color: #fff; font-weight: 600; padding: .75rem 1rem; text-align: left; }
+    .article-content tbody td { border-bottom: 1px solid #e5e7eb; padding: .75rem 1rem; vertical-align: top; }
+    .article-content tbody tr:nth-child(even) { background-color: #f9fafb; }
+    .article-content td.num { text-align: right; font-variant-numeric: tabular-nums; }
+    .article-content p.table-note { font-size: .875rem; color: #4b5563; }
+    .expert-box { background-color: #fffbeb; border-left: 4px solid #f59e0b; padding: 1.25rem 1.5rem; margin: 1.75rem 0; border-radius: 0 .5rem .5rem 0; }
+    .expert-box p { margin-bottom: 0; }
+  </style>
+  <link rel="stylesheet" href="/blog/blog-figures.css">
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <!-- Header -->
+  <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 py-4">
+      <div class="flex items-center justify-between">
+        <a href="/en/" class="flex items-center gap-2">
+          <span class="text-2xl">🎾</span>
+          <span class="font-bold text-xl text-gray-900">Tennis String Advisor</span>
+        </a>
+        <nav class="hidden md:flex items-center gap-6">
+          <a href="/en/" class="text-gray-600 hover:text-green-600 transition">Home</a>
+          <a href="/en/configurator.html" class="text-gray-600 hover:text-green-600 transition">Configurator</a>
+          <a href="/en/racquets.html" class="text-gray-600 hover:text-green-600 transition">Racquets</a>
+          <a href="/en/strings.html" class="text-gray-600 hover:text-green-600 transition">Strings</a>
+          <a href="/en/blog/" class="text-green-600 font-semibold">Blog</a>
+          <a href="/blog/comparer-deux-montages-cordage-tension.html" class="text-blue-600 hover:text-blue-700">🇫🇷 FR</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 text-white py-16">
+    <div class="max-w-4xl mx-auto px-4">
+      <div class="flex items-center gap-2 text-green-400 text-sm mb-4">
+        <a href="/en/blog/" class="hover:underline">Blog</a>
+        <span>›</span>
+        <span>Strings</span>
+      </div>
+      <h1 class="text-3xl md:text-5xl font-bold mb-6 leading-tight">
+        Same String Tension, Different Head Size: How to Compare Two Setups
+      </h1>
+      <p class="text-xl text-gray-300 mb-6">
+        The tension you ask for sets a machine. What you can compare from one racquet to the next is stringbed stiffness, measured twice the same way.
+      </p>
+      <div class="flex items-center gap-4 text-sm text-gray-400">
+        <span>📅 November 13, 2026</span>
+        <span>•</span>
+        <span>⏱️ 9 min read</span>
+        <span>•</span>
+        <span>🎾 Strings</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <main class="max-w-4xl mx-auto px-4 py-12">
+    <article class="article-content">
+    <figure class="tsa-fig tsa-fig--hero">
+      <img src="/blog/images/couverture-comparer-deux-montages-en.webp" alt="Illustration: two stringbeds of different sizes side by side, with the title “Same tension, different head”" width="1200" height="630" decoding="async" fetchpriority="high">
+      <figcaption>Illustration: Tennis String Advisor</figcaption>
+    </figure>
+
+      <!-- The short version -->
+      <div class="bg-green-50 border border-green-200 rounded-xl p-6 mb-8">
+        <h3 class="text-lg font-bold text-green-900 mt-0 mb-3">🎯 The short version</h3>
+        <ul class="mb-0 text-green-900">
+          <li><strong>The tension you ask for is a machine setting</strong>, not a property of the stringbed.</li>
+          <li><strong>Measured:</strong> same frame, same reference tension, three strings: 69, 78 and 80 stiffness units, a 16% spread.</li>
+          <li><strong>Not measured:</strong> the effect of head size and string pattern. We know the direction, not the scale.</li>
+          <li><strong>To compare:</strong> same instrument, same delay after stringing and, if you can, the same frame.</li>
+          <li><strong>Our RCS index</strong> compares two strings or two tensions on one frame; it sees neither head size nor pattern.</li>
+        </ul>
+      </div>
+
+      <p>
+        You ask for 53 lb (24 kg) on your 98, your hitting partner asks for 53 lb on a 105, and the two racquets do not answer the same way. Or you switch frames, keep "your" tension, and the feel is gone. The first instinct is to blame the stringer. The usual cause lies elsewhere: the number you give at the counter sets a machine; it does not describe the stringbed you get back.
+      </p>
+      <p>
+        This article settles three points. What the reference tension guarantees, and what it does not, once the frame changes. What the instruments that claim to read "the tension" of a strung racquet are worth. What our firmness index can compare between two frames, and what it cannot see.
+      </p>
+      <p>
+        You will leave with a protocol: what to measure, when, and with what. The gap between the tension you ask for and the tension in the stringbed is covered in our <a href="/en/blog/tennis-string-tension-guide.html">string tension guide</a>; we only come back to it here to place it.
+      </p>
+
+      <h2 id="reference-tension">🎯 1. Why the Same Tension Does Not Give the Same Firmness From One Racquet to the Next</h2>
+
+      <p>
+        Because the tension you ask for sets the pulling force of the machine, string after string, and nothing else. The firmness you feel is the stiffness of the strung bed: the force it puts up against being pushed in. It also depends on the string, on how long and how many the strings are, on the stringing method and on the time elapsed: two racquets "at 53 lb" share a setting, not a result.
+      </p>
+
+      <p>
+        Tennis Warehouse University (TWU) puts it in one sentence: "individual string stiffness is not the same as stringbed stiffness". Stringbed stiffness also depends on string length (head size and shape), on the number of strings (the pattern) and on the tension already lost. TWU puts no figure on any of these factors.
+      </p>
+
+      <p>
+        The gap between the reference tension and the tension in the stringbed (about 30% lower right after stringing, on five nylon-strung racquets, according to Cross and Bower) is covered in <a href="/en/blog/tennis-string-tension-guide.html">the guide</a>. The question here is the next one: at the same reference tension, what moves the result?
+      </p>
+
+      <div class="overflow-x-auto">
+        <table>
+          <thead>
+            <tr>
+              <th>What changes, at the same reference tension</th>
+              <th>Published spread</th>
+              <th>Source and limits</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>The string</strong></td>
+              <td>69, 78 and 80 RDC units on the same frame at 60 lb (27.2 kg), a 16% spread</td>
+              <td>USRSA string tests reproduced by Tennis Warehouse, undated</td>
+            </tr>
+            <tr>
+              <td><strong>The stringing method</strong></td>
+              <td>51.6 to 53.6 lb (23.4 to 24.3 kg) read for 52.9 lb (24 kg) requested; 44.1 lb (20.0 kg) with a "one string every two" method</td>
+              <td>Racketpedia (2024), instruments not named</td>
+            </tr>
+            <tr>
+              <td><strong>The machine</strong></td>
+              <td>Constant pull: 5 to 10% tighter than a lockout machine</td>
+              <td>A retailer's glossary, no protocol</td>
+            </tr>
+            <tr>
+              <td><strong>The delay, without play</strong></td>
+              <td>−6 to −9% stiffness in 24 hours; −1.8 to −2.9 lb (−0.8 to −1.3 kg) in 4 hours</td>
+              <td>USRSA tests; Racketpedia</td>
+            </tr>
+            <tr>
+              <td><strong>Head size, string pattern</strong></td>
+              <td>No isolated figure</td>
+              <td>Direction established (TWU, Cross and Bower); no measurement we could open</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>
+        The first result is the clearest. On a Wilson Pro Staff 6.1 95 (16×18) and a constant-pull machine, the bed comes off at 69 units with a "poly" monofilament (Tourna Poly Big Hitter 16), 78 with the control nylon (Prince Synthetic Gut Original Gold 16) and 80 with a multifilament (Head FiberGel Power 16). The next day, without a single ball hit: 65, 71 and 73.
+      </p>
+
+      <figure class="tsa-fig">
+        <svg class="tsa-schema" viewBox="0 0 640 360" width="640" height="360" role="img" aria-labelledby="fig-stiffness-three-strings"><title id="fig-stiffness-three-strings">Stringbed stiffness on the same frame at 60 lb: 69, 78 and 80 RDC units right after stringing, then 65, 71 and 73 units 24 hours later, depending on the string</title><use href="/blog/images/schema-raideur-tamis-trois-cordages-en.svg#schema"></use></svg>
+        <figcaption>Chart by Tennis String Advisor, based on USRSA string tests reproduced by Tennis Warehouse (undated). The unit is specific to the RDC device.</figcaption>
+      </figure>
+
+      <h2 id="head-size-pattern">📐 2. Head Size and String Pattern: The Direction Is Known, the Scale Is Not</h2>
+
+      <p>
+        At the same reference tension, a larger head tends to give a softer bed, because its strings are longer; a more open pattern pulls the same way. The direction of both effects is established. No published measurement we could open isolates them, so there is no defensible rule of the "so many pounds per square inch" kind.
+      </p>
+
+      <figure class="tsa-fig">
+        <svg class="tsa-schema" viewBox="0 0 640 330" width="640" height="330" role="img" aria-labelledby="fig-same-tension-two-heads"><title id="fig-same-tension-two-heads">Principle diagram: at the same reference tension, a larger head has longer strings, which give more under the same force</title><use href="/blog/images/schema-meme-consigne-deux-tamis-en.svg#schema"></use></svg>
+        <figcaption>At the same reference tension, a larger head has longer strings. Principle diagram by Tennis String Advisor, not to scale.</figcaption>
+      </figure>
+
+      <p>
+        TWU lists string length and string count among what determines stringbed stiffness; Cross and Bower write that a deflection reading moves with them too, and not with tension alone. Stringers say it too (larger head, higher reference tension for the same firmness), without a measurement: a trade signal, not a data point.
+      </p>
+
+      <div class="expert-box">
+        <p><strong>💡 Expert point — why string length matters.</strong> A string under tension resists being pushed in proportion to its tension and in inverse proportion to its length: at equal tension, a longer string gives more. On a real stringbed the strings cross, their length changes from the centre to the edges, and the pattern often changes with head size. The direction is safe; the size of the effect is still to be measured.</p>
+      </div>
+
+      <p>
+        Move from a 98 to a 105 with "your" tension, and you keep the setting, not the stringbed. See also <a href="/en/blog/tennis-string-pattern.html">string pattern</a> and <a href="/en/blog/tennis-string-gauge.html">string gauge</a>, which TWU lists among the same factors.
+      </p>
+
+      <h2 id="instruments">🔧 3. How to Measure Stringbed Firmness: What the Instruments Are Worth</h2>
+
+      <p>
+        No instrument reads the reference tension back: each measures something else, in its own unit. All of them can track one racquet over time. For comparing two different racquets, we found no independent validation of any consumer instrument.
+      </p>
+
+      <div class="overflow-x-auto">
+        <table>
+          <thead>
+            <tr>
+              <th>Instrument</th>
+              <th>What it measures, in what</th>
+              <th>Published accuracy</th>
+              <th>Defensible use</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Two-prong gauge</strong> (Stringmeter type)</td>
+              <td>Local tension of one string, in lb or kg</td>
+              <td>About 2 lb (1 kg) on gut and nylon, not on Kevlar (Cross and Bower)</td>
+              <td>Track one racquet</td>
+            </tr>
+            <tr>
+              <td><strong>Deflection device</strong> (RDC type)</td>
+              <td>How far the bed gives under a load, in device-specific units</td>
+              <td>Not stated in the tests we read</td>
+              <td>Track one racquet; compare two strings on the same frame</td>
+            </tr>
+            <tr>
+              <td><strong>Frequency device</strong> (ERT 300)</td>
+              <td>Stringbed frequency converted to a "DT" stiffness, in kp/cm (kilogram-force per centimetre)</td>
+              <td>±1 kp/cm, range 20 to 65 (manual)</td>
+              <td>Track one racquet; across frames, on the manual's word only</td>
+            </tr>
+            <tr>
+              <td><strong>Sound app</strong> (RacquetTune)</td>
+              <td>Stringbed frequency, in Hz, converted to tension</td>
+              <td>Changes of 0.2 lb (0.1 kg), according to the publisher</td>
+              <td>Track one racquet</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>
+        Cross and Bower are blunt: a deflection reading moves with tension, and also with string length and string count. Frequency is the finest tool for tracking one racquet: a 1% change in tension is easy to measure, and 10% less tension means 5% less frequency (from 600 to 570 Hz, for instance).
+      </p>
+
+      <p>
+        The ERT 300 manual claims the device accounts on its own for racquet size, pattern and string; yet its conversion disc to a tension splits head sizes into three classes. That is the manufacturer's word.
+      </p>
+
+      <div class="expert-box">
+        <p><strong>💡 Expert point — a frequency does not travel from one head to another.</strong> At equal tension and string, a 98 in² head vibrates about 3.5% higher than a 105 in² (our calculation, from Cross's formula): frequency also depends on head area. An app given the wrong head size turns the same sound into a different tension. Compare changes, not absolute values.</p>
+      </div>
+
+      <h2 id="rcs-index">📊 4. What the RCS Index Compares, and What It Cannot See</h2>
+
+      <p>
+        The firmness index of our <a href="/en/rcs-calculator.html">RCS calculator</a> is computed, not measured, from three inputs: frame stiffness (RA), string stiffness and tension. It does compare two strings or two tensions on one frame. Between two frames it only sees the RA gap: not head size, not pattern, not gauge, not the machine, not the delay.
+      </p>
+
+      <p>
+        So two racquets with the same RA get the same index, string and tension being equal:
+      </p>
+
+      <div class="overflow-x-auto">
+        <table>
+          <thead>
+            <tr>
+              <th>Two frames with the same RA</th>
+              <th>What separates them</th>
+              <th>Index, Head Lynx Tour at 53 lb (24 kg)</th>
+              <th>Index, Head RIP Control at 53 lb (24 kg)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><a href="/en/racquets/babolat-pure-drive-standard.html">Babolat Pure Drive Standard (2025)</a> and <a href="/en/racquets/babolat-pure-drive-107.html">Babolat Pure Drive 107</a> (RA 69)</td>
+              <td>100 vs 107 in², same 16×19 pattern</td>
+              <td>34 and 34 (firm tier)</td>
+              <td>26 and 26 (standard)</td>
+            </tr>
+            <tr>
+              <td><a href="/en/racquets/volkl-v8-pro.html">Völkl V8 Pro</a> and <a href="/en/racquets/wilson-ultra-100-v5.html">Wilson Ultra 100 v5</a> (RA 67)</td>
+              <td>Same 100 in² head, 18×20 vs 16×19</td>
+              <td>33 and 33 (firm)</td>
+              <td>25 and 25 (standard)</td>
+            </tr>
+            <tr>
+              <td><a href="/en/racquets/wilson-blade-98-18x20-v9.html">Wilson Blade 98 18x20 v9</a> and <a href="/en/racquets/head-boom-mp-2024.html">Head Boom MP</a> (RA 62)</td>
+              <td>98 vs 100 in², 18×20 vs 16×19</td>
+              <td>31 and 31 (firm)</td>
+              <td>23 and 23 (comfortable)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="table-note">
+        Index values as of November 13, 2026. Stiffness aligned with a TWU measurement: <a href="/en/strings/head-lynx-tour.html">Head Lynx Tour</a> 228.6 lb/in, <a href="/en/strings/head-rip-control.html">Head RIP Control</a> 156.6 lb/in.
+      </p>
+
+      <p>
+        On a single frame, by contrast, the index separates setups clearly: on an RA 64 frame at 53 lb (24 kg), 24 (comfortable tier) with the Head RIP Control, 32 (firm) with the Head Lynx Tour, 38 (very firm) with the <a href="/en/strings/luxilon-4g.html">Luxilon 4G</a> (286.9 lb/in, aligned with TWU). Each kilo of tension (about 2 lb) moves it by half a point.
+      </p>
+
+      <div class="expert-box">
+        <p><strong>💡 Expert point — changing frames already changes firmness.</strong> In the formula, seven RA points weigh as much as 4.8 kg (about 10.6 lb) of tension: with the Head Lynx Tour at 53 lb (24 kg), the index goes from 31 on an RA 62 frame to 34 on an RA 69 frame. Keeping your tension while changing racquets moves firmness before head size even comes into it. This equivalence is internal to the formula, not a measurement.</p>
+      </div>
+
+      <div class="bg-gray-900 rounded-xl p-6 my-8 text-white">
+        <h3 class="text-lg font-bold text-white mt-0 mb-2">📊 Compare two setups on your frame</h3>
+        <p class="text-gray-300 mb-4">Enter your racquet, then change the string or the tension: the index shows what moves, and by how much.</p>
+        <a href="/en/rcs-calculator.html" class="inline-block px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition" style="color:#fff;text-decoration:none">Compute my RCS index →</a>
+      </div>
+
+      <h2 id="perception">🎾 5. Can You Really Feel a Tension Difference?</h2>
+
+      <p>
+        Less well than you would think, in the published protocols. Of 41 advanced recreational players, 27% correctly identified a difference of 11 lb (5 kg) or less, and 37% could not pick a 22 lb (10 kg) difference (Bower and Cross, 2003). Feel alone is an unreliable instrument for comparing two setups.
+      </p>
+
+      <p>
+        With earplugs in, only 6 players out of 26 passed the test: part of what we call "feeling the tension" travels through the sound of impact. Among 18 elite players (2008), 61% could not detect a 75 N (17 lb) difference, and 11% detected 25 N (6 lb).
+      </p>
+
+      <p>
+        The ball changes little: against a ball machine, 108.1 km/h (67.2 mph) at 180 N (about 40 lb) against 105.3 km/h (65.4 mph) at 280 N (about 63 lb), with more long balls at low tension and more net errors at high tension (2005). One shared limit: these players tested racquets prepared for the study, not their own. These results do not say you feel nothing; they say you are often wrong.
+      </p>
+
+      <h2 id="protocol">✅ 6. The Protocol: Comparing Two Setups Without Fooling Yourself</h2>
+
+      <p>
+        Compare measurements, not settings: same instrument, same settings, same delay after stringing. On one frame the comparison is direct. Between two frames, give each racquet its own reference, then adjust by trial.
+      </p>
+
+      <ol>
+        <li><strong>Keep three numbers apart:</strong> the machine setting, the reading after stringing, the reading after play.</li>
+        <li><strong>Lock everything else:</strong> stringer, machine, string, gauge, stringing method, mains-to-crosses setting.</li>
+        <li><strong>Measure at the same delay.</strong> In the USRSA tests, the stringbed loses 6 to 9% of its stiffness in 24 hours without play.</li>
+        <li><strong>On one frame</strong>, compare directly; the RCS index gives the direction and the order of magnitude before you string.</li>
+        <li><strong>Between two frames</strong>, do not carry the setting over: make a first try, measure it, judge it on court, then change one parameter at a time. The reading of the setup you keep becomes that frame's reference.</li>
+      </ol>
+
+      <p>
+        As for the habit of stringing the crosses 4 lb (1.8 kg) above the mains on a two-piece job, we found no primary source for it: <a href="/en/blog/tennis-string-tension-guide.html">the guide takes stock</a>. For what happens next, see <a href="/en/blog/how-long-do-tennis-strings-last.html">how long tennis strings last</a>.
+      </p>
+
+      <h2 id="faq">❓ FAQ — Comparing Two String Setups</h2>
+
+      <h3>Should I string tighter on a larger head?</h3>
+      <p>
+        The direction is known: at equal tension, longer strings make a softer stringbed, so a larger head tends to call for a higher reference tension. No published measurement we could open says by how much: work by trial, measuring each setup the same way.
+      </p>
+
+      <h3>How do I measure the tension of my strings?</h3>
+      <p>
+        You cannot read the reference tension back; you measure the stringbed: its vibration frequency (an app or an ERT-type device), how far it gives under a load, or one string's tension with a two-prong gauge. These readings track one racquet over time; they do not compare two different frames.
+      </p>
+
+      <h3>Does a frequency app give the real tension?</h3>
+      <p>
+        No. Turning a frequency into a tension takes the head area and the mass of the strings, so the value shown depends on what you enter. On one racquet the change is meaningful: 10% less tension means 5% less frequency.
+      </p>
+
+      <h3>Does a pro's string tension apply to my racquet?</h3>
+      <p>
+        No. A tension figure only means something with the frame, string, machine and delay that go with it, and professionals' frames almost always differ from the retail models. We publish no player tension that is not confirmed by two independent sources.
+      </p>
+
+      <h2 id="conclusion">🏁 Conclusion: One Recommendation per Player</h2>
+
+      <p>
+        A requested tension does not travel from one setup to another. A measurement repeated under the same conditions does.
+      </p>
+      <ul>
+        <li><strong>You are changing racquets:</strong> do not carry your number over. Keep the string and the stringer, then adjust the new frame's reference tension by trial, measuring each job at the same delay.</li>
+        <li><strong>You play with two racquets of the same model:</strong> have them strung together and check that they give the same reading. According to TWU, two racquets of the same model with the same stringbed stiffness should play the same.</li>
+        <li><strong>You are choosing between two strings:</strong> keep the frame and the setting, compare the index in the RCS calculator, then measure.</li>
+        <li><strong>You are comparing with a hitting partner:</strong> their setting says nothing about your stringbed. Compare readings taken with the same instrument, or do not compare.</li>
+      </ul>
+
+    </article>
+
+    <!-- Sources -->
+    <section class="mt-12 bg-white rounded-xl border border-gray-200 p-6">
+      <h3 class="text-lg font-semibold text-gray-900 mb-4">📚 Sources</h3>
+      <p class="text-sm text-gray-600 mb-3">All pages were accessed on November 13, 2026.</p>
+      <ul class="text-sm text-gray-600 space-y-1">
+        <li>• R. Cross and R. Bower, <a href="https://www.physics.usyd.edu.au/~cross/CrossBower.pdf" rel="noopener" target="_blank" class="underline hover:text-green-700">Measurements of string tension in a tennis racket</a>, <em>Sports Engineering</em>, 4, 2001, pp. 165-175 — tension after stringing, deflection and two-prong devices, measurement by frequency.</li>
+        <li>• R. Cross, <a href="https://www.physics.usyd.edu.au/~cross/StringTension.pdf" rel="noopener" target="_blank" class="underline hover:text-green-700">Measuring String Tension</a>, technical note, University of Sydney, July 2006 — stringbed frequency formula.</li>
+        <li>• Tennis Warehouse University, <a href="https://twu.tennis-warehouse.com/learning_center/stringstiffness.php" rel="noopener" target="_blank" class="underline hover:text-green-700">String Stiffness</a> and <a href="https://twu.tennis-warehouse.com/learning_center/stringsandpower1.php" rel="noopener" target="_blank" class="underline hover:text-green-700">Why Is String Stiffness So Important To Power?</a> (C. Lindsey) — string stiffness versus stringbed stiffness.</li>
+        <li>• Tennis Warehouse, USRSA string tests: <a href="https://tennis-warehouse.com/reviews/ubighit/ubighitreview.html" rel="noopener" target="_blank" class="underline hover:text-green-700">Tourna Poly Big Hitter 16</a> and <a href="https://www.tennis-warehouse.com/learning_center/string_reviews/HFGPWR16review.html" rel="noopener" target="_blank" class="underline hover:text-green-700">Head FiberGel Power 16</a> (undated) — stringbed stiffness right after stringing and 24 hours later.</li>
+        <li>• Tennis Warehouse, <a href="https://www.tennis-warehouse.com/LC/RacquetStringTerms.html" rel="noopener" target="_blank" class="underline hover:text-green-700">racquet and string glossary</a> (undated) — constant-pull and lockout machines.</li>
+        <li>• Racketpedia, <a href="https://www.racketpedia.com/en-GB/editorials/tennis-stringing-patterns-2-knot-vs-4-knot" rel="noopener" target="_blank" class="underline hover:text-green-700">Tennis Stringing Patterns Compared: 2-Knot vs 4-Knot</a> (G. Medri, August 1, 2024) — tension read by stringing method.</li>
+        <li>• Beers Technic, ERT 300 manual distributed under the Gamma brand, <a href="https://www.manualsdir.com/manuals/769757/gamma-ert-300.html?page=4" rel="noopener" target="_blank" class="underline hover:text-green-700">page 4</a> and <a href="https://www.manualsdir.com/manuals/769757/gamma-ert-300.html?page=5" rel="noopener" target="_blank" class="underline hover:text-green-700">page 5</a> — definition of DT, range, accuracy, head-size classes.</li>
+        <li>• S. Kaiser, <a href="https://apps.apple.com/us/app/racquettune/id365729342" rel="noopener" target="_blank" class="underline hover:text-green-700">RacquetTune App Store listing</a> — accuracy claimed by the publisher.</li>
+        <li>• R. Bower and R. Cross, <a href="https://opus.lib.uts.edu.au/handle/10453/4756" rel="noopener" target="_blank" class="underline hover:text-green-700">Player sensitivity to changes in string tension in a tennis racket</a>, <em>Journal of Science and Medicine in Sport</em>, 6(1), 2003, pp. 120-131 (abstract).</li>
+        <li>• R. Bower and R. Cross, <a href="https://link.springer.com/article/10.1007/s12283-008-0006-z" rel="noopener" target="_blank" class="underline hover:text-green-700">Elite tennis player sensitivity to changes in string tension and the effect on resulting ball dynamics</a>, <em>Sports Engineering</em>, 11, 2008, pp. 31-36 (abstract).</li>
+        <li>• R. Bower and R. Cross, <a href="https://opus.lib.uts.edu.au/handle/10453/4445" rel="noopener" target="_blank" class="underline hover:text-green-700">String tension effects on tennis ball rebound speed and accuracy during playing conditions</a>, <em>Journal of Sports Sciences</em>, 23(7), 2005, pp. 765-771 (abstract).</li>
+        <li>• Stringers, quoted as signals: <a href="https://hdtennis.pages.dev/services/restringing.html" rel="noopener" target="_blank" class="underline hover:text-green-700">a certified stringer's page (G. Raven)</a> and <a href="https://mijnracket.nl/en/blogs/blogposts/gemiddelde-spankracht-een-grote-misvatting" rel="noopener" target="_blank" class="underline hover:text-green-700">Mijnracket.nl</a> (August 27, 2015).</li>
+        <li>• Tennis String Advisor database: racquet and string records, RCS index formula, as of November 13, 2026.</li>
+      </ul>
+    </section>
+
+    <!-- Editorial Transparency -->
+    <section class="mt-8 bg-white rounded-xl border border-gray-200 p-6">
+      <h3 class="text-lg font-semibold text-gray-900 mb-4">🔍 What this article does not say</h3>
+      <ul class="text-sm text-gray-600 space-y-2 list-disc pl-5">
+        <li>No scale by head size or by pattern: we could not open any measurement that isolates them.</li>
+        <li>Tests cited: USRSA (undated, one frame, three strings) and Racketpedia (one frame, instruments not named).</li>
+        <li>Machines and instruments: figures from a retailer, a manufacturer and an app publisher, with no independent validation.</li>
+        <li>Perception studies: read from their abstracts; the pound and mph conversions of the 2005 study, and the pound conversions of the Racketpedia readings, are ours.</li>
+        <li>RCS index: computed, not measured; values as of November 13, 2026.</li>
+        <li>No professional player's tension and no ITF document: the former are not confirmed by two independent sources, the latter could not be opened.</li>
+        <li>Nothing on health: the index describes how firm a setup is, not what it does to an arm. Persistent pain is a matter for a health professional.</li>
+        <li>This is the English edition of our French article of November 13, 2026; the content is the same.</li>
+      </ul>
+    </section>
+
+    <!-- Related Articles -->
+    <section class="mt-12">
+      <h2 class="text-2xl font-bold text-gray-900 mb-6">📚 Related Articles</h2>
+      <div class="grid md:grid-cols-2 gap-6">
+        <a href="/en/blog/tennis-string-tension-guide.html" class="block bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition">
+          <h3 class="font-bold text-gray-900 mb-2">Tennis String Tension Guide</h3>
+          <p class="text-gray-600 text-sm">Requested tension, tension in the stringbed, loss by string family, mains and crosses.</p>
+        </a>
+        <a href="/en/blog/tennis-string-pattern.html" class="block bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition">
+          <h3 class="font-bold text-gray-900 mb-2">String Pattern Explained: 16×19 vs 18×20</h3>
+          <p class="text-gray-600 text-sm">What pattern density changes, and why it is not an input of the firmness index.</p>
+        </a>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="mt-12 bg-gradient-to-r from-gray-900 to-gray-800 rounded-xl p-8 text-white text-center">
+      <h2 class="text-2xl font-bold mb-4">🎾 Two Setups, One Index</h2>
+      <p class="text-gray-300 mb-6">Enter your frame, your string and your tension in the RCS calculator, then change one of them: the firmness index shows what moves. The configurator suggests a racquet, a string and a tension range from your level, style and budget.</p>
+      <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <a href="/en/configurator.html" class="px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition">
+          ⚙️ Open the Configurator
+        </a>
+        <a href="/en/rcs-calculator.html" class="px-6 py-3 border border-white text-white font-semibold rounded-lg hover:bg-white/10 transition">
+          📏 RCS Calculator
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-gray-900 text-white mt-16">
+    <div class="max-w-7xl mx-auto px-4 py-12">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div>
+          <div class="flex items-center gap-2 mb-4">
+            <span class="text-2xl">🎾</span>
+            <span class="font-bold text-xl">Tennis String Advisor</span>
+          </div>
+          <p class="text-gray-400 text-sm">Expert in tennis strings and racquets.</p>
+        </div>
+        <div>
+          <h4 class="font-semibold mb-4">Catalog</h4>
+          <ul class="space-y-2 text-gray-400 text-sm">
+            <li><a href="/en/racquets.html" class="hover:text-white transition">Racquets</a></li>
+            <li><a href="/en/strings.html" class="hover:text-white transition">Strings</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-semibold mb-4">Tools</h4>
+          <ul class="space-y-2 text-gray-400 text-sm">
+            <li><a href="/en/configurator.html" class="hover:text-white transition">Configurator</a></li>
+            <li><a href="/en/rcs-calculator.html" class="hover:text-white transition">RCS Calculator</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-semibold mb-4">Sources</h4>
+          <p class="text-gray-400 text-xs">Tennis Warehouse University • Cross &amp; Bower • USRSA</p>
+        </div>
+      </div>
+      <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400 text-sm">
+        <p>© 2026 Tennis String Advisor. A Pleneuf Trading LLC brand. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

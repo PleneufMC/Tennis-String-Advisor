@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 330" width="640" height="330">
+<title>À consigne égale, un tamis plus grand a des cordes plus longues</title>
+<symbol id="schema" viewBox="0 0 640 330">
+<g font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif">
+<text x="320.0" y="20.0" font-size="18" text-anchor="middle" font-weight="600" fill="currentColor">Même consigne sur la machine</text>
+<line x1="125.3" y1="84.3" x2="125.3" y2="151.7" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1.5;fill:none"/>
+<line x1="136.5" y1="67.6" x2="136.5" y2="168.4" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1.5;fill:none"/>
+<line x1="147.6" y1="58.4" x2="147.6" y2="177.6" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1.5;fill:none"/>
+<line x1="158.8" y1="53.5" x2="158.8" y2="182.5" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1.5;fill:none"/>
+<line x1="170.0" y1="52.0" x2="170.0" y2="184.0" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1.5;fill:none"/>
+<line x1="181.2" y1="53.5" x2="181.2" y2="182.5" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1.5;fill:none"/>
+<line x1="192.4" y1="58.4" x2="192.4" y2="177.6" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1.5;fill:none"/>
+<line x1="203.5" y1="67.6" x2="203.5" y2="168.4" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1.5;fill:none"/>
+<line x1="214.7" y1="84.3" x2="214.7" y2="151.7" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1.5;fill:none"/>
+<line x1="143.5" y1="61.2" x2="196.5" y2="61.2" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1.5;fill:none"/>
+<line x1="132.3" y1="72.6" x2="207.7" y2="72.6" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1.5;fill:none"/>
+<line x1="125.5" y1="83.9" x2="214.5" y2="83.9" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1.5;fill:none"/>
+<line x1="121.2" y1="95.3" x2="218.8" y2="95.3" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1.5;fill:none"/>
+<line x1="118.8" y1="106.6" x2="221.2" y2="106.6" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1.5;fill:none"/>
+<line x1="118.0" y1="118.0" x2="222.0" y2="118.0" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1.5;fill:none"/>
+<line x1="118.8" y1="129.4" x2="221.2" y2="129.4" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1.5;fill:none"/>
+<line x1="121.2" y1="140.7" x2="218.8" y2="140.7" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1.5;fill:none"/>
+<line x1="125.5" y1="152.1" x2="214.5" y2="152.1" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1.5;fill:none"/>
+<line x1="132.3" y1="163.4" x2="207.7" y2="163.4" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1.5;fill:none"/>
+<line x1="143.5" y1="174.8" x2="196.5" y2="174.8" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1.5;fill:none"/>
+<line x1="170.0" y1="52.0" x2="170.0" y2="184.0" style="stroke:var(--tsa-a1,#047857);stroke-width:4;fill:none;stroke-linecap:round"/>
+<ellipse cx="170.0" cy="118.0" rx="52.0" ry="66.0" style="stroke:currentColor;stroke-width:5;fill:none"/>
+<line x1="409.8" y1="77.2" x2="409.8" y2="158.8" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1.5;fill:none"/>
+<line x1="424.9" y1="56.9" x2="424.9" y2="179.1" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1.5;fill:none"/>
+<line x1="439.9" y1="45.8" x2="439.9" y2="190.2" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1.5;fill:none"/>
+<line x1="454.9" y1="39.9" x2="454.9" y2="196.1" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1.5;fill:none"/>
+<line x1="470.0" y1="38.0" x2="470.0" y2="198.0" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1.5;fill:none"/>
+<line x1="485.1" y1="39.9" x2="485.1" y2="196.1" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1.5;fill:none"/>
+<line x1="500.1" y1="45.8" x2="500.1" y2="190.2" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1.5;fill:none"/>
+<line x1="515.1" y1="56.9" x2="515.1" y2="179.1" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1.5;fill:none"/>
+<line x1="530.2" y1="77.2" x2="530.2" y2="158.8" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1.5;fill:none"/>
+<line x1="434.3" y1="49.2" x2="505.7" y2="49.2" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1.5;fill:none"/>
+<line x1="419.2" y1="63.0" x2="520.8" y2="63.0" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1.5;fill:none"/>
+<line x1="410.0" y1="76.7" x2="530.0" y2="76.7" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1.5;fill:none"/>
+<line x1="404.3" y1="90.5" x2="535.7" y2="90.5" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1.5;fill:none"/>
+<line x1="401.0" y1="104.2" x2="539.0" y2="104.2" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1.5;fill:none"/>
+<line x1="400.0" y1="118.0" x2="540.0" y2="118.0" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1.5;fill:none"/>
+<line x1="401.0" y1="131.8" x2="539.0" y2="131.8" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1.5;fill:none"/>
+<line x1="404.3" y1="145.5" x2="535.7" y2="145.5" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1.5;fill:none"/>
+<line x1="410.0" y1="159.3" x2="530.0" y2="159.3" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1.5;fill:none"/>
+<line x1="419.2" y1="173.0" x2="520.8" y2="173.0" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1.5;fill:none"/>
+<line x1="434.3" y1="186.8" x2="505.7" y2="186.8" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1.5;fill:none"/>
+<line x1="470.0" y1="38.0" x2="470.0" y2="198.0" style="stroke:var(--tsa-a1,#047857);stroke-width:4;fill:none;stroke-linecap:round"/>
+<ellipse cx="470.0" cy="118.0" rx="70.0" ry="80.0" style="stroke:currentColor;stroke-width:5;fill:none"/>
+<text x="170.0" y="220.0" font-size="18" text-anchor="middle" font-weight="600" fill="currentColor">Tamis plus petit</text>
+<text x="470.0" y="220.0" font-size="18" text-anchor="middle" font-weight="600" fill="currentColor">Tamis plus grand</text>
+<text x="170.0" y="240.0" font-size="16" text-anchor="middle" font-weight="normal" style="fill:var(--tsa-muted,#4b5563)">cordes plus courtes</text>
+<text x="470.0" y="240.0" font-size="16" text-anchor="middle" font-weight="normal" style="fill:var(--tsa-muted,#4b5563)">cordes plus longues</text>
+<line x1="104.0" y1="286.0" x2="236.0" y2="286.0" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1.5;fill:none"/>
+<polyline points="104.0,286.0 170.0,294.0 236.0,286.0" style="stroke:var(--tsa-a1,#047857);stroke-width:4;fill:none;stroke-linecap:round;stroke-linejoin:round"/>
+<circle cx="104.0" cy="286.0" r="6" style="fill:currentColor"/>
+<circle cx="236.0" cy="286.0" r="6" style="fill:currentColor"/>
+<line x1="170.0" y1="252.0" x2="170.0" y2="278.0" style="stroke:currentColor;stroke-width:3;fill:none"/>
+<path d="M163.0,274.0 L170.0,285.0 L177.0,274.0 Z" style="fill:currentColor"/>
+<text x="182.0" y="266.0" font-size="16" text-anchor="start" font-weight="normal" style="fill:var(--tsa-muted,#4b5563)">même force</text>
+<line x1="390.0" y1="286.0" x2="550.0" y2="286.0" style="stroke:var(--tsa-grid,#d1d5db);stroke-width:1.5;fill:none"/>
+<polyline points="390.0,286.0 470.0,302.0 550.0,286.0" style="stroke:var(--tsa-a1,#047857);stroke-width:4;fill:none;stroke-linecap:round;stroke-linejoin:round"/>
+<circle cx="390.0" cy="286.0" r="6" style="fill:currentColor"/>
+<circle cx="550.0" cy="286.0" r="6" style="fill:currentColor"/>
+<line x1="470.0" y1="252.0" x2="470.0" y2="278.0" style="stroke:currentColor;stroke-width:3;fill:none"/>
+<path d="M463.0,274.0 L470.0,285.0 L477.0,274.0 Z" style="fill:currentColor"/>
+<text x="482.0" y="266.0" font-size="16" text-anchor="start" font-weight="normal" style="fill:var(--tsa-muted,#4b5563)">même force</text>
+<text x="170.0" y="322.0" font-size="16" text-anchor="middle" font-weight="normal" fill="currentColor">la corde cède moins</text>
+<text x="470.0" y="322.0" font-size="16" text-anchor="middle" font-weight="normal" fill="currentColor">la corde cède davantage</text>
+</g>
+</symbol>
+<use href="#schema" width="640" height="330"/>
+</svg>
