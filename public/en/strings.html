@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Catalog of 170+ tennis strings. Filter by brand, type, gauge and price. Each string has its own page with its stiffness (lb/in), gauges and, when published, recommended tension.">
+  <meta name="description" content="Catalog of 170+ tennis strings. Filter by brand, type, gauge, price, spin or power; each string's page gives its stiffness (lb/in) and gauges.">
   <meta name="keywords" content="tennis string, catalog, polyester, multifilament, natural gut, RPM Blast, Luxilon">
   <meta property="og:title" content="String Catalog - Tennis String Advisor">
-  <meta property="og:description" content="170+ tennis strings. Filter by brand, type, gauge and price, then open a string's page for its stiffness (lb/in) and gauges.">
+  <meta property="og:description" content="170+ tennis strings. Filter by brand, type, gauge, price and power, then open a string's page for its stiffness (lb/in) and gauges.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://tennisstringadvisor.org/en/strings.html">
   <link rel="canonical" href="https://tennisstringadvisor.org/en/strings.html">
@@ -203,6 +203,15 @@
       <!-- Row 2: Additional filters -->
       <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-4">
         <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">⚡ Min Power</label>
+          <select id="powerFilter" class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white border p-2.5 focus:ring-green-500 focus:border-green-500">
+            <option value="">All</option>
+            <option value="7">7+ (Good power)</option>
+            <option value="8">8+ (Excellent power)</option>
+            <option value="9">9+ (Maximum power)</option>
+          </select>
+        </div>
+        <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">💨 Min Comfort</label>
           <select id="comfortFilter" class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white border p-2.5 focus:ring-green-500 focus:border-green-500">
             <option value="">All</option>
@@ -237,7 +246,7 @@
             <option value="yes">Used by pros</option>
           </select>
         </div>
-        <div class="col-span-2 flex items-end gap-2">
+        <div class="flex items-end gap-2">
           <button onclick="resetFilters()" class="flex-1 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 px-4 py-2.5 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500 transition text-sm font-medium">
             🔄 Reset
           </button>
@@ -264,6 +273,7 @@
           <option value="control-desc">Control (best)</option>
           <option value="comfort-desc">Comfort (best)</option>
           <option value="durability-desc">Durability (best)</option>
+          <option value="power-desc">Power (best)</option>
         </select>
       </div>
     </div>
@@ -417,7 +427,7 @@
       }
       return `
             <p class="text-xs font-medium text-gray-700 dark:text-gray-300 mb-3" data-rating-basis="${basis}">${TSARatingLabels.label(string)}</p>
-            <div class="space-y-3 mb-4">${ratingBar('Spin', string.spin)}${ratingBar('Control', string.control)}${ratingBar('Comfort', string.comfort)}${ratingBar('Durability', string.durability)}
+            <div class="space-y-3 mb-4">${ratingBar('Spin', string.spin)}${ratingBar('Control', string.control)}${ratingBar('Comfort', string.comfort)}${ratingBar('Durability', string.durability)}${ratingBar('Power', string.power)}
             </div>`;
     }
 
@@ -515,6 +525,10 @@
     
     // Filter strings
     function filterStrings() {
+      // Seuil de note : sans seuil, tout passe ; avec un seuil, une fiche sans la note est exclue
+      // (une absence n'est jamais une note, comme meetsMinRating du catalogue FR). Explicite : ne
+      // repose plus sur la coercition de null en 0 dans « null < 7 ».
+      const meetsMin = (value, min) => !min || (typeof value === 'number' && value >= parseFloat(min));
       const search = document.getElementById('searchFilter').value.toLowerCase();
       const brand = document.getElementById('brandFilter').value;
       const type = document.getElementById('typeFilter').value;
@@ -523,6 +537,7 @@
       const minSpin = document.getElementById('spinFilter').value;
       const minControl = document.getElementById('controlFilter').value;
       const minDurability = document.getElementById('durabilityFilter').value;
+      const minPower = document.getElementById('powerFilter').value;
       const gaugeFilter = document.getElementById('gaugeFilter').value;
       const proFilter = document.getElementById('proFilter').value;
       const sortFilter = document.getElementById('sortFilter').value;
@@ -531,11 +546,12 @@
         if (search && !`${string.brand} ${string.model}`.toLowerCase().includes(search)) return false;
         if (brand && string.brand !== brand) return false;
         if (type && string.type !== type) return false;
-        if (minComfort && string.comfort < parseFloat(minComfort)) return false;
+        if (!meetsMin(string.comfort, minComfort)) return false;
         if (maxPrice && !(typeof string.price_eur === 'number' && string.price_eur <= parseInt(maxPrice))) return false;
-        if (minSpin && string.spin < parseFloat(minSpin)) return false;
-        if (minControl && string.control < parseFloat(minControl)) return false;
-        if (minDurability && string.durability < parseFloat(minDurability)) return false;
+        if (!meetsMin(string.spin, minSpin)) return false;
+        if (!meetsMin(string.control, minControl)) return false;
+        if (!meetsMin(string.durability, minDurability)) return false;
+        if (!meetsMin(string.power, minPower)) return false;
         
         // Gauge filter
         if (gaugeFilter && string.gauges) {
@@ -566,6 +582,7 @@
           case 'control-desc': return absentLast(a.control, b.control, -1);
           case 'comfort-desc': return absentLast(a.comfort, b.comfort, -1);
           case 'durability-desc': return absentLast(a.durability, b.durability, -1);
+          case 'power-desc': return absentLast(a.power, b.power, -1);
           default: return 0;
         }
       });
@@ -587,6 +604,7 @@
       const spin = document.getElementById('spinFilter').value;
       const control = document.getElementById('controlFilter').value;
       const durability = document.getElementById('durabilityFilter').value;
+      const power = document.getElementById('powerFilter').value;
       const gauge = document.getElementById('gaugeFilter').value;
       const pro = document.getElementById('proFilter').value;
       
@@ -598,6 +616,7 @@
       if (spin) filters.push({ label: `Spin ≥${spin}`, filter: 'spinFilter' });
       if (control) filters.push({ label: `Control ≥${control}`, filter: 'controlFilter' });
       if (durability) filters.push({ label: `Durability ≥${durability}`, filter: 'durabilityFilter' });
+      if (power) filters.push({ label: `Power ≥${power}`, filter: 'powerFilter' });
       if (gauge) filters.push({ label: `${gauge}mm`, filter: 'gaugeFilter' });
       if (pro) filters.push({ label: 'Utilisé par pros', filter: 'proFilter' });
       
@@ -629,6 +648,7 @@
       document.getElementById('spinFilter').value = '';
       document.getElementById('controlFilter').value = '';
       document.getElementById('durabilityFilter').value = '';
+      document.getElementById('powerFilter').value = '';
       document.getElementById('gaugeFilter').value = '';
       document.getElementById('proFilter').value = '';
       document.getElementById('sortFilter').value = 'brand';
@@ -646,6 +666,7 @@
     document.getElementById('spinFilter').addEventListener('change', filterStrings);
     document.getElementById('controlFilter').addEventListener('change', filterStrings);
     document.getElementById('durabilityFilter').addEventListener('change', filterStrings);
+    document.getElementById('powerFilter').addEventListener('change', filterStrings);
     document.getElementById('gaugeFilter').addEventListener('change', filterStrings);
     document.getElementById('proFilter').addEventListener('change', filterStrings);
     document.getElementById('sortFilter').addEventListener('change', filterStrings);
