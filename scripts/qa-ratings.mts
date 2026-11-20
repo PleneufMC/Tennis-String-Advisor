@@ -4232,7 +4232,7 @@ const EN_STATIC_CONFIGURATOR_RETIRED: boolean = (() => {
 //     cordage le moins rigide, contrôle 21 quater).
 // (d) Catalogue EN : tris par prix et par note avec les fiches sans prix ou sans note en fin de liste dans les deux sens ;
 //     prix maximal : un prix absent ne passe pas (comme filterStrings en FR) ; phrase des filtres « … the ratings out of 10
-//     shown on each card (not measured). ».
+//     shown on each card (not measured). », qui nomme power depuis la PR #162 (filtre, tri power-desc et barre Power).
 {
   const beforeQ5 = failures.length;
   const CONFQ5 = 'public/en/configurator.html';
@@ -4240,7 +4240,7 @@ const EN_STATIC_CONFIGURATOR_RETIRED: boolean = (() => {
   const NUM_FALLBACK = /(?:\|\||\?\?)\s*-?\d/;
   const FIELD_FALLBACK = /\b(?:comfort|spin|control|durability|power)\b\)?\s*(?:\|\||\?\?)\s*-?\d/;
   const NO_RATED = 'No rated string matches these criteria.';
-  const CARD_SENTENCE = 'The spin, control, comfort and durability filters and sort options use the ratings out of 10 shown on each card (not measured). ';
+  const CARD_SENTENCE = 'The spin, control, comfort, durability and power filters and sort options use the ratings out of 10 shown on each card (not measured). ';
   let confQ5 = '';
   let catQ5 = '';
   try {
@@ -4369,6 +4369,7 @@ const EN_STATIC_CONFIGURATOR_RETIRED: boolean = (() => {
       const SORTS: Array<[string, string, number]> = [
         ['price-asc', 'price_eur', 1], ['price-desc', 'price_eur', -1], ['spin-desc', 'spin', -1],
         ['control-desc', 'control', -1], ['comfort-desc', 'comfort', -1], ['durability-desc', 'durability', -1],
+        ['power-desc', 'power', -1],
       ];
       for (const [sort, field, dir] of SORTS) {
         sortsQ5++;
@@ -4408,9 +4409,12 @@ const EN_STATIC_CONFIGURATOR_RETIRED: boolean = (() => {
       ['cordage choisi par une note sans ratedStringView', 'conf', [["string = ratedStringView(pickBestString(stringCriteria), 'One of the polyester strings with the highest control rating in the catalog');", "string = stringView(pickBestString(stringCriteria), 'One of the polyester strings with the highest control rating in the catalog.');"]]],
       ['tri prix croissant : prix absent lu comme 0', 'cat', [["case 'price-asc': return absentLast(a.price_eur, b.price_eur, 1);", "case 'price-asc': return a.price_eur - b.price_eur;"]]],
       ['tri confort : note absente lue comme 0 (en tête si croissant)', 'cat', [["case 'comfort-desc': return absentLast(a.comfort, b.comfort, -1);", "case 'comfort-desc': return (a.comfort ?? 0) - (b.comfort ?? 0);"]]],
+      ['tri puissance : note absente lue comme 0 (en tête si croissant)', 'cat', [["case 'power-desc': return absentLast(a.power, b.power, -1);", "case 'power-desc': return (a.power ?? 0) - (b.power ?? 0);"]]],
+      ['tri puissance : ordre croissant au lieu de décroissant', 'cat', [["case 'power-desc': return absentLast(a.power, b.power, -1);", "case 'power-desc': return absentLast(a.power, b.power, 1);"]]],
       ['prix maximal : prix absent accepté', 'cat', [["if (maxPrice && !(typeof string.price_eur === 'number' && string.price_eur <= parseInt(maxPrice))) return false;", 'if (maxPrice && string.price_eur > parseInt(maxPrice)) return false;']]],
       ['barre de note : note absente comblée à 0', 'cat', [["${typeof value === 'number' ? `<div class=\"rating-fill ${getRatingColor(value)}\" style=\"width: ${value * 10}%\"></div>` : ''}", '<div class="rating-fill ${getRatingColor(value)}" style="width: ${(value ?? 0) * 10}%"></div>']]],
       ['phrase « TSA editorial ratings » rétablie', 'cat', [[CARD_SENTENCE, 'The spin, control, comfort and durability filters and sort options use TSA editorial ratings out of 10. ']]],
+      ['phrase des filtres sans power (version d\'avant la PR #162)', 'cat', [[CARD_SENTENCE, 'The spin, control, comfort and durability filters and sort options use the ratings out of 10 shown on each card (not measured). ']]],
     ];
     for (const [name, target, edits] of NEG) {
       if (target === 'conf' && EN_STATIC_CONFIGURATOR_RETIRED) continue;
