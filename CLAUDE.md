@@ -208,7 +208,9 @@ l'affichage, motif par motif avec les nombres du moteur ; un texte non reconnu s
 (`npm run audit:configurator-en`). `public/en/configurator.html` (questionnaire en 4 étapes, moteur `rcs-calculator-en.js`) est
 supprimé et redirigé en 301 vers `/en/configurator` ; `rcs-calculator-en.js` reste, il sert `rcs-calculator.html` et `setups.html`.
 Contrôles 9 (c), 21 quater et 21 quinquies de `audit:ratings` : parties « page statique » sautées seulement si la page est absente
-ET que la route EN rend le composant FR (à revoir par `tsa-core`). Restent en français sur la page EN : bouton d'affiliation
+ET que la route EN rend le composant FR (revus par `tsa-core`). `audit:configurator-en` (propriétaire `tsa-measure`, dans
+`audit:all`, ajouté au §6) relit aussi le SENS de chaque alerte traduite (11 clauses : atteint/dépassé, profil, sous/au-dessus,
+seuil, renvoi santé) et les nombres des 77 textes fixes FR/EN. Restent en français sur la page EN : bouton d'affiliation
 (`buy-button.tsx`), lien d'accès rapide du layout, `/pricing`, `/auth/signin`, `/account/configurations`, et `<html lang="fr">` au
 rendu serveur (corrigé à l'hydratation).
 
@@ -1708,6 +1710,7 @@ pas. Les modifications d'articles existants y restent soumises.
   npm run audit:rls           # si Supabase ou une route API est touchée
   npm run audit:contrast      # si un composant visuel est touché
   npm run audit:blog-funnel   # si public/blog ou public/en/blog est touché
+  npm run audit:configurator-en # si advanced-rcs.ts, getStringRecommendation, src/lib/i18n/configurator.ts ou configurator/page.tsx est touché
   npm run audit:blog-images   # idem (règle images, §5 ter)
   npm run audit:comptages     # si une page publique, un bloc metadata ou src/data change
   ```
