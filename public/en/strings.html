@@ -225,7 +225,7 @@
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">⚙️ Min Durability</label>
           <select id="durabilityFilter" class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white border p-2.5 focus:ring-green-500 focus:border-green-500">
             <option value="">All</option>
-            <option value="6">6+ (Faire)</option>
+            <option value="6">6+ (Fair)</option>
             <option value="7">7+ (Good)</option>
             <option value="8">8+ (Very good)</option>
           </select>
@@ -294,7 +294,7 @@
     <!-- No Results -->
     <div id="noResults" class="hidden text-center py-12">
       <p class="text-gray-500 text-lg">No string matches your criteria.</p>
-      <button onclick="resetFilters()" class="mt-4 text-green-600 hover:underline">Reset les filtres</button>
+      <button onclick="resetFilters()" class="mt-4 text-green-600 hover:underline">Reset filters</button>
     </div>
   </main>
 
@@ -437,7 +437,7 @@
         // Les libellés (cordages harmonisés) se chargent avec le catalogue : jamais de note sans libellé.
         const [{ strings: data }] = await Promise.all([TSACatalog.load(), TSARatingLabels.load()]);
         const ratingNote = document.getElementById('ratingNote');
-        ratingNote.textContent = 'The spin, control, comfort and durability filters and sort options use the ratings out of 10 shown on each card (not measured). ' + TSARatingLabels.NOTE;
+        ratingNote.textContent = 'The spin, control, comfort, durability and power filters and sort options use the ratings out of 10 shown on each card (not measured). ' + TSARatingLabels.NOTE;
         ratingNote.classList.remove('hidden');
 
         allStrings = data;
@@ -459,7 +459,7 @@
         
       } catch (error) {
         console.error('Error fetching strings:', error);
-        document.getElementById('loadingState').innerHTML = '<p class="col-span-3 text-center text-red-500">Erreur de chargement des données</p>';
+        document.getElementById('loadingState').innerHTML = '<p class="col-span-3 text-center text-red-500">Error loading the catalog</p>';
       }
     }
     
@@ -470,6 +470,10 @@
       const noResults = document.getElementById('noResults');
       
       loading.classList.add('hidden');
+
+      // Update results count (also when nothing matches: the previous count must not stay on screen)
+      const count = filteredStrings.length;
+      document.getElementById('resultsCount').textContent = `${count} ${count === 1 ? 'string' : 'strings'} found`;
       
       if (filteredStrings.length === 0) {
         grid.classList.add('hidden');
@@ -479,9 +483,6 @@
       
       noResults.classList.add('hidden');
       grid.classList.remove('hidden');
-      
-      // Update results count
-      document.getElementById('resultsCount').textContent = `${filteredStrings.length} cordage${filteredStrings.length > 1 ? 's' : ''} trouvé${filteredStrings.length > 1 ? 's' : ''}`;
       
       grid.innerHTML = filteredStrings.map(string => `
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden card-hover">
@@ -618,7 +619,7 @@
       if (durability) filters.push({ label: `Durability ≥${durability}`, filter: 'durabilityFilter' });
       if (power) filters.push({ label: `Power ≥${power}`, filter: 'powerFilter' });
       if (gauge) filters.push({ label: `${gauge}mm`, filter: 'gaugeFilter' });
-      if (pro) filters.push({ label: 'Utilisé par pros', filter: 'proFilter' });
+      if (pro) filters.push({ label: 'Used by pros', filter: 'proFilter' });
       
       if (filters.length === 0) {
         container.classList.add('hidden');
