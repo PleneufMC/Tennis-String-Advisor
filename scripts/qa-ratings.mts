@@ -5121,11 +5121,13 @@ const EN_STATIC_CONFIGURATOR_RETIRED: boolean = (() => {
     if (failures.length === beforeQ21) {
       ok(
         (PAGE_RETIRED_Q21 ? 'configurateur EN statique retiré (le composant FR rendu en EN ne propose aucune tension) ; ' : '') +
-        `configurateur EN, douleur déclarée : tension calculée sous le seuil d'alerte bras sensible (${SQ21} = seuil bras sensible sondé dans calculateAdvancedRcs = HEALTH_ALERT_SENSITIVE_RCS du moteur EN) ; ` +
+        (PAGE_RETIRED_Q21
+          ? `seuil bras sensible du moteur EN = ${SQ21} = seuil sondé dans calculateAdvancedRcs ; `
+          : `configurateur EN, douleur déclarée : tension calculée sous le seuil d'alerte bras sensible (${SQ21} = seuil bras sensible sondé dans calculateAdvancedRcs = HEALTH_ALERT_SENSITIVE_RCS du moteur EN) ; ` +
           `bloc de la page évalué tel quel avec le moteur EN sur ${tallyQ21.combos} montages (${racqQ21.length} raquettes à RA connu × ${strQ21.length} cordages), ` +
           `plage du curseur ${RANGEQ21?.min}-${RANGEQ21?.max} kg par ${RANGEQ21?.step} : N identique au recalcul par calculateRCS (« jusqu'à N kg » ${tallyQ21.mid}, ` +
           `toute la plage ${tallyQ21.whole}, aucune tension ${tallyQ21.none}), indice à N sous ${SQ21} et à N + ${RANGEQ21?.step} kg au seuil ou au-dessus, valeur et phrase ` +
-          `affichées exactes ; cordage proposé = le moins rigide du catalogue, rigidité de fiche citée ; ${tallyQ21.proposals} raquettes proposables sous le seuil ; ` +
+          `affichées exactes ; cordage proposé = le moins rigide du catalogue, rigidité de fiche citée ; ${tallyQ21.proposals} raquettes proposables sous le seuil ; `) +
           `aucune tension fixe dans la branche ni à côté d'un bras sensible dans ${scanned} fichiers (public/en hors blog, public/js) ; ` +
           `${detectedQ21} tests négatifs détectés, ${acceptedQ21} témoins positifs acceptés`
       );
