@@ -100,7 +100,8 @@ obligations sur **tout article, nouveau ou modifié** :
 
 1. **Au moins un lien vers le configurateur de son univers, dans le corps de
    l'article** — FR : `href="/configurator"` ; EN :
-   `href="/en/configurator.html"`. À un endroit qui sert le lecteur, pas un
+   `href="/en/configurator"` (l'ancienne URL `/en/configurator.html` redirige en
+   301 depuis le 20/11/2026, PR #160 ; ne plus l'écrire). À un endroit qui sert le lecteur, pas un
    bandeau collé en fin de page.
 2. **Jamais `rel="noreferrer"` ni `referrerpolicy`** sur un lien vers le
    configurateur : ces attributs suppriment le `page_referrer` et rendent le
