@@ -89,7 +89,8 @@ const BLOG_ARTICLES: Array<{ slug: string; modified: string }> = [
 // sont en `noindex`.
 const EN_PAGES: Array<{ path: string; priority: number }> = [
   { path: '/en/', priority: 0.9 },
-  { path: '/en/configurator.html', priority: 0.8 },
+  // Configurateur EN : route Next depuis le 20/11/2026 (même composant que le FR), l'ancienne page statique redirige ici.
+  { path: '/en/configurator', priority: 0.8 },
   { path: '/en/racquets.html', priority: 0.7 },
   { path: '/en/strings.html', priority: 0.7 },
   { path: '/en/compare.html', priority: 0.6 },

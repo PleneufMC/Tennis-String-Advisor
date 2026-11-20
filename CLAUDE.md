@@ -1,7 +1,7 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.3.35
-> **Date** : 26 octobre 2026
+> **Version** : 2.3.36
+> **Date** : 20 novembre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
 > **Branche de référence** : `main` (seule branche longue ; la production Netlify en déploie)
@@ -197,6 +197,22 @@ datées, motivées, avec le GO, **bornées** au RA écrit (64, 61), sur le modè
 basse, un retrait, un poids changé ou une exception sans date, motif ou GO échouent (5 tests négatifs) ; un montage qui ne diffère de la
 référence que par deux baisses autorisées (raquette et cordage exemptés) est excusé. La médiane haute des RA publiés (51e valeur, lue par le contrôle 1) reste 65 ; la médiane
 usuelle passe de 65 à 64,5 (la 50e valeur passe à 64) ; bande ±1 satisfaite. Aucun article ne cite le RA de ces deux fiches.
+
+**Changelog v2.3.35 → v2.3.36** — **Configurateur EN = configurateur FR, en anglais ; le questionnaire EN est retiré** (demande de
+Pierre du 20/11/2026 : « Le configurator en anglais doit être le même qu'en français. Ce pseudo quizz pour trouver sa raquette est
+vraiment nul. » ; `tsa-acquisition` ; `[verrou: configurator/page.tsx]` et `[verrou: header.tsx]`). `/en/configurator` est une route
+Next qui rend LE composant de `src/app/configurator/page.tsx` : même parcours, même calcul, mêmes alertes, mêmes événements GA4 ; seuls
+les textes changent, choisis par l'URL (`src/lib/i18n/configurator.ts`, valeurs FR extraites à l'identique). Les textes du moteur
+(alertes, recommandations, synthèse, mention d'hybride, paliers) restent écrits en français par `tsa-core` et sont traduits à
+l'affichage, motif par motif avec les nombres du moteur ; un texte non reconnu s'affiche en français, jamais masqué
+(`npm run audit:configurator-en`). `public/en/configurator.html` (questionnaire en 4 étapes, moteur `rcs-calculator-en.js`) est
+supprimé et redirigé en 301 vers `/en/configurator` ; `rcs-calculator-en.js` reste, il sert `rcs-calculator.html` et `setups.html`.
+Contrôles 9 (c), 21 quater et 21 quinquies de `audit:ratings` : parties « page statique » sautées seulement si la page est absente
+ET que la route EN rend le composant FR (revus par `tsa-core`). `audit:configurator-en` (propriétaire `tsa-measure`, dans
+`audit:all`, ajouté au §6) relit aussi le SENS de chaque alerte traduite (11 clauses : atteint/dépassé, profil, sous/au-dessus,
+seuil, renvoi santé) et les nombres des 77 textes fixes FR/EN. Restent en français sur la page EN : bouton d'affiliation
+(`buy-button.tsx`), lien d'accès rapide du layout, `/pricing`, `/auth/signin`, `/account/configurations`, et `<html lang="fr">` au
+rendu serveur (corrigé à l'hydratation).
 
 **Changelog v2.3.25 → v2.3.26** — **Hybrides : un seul indice, celui que l'alerte lit, que le configurateur
 affiche et que le PDF imprime ; contrôle 21 ter** (décision (b)+(a) de l'orchestrateur du 22/10/2026, Pierre ayant délégué ; limite (4)
@@ -1249,7 +1265,9 @@ Links, déploiement Netlify (adaptateur OpenNext). (Zustand est déclaré dans
 
 **Architecture** : hybride assumé. L'application Next sert le FR à la racine
 (`/configurator`, `/racquets`…). Le blog et la version anglaise sont des pages
-**HTML statiques** dans `public/blog/*.html` et `public/en/*.html`. Le
+**HTML statiques** dans `public/blog/*.html` et `public/en/*.html`, sauf le
+configurateur EN : route Next `/en/configurator`, même composant que le FR
+(20/11/2026). Le
 `route-map.ts` fait le pont entre les deux univers.
 
 **Base** : 129 raquettes, 179 cordages (`src/data/*.ts` ; 190 avant le
@@ -1584,7 +1602,7 @@ est 129 / 179 (190 avant le nettoyage du 28/09/2026, 181 avant la fusion du 10/1
 W_RA=0.28 / W_Cordage=0.42 / W_Tension=0.22 / W_Interaction=0.08 citées par
 `algorithm-validator` ne sont PAS introuvables — elles vivent dans
 `public/js/rcs-calculator*.js:10`, le moteur statique qui sert les 3 pages EN
-(`configurator.html`, `setups.html`, `rcs-calculator.html`). C'est une des 4
+(`setups.html`, `rcs-calculator.html` ; `configurator.html` retiré le 20/11/2026). C'est une des 4
 implémentations RCS du dépôt (cf. §2 point 5). Répartition :
 
 | Agent global | Statut sur TSA |
@@ -1692,6 +1710,7 @@ pas. Les modifications d'articles existants y restent soumises.
   npm run audit:rls           # si Supabase ou une route API est touchée
   npm run audit:contrast      # si un composant visuel est touché
   npm run audit:blog-funnel   # si public/blog ou public/en/blog est touché
+  npm run audit:configurator-en # si advanced-rcs.ts, getStringRecommendation, src/lib/i18n/configurator.ts ou configurator/page.tsx est touché
   npm run audit:blog-images   # idem (règle images, §5 ter)
   npm run audit:comptages     # si une page publique, un bloc metadata ou src/data change
   ```

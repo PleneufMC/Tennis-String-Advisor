@@ -1,6 +1,8 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { getAlternateUrl, isEnglishPath, localizeHref } from '@/lib/i18n/route-map';
 import { useLanguage, type TranslationKey } from '@/lib/i18n';
 import { AffiliateDisclosure } from '@/components/product/affiliate-disclosure';
 
@@ -57,6 +59,9 @@ function TennisIcon({ className }: { className?: string }) {
 
 export function Footer() {
   const { t } = useLanguage();
+  // Route anglaise de l'application (`/en/configurator`, 20/11/2026) : liens vers les pages EN équivalentes.
+  const pathname = usePathname() || '/';
+  const onEnglish = isEnglishPath(pathname);
   const currentYear = new Date().getFullYear();
 
   return (
@@ -69,7 +74,7 @@ export function Footer() {
         <div className="xl:grid xl:grid-cols-3 xl:gap-8">
           {/* Brand section */}
           <div className="space-y-8">
-            <Link href="/" className="flex items-center space-x-2 group">
+            <Link href={localizeHref('/', pathname)} className="flex items-center space-x-2 group">
               <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-700 rounded-xl flex items-center justify-center">
                 <TennisIcon className="w-6 h-6 text-white" />
               </div>
@@ -92,7 +97,7 @@ export function Footer() {
                   {footerNavigation.product.map((item) => (
                     <li key={item.key}>
                       <Link
-                        href={item.href}
+                        href={localizeHref(item.href, pathname)}
                         className="text-sm leading-6 text-gray-400 hover:text-white transition-colors"
                       >
                         {t(item.key)}
@@ -107,7 +112,9 @@ export function Footer() {
                   {footerNavigation.resources.map((item) => (
                     <li key={item.key}>
                       <Link
-                        href={item.href}
+                        // Premium reste /pricing en anglais aussi : seul circuit de paiement ouvert, celui qui débloque
+                        // l'analyse avancée du configurateur (le paiement de /en/premium.html est fermé).
+                        href={item.href === '/pricing' ? item.href : localizeHref(item.href, pathname)}
                         className="text-sm leading-6 text-gray-400 hover:text-white transition-colors"
                       >
                         {t(item.key)}
@@ -131,10 +138,10 @@ export function Footer() {
                   </li>
                   <li>
                     <a
-                      href="/en/"
+                      href={onEnglish ? getAlternateUrl(pathname, 'fr') : '/en/'}
                       className="text-sm leading-6 text-gray-400 hover:text-white transition-colors inline-flex items-center gap-1"
                     >
-                      🇬🇧 English
+                      {onEnglish ? '🇫🇷 Français' : '🇬🇧 English'}
                     </a>
                   </li>
                 </ul>

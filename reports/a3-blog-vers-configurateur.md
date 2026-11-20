@@ -9,7 +9,9 @@
 d'article, divisées par les vues de pages d'articles, par semaine (lun-dim).**
 
 - **Numérateur** : événements `page_view` dont `page_location` est le
-  configurateur (FR : `/configurator` ; EN : `/en/configurator.html`) et dont
+  configurateur (FR : `/configurator` ; EN : `/en/configurator.html` jusqu'à la
+  fusion de la PR #160, `/en/configurator` ensuite (la 301 conserve le referrer,
+  vérifié le 20/11/2026)) et dont
   `page_referrer` est une page d'article (`/blog/…​.html` ou
   `/en/blog/…​.html`, **hors** `/blog/`, `/blog/index.html` et leurs
   équivalents EN — l'index est un hub, pas un article).
@@ -63,6 +65,16 @@ c'est précisément ce que `scripts/qa-blog-funnel.mjs` verrouille à chaque
   À ~20 humains/mois, A3 se lit en **valeurs absolues d'abord** (N arrivées,
   N vues), le taux ensuite. Un taux sur un dénominateur < 50 vues/semaine ne
   permet pas de comparer deux articles entre eux (règle 9).
+- **Rupture des événements EN à la fusion de la PR #160** : le configurateur EN
+  devient la route Next `/en/configurator`, qui rend le composant FR. Ses
+  événements (`configurator_step`, `configurator_result_view`,
+  `configurator_complete`, `arm_warning_shown`, `affiliate_click`) viennent
+  désormais du schéma React (paramètres du FR), et non plus de
+  `public/js/analytics.js` (questionnaire retiré). Aucune comparaison des
+  événements EN entre avant et après la fusion.
+- **Découper FR / EN par le chemin** (`page_location` commençant par `/en/`),
+  **jamais** par la dimension GA4 « Langue », qui est la langue du navigateur,
+  pas celle de la page.
 
 ## 3. Relevé hebdomadaire
 

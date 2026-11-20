@@ -19,14 +19,16 @@
  *     page_view = dénominateur gonflé, c'est le bug corrigé le 13/08 côté
  *     React) ;
  *  3. chaque article contient au moins un lien vers son configurateur
- *     (FR → /configurator, EN → /en/configurator.html) ;
+ *     (FR → /configurator, EN → /en/configurator ; l'ancienne URL /en/configurator.html,
+ *     redirigée en 301 depuis le 20/11/2026, reste acceptée : la redirection garde le referrer) ;
  *  4. aucun de ces liens ne porte rel="noreferrer" ni referrerpolicy :
  *     le referrer serait supprimé et le numérateur tomberait à zéro sans
  *     qu'aucun chiffre ne paraisse anormal ;
  *  5. le layout Next garde send_page_view:false et monte <Analytics> —
  *     c'est ce qui garantit UN page_view par arrivée sur /configurator ;
- *  6. le configurateur EN statique charge analytics (sinon l'univers EN
- *     sort de la mesure sans le dire).
+ *  6. le configurateur EN est la route Next /en/configurator (20/11/2026), rendue sous le même
+ *     layout que /configurator (donc mesurée par le point 5), et l'ancienne page statique
+ *     redirige vers elle (sinon l'univers EN sortirait de la mesure sans le dire).
  */
 
 import { readFileSync, readdirSync } from 'node:fs';
@@ -57,7 +59,7 @@ const listPages = (dir) =>
 
 const UNIVERSES = [
   { label: 'FR', dir: 'public/blog', configuratorHref: /href="(https:\/\/tennisstringadvisor\.org)?\/configurator\/?"/ },
-  { label: 'EN', dir: 'public/en/blog', configuratorHref: /href="(https:\/\/tennisstringadvisor\.org)?\/en\/configurator\.html"/ },
+  { label: 'EN', dir: 'public/en/blog', configuratorHref: /href="(https:\/\/tennisstringadvisor\.org)?\/en\/configurator(\.html)?\/?"/ },
 ];
 
 process.stdout.write('--- qa-blog-funnel : instrument A3 (blog -> configurateur) ---\n');
@@ -120,13 +122,23 @@ for (const { label, dir, configuratorHref } of UNIVERSES) {
   }
 }
 
-// 6. le configurateur EN statique reste dans la mesure
+// 6. le configurateur EN (route Next depuis le 20/11/2026) reste dans la mesure
 {
-  const conf = readFileSync('public/en/configurator.html', 'utf8');
-  if (!/analytics\.js/.test(conf)) {
-    fail(`public/en/configurator.html : analytics.js non chargé — l'univers EN sort de la mesure A3`);
+  let route = '';
+  try {
+    route = readFileSync('src/app/en/configurator/page.tsx', 'utf8');
+  } catch {
+    route = '';
+  }
+  const config = readFileSync('next.config.js', 'utf8');
+  if (!route) {
+    fail(`src/app/en/configurator/page.tsx : route absente — l'univers EN sort de la mesure A3`);
+  } else if (!/<ConfiguratorPage\b/.test(route)) {
+    fail(`src/app/en/configurator/page.tsx : ne rend plus le composant du configurateur`);
+  } else if (!/source:\s*'\/en\/configurator\.html',\s*destination:\s*'\/en\/configurator'/.test(config)) {
+    fail(`next.config.js : l'ancienne URL /en/configurator.html ne redirige plus vers /en/configurator — liens d'articles orphelins`);
   } else {
-    ok(`public/en/configurator.html : analytics chargé`);
+    ok(`/en/configurator : route Next sous le layout mesuré (point 5), ancienne URL redirigée`);
   }
 }
 

@@ -12,15 +12,29 @@ const out = process.argv[3] || 'catalogue.json';
 const require = createRequire(path.join(repo, 'package.json'));
 const ts = require('typescript');
 
-// --- Identifiants Supabase : variables d'env, sinon ceux déjà publics dans public/en/configurator.html
+// --- Identifiants Supabase : variables d'env, sinon ceux déjà publics dans une page EN qui les embarque.
+// `public/en/configurator.html` a été retiré le 20/11/2026 (PR #160) : la clé anon publique est relue dans les pages EN qui
+// l'exposent encore, dans cet ordre ; aucune clé n'est recopiée dans ce script.
+const PUBLIC_KEY_PAGES = ['public/en/setups.html', 'public/en/account.html', 'public/en/rcs-calculator.html'];
 let SUPABASE_URL = process.env.SUPABASE_URL;
 let SUPABASE_KEY = process.env.SUPABASE_ANON_KEY;
-if (!SUPABASE_URL || !SUPABASE_KEY) {
-  const html = readFileSync(path.join(repo, 'public/en/configurator.html'), 'utf8');
+for (const page of PUBLIC_KEY_PAGES) {
+  if (SUPABASE_URL && SUPABASE_KEY) break;
+  let html = '';
+  try {
+    html = readFileSync(path.join(repo, page), 'utf8');
+  } catch {
+    continue;
+  }
   SUPABASE_URL ||= html.match(/SUPABASE_URL\s*=\s*'([^']+)'/)?.[1];
   SUPABASE_KEY ||= html.match(/SUPABASE_ANON_KEY\s*=\s*'([^']+)'/)?.[1];
 }
-if (!SUPABASE_URL || !SUPABASE_KEY) throw new Error('Identifiants Supabase introuvables');
+if (!SUPABASE_URL || !SUPABASE_KEY) {
+  throw new Error(
+    `Identifiants Supabase introuvables : définir SUPABASE_URL et SUPABASE_ANON_KEY (clé anon), ` +
+      `aucune des pages ${PUBLIC_KEY_PAGES.join(', ')} ne les expose plus.`
+  );
+}
 const role = JSON.parse(Buffer.from(SUPABASE_KEY.split('.')[1], 'base64url').toString()).role;
 if (role !== 'anon') throw new Error(`Clé de rôle "${role}" refusée : ce script n'utilise que la clé anon`);
 

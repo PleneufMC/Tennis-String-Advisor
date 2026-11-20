@@ -1,6 +1,8 @@
 'use client';
 
 import * as React from 'react';
+import { usePathname } from 'next/navigation';
+import { isEnglishPath } from './route-map';
 import {
   dictionaries,
   DEFAULT_LOCALE,
@@ -21,7 +23,11 @@ const LanguageContext = React.createContext<LanguageContextType | undefined>(und
 const STORAGE_KEY = 'tennis-advisor-locale';
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [locale, setLocaleState] = React.useState<Locale>(DEFAULT_LOCALE);
+  const [storedLocale, setLocaleState] = React.useState<Locale>(DEFAULT_LOCALE);
+  // Route anglaise de l'application (`/en/configurator`, 20/11/2026) : la langue de l'URL l'emporte sur la langue stockée, pour
+  // que l'en-tête et le pied de page suivent la page. Ailleurs, comportement inchangé (langue stockée, sinon navigateur).
+  const pathname = usePathname();
+  const locale: Locale = isEnglishPath(pathname || '/') ? 'en' : storedLocale;
 
   React.useEffect(() => {
     // 1) langue stockée, sinon 2) langue du navigateur, sinon défaut
