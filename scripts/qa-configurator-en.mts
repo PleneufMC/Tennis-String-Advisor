@@ -1,5 +1,5 @@
 /**
- * QA — configurateur anglais (20/11/2026, tsa-acquisition ; propriété à confirmer par tsa-measure, cf. CLAUDE.md §5).
+ * QA — configurateur anglais (20/11/2026, tsa-acquisition ; propriétaire : tsa-measure).
  *
  * `/en/configurator` rend le composant de `/configurator` (même calcul, mêmes alertes). Les textes du moteur restent écrits en
  * français dans `advanced-rcs.ts` et `strings-database.ts` ; la page anglaise les traduit à l'affichage
@@ -95,6 +95,35 @@ for (const level of ['beginner', 'pro'] as const) {
   }
 }
 
+// (b bis) Sens des alertes bras : un nombre conservé ne suffit pas. Chaque clause qui porte un sens (seuil atteint ou dépassé,
+// profil appliqué, sous / reste sous, cause, effet de la tension) doit avoir son équivalent anglais, et seulement quand l'original
+// la porte ; les nombres capturés sont les mêmes de part et d'autre.
+const ALERT_SENSE: Array<[string, RegExp, RegExp]> = [
+  ['seuil dépassé', /seuil d'alerte de (\d+) dépassé/, /alert threshold of (\d+) exceeded/],
+  ['seuil atteint', /seuil d'alerte de (\d+) atteint/, /alert threshold of (\d+) reached/],
+  ['profil bras sensible', /\(bras sensible déclaré\)/, /\(sensitive arm declared\)/],
+  ['profil standard', /\(profil standard\)/, /\(standard profile\)/],
+  ['points à retirer', /Il faut (\d+) points? d'indice de moins pour repasser sous (\d+)/, /must drop by (\d+) points? to get back under (\d+)/],
+  ['note de confort sous la limite', /note de confort calculée du montage sous (\d+) sur 100/, /comfort rating is below (\d+) out of 100/],
+  ['affichée à la limite', /avant arrondi, affichée (\d+)/, /before rounding, shown as (\d+)/],
+  ['indice qui reste sous le seuil', /l'indice \((\d+)\) reste sous le seuil de (\d+)/, /the index \((\d+)\) stays under the threshold of (\d+)/],
+  ['raison du seuil', /fixé par le site pour le risque de tennis elbow/, /set by the site for the risk of tennis elbow/],
+  ['note non mesurée', /note de confort de l'équipe, non mesurée/, /comfort rating, not measured/],
+  ['effet de la tension', /1 kg de tension en moins retire 0,5 point/, /1 kg less tension removes 0\.5 point/],
+];
+const alertSenseIssues = (fr: string, en: string): string[] => {
+  const out: string[] = [];
+  for (const [name, reFr, reEn] of ALERT_SENSE) {
+    const a = reFr.exec(fr);
+    const b = reEn.exec(en);
+    if (!a && !b) continue;
+    if (a && !b) out.push(`clause « ${name} » perdue à la traduction`);
+    else if (!a && b) out.push(`clause « ${name} » ajoutée par la traduction`);
+    else if (a!.slice(1).join(' ') !== b!.slice(1).join(' ')) out.push(`clause « ${name} » : nombres changés (${a!.slice(1).join(' ')} → ${b!.slice(1).join(' ')})`);
+  }
+  return out;
+};
+
 const byKind = new Map<string, number>();
 let untranslated = 0;
 for (const [fr, kind] of texts) {
@@ -110,6 +139,7 @@ for (const [fr, kind] of texts) {
   const b = nums(en).join(' ');
   if (a !== b) fail(`${kind} : nombres changés par la traduction (${a} → ${b}) : « ${en.slice(0, 120)} »`);
   if (kind === 'alerte') {
+    alertSenseIssues(fr, en).forEach((i) => fail(`alerte : ${i} : « ${en.slice(0, 100)} »`));
     if (!/^Arm alert: /.test(en)) fail(`alerte traduite sans « Arm alert: » : « ${en.slice(0, 80)} »`);
     if (!/see a health professional\.$/.test(en)) fail(`alerte traduite sans renvoi vers un professionnel de santé : « ${en.slice(0, 80)} »`);
     if (!/threshold of \d+|alert threshold of \d+/.test(en)) fail(`alerte traduite sans seuil : « ${en.slice(0, 80)} »`);
@@ -167,6 +197,43 @@ for (const [name, mutated] of NEG) {
   else fail(`garde-fou muet sur « ${name} »`);
 }
 if (detected === NEG.length) ok(`${detected} tests négatifs détectés (texte du moteur modifié = non traduit)`);
+
+// (e bis) Tests négatifs du sens : une traduction qui inverse ou retire une clause d'alerte est détectée.
+const idxAlerts = [...texts.keys()].filter((t) => t.startsWith('Alerte bras : indice'));
+const comfortAlert = [...texts.keys()].find((t) => t.startsWith('Alerte bras : note de confort'));
+const reachedFr = idxAlerts.find((t) => t.includes(' atteint ('));
+const exceededFr = idxAlerts.find((t) => t.includes(' dépassé ('));
+const SENSE_NEG: Array<[string, string | undefined, (en: string) => string]> = [
+  ['atteint traduit « exceeded »', reachedFr, (en) => en.replace(' reached (', ' exceeded (')],
+  ['dépassé traduit « reached »', exceededFr, (en) => en.replace(' exceeded (', ' reached (')],
+  ['profil inversé', reachedFr, (en) => en.replace(/\((sensitive arm declared|standard profile)\)/, (_m, p) => (p === 'standard profile' ? '(sensitive arm declared)' : '(standard profile)'))],
+  ['« below » devenu « above »', comfortAlert, (en) => en.replace('is below ', 'is above ')],
+  ['« stays under » devenu « exceeds »', comfortAlert, (en) => en.replace('stays under the threshold of', 'exceeds the threshold of')],
+  ['raison du seuil retirée', exceededFr, (en) => en.replace(', a threshold set by the site for the risk of tennis elbow.', '.')],
+];
+let senseDetected = 0;
+for (const [name, fr, mutate] of SENSE_NEG) {
+  const en = fr ? translateEngineText(fr) : null;
+  if (!fr || en === null) { fail(`test négatif du sens « ${name} » : prémisse absente`); continue; }
+  const mutated = mutate(en);
+  if (mutated === en) { fail(`test négatif du sens « ${name} » : mutation sans effet (motif absent)`); continue; }
+  if (alertSenseIssues(fr, mutated).length > 0) senseDetected++;
+  else fail(`garde-fou du sens muet sur « ${name} »`);
+}
+// (f) Textes fixes de la page (seuils cités en dur : « Prudence dès 32 … 35 », paliers, aide de la case bras sensible) : la
+//     version anglaise cite les mêmes nombres que la française.
+const FRD = CONFIGURATOR_TEXT.fr as Record<string, unknown>;
+const END = EN as unknown as Record<string, unknown>;
+const fixedPairs: Array<[string, string, string]> = Object.keys(FRD)
+  .filter((k) => typeof FRD[k] === 'string' && typeof END[k] === 'string')
+  .map((k) => [k, FRD[k] as string, END[k] as string]);
+const constOf = (name: string) => new RegExp(`const ${name} =\\s*\\n?\\s*(["'])(.*?)\\1;`, 's').exec(page)?.[2] ?? null;
+fixedPairs.push(['ARM_SENSITIVE_HELP', constOf('ARM_SENSITIVE_HELP') ?? '', constOf('ARM_SENSITIVE_HELP_EN') ?? '']);
+const fixedBad = fixedPairs.filter(([, fr, en]) => fr === '' || en === '' || nums(fr).join(' ') !== nums(en).join(' '));
+fixedBad.forEach(([k, fr, en]) => fail(`texte fixe « ${k} » : nombres différents entre FR et EN (${nums(fr).join(' ')} → ${nums(en).join(' ')})`));
+if (fixedBad.length === 0) ok(`${fixedPairs.length} textes fixes FR/EN : mêmes nombres (dont « ${EN.tennisElbowText} » et l'aide de la case bras sensible)`);
+
+if (senseDetected === SENSE_NEG.length) ok(`${senseDetected} tests négatifs du sens des alertes détectés (${ALERT_SENSE.length} clauses relues sur chaque alerte)`);
 
 process.stdout.write(failures === 0 ? '\nconfigurateur EN : parité des textes du moteur vérifiée\n' : `\n${failures} échec(s)\n`);
 process.exit(failures === 0 ? 0 : 1);
