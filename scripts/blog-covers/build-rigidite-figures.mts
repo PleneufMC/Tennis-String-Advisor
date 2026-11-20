@@ -132,13 +132,14 @@ function stiffnessReaching(target: number): number {
   throw new Error(`indice ${target} inatteignable`);
 }
 
+// enCount du polyester : « polyesters », pas « strings » — un effectif de famille à 3 chiffres suivi de « strings » se lit comme le total du catalogue (audit:comptages).
 // frOne/frMany, enOne/enMany : nom de la famille au singulier / pluriel, pour dénombrer les fiches alignées sur TWU dans la légende
 const FAMILY_ORDER: { type: TennisString['type']; fr: string; en: string; frCount: string; enCount: string; frOne: string; frMany: string; enOne: string; enMany: string }[] = [
   { type: 'Natural Gut', fr: 'Boyau naturel', en: 'Natural gut', frCount: 'fiches', enCount: 'strings', frOne: 'boyau', frMany: 'boyaux', enOne: 'natural gut', enMany: 'natural guts' },
   { type: 'Multifilament', fr: 'Multifilament', en: 'Multifilament', frCount: 'fiches', enCount: 'strings', frOne: 'multifilament', frMany: 'multifilaments', enOne: 'multifilament', enMany: 'multifilaments' },
   { type: 'Hybrid', fr: 'Hybride', en: 'Hybrid', frCount: 'sets prémontés', enCount: 'pre-packed sets', frOne: 'set prémonté', frMany: 'sets prémontés', enOne: 'pre-packed set', enMany: 'pre-packed sets' },
   { type: 'Synthetic', fr: 'Synthétique', en: 'Synthetic gut', frCount: 'fiches', enCount: 'strings', frOne: 'synthétique', frMany: 'synthétiques', enOne: 'synthetic gut', enMany: 'synthetic guts' },
-  { type: 'Polyester', fr: 'Polyester', en: 'Polyester', frCount: 'fiches', enCount: 'strings', frOne: 'polyester', frMany: 'polyesters', enOne: 'polyester', enMany: 'polyesters' },
+  { type: 'Polyester', fr: 'Polyester', en: 'Polyester', frCount: 'fiches', enCount: 'polyesters', frOne: 'polyester', frMany: 'polyesters', enOne: 'polyester', enMany: 'polyesters' },
 ];
 
 export function computeFacts() {
