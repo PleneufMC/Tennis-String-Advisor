@@ -8,6 +8,7 @@ import { useLanguage, type TranslationKey } from '@/lib/i18n';
 import { ThemeToggle } from './theme-toggle';
 import { LanguageToggle } from './language-toggle';
 import { AuthButton } from './auth-button';
+import { localizeHref } from '@/lib/i18n/route-map';
 import { trackPremiumCtaClick } from '@/components/analytics/analytics';
 
 // Navigation items (libellés via clés i18n)
@@ -95,7 +96,7 @@ export function Header() {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <div className="flex items-center">
-            <Link href="/" className="flex items-center space-x-2 group">
+            <Link href={localizeHref('/', pathname)} className="flex items-center space-x-2 group">
               <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-700 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform">
                 <TennisIcon className="w-6 h-6 text-white" />
               </div>
@@ -111,7 +112,7 @@ export function Header() {
             {navigation.map((item) => (
               <Link
                 key={item.key}
-                href={item.href}
+                href={localizeHref(item.href, pathname)}
                 className={cn(
                   'px-2 xl:px-4 py-2 text-sm font-medium rounded-lg transition-colors',
                   isActive(item.href)
@@ -129,7 +130,7 @@ export function Header() {
             {secondaryNavigation.map((item) => (
               <Link
                 key={item.key}
-                href={item.href}
+                href={localizeHref(item.href, pathname)}
                 className={cn(
                   'px-2 xl:px-3 py-2 text-sm font-medium rounded-lg transition-colors',
                   isActive(item.href)
@@ -185,7 +186,7 @@ export function Header() {
               {navigation.map((item) => (
                 <Link
                   key={item.key}
-                  href={item.href}
+                  href={localizeHref(item.href, pathname)}
                   onClick={() => setMobileMenuOpen(false)}
                   className={cn(
                     'block px-4 py-3 text-base font-medium rounded-lg transition-colors',
@@ -203,7 +204,7 @@ export function Header() {
               {secondaryNavigation.map((item) => (
                 <Link
                   key={item.key}
-                  href={item.href}
+                  href={localizeHref(item.href, pathname)}
                   onClick={() => setMobileMenuOpen(false)}
                   className={cn(
                     'block px-4 py-3 text-base font-medium rounded-lg transition-colors',

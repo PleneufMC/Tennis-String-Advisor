@@ -27,9 +27,9 @@ import {
   effectiveRacquetRA,
   isRacquetStiffnessEstimated,
   racquetTesterSynthesis,
-  formatScore20,
 } from '@/lib/racquet-scoring';
 import type { TennisString } from '@/data/strings-database';
+import { CONFIGURATOR_TEXT, useConfiguratorLocale } from '@/lib/i18n/configurator';
 
 /**
  * DÉCLARATION FACULTATIVE DU VISITEUR : bras sensible, ou douleur au coude / à l'épaule (11/10/2026, règle 2).
@@ -45,6 +45,10 @@ import type { TennisString } from '@/data/strings-database';
 const ARM_SENSITIVE_LABEL = "Bras sensible ou douleur au coude / à l'épaule";
 const ARM_SENSITIVE_HELP =
   "Active l'alerte bras dès l'indice 32 au lieu de 35. Cette information n'est ni enregistrée ni envoyée. Douleur persistante : consultez un professionnel de santé.";
+// Mêmes textes en anglais (configurateur EN, 20/11/2026) : mêmes seuils, même promesse, même renvoi vers un professionnel de santé.
+const ARM_SENSITIVE_LABEL_EN = 'Sensitive arm or elbow / shoulder pain';
+const ARM_SENSITIVE_HELP_EN =
+  'Turns on the arm alert from index 32 instead of 35. This information is neither saved nor sent. Persistent pain: see a health professional.';
 
 /**
  * Récapitulatif d'un cordage sélectionné (emplacement principal OU travers).
@@ -75,6 +79,8 @@ function SelectedStringSummary({
   string: TennisString;
   children?: React.ReactNode;
 }) {
+  const tx = CONFIGURATOR_TEXT[useConfiguratorLocale()];
+  const enLabel = tx.ratingLabel(string);
   return (
     <div
       style={{
@@ -89,17 +95,21 @@ function SelectedStringSummary({
         {string.brand} {string.model}
       </strong>
       <div style={{ color: 'var(--tint-green-fg)', fontSize: '0.75rem' }}>
-        {string.type} | Raideur: {string.stiffness} lb/in | Contrôle:{' '}
-        {string.control !== undefined ? `${string.control}/10` : 'non publié'} | Confort:{' '}
-        {string.comfort !== undefined ? `${string.comfort}/10` : 'non publié'}
+        {string.type} | {tx.stiffness}: {string.stiffness} lb/in | {tx.control}:{' '}
+        {string.control !== undefined ? `${string.control}/10` : tx.notPublished} | {tx.comfort}:{' '}
+        {string.comfort !== undefined ? `${string.comfort}/10` : tx.notPublished}
       </div>
       {/* Nature des deux notes ci-dessus (principe décidé le 10/10/2026) : appréciation
           de l'équipe, jamais une mesure. Même composant pour le montant et le travers. */}
-      <StringRatingLabel
-        string={string}
-        as="div"
-        style={{ color: 'var(--tint-green-fg)', fontSize: '0.7rem', marginTop: '0.125rem' }}
-      />
+      {tx.ratingsNotice === null ? (
+        <StringRatingLabel
+          string={string}
+          as="div"
+          style={{ color: 'var(--tint-green-fg)', fontSize: '0.7rem', marginTop: '0.125rem' }}
+        />
+      ) : enLabel !== null && (
+        <div style={{ color: 'var(--tint-green-fg)', fontSize: '0.7rem', marginTop: '0.125rem' }}>{enLabel}</div>
+      )}
       {children}
     </div>
   );
@@ -107,6 +117,10 @@ function SelectedStringSummary({
 
 export default function ConfiguratorPage() {
   const { data: session } = useSession();
+  // Langue de l'URL : `/configurator` en français, `/en/configurator` en anglais (20/11/2026). Textes seulement : le calcul, les
+  // alertes et les événements GA4 sont les mêmes dans les deux langues.
+  const locale = useConfiguratorLocale();
+  const tx = CONFIGURATOR_TEXT[locale];
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     config: true,
     racquet: false,
@@ -254,6 +268,10 @@ export default function ConfiguratorPage() {
       compatibility,
     };
   }, [selectedRacquet, selectedMainString, standardAdvancedRcs, formData.mainTension, formData.crossTension]);
+  // Palier affiché : celui de `rcsData.recommendation` (même indice), libellé dans la langue de la page.
+  const level = rcsData
+    ? tx.stringLevel(rcsData.recommendation.level, rcsData.recommendation.description)
+    : { level: '', description: '' };
 
   // Un avertissement bras a été AFFICHÉ. Sans cet événement, le respect de la
   // règle 2 n'est vérifiable que par lecture du code — ce qui est exactement
@@ -399,7 +417,7 @@ export default function ConfiguratorPage() {
   // /account/configurations.
   const saveConfiguration = async () => {
     if (!formData.configName || !selectedRacquet || !selectedMainString || !rcsData) {
-      setSaveMessage('Veuillez remplir tous les champs requis');
+      setSaveMessage(tx.saveMissing);
       setTimeout(() => setSaveMessage(''), 3000);
       return;
     }
@@ -430,22 +448,20 @@ export default function ConfiguratorPage() {
           body: JSON.stringify(payload),
         });
         if (res.ok) {
-          setSaveMessage('Configuration enregistrée dans votre compte avec succès!');
+          setSaveMessage(tx.saveAccountOk);
         } else if (res.status === 403) {
           // Quota du plan gratuit atteint (3 configurations).
           const data = await res.json().catch(() => null);
-          setSaveMessage(
-            (data?.error as string) ||
-              'Plan gratuit limité à 3 configurations enregistrées. Passez Premium pour un journal illimité.'
-          );
+          // Le message du serveur est écrit en français : affiché seulement sur le configurateur FR.
+          setSaveMessage((locale === 'fr' ? (data?.error as string) : '') || tx.saveQuota);
         } else {
-          setSaveMessage('Enregistrée localement (échec de la sauvegarde dans le compte).');
+          setSaveMessage(tx.saveAccountFailed);
         }
       } catch {
-        setSaveMessage('Enregistrée localement (hors ligne).');
+        setSaveMessage(tx.saveOffline);
       }
     } else {
-      setSaveMessage('Configuration enregistrée localement avec succès!');
+      setSaveMessage(tx.saveLocalOk);
     }
     setTimeout(() => setSaveMessage(''), 6000);
 
@@ -561,9 +577,9 @@ export default function ConfiguratorPage() {
           Tennis String Advisor Premium
         </h1>
         <p style={{ color: '#ffffff', fontSize: '1.1rem', textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}>
-          Système avancé avec journal de cordage professionnel
+          {tx.subtitle}
         </p>
-        <Link href="/" style={{
+        <Link href={tx.homeHref} style={{
           display: 'inline-block',
           marginTop: '1rem',
           padding: '0.5rem 1.5rem',
@@ -576,7 +592,7 @@ export default function ConfiguratorPage() {
           textDecoration: 'none',
           transition: 'background-color 0.2s'
         }}>
-          ← Retour à l\'accueil
+          {tx.backHome}
         </Link>
       </div>
 
@@ -607,7 +623,7 @@ export default function ConfiguratorPage() {
             alignItems: 'center'
           }}>
             <span style={{ marginRight: '0.5rem' }}>⚙️</span>
-            Configuration et Analyse de Confort
+            {tx.configTitle}
           </h2>
 
           {/* Déclaration facultative : bras sensible (cf. ARM_SENSITIVE_LABEL). Case native : Tab pour l'atteindre, Espace pour
@@ -648,13 +664,13 @@ export default function ConfiguratorPage() {
                   cursor: 'pointer',
                 }}
               />
-              <span>{ARM_SENSITIVE_LABEL}</span>
+              <span>{locale === 'en' ? ARM_SENSITIVE_LABEL_EN : ARM_SENSITIVE_LABEL}</span>
             </label>
             <p
               id="arm-sensitive-help"
               style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: '0 0 0 1.75rem' }}
             >
-              {ARM_SENSITIVE_HELP}
+              {locale === 'en' ? ARM_SENSITIVE_HELP_EN : ARM_SENSITIVE_HELP}
             </p>
           </div>
 
@@ -669,7 +685,7 @@ export default function ConfiguratorPage() {
             >
               <div style={{ display: 'flex', alignItems: 'center' }}>
                 <span style={{ marginRight: '0.5rem' }}>📝</span>
-                <span style={{ fontWeight: '500' }}>Nom de la Configuration</span>
+                <span style={{ fontWeight: '500' }}>{tx.configName}</span>
               </div>
               <span aria-hidden="true">{expandedSections.config ? '▲' : '▼'}</span>
             </button>
@@ -677,7 +693,7 @@ export default function ConfiguratorPage() {
               <div id="section-config" style={{ padding: '0 0.75rem' }}>
                 <input
                   type="text"
-                  placeholder="Ex: Setup Tournoi 2025"
+                  placeholder={tx.configNamePlaceholder}
                   style={inputStyle}
                   value={formData.configName}
                   onChange={(e) => handleInputChange('configName', e.target.value)}
@@ -698,7 +714,7 @@ export default function ConfiguratorPage() {
               <div style={{ display: 'flex', alignItems: 'center' }}>
                 <span style={{ marginRight: '0.5rem' }}>🎾</span>
                 <span style={{ fontWeight: '500' }}>
-                  Choisir une Raquette
+                  {tx.chooseRacquet}
                   {selectedRacquet && (
                     <span style={{ fontSize: '0.875rem', color: '#10b981', marginLeft: '0.5rem' }}>
                       ✓ {selectedRacquet.brand} {selectedRacquet.model}
@@ -712,7 +728,7 @@ export default function ConfiguratorPage() {
               <div id="section-racquet" className="dropdown-container" onKeyDown={(e) => handleDropdownKeys(e, 'racquet')} style={{ padding: '0 0.75rem', position: 'relative' }}>
                 <input
                   type="text"
-                  placeholder="Rechercher une raquette (ex: Babolat, Pure Aero, Wilson)..."
+                  placeholder={tx.racquetPlaceholder}
                   style={inputStyle}
                   value={searchTerms.racquet}
                   onChange={(e) => {
@@ -737,8 +753,8 @@ export default function ConfiguratorPage() {
                           appliquee — et signalee comme estimation plutot que
                           presentee comme une donnee constructeur. */}
                       RA: {effectiveRacquetRA(selectedRacquet)}
-                      {isRacquetStiffnessEstimated(selectedRacquet) && ' (estime)'}
-                      {' '}| Poids: {selectedRacquet.weight}g | Tamis: {selectedRacquet.headSize} sq in
+                      {isRacquetStiffnessEstimated(selectedRacquet) && tx.estimated}
+                      {' '}| {tx.weight}: {selectedRacquet.weight}g | {tx.headSize}: {selectedRacquet.headSize} sq in
                     </div>
                     {/* Décision de Pierre du 10/10/2026 : aucune note déduite des
                         caractéristiques. Raquette évaluée : l'avis des testeurs
@@ -752,8 +768,7 @@ export default function ConfiguratorPage() {
                           data-tester-synthesis
                           style={{ color: 'var(--tint-blue-fg)', fontSize: '0.75rem', marginTop: '0.25rem' }}
                         >
-                          {t.label} : moyenne {formatScore20(t.average20)} /20 ·{' '}
-                          {t.criteria.map((c) => `${c.label.toLowerCase()} ${c.value20}/20`).join(' · ')}
+                          {tx.testerLine(t)}
                         </div>
                       );
                     })()}
@@ -805,7 +820,7 @@ export default function ConfiguratorPage() {
                           {racquet.brand} {racquet.model} {racquet.variant}
                         </div>
                         <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                          RA: {racquet.stiffness || 'ND'} | {racquet.weight}g | {racquet.headSize} sq in
+                          RA: {racquet.stiffness || tx.raUnknown} | {racquet.weight}g | {racquet.headSize} sq in
                         </div>
                       </button>
                     ))}
@@ -827,7 +842,7 @@ export default function ConfiguratorPage() {
               <div style={{ display: 'flex', alignItems: 'center' }}>
                 <span style={{ marginRight: '0.5rem' }}>🎯</span>
                 <span style={{ fontWeight: '500' }}>
-                  Cordage Principal
+                  {tx.mainString}
                   {selectedMainString && (
                     <span style={{ fontSize: '0.875rem', color: '#10b981', marginLeft: '0.5rem' }}>
                       ✓ {selectedMainString.brand} {selectedMainString.model}
@@ -841,7 +856,7 @@ export default function ConfiguratorPage() {
               <div id="section-principal" className="dropdown-container" onKeyDown={(e) => handleDropdownKeys(e, 'mainString')} style={{ padding: '0 0.75rem', position: 'relative' }}>
                 <input
                   type="text"
-                  placeholder="Rechercher un cordage (ex: Luxilon, ALU Power, Polyester)..."
+                  placeholder={tx.mainStringPlaceholder}
                   style={inputStyle}
                   value={searchTerms.mainString}
                   onChange={(e) => {
@@ -903,7 +918,7 @@ export default function ConfiguratorPage() {
                           {string.brand} {string.model}
                         </div>
                         <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                          {string.type} | Raideur: {string.stiffness} lb/in
+                          {string.type} | {tx.stiffness}: {string.stiffness} lb/in
                           {string.price?.europe !== undefined && ` | €${string.price.europe}`}
                         </div>
                       </button>
@@ -926,7 +941,7 @@ export default function ConfiguratorPage() {
               <div style={{ display: 'flex', alignItems: 'center' }}>
                 <span style={{ marginRight: '0.5rem' }}>➕</span>
                 <span style={{ fontWeight: '500' }}>
-                  Cordage Travers (Hybride optionnel)
+                  {tx.crossString}
                   {selectedCrossString && (
                     <span style={{ fontSize: '0.875rem', color: '#10b981', marginLeft: '0.5rem' }}>
                       ✓ {selectedCrossString.brand} {selectedCrossString.model}
@@ -946,11 +961,11 @@ export default function ConfiguratorPage() {
                   color: 'var(--tint-amber-fg)',
                   marginBottom: '0.75rem'
                 }}>
-                  💡 Laissez vide pour un cordage uniforme, ou choisissez un autre cordage pour un hybride
+                  {tx.crossTip}
                 </div>
                 <input
                   type="text"
-                  placeholder="Rechercher un cordage travers (optionnel)..."
+                  placeholder={tx.crossPlaceholder}
                   style={inputStyle}
                   value={searchTerms.crossString}
                   onChange={(e) => {
@@ -976,7 +991,7 @@ export default function ConfiguratorPage() {
                         textDecoration: 'underline'
                       }}
                     >
-                      Retirer le cordage travers
+                      {tx.removeCross}
                     </button>
                   </SelectedStringSummary>
                 )}
@@ -1030,7 +1045,7 @@ export default function ConfiguratorPage() {
                           {string.brand} {string.model}
                         </div>
                         <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                          {string.type} | Raideur: {string.stiffness} lb/in
+                          {string.type} | {tx.stiffness}: {string.stiffness} lb/in
                           {string.price?.europe !== undefined && ` | €${string.price.europe}`}
                         </div>
                       </button>
@@ -1052,7 +1067,7 @@ export default function ConfiguratorPage() {
             >
               <div style={{ display: 'flex', alignItems: 'center' }}>
                 <span style={{ marginRight: '0.5rem' }}>📏</span>
-                <span style={{ fontWeight: '500' }}>Jauge du Calibre</span>
+                <span style={{ fontWeight: '500' }}>{tx.gauge}</span>
               </div>
               <span aria-hidden="true">{expandedSections.caliber ? '▲' : '▼'}</span>
             </button>
@@ -1070,7 +1085,7 @@ export default function ConfiguratorPage() {
                     marginBottom: '0.25rem',
                     display: 'block' 
                   }}>
-                    Principal
+                    {tx.mains}
                   </label>
                   <select 
                     style={selectStyle}
@@ -1079,11 +1094,11 @@ export default function ConfiguratorPage() {
                   >
                     {selectedMainString?.gauges.map(gauge => (
                       <option key={gauge} value={gauge}>
-                        {gauge}mm - {gauge === '1.30' ? 'Standard' : gauge < '1.25' ? 'Fin' : 'Medium'}
+                        {gauge}mm - {tx.gaugeLabel(gauge)}
                       </option>
                     )) || [
-                      <option key="1.15" value="1.15">1.15mm - Très fin</option>,
-                      <option key="1.20" value="1.20">1.20mm - Fin</option>,
+                      <option key="1.15" value="1.15">1.15mm - {tx.gaugeVeryThin}</option>,
+                      <option key="1.20" value="1.20">1.20mm - {tx.gaugeThin}</option>,
                       <option key="1.25" value="1.25">1.25mm - Medium</option>,
                       <option key="1.30" value="1.30">1.30mm - Standard</option>
                     ]}
@@ -1096,7 +1111,7 @@ export default function ConfiguratorPage() {
                     marginBottom: '0.25rem',
                     display: 'block' 
                   }}>
-                    Travers
+                    {tx.crosses}
                   </label>
                   <select 
                     style={selectStyle}
@@ -1105,11 +1120,11 @@ export default function ConfiguratorPage() {
                   >
                     {(selectedCrossString || selectedMainString)?.gauges.map(gauge => (
                       <option key={gauge} value={gauge}>
-                        {gauge}mm - {gauge === '1.30' ? 'Standard' : gauge < '1.25' ? 'Fin' : 'Medium'}
+                        {gauge}mm - {tx.gaugeLabel(gauge)}
                       </option>
                     )) || [
-                      <option key="1.15" value="1.15">1.15mm - Très fin</option>,
-                      <option key="1.20" value="1.20">1.20mm - Fin</option>,
+                      <option key="1.15" value="1.15">1.15mm - {tx.gaugeVeryThin}</option>,
+                      <option key="1.20" value="1.20">1.20mm - {tx.gaugeThin}</option>,
                       <option key="1.25" value="1.25">1.25mm - Medium</option>,
                       <option key="1.30" value="1.30">1.30mm - Standard</option>
                     ]}
@@ -1144,7 +1159,7 @@ export default function ConfiguratorPage() {
                     justifyContent: 'space-between',
                     marginBottom: '0.5rem' 
                   }}>
-                    <label htmlFor="tension-main" style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>Principal</label>
+                    <label htmlFor="tension-main" style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>{tx.mains}</label>
                     <span style={{ fontSize: '0.875rem', fontWeight: '500' }}>{formData.mainTension} kg</span>
                   </div>
                   <input
@@ -1172,7 +1187,7 @@ export default function ConfiguratorPage() {
                     justifyContent: 'space-between',
                     marginBottom: '0.5rem' 
                   }}>
-                    <label htmlFor="tension-cross" style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>Travers</label>
+                    <label htmlFor="tension-cross" style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>{tx.crosses}</label>
                     <span style={{ fontSize: '0.875rem', fontWeight: '500' }}>{formData.crossTension} kg</span>
                   </div>
                   <input
@@ -1209,15 +1224,15 @@ export default function ConfiguratorPage() {
               alignItems: 'center'
             }}>
               <span style={{ marginRight: '0.5rem' }}>⭐</span>
-              <span style={{ fontWeight: '500', color: 'var(--tint-amber-fg)' }}>Evaluer votre experience</span>
+              <span style={{ fontWeight: '500', color: 'var(--tint-amber-fg)' }}>{tx.rateTitle}</span>
             </div>
             <div style={{ padding: '0.75rem' }}>
-              <div role="group" aria-label="Note de l'experience, de 1 a 5" style={{ display: 'flex', gap: '0.5rem' }}>
+              <div role="group" aria-label={tx.rateGroup} style={{ display: 'flex', gap: '0.5rem' }}>
                 {[1, 2, 3, 4, 5].map((star) => (
                   <button
                     key={star}
                     type="button"
-                    aria-label={`${star} sur 5`}
+                    aria-label={tx.rateStar(star)}
                     aria-pressed={formData.rating === star}
                     onClick={() => handleInputChange('rating', star)}
                     style={{
@@ -1234,7 +1249,7 @@ export default function ConfiguratorPage() {
                 ))}
               </div>
               <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
-                Votre satisfaction personnelle
+                {tx.rateHelp}
               </p>
             </div>
           </div>
@@ -1249,11 +1264,11 @@ export default function ConfiguratorPage() {
               alignItems: 'center'
             }}>
               <span style={{ marginRight: '0.5rem' }}>📝</span>
-              <span style={{ fontWeight: '500' }}>Notes personnelles</span>
+              <span style={{ fontWeight: '500' }}>{tx.notesTitle}</span>
             </div>
             <div style={{ padding: '0.75rem' }}>
               <textarea
-                placeholder="Sensations, conditions de jeu, météo..."
+                placeholder={tx.notesPlaceholder}
                 style={{
                   ...inputStyle,
                   minHeight: '100px',
@@ -1281,18 +1296,18 @@ export default function ConfiguratorPage() {
                 display: 'flex',
                 alignItems: 'center'
               }}>
-                📊 Analyse RCS en Temps Réel
+                {tx.liveTitle}
               </h3>
               <div style={{ fontSize: '0.875rem' }}>
                 {/* Hybride : bornes de l'estimation, indices des montants seuls et des travers seuls, chacun à sa tension. */}
                 {rcsData.hybrid && (
                   <>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                      <span style={{ color: 'var(--tint-blue-fg)' }}>Montants seuls ({formData.mainTension} kg):</span>
+                      <span style={{ color: 'var(--tint-blue-fg)' }}>{tx.mainsOnly(formData.mainTension)}</span>
                       <span style={{ fontWeight: 'bold', color: 'var(--tint-blue-fg)' }}>{rcsData.hybrid.mains}</span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                      <span style={{ color: 'var(--tint-blue-fg)' }}>Travers seuls ({formData.crossTension} kg):</span>
+                      <span style={{ color: 'var(--tint-blue-fg)' }}>{tx.crossesOnly(formData.crossTension)}</span>
                       <span style={{ fontWeight: 'bold', color: 'var(--tint-blue-fg)' }}>{rcsData.hybrid.crosses}</span>
                     </div>
                   </>
@@ -1303,7 +1318,7 @@ export default function ConfiguratorPage() {
                   marginBottom: rcsData.hybrid ? '0.25rem' : '0.75rem',
                   ...(rcsData.hybrid ? { paddingTop: '0.5rem', borderTop: '1px solid var(--surface-border)' } : {})
                 }}>
-                  <span style={{ color: 'var(--tint-blue-fg)', fontWeight: 'bold' }}>Indice RCS:</span>
+                  <span style={{ color: 'var(--tint-blue-fg)', fontWeight: 'bold' }}>{tx.rcsIndex}</span>
                   <span style={{
                     fontWeight: 'bold',
                     fontSize: '1.125rem',
@@ -1315,13 +1330,13 @@ export default function ConfiguratorPage() {
                 {/* Mention du moteur : l'indice d'un hybride est une estimation, jamais une mesure. */}
                 {rcsData.hybrid && (
                   <div style={{ fontSize: '0.75rem', color: 'var(--tint-blue-fg)', textAlign: 'right', marginBottom: '0.75rem' }}>
-                    {rcsData.hybrid.note}
+                    {locale === 'fr' ? <>{rcsData.hybrid.note}</> : tx.engine(rcsData.hybrid.note)}
                   </div>
                 )}
                 {/* Annonce lue par les lecteurs d'ecran : reprend les valeurs
                     deja affichees, sans relire tout le panneau a chaque reglage. */}
                 <div className="sr-only" role="status" aria-live="polite">
-                  Indice RCS {rcsData.rcs}{rcsData.hybrid ? `, ${rcsData.hybrid.note}` : ''}, {rcsData.recommendation.level}
+                  {tx.rcsIndexLive} {rcsData.rcs}{rcsData.hybrid ? `, ${tx.engine(rcsData.hybrid.note)}` : ''}, {level.level}
                 </div>
                 <div style={{
                   padding: '0.75rem',
@@ -1330,10 +1345,10 @@ export default function ConfiguratorPage() {
                   marginBottom: '0.5rem'
                 }}>
                   <div style={{ fontWeight: 'bold', color: 'var(--tint-blue-fg)', marginBottom: '0.25rem' }}>
-                    {rcsData.recommendation.level}
+                    {level.level}
                   </div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--tint-blue-fg)' }}>
-                    {rcsData.recommendation.description}
+                    {level.description}
                   </div>
                 </div>
                 <div style={{ 
@@ -1341,7 +1356,7 @@ export default function ConfiguratorPage() {
                   justifyContent: 'space-between',
                   fontSize: '0.875rem'
                 }}>
-                  <span style={{ color: 'var(--tint-blue-fg)' }}>Compatibilité:</span>
+                  <span style={{ color: 'var(--tint-blue-fg)' }}>{tx.compatibility}</span>
                   <span style={{ 
                     fontWeight: 'bold',
                     color: rcsData.compatibility > 75 ? 'var(--state-good)' : rcsData.compatibility > 50 ? 'var(--state-warn)' : 'var(--state-bad)'
@@ -1369,7 +1384,7 @@ export default function ConfiguratorPage() {
                       de texte neutre avec un fond teinté donnait 3,96:1, sous le
                       seuil AA de 4,5:1 (détecté par npm run audit:style-contrast). */}
                   <div style={{ fontSize: '0.75rem', color: 'var(--tint-blue-fg)' }}>
-                    Acheter ce setup — liens partenaires
+                    {tx.buySetup}
                   </div>
                   {selectedMainString && (
                     <BuyButton
@@ -1421,7 +1436,7 @@ export default function ConfiguratorPage() {
                 }}
               >
                 <span style={{ fontWeight: 700, color: 'var(--text-strong)' }}>
-                  🔬 Analyse RCS Avancée
+                  {tx.advancedTitle}
                 </span>
                 <span
                   style={{
@@ -1460,7 +1475,7 @@ export default function ConfiguratorPage() {
                         color: 'var(--tint-red-fg)',
                       }}
                     >
-                      ⚠️ {w}
+                      ⚠️ {tx.engine(w)}
                     </div>
                   ))}
                 </div>
@@ -1475,30 +1490,38 @@ export default function ConfiguratorPage() {
                   data-testid="advanced-ratings-nature"
                   style={{ marginBottom: '0.9rem', fontSize: '0.75rem', color: 'var(--text-muted)' }}
                 >
-                  <div>
-                    Sous-scores et score global : calculés à partir des notes /10{' '}
-                    {selectedCrossString ? 'des deux cordages' : 'du cordage'}, ajustées par la tension, la
-                    jauge et la raquette.
-                  </div>
+                  <div>{tx.ratingsBasis(!!selectedCrossString)}</div>
                   <div style={{ marginTop: '0.25rem' }}>
-                    {selectedCrossString ? 'Cordage principal : ' : 'Notes : '}
-                    <StringRatingLabel
-                      string={selectedMainString}
-                      as="span"
-                      style={{ fontWeight: 600, color: 'var(--text-strong)' }}
-                    />
-                  </div>
-                  {selectedCrossString && (
-                    <div>
-                      Cordage travers :{' '}
+                    {tx.ratingsMain(!!selectedCrossString)}
+                    {tx.ratingsNotice === null ? (
                       <StringRatingLabel
-                        string={selectedCrossString}
+                        string={selectedMainString}
                         as="span"
                         style={{ fontWeight: 600, color: 'var(--text-strong)' }}
                       />
+                    ) : (
+                      <span style={{ fontWeight: 600, color: 'var(--text-strong)' }}>{tx.ratingLabel(selectedMainString)}</span>
+                    )}
+                  </div>
+                  {selectedCrossString && (
+                    <div>
+                      {tx.ratingsCross}{' '}
+                      {tx.ratingsNotice === null ? (
+                        <StringRatingLabel
+                          string={selectedCrossString}
+                          as="span"
+                          style={{ fontWeight: 600, color: 'var(--text-strong)' }}
+                        />
+                      ) : (
+                        <span style={{ fontWeight: 600, color: 'var(--text-strong)' }}>{tx.ratingLabel(selectedCrossString)}</span>
+                      )}
                     </div>
                   )}
-                  <StringRatingsNotice as="div" style={{ marginTop: '0.25rem' }} />
+                  {tx.ratingsNotice === null ? (
+                    <StringRatingsNotice as="div" style={{ marginTop: '0.25rem' }} />
+                  ) : (
+                    <div style={{ marginTop: '0.25rem' }}>{tx.ratingsNotice}</div>
+                  )}
                 </div>
               )}
 
@@ -1536,7 +1559,7 @@ export default function ConfiguratorPage() {
                       }}
                     >
                       {advancedRcs.overall === null ? (
-                        <span style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>Non disponible</span>
+                        <span style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>{tx.notAvailable}</span>
                       ) : (
                         <>
                           {advancedRcs.overall}
@@ -1545,18 +1568,18 @@ export default function ConfiguratorPage() {
                       )}
                     </span>
                     <span style={{ color: 'var(--text-strong)', fontSize: '0.9rem' }}>
-                      {advancedRcs.summary}
+                      {tx.engine(advancedRcs.summary)}
                     </span>
                   </div>
 
                   {/* Sous-scores */}
                   {(
                     [
-                      ['Puissance', advancedRcs.subScores.power],
-                      ['Contrôle', advancedRcs.subScores.control],
-                      ['Confort', advancedRcs.subScores.comfort],
-                      ['Spin', advancedRcs.subScores.spin],
-                      ['Durabilité', advancedRcs.subScores.durability],
+                      [tx.subScores.power, advancedRcs.subScores.power],
+                      [tx.subScores.control, advancedRcs.subScores.control],
+                      [tx.subScores.comfort, advancedRcs.subScores.comfort],
+                      [tx.subScores.spin, advancedRcs.subScores.spin],
+                      [tx.subScores.durability, advancedRcs.subScores.durability],
                     ] as [string, number | null][]
                   ).map(([label, value]) =>
                     value === null ? (
@@ -1572,7 +1595,7 @@ export default function ConfiguratorPage() {
                         }}
                       >
                         <span>{label}</span>
-                        <span style={{ color: 'var(--text-muted)' }}>non disponible</span>
+                        <span style={{ color: 'var(--text-muted)' }}>{tx.notAvailableLower}</span>
                       </div>
                     ) : (
                     <div key={label} style={{ marginBottom: '0.5rem' }}>
@@ -1622,7 +1645,7 @@ export default function ConfiguratorPage() {
                         color: 'var(--tint-blue-fg)',
                       }}
                     >
-                      💡 {rec}
+                      💡 {tx.engine(rec)}
                     </div>
                   ))}
                 </div>
@@ -1644,7 +1667,7 @@ export default function ConfiguratorPage() {
                   >
                     <span style={{ fontSize: '1.5rem' }}>🔒</span>
                     <span style={{ fontWeight: 600, color: 'var(--text-strong)', fontSize: '0.9rem' }}>
-                      Sous-scores détaillés &amp; recommandations personnalisées
+                      {tx.lockedTitle}
                     </span>
                     <Link
                       href="/pricing"
@@ -1662,7 +1685,7 @@ export default function ConfiguratorPage() {
                         fontSize: '0.85rem',
                       }}
                     >
-                      Passer Premium
+                      {tx.goPremium}
                     </Link>
                   </div>
                 )}
@@ -1686,7 +1709,7 @@ export default function ConfiguratorPage() {
                 fontSize: '1rem'
               }}
             >
-              💾 Analyser le Confort
+              {tx.analyse}
             </button>
             <button 
               disabled={!formData.configName || !selectedRacquet || !selectedMainString}
@@ -1703,13 +1726,13 @@ export default function ConfiguratorPage() {
                 fontSize: '1rem'
               }}
             >
-              📊 Enregistrer dans le Journal
+              {tx.save}
             </button>
             {saveMessage && (
               <div style={{
                 padding: '0.75rem',
-                backgroundColor: saveMessage.includes('succès') ? 'var(--tint-green-bg)' : 'var(--tint-red-bg)',
-                color: saveMessage.includes('succès') ? 'var(--tint-green-fg)' : 'var(--tint-red-fg)',
+                backgroundColor: saveMessage.includes(tx.saveSuccessMarker) ? 'var(--tint-green-bg)' : 'var(--tint-red-bg)',
+                color: saveMessage.includes(tx.saveSuccessMarker) ? 'var(--tint-green-fg)' : 'var(--tint-red-fg)',
                 borderRadius: '8px',
                 fontSize: '0.875rem',
                 textAlign: 'center'
@@ -1739,7 +1762,7 @@ export default function ConfiguratorPage() {
           }}>
             <div style={{ display: 'flex', alignItems: 'center' }}>
               <span style={{ marginRight: '0.5rem' }}>📚</span>
-              Journal de Cordage
+              {tx.logTitle}
             </div>
             <span style={{
               fontSize: '0.75rem',
@@ -1770,11 +1793,10 @@ export default function ConfiguratorPage() {
                 display: 'flex',
                 alignItems: 'center'
               }}>
-                ✅ Journal synchronisé activé
+                {tx.logSyncedTitle}
               </h3>
               <p style={{ fontSize: '0.875rem', color: 'var(--tint-green-fg)', marginBottom: '0.75rem' }}>
-                Vos configurations enregistrées sont sauvegardées dans votre
-                compte et accessibles depuis tous vos appareils.
+                {tx.logSyncedText}
               </p>
               <Link
                 href="/account/configurations"
@@ -1794,7 +1816,7 @@ export default function ConfiguratorPage() {
                   textDecoration: 'none'
                 }}
               >
-                📚 Voir mon journal de cordage
+                {tx.logView}
               </Link>
             </div>
           ) : (
@@ -1811,19 +1833,18 @@ export default function ConfiguratorPage() {
                 display: 'flex',
                 alignItems: 'center'
               }}>
-                🔒 Journal synchronisé
+                {tx.logLockedTitle}
               </h3>
               <p style={{ fontSize: '0.875rem', color: 'var(--tint-amber-fg)', marginBottom: '0.75rem' }}>
-                Connectez-vous pour sauvegarder vos configurations dans votre
-                compte et les retrouver sur tous vos appareils.
+                {tx.logLockedText}
               </p>
               <ul style={{ fontSize: '0.875rem', color: 'var(--tint-amber-fg)', marginBottom: '1rem', listStyle: 'none', padding: 0 }}>
-                <li>✓ Historique de configurations dans votre compte</li>
-                <li>✓ Synchronisation entre tous vos appareils</li>
-                <li>✓ Notes et évaluations conservées</li>
+                {tx.logPerks.map((perk) => (
+                  <li key={perk}>{perk}</li>
+                ))}
               </ul>
               <Link
-                href="/auth/signin?callbackUrl=/configurator"
+                href={tx.signinHref}
                 style={{
                   display: 'block',
                   width: '100%',
@@ -1840,7 +1861,7 @@ export default function ConfiguratorPage() {
                   textDecoration: 'none'
                 }}
               >
-                Se connecter pour activer
+                {tx.logSignin}
               </Link>
             </div>
           )}
@@ -1853,19 +1874,19 @@ export default function ConfiguratorPage() {
             marginBottom: '1.5rem'
           }}>
             <h4 style={{ fontWeight: '500', color: 'var(--text-strong)', marginBottom: '0.75rem' }}>
-              {formData.configName || 'Configuration en cours'}
+              {formData.configName || tx.currentConfig}
             </h4>
             <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
               <div style={{ marginBottom: '0.5rem' }}>
-                {selectedRacquet ? `${selectedRacquet.brand} ${selectedRacquet.model}` : 'Aucune raquette sélectionnée'}
+                {selectedRacquet ? `${selectedRacquet.brand} ${selectedRacquet.model}` : tx.noRacquet}
               </div>
               <div style={{ marginBottom: '0.5rem' }}>
-                {selectedMainString ? `${selectedMainString.brand} ${selectedMainString.model} ${formData.mainGauge}mm` : 'Aucun cordage'}
+                {selectedMainString ? `${selectedMainString.brand} ${selectedMainString.model} ${formData.mainGauge}mm` : tx.noString}
                 {selectedCrossString && ` / ${selectedCrossString.brand} ${selectedCrossString.model} ${formData.crossGauge}mm`}
               </div>
               {rcsData && (
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-faint)' }}>
-                  Indice RCS: {rcsData.rcs} | Compatibilité: {rcsData.compatibility.toFixed(0)}%
+                  {tx.previewIndex(rcsData.rcs, rcsData.compatibility.toFixed(0))}
                 </div>
               )}
             </div>
@@ -1885,25 +1906,25 @@ export default function ConfiguratorPage() {
               display: 'flex',
               alignItems: 'center'
             }}>
-              ℹ️ Recommandations Confort (RCS)
+              {tx.guideTitle}
             </h4>
             <div style={{ fontSize: '0.875rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                <span style={{ color: 'var(--tint-blue-fg)' }}>Confort Bras:</span>
+                <span style={{ color: 'var(--tint-blue-fg)' }}>{tx.armComfort}</span>
                 <span style={{ fontWeight: '500', color: 'var(--tint-blue-fg)' }}>
-                  {rcsData ? rcsData.recommendation.level : 'Sélectionnez une config'}
+                  {rcsData ? level.level : tx.selectConfig}
                 </span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                <span style={{ color: 'var(--tint-blue-fg)' }}>Palier Confortable:</span>
-                <span style={{ fontWeight: '500', color: 'var(--tint-blue-fg)' }}>RCS de 20 à 25</span>
+                <span style={{ color: 'var(--tint-blue-fg)' }}>{tx.bandComfortable}</span>
+                <span style={{ fontWeight: '500', color: 'var(--tint-blue-fg)' }}>{tx.bandComfortableRange}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                <span style={{ color: 'var(--tint-blue-fg)' }}>Palier Standard:</span>
-                <span style={{ fontWeight: '500', color: 'var(--tint-blue-fg)' }}>RCS de 25 à 30</span>
+                <span style={{ color: 'var(--tint-blue-fg)' }}>{tx.bandStandard}</span>
+                <span style={{ fontWeight: '500', color: 'var(--tint-blue-fg)' }}>{tx.bandStandardRange}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: 'var(--tint-blue-fg)' }}>Tennis Elbow:</span>
+                <span style={{ color: 'var(--tint-blue-fg)' }}>{tx.tennisElbow}</span>
                 {/* Seuil aligné sur la borne publiée (§1 CLAUDE.md) et sur le
                     seuil d'alerte du moteur. Il annonçait « > 30 », en
                     contradiction avec le tableau du site (35) et avec
@@ -1912,7 +1933,7 @@ export default function ConfiguratorPage() {
                     11/10/2026 : « au-delà de 32 » devient « dès 32 » (l'alerte du
                     bras sensible se déclenche À 32, pas après) et la ligne renvoie
                     à la case de déclaration ; le seuil de 35 est inchangé. */}
-                <span style={{ fontWeight: '500', color: 'var(--state-bad)' }}>Prudence dès 32 (alerte si bras sensible déclaré), risque à partir de 35</span>
+                <span style={{ fontWeight: '500', color: 'var(--state-bad)' }}>{tx.tennisElbowText}</span>
               </div>
             </div>
           </div>
@@ -1933,7 +1954,7 @@ export default function ConfiguratorPage() {
               <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#10b981' }}>
                 {stats.total}
               </div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Configurations sauvées</div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{tx.savedCount}</div>
             </div>
             <div style={{
               backgroundColor: 'var(--surface-muted)',
@@ -1944,14 +1965,14 @@ export default function ConfiguratorPage() {
               <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#3b82f6' }}>
                 {stats.avgRCS > 0 ? stats.avgRCS.toFixed(1) : '—'}
               </div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>RCS moyen</div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{tx.avgRcs}</div>
             </div>
           </div>
 
           {/* Recent Configurations */}
           <div>
             <h4 style={{ fontWeight: '500', color: 'var(--text-strong)', marginBottom: '0.75rem' }}>
-              Configurations récentes
+              {tx.recent}
             </h4>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               {savedConfigs.length > 0 ? (
@@ -1997,7 +2018,7 @@ export default function ConfiguratorPage() {
                   fontSize: '0.875rem',
                   color: 'var(--text-muted)'
                 }}>
-                  Aucune configuration sauvée
+                  {tx.noSaved}
                 </div>
               )}
             </div>

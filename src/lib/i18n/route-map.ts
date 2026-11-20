@@ -21,7 +21,9 @@ export const EN_PREFIX = '/en';
  */
 const FR_TO_EN: Record<string, string> = {
   '/': '/en/',
-  '/configurator': '/en/configurator.html',
+  // Configurateur EN (20/11/2026) : route Next qui rend le même composant que le FR ; l'ancienne page statique
+  // `/en/configurator.html` (questionnaire) est retirée et redirigée en 301 (next.config.js).
+  '/configurator': '/en/configurator',
   '/racquets': '/en/racquets.html',
   '/tennis-strings': '/en/strings.html',
   '/compare': '/en/compare.html',
@@ -95,4 +97,17 @@ export function getAlternateUrl(
   if (p.startsWith('/en/blog/') && normalizeEn(p) !== '/en/blog/') return '/blog/';
   for (const pair of PRODUCT_PAIRS) if (pair.en.test(p)) return p.replace(pair.en, pair.toFr);
   return EN_TO_FR[normalizeEn(p)] ?? '/';
+}
+
+/**
+ * Lien de navigation de l'application (header, footer) rendu dans la langue de la page courante (20/11/2026) : sur une route
+ * anglaise de l'application (`/en/configurator`), un lien FR qui a une équivalence EN pointe vers elle ; sans équivalence, le
+ * lien FR est gardé tel quel (la page existe, en français) plutôt que de retomber sur `/en/`. Sur une route FR : inchangé.
+ */
+export function localizeHref(href: string, currentPath: string): string {
+  if (!isEnglishPath(currentPath)) return href;
+  const p = normalizePath(href);
+  if (FR_TO_EN[p]) return FR_TO_EN[p];
+  for (const pair of PRODUCT_PAIRS) if (pair.fr.test(p)) return p.replace(pair.fr, pair.toEn);
+  return href;
 }

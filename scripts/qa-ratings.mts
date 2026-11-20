@@ -702,6 +702,29 @@ const ARM_ALERT_SENSITIVE = probeArmAlert(true);
 const ARM_ALERT_STANDARD = probeArmAlert(false);
 
 // ---------------------------------------------------------------------------
+// CONFIGURATEUR EN STATIQUE RETIRÉ (20/11/2026, demande de Pierre ; tsa-acquisition, à revoir par tsa-core)
+// `public/en/configurator.html` (questionnaire qui proposait une raquette, moteur `public/js/rcs-calculator-en.js`) est retiré :
+// le configurateur EN est la route Next `/en/configurator`, qui rend le MÊME composant que `/configurator`. Ses alertes, son indice
+// et son profil « bras sensible » sont donc ceux que les contrôles 21, 21 bis et 21 ter vérifient sur `configurator/page.tsx`.
+// Les parties des contrôles 9 (c), 21 quater et 21 quinquies qui lisaient la page statique ne s'appliquent plus ; elles ne sont
+// sautées QUE si la page statique est absente ET que la route EN rend bien le composant FR (sinon : échec). Le reste de ces
+// contrôles (catalogue EN, balayage de public/en et public/js) tourne comme avant.
+// ---------------------------------------------------------------------------
+const EN_STATIC_CONFIGURATOR = 'public/en/configurator.html';
+const EN_CONFIGURATOR_ROUTE = 'src/app/en/configurator/page.tsx';
+const EN_STATIC_CONFIGURATOR_RETIRED: boolean = (() => {
+  if (existsSync(EN_STATIC_CONFIGURATOR)) return false;
+  const route = existsSync(EN_CONFIGURATOR_ROUTE) ? readFileSync(EN_CONFIGURATOR_ROUTE, 'utf8') : '';
+  const reuses = /import\s+ConfiguratorPage\s+from\s+'@\/app\/configurator\/page'/.test(route) && /<ConfiguratorPage\s*\/>/.test(route);
+  if (!reuses) {
+    fail(`${EN_STATIC_CONFIGURATOR} absent et ${EN_CONFIGURATOR_ROUTE} ne rend pas le composant FR : le configurateur EN n'est plus vérifié par aucun contrôle`);
+    return false;
+  }
+  ok(`${EN_STATIC_CONFIGURATOR} retiré ; ${EN_CONFIGURATOR_ROUTE} rend le composant de configurator/page.tsx (contrôles 21, 21 bis, 21 ter) : contrôles de la page statique sans objet`);
+  return true;
+})();
+
+// ---------------------------------------------------------------------------
 // 9. ALERTE SANTÉ — aucun profil ne peut la désactiver, aucune surface ne
 //    peut afficher un RCS sans chemin vers un avertissement
 // ---------------------------------------------------------------------------
@@ -815,7 +838,7 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
 
   // Les surfaces qui affichent un RCS doivent avoir un chemin vers une alerte.
   const SURFACES = [
-    'public/en/configurator.html',
+    ...(EN_STATIC_CONFIGURATOR_RETIRED ? [] : [EN_STATIC_CONFIGURATOR]),
     'public/en/rcs-calculator.html',
   ];
   for (const surface of SURFACES) {
@@ -838,7 +861,7 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
 
   // (c) Le profil que le configurateur EN pose quand le visiteur déclare une douleur (« Sensitive arm », « Fragile shoulder »)
   //     doit être un profil à bras sensible : sinon l'alerte dès le seuil « bras sensible » ne s'appliquerait à personne.
-  if (S9 !== null) {
+  if (S9 !== null && !EN_STATIC_CONFIGURATOR_RETIRED) {
     const declared = (html: string): { profile: string | null; shoulderSharesBranch: boolean } => {
       const m = /currentSelections\.physical === 'bras'[\s\S]{0,1500}?rcsProfile = '([a-z_]+)'/.exec(html);
       return {
@@ -4221,12 +4244,12 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
   let confQ5 = '';
   let catQ5 = '';
   try {
-    confQ5 = readFileSync(CONFQ5, 'utf8').replace(/\r\n/g, '\n');
+    confQ5 = EN_STATIC_CONFIGURATOR_RETIRED ? '' : readFileSync(CONFQ5, 'utf8').replace(/\r\n/g, '\n');
     catQ5 = readFileSync(CATQ5, 'utf8').replace(/\r\n/g, '\n');
   } catch (e) {
     fail(`notes sans valeur comblée (EN) : fichier illisible (${(e as Error).message})`);
   }
-  if (confQ5 && catQ5) {
+  if ((confQ5 || EN_STATIC_CONFIGURATOR_RETIRED) && catQ5) {
     const stringsQ5: any[] = buildCatalog(racquetsDatabase, stringsDatabase).strings;
     const sliceQ5 = (src: string, start: string, end: string): string | null => {
       const i = src.indexOf(start);
@@ -4260,7 +4283,8 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
       const out: string[] = [];
       const picker = pickerOf(html);
       const bar = barOf(catHtml);
-      if (picker === null) out.push(`${CONFQ5} : pickBestString introuvable, relire le contrôle 21 quinquies`);
+      if (EN_STATIC_CONFIGURATOR_RETIRED && html === '') { /* page retirée : seule la barre du catalogue est lue */ }
+      else if (picker === null) out.push(`${CONFQ5} : pickBestString introuvable, relire le contrôle 21 quinquies`);
       else if (NUM_FALLBACK.test(picker)) out.push(`${CONFQ5} : pickBestString remplace une valeur absente par un nombre`);
       if (bar === null) out.push(`${CATQ5} : ratingBar introuvable, relire le contrôle 21 quinquies`);
       else if (NUM_FALLBACK.test(bar)) out.push(`${CATQ5} : ratingBar remplace une note absente par un nombre`);
@@ -4361,7 +4385,7 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     };
 
     bodyIssues(confQ5, catQ5).forEach((m) => fail(m));
-    pickerIssues(confQ5).forEach((m) => fail(m));
+    if (!EN_STATIC_CONFIGURATOR_RETIRED) pickerIssues(confQ5).forEach((m) => fail(m));
     catalogIssues(catQ5).forEach((m) => fail(m));
     const realPicks = picksQ5;
     const realSorts = sortsQ5;
@@ -4389,6 +4413,7 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
       ['phrase « TSA editorial ratings » rétablie', 'cat', [[CARD_SENTENCE, 'The spin, control, comfort and durability filters and sort options use TSA editorial ratings out of 10. ']]],
     ];
     for (const [name, target, edits] of NEG) {
+      if (target === 'conf' && EN_STATIC_CONFIGURATOR_RETIRED) continue;
       let m: string | null = target === 'conf' ? confQ5 : catQ5;
       for (const [find, rep] of edits) m = m === null ? null : once(m, find, rep);
       if (m === null) { fail(`notes sans valeur comblée : prémisse du test négatif « ${name} » fausse (motif absent)`); continue; }
@@ -4407,6 +4432,7 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
       ['comparateur « absent en fin » écrit autrement', 'cat', 'if (!hasX || !hasY) return hasX === hasY ? 0 : (hasX ? -1 : 1);', 'if (!hasX || !hasY) return Number(hasY) - Number(hasX);'],
     ];
     for (const [name, target, find, rep] of POS) {
+      if (target === 'conf' && EN_STATIC_CONFIGURATOR_RETIRED) continue;
       const m = once(target === 'conf' ? confQ5 : catQ5, find, rep);
       if (m === null) { fail(`notes sans valeur comblée : prémisse du témoin positif « ${name} » fausse (motif absent)`); continue; }
       const found = target === 'conf' ? [...bodyIssues(m, catQ5), ...pickerIssues(m)] : [...bodyIssues(confQ5, m), ...catalogIssues(m)];
@@ -4417,8 +4443,10 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     if (failures.length === beforeQ5) {
       ok(
         `notes sans valeur comblée (EN) : aucun repli numérique sur une note dans ${publicFiles.length} fichiers de public/, ni dans pickBestString ni ratingBar ; ` +
-          `configurateur : pickBestString évalué tel quel (${ratedCriteria} critères de la page triés par une note, ${realPicks} tirages forcés sur le catalogue), cordage sans note injecté en tête jamais choisi, ` +
-          `choix parmi les trois meilleures notes, « ${NO_RATED} » sans candidat noté, raison avec la nature de la note ; ` +
+          (EN_STATIC_CONFIGURATOR_RETIRED
+            ? 'configurateur EN statique retiré (le composant FR rendu en EN ne choisit aucun cordage par une note) ; '
+            : `configurateur : pickBestString évalué tel quel (${ratedCriteria} critères de la page triés par une note, ${realPicks} tirages forcés sur le catalogue), cordage sans note injecté en tête jamais choisi, ` +
+              `choix parmi les trois meilleures notes, « ${NO_RATED} » sans candidat noté, raison avec la nature de la note ; `) +
           `catalogue : ${realSorts} tris évalués tels quels sur ${stringsQ5.length} fiches, ${absentPrices} fiches sans prix et ${absentRatings} sans note en fin de liste, prix maximal sans fiche non chiffrée, phrase des filtres à jour ; ` +
           `${detectedQ5} tests négatifs détectés, ${acceptedQ5} témoins positifs acceptés`
       );
@@ -4841,13 +4869,13 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
   let engineSrcQ21 = '';
   let calcHtmlQ21 = '';
   try {
-    pageQ21 = readFileSync(PAGEQ21, 'utf8').replace(/\r\n/g, '\n');
+    pageQ21 = EN_STATIC_CONFIGURATOR_RETIRED ? '' : readFileSync(PAGEQ21, 'utf8').replace(/\r\n/g, '\n');
     engineSrcQ21 = readFileSync(ENGINEQ21, 'utf8').replace(/\r\n/g, '\n');
     calcHtmlQ21 = readFileSync(CALCQ21, 'utf8');
   } catch (e) {
     fail(`seuil bras sensible (configurateur EN) : fichier illisible (${(e as Error).message})`);
   }
-  if (pageQ21 && engineSrcQ21 && calcHtmlQ21) {
+  if ((pageQ21 || EN_STATIC_CONFIGURATOR_RETIRED) && engineSrcQ21 && calcHtmlQ21) {
     const loadEngineQ21 = (src: string): any =>
       new Function('window', 'document', `${src}; return typeof RCS !== 'undefined' ? RCS : window.RCS;`)({}, { addEventListener() {} });
     const OPENQ21 = '// <seuil-bras-sensible>';
@@ -5002,9 +5030,13 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     ];
 
     const engineQ21 = loadEngineQ21(engineSrcQ21);
-    const realIssues = checkPageQ21(pageQ21, engineQ21, true);
-    realIssues.forEach((i) => fail(`${PAGEQ21} : ${i}`));
-    branchIssuesQ21(pageQ21).forEach((i) => fail(`${PAGEQ21} : ${i}`));
+    // Page statique retirée (20/11/2026) : seuls le balayage de public/en et public/js et les tests du moteur EN tournent ; les tests
+    // négatifs du balayage s'appliquent alors à une page témoin (rcs-calculator.html, qui charge le même moteur).
+    const PAGE_RETIRED_Q21 = EN_STATIC_CONFIGURATOR_RETIRED;
+    if (!PAGE_RETIRED_Q21) {
+      checkPageQ21(pageQ21, engineQ21, true).forEach((i) => fail(`${PAGEQ21} : ${i}`));
+      branchIssuesQ21(pageQ21).forEach((i) => fail(`${PAGEQ21} : ${i}`));
+    }
     let scanned = 0;
     for (const f of SCANQ21) {
       scanned++;
@@ -5037,13 +5069,13 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
       ['phrase de fin reformulée', "' Each kg changes the index by 0.5 point.", "' One kg of tension moves the index by half a point."],
       ['titre reformulé, seuil cité', "const title = 'Tension and the alert threshold (' + L.threshold + ')';", "const title = 'Tension below the alert threshold (' + L.threshold + ')';"],
     ];
-    for (const [name, find, rep] of PAGE_NEG) {
+    for (const [name, find, rep] of PAGE_RETIRED_Q21 ? [] : PAGE_NEG) {
       const m = replaceOnceQ21(pageQ21, find, rep);
       if (m === null) { fail(`${PAGEQ21} : prémisse du test négatif « ${name} » fausse (motif absent)`); continue; }
       if (checkPageQ21(m, engineQ21).length > 0) detectedQ21++;
       else fail(`${PAGEQ21} : garde-fou muet sur « ${name} »`);
     }
-    for (const [name, find, rep] of BRANCH_NEG) {
+    for (const [name, find, rep] of PAGE_RETIRED_Q21 ? [] : BRANCH_NEG) {
       const m = replaceOnceQ21(pageQ21, find, rep);
       if (m === null) { fail(`${PAGEQ21} : prémisse du test négatif « ${name} » fausse (motif absent)`); continue; }
       if (branchIssuesQ21(m).length > 0) detectedQ21++;
@@ -5052,6 +5084,7 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
     // Moteur : seuil bras sensible changé (31) sans toucher à la page : la page doit diverger du recalcul.
     const engMut = replaceOnceQ21(engineSrcQ21, 'HEALTH_ALERT_SENSITIVE_RCS: 32,', 'HEALTH_ALERT_SENSITIVE_RCS: 31,');
     if (engMut === null) fail(`${ENGINEQ21} : prémisse du test négatif « seuil du moteur à 31 » fausse (motif absent)`);
+    else if (PAGE_RETIRED_Q21) { if (loadEngineQ21(engMut).HEALTH_ALERT_SENSITIVE_RCS !== SQ21) detectedQ21++; else fail(`${ENGINEQ21} : garde-fou muet sur « seuil du moteur à 31 »`); }
     else if (checkPageQ21(pageQ21, loadEngineQ21(engMut)).length > 0) detectedQ21++;
     else fail(`${ENGINEQ21} : garde-fou muet sur « seuil du moteur à 31 »`);
     // Balayage : une tension fixe pour un bras sensible ajoutée au moteur EN doit être vue ; un levier « 1 kg » ne l'est pas.
@@ -5066,16 +5099,18 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
       ['chaîne d\'un script', OPENQ21, `const adviceQ21 = 'Elbow pain? String at 22 kg.';\n    ${OPENQ21}`],
       ['attribut', '</body>', '<meta name="description" content="Tennis elbow: string at 21 kg">\n</body>'],
     ];
+    // Page témoin du balayage : la page statique si elle existe, sinon rcs-calculator.html (même moteur, même structure de scripts).
+    const scanBaseQ21 = PAGE_RETIRED_Q21 ? calcHtmlQ21.replace(/\r\n/g, '\n').replace('<script src="/js/rcs-calculator-en.js"></script>', () => `<script src="/js/rcs-calculator-en.js"></script>\n  <script>\n    ${OPENQ21}\n    ${CLOSEQ21}\n  </script>`) : pageQ21;
     for (const [name, find, rep] of SCAN_NEGQ21) {
-      const m = replaceOnceQ21(pageQ21, find, rep);
+      const m = replaceOnceQ21(scanBaseQ21, find, rep);
       if (m === null) { fail(`${PAGEQ21} : prémisse du test négatif « balayage, ${name} » fausse (motif absent)`); continue; }
       if (scanFixedQ21(PAGEQ21, m).length > 0) detectedQ21++;
       else fail(`${PAGEQ21} : garde-fou muet sur « tension fixe pour une douleur, ${name} »`);
     }
-    const commentedQ21 = replaceOnceQ21(pageQ21, OPENQ21, `// ancien conseil « 21-23 kg » pour un bras sensible, retiré\n    ${OPENQ21}`);
+    const commentedQ21 = replaceOnceQ21(scanBaseQ21, OPENQ21, `// ancien conseil « 21-23 kg » pour un bras sensible, retiré\n    ${OPENQ21}`);
     if (commentedQ21 !== null && scanFixedQ21(PAGEQ21, commentedQ21).length === 0) acceptedQ21++;
     else fail(`${PAGEQ21} : témoin positif « tension citée dans un commentaire de script » rejeté à tort`);
-    for (const [name, find, rep] of POSITIVES) {
+    for (const [name, find, rep] of PAGE_RETIRED_Q21 ? [] : POSITIVES) {
       const m = replaceOnceQ21(pageQ21, find, rep);
       if (m === null) { fail(`${PAGEQ21} : prémisse du témoin positif « ${name} » fausse (motif absent)`); continue; }
       const found = [...checkPageQ21(m, engineQ21), ...branchIssuesQ21(m)];
@@ -5085,6 +5120,7 @@ const ARM_ALERT_STANDARD = probeArmAlert(false);
 
     if (failures.length === beforeQ21) {
       ok(
+        (PAGE_RETIRED_Q21 ? 'configurateur EN statique retiré (le composant FR rendu en EN ne propose aucune tension) ; ' : '') +
         `configurateur EN, douleur déclarée : tension calculée sous le seuil d'alerte bras sensible (${SQ21} = seuil bras sensible sondé dans calculateAdvancedRcs = HEALTH_ALERT_SENSITIVE_RCS du moteur EN) ; ` +
           `bloc de la page évalué tel quel avec le moteur EN sur ${tallyQ21.combos} montages (${racqQ21.length} raquettes à RA connu × ${strQ21.length} cordages), ` +
           `plage du curseur ${RANGEQ21?.min}-${RANGEQ21?.max} kg par ${RANGEQ21?.step} : N identique au recalcul par calculateRCS (« jusqu'à N kg » ${tallyQ21.mid}, ` +

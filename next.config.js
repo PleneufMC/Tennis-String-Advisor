@@ -129,6 +129,11 @@ const nextConfig = {
       // (qui émet un 308) : 301 demandé explicitement.
       { source: '/blog/head-gravity-mp-vs-gravity-tour-2025.html', destination: '/blog/meilleures-raquettes-tennis-2026.html', statusCode: 301 },
       { source: '/blog/head-gravity-mp-vs-gravity-tour-2025', destination: '/blog/meilleures-raquettes-tennis-2026.html', statusCode: 301 },
+      // --- 301 : configurateur EN (20/11/2026, demande de Pierre). L'ancienne page statique `/en/configurator.html`
+      // (questionnaire qui proposait une raquette) est retirée ; le configurateur EN est la route Next `/en/configurator`,
+      // même composant que le FR. Les deux formes de l'ancienne URL (Netlify servait aussi `/en/configurator` depuis le
+      // fichier) aboutissent à la route. `statusCode: 301` comme pour l'article retiré ci-dessus.
+      { source: '/en/configurator.html', destination: '/en/configurator', statusCode: 301 },
       { source: '/premium', destination: '/pricing', permanent: true },
       { source: '/guides', destination: '/blog/', permanent: true },
       { source: '/recommendations', destination: '/configurator', permanent: true },

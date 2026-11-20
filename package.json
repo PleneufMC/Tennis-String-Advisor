@@ -29,6 +29,7 @@
     "audit:claims": "node scripts/qa-claims.mjs",
     "audit:stripe-webhook": "node scripts/qa-stripe-webhook.mjs",
     "audit:sticky": "node scripts/qa-sticky-sidebars.mjs",
+    "audit:configurator-en": "npx --yes tsx scripts/qa-configurator-en.mts",
     "scrape:tennis-warehouse": "node scripts/scraper/tennis-warehouse-scraper.js",
     "scrape:tw-discover": "node scripts/scraper/tw-discover.mjs",
     "scrape:tw-specs": "node scripts/scraper/tw-fetch-specs.mjs",

@@ -170,7 +170,7 @@ function page({ title, description, enPath, frPath, section, sectionHref, name, 
     <div class="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between gap-3">
       <a href="/en/" class="flex items-center gap-2 min-w-0"><span class="text-2xl" aria-hidden="true">🎾</span><span class="font-bold text-lg sm:text-xl truncate">Tennis String Advisor</span></a>
       <nav class="hidden md:flex items-center gap-5 text-sm" aria-label="Main">
-        <a href="/en/configurator.html" class="text-gray-600 dark:text-gray-300 hover:text-green-600">Configurator</a>
+        <a href="/en/configurator" class="text-gray-600 dark:text-gray-300 hover:text-green-600">Configurator</a>
         <a href="/en/racquets.html" class="${section === 'Racquets' ? 'text-green-700 dark:text-green-400 font-semibold' : 'text-gray-600 dark:text-gray-300 hover:text-green-600'}">Racquets</a>
         <a href="/en/strings.html" class="${section === 'Strings' ? 'text-green-700 dark:text-green-400 font-semibold' : 'text-gray-600 dark:text-gray-300 hover:text-green-600'}">Strings</a>
         <a href="/en/blog/" class="text-gray-600 dark:text-gray-300 hover:text-green-600">Blog</a>
@@ -193,7 +193,7 @@ ${body}
     <div class="max-w-5xl mx-auto px-4 py-8 flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between text-sm">
       <nav class="flex flex-wrap gap-x-5 gap-y-2" aria-label="Footer">
         <a href="/en/" class="hover:text-white">Home</a>
-        <a href="/en/configurator.html" class="hover:text-white">Configurator</a>
+        <a href="/en/configurator" class="hover:text-white">Configurator</a>
         <a href="/en/racquets.html" class="hover:text-white">Racquets</a>
         <a href="/en/strings.html" class="hover:text-white">Strings</a>
         <a href="/en/faq.html" class="hover:text-white">FAQ</a>
@@ -264,7 +264,7 @@ ${raPublished ? '' : `      <p class="mt-3 text-xs text-gray-600 dark:text-gray-
     <section class="mt-10 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5">
       <h2 class="text-lg font-semibold">Which string for this racquet?</h2>
       <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">How firm a setup feels depends on the racquet, the string and the tension together. The configurator computes the RCS comfort score of the full combination and flags setups that are risky for your arm.</p>
-      <a href="/en/configurator.html" class="mt-4 inline-block rounded-lg bg-green-700 px-5 py-2.5 font-semibold text-white hover:bg-green-800">Configure my strings</a>
+      <a href="/en/configurator" class="mt-4 inline-block rounded-lg bg-green-700 px-5 py-2.5 font-semibold text-white hover:bg-green-800">Configure my strings</a>
     </section>
 
     <p class="mt-10 text-sm"><a href="/en/racquets.html" class="text-green-700 dark:text-green-400 hover:underline">← Back to the racquet catalog</a></p>`;
@@ -327,7 +327,7 @@ ${ratingsSection(s)}
     <section class="mt-10 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5">
       <h2 class="text-lg font-semibold">Is this string right for your arm?</h2>
       <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">How firm a string feels depends on your racquet and your tension, not on the string alone. The configurator computes the RCS comfort score of your full setup and flags combinations with a tennis elbow risk.</p>
-      <a href="/en/configurator.html" class="mt-4 inline-block rounded-lg bg-green-700 px-5 py-2.5 font-semibold text-white hover:bg-green-800">Check my setup's RCS</a>
+      <a href="/en/configurator" class="mt-4 inline-block rounded-lg bg-green-700 px-5 py-2.5 font-semibold text-white hover:bg-green-800">Check my setup's RCS</a>
     </section>
 
     <p class="mt-10 text-sm"><a href="/en/strings.html" class="text-green-700 dark:text-green-400 hover:underline">← Back to the string catalog</a></p>`;
