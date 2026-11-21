@@ -705,6 +705,10 @@
       }
     }
 
+    // Meme regle que buyLinkRel() de src/lib/affiliate.ts : `sponsored` seulement si un
+    // identifiant d'affiliation est reellement present ; aucun ici (liens non remuneres), donc `nofollow`.
+    const buyLinkRel = (config) => (config.tag ? 'sponsored noopener noreferrer' : 'nofollow noopener noreferrer');
+
     function showAffiliate(type, product) {
       const productName = `${product.brand || ''} ${product.model || (type === 'racquet' ? 'Racquet' : 'String')}`.trim();
       document.getElementById('affiliateProduct').textContent = productName;
@@ -712,7 +716,7 @@
       let html = '';
       Object.entries(AFFILIATE_CONFIG).forEach(([key, config]) => {
         html += `
-          <a href="${config.url}${searchQuery}" target="_blank" rel="sponsored noopener noreferrer"
+          <a href="${config.url}${searchQuery}${config.tag || ''}" target="_blank" rel="${buyLinkRel(config)}"
             class="flex items-center gap-4 p-4 border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-green-500 transition group">
             <div class="text-3xl">${config.logo}</div>
             <div class="flex-1">
