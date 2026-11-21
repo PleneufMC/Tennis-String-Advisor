@@ -58,7 +58,7 @@ function TennisIcon({ className }: { className?: string }) {
 }
 
 export function Footer() {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   // Route anglaise de l'application (`/en/configurator`, 20/11/2026) : liens vers les pages EN équivalentes.
   const pathname = usePathname() || '/';
   const onEnglish = isEnglishPath(pathname);
@@ -157,9 +157,9 @@ export function Footer() {
             (stockage, consentement, désinscription) et une page de
             confidentialité. */}
 
-        {/* Mention de transparence des liens « Voir le prix » (Audit #3.0) */}
+        {/* Mention de transparence des liens « Voir le prix » (Audit #3.0), dans la langue du reste du pied de page. */}
         <div className="mt-12 border-t border-gray-800 pt-8">
-          <AffiliateDisclosure className="text-gray-500 max-w-3xl" />
+          <AffiliateDisclosure className="text-gray-500 max-w-3xl" locale={locale} />
         </div>
 
         {/* Bottom bar */}
