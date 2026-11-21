@@ -221,7 +221,8 @@ un calculateur RCS « limité à 1 usage » (il est libre, `rcs-calculator.html:
 pas sur le site anglais (`premium.html:404`, `CHECKOUT_DISPONIBLE = false`), que l'offre et ses prix sont ceux du site français,
 qu'un compte gratuit garde 3 setups, que « Delete my account » n'efface que les setups (`account.html:492-503`) et qu'aucune page
 de résiliation n'existe dans `src/app/`. JSON-LD `FAQPage` identique au texte visible. Montants inchangés, sans condition de
-rareté : la mention « réservé aux 200 premiers » est retirée (aucune limite dans Stripe ni dans `premium.ts`). Paiement,
+rareté : la mention « réservé aux 200 premiers » est retirée (Stripe ne pose aucune limite de quantité ; `LIFETIME_SEATS =
+200` de `premium.ts` ne fait que masquer l'offre à vie de `/pricing` une fois 200 accès à vie comptés, sans bloquer un achat). Paiement,
 articles et libellés d'achat du configurateur (à `tsa-revenue`) inchangés. §2 corrigé : le paiement EN était dit ouvert.
 
 **Changelog v2.3.25 → v2.3.26** — **Hybrides : un seul indice, celui que l'alerte lit, que le configurateur
