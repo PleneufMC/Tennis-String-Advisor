@@ -234,7 +234,8 @@ export default function PricingPage() {
             <span style={{
               position: 'absolute',
               top: '-0.5rem',
-              right: '-1rem',
+              // -1.5rem (au lieu de -1rem) : le libellé exact, plus long, ne doit pas chevaucher le bouton « Mensuel ».
+              right: '-1.5rem',
               backgroundColor: '#10b981',
               color: 'white',
               fontSize: '0.625rem',
@@ -243,7 +244,9 @@ export default function PricingPage() {
               fontWeight: 'bold',
               whiteSpace: 'nowrap'
             }}>
-              2 MOIS GRATUITS
+              {/* « 2 MOIS GRATUITS » corrigé le 21/11/2026 : 12 × 4,99 € −
+                  49,99 € = 9,89 € d'économie, soit 1,98 mois, pas 2. */}
+              PRÈS DE 2 MOIS OFFERTS
             </span>
           </button>
         </div>
@@ -512,10 +515,16 @@ export default function PricingPage() {
               </a>
             </div>
           </div>
+          {/* « Activation sous 24 h — Confirmation par email » corrigé le
+              21/11/2026 : le webhook (src/app/api/stripe/webhook) active le
+              compte dès que Stripe confirme l'encaissement, sans délai manuel,
+              et le site n'envoie aucun e-mail de confirmation. Ce que Stripe
+              envoie lui-même dépend des réglages du compte Stripe, non
+              vérifiés : rien n'est promis à ce sujet. */}
           <div style={{ color: 'white' }}>
             <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>⏳</div>
-            <div style={{ fontWeight: 'bold' }}>Activation sous 24 h</div>
-            <div style={{ fontSize: '0.875rem', opacity: 0.9 }}>Confirmation par email</div>
+            <div style={{ fontWeight: 'bold' }}>Activation automatique</div>
+            <div style={{ fontSize: '0.875rem', opacity: 0.9 }}>dès l&apos;encaissement du paiement</div>
           </div>
         </div>
       </div>
