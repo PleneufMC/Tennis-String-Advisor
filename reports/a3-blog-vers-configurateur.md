@@ -34,7 +34,22 @@ Trois indicateurs voisins ont été écartés, et il faut savoir lesquels
   l'influence totale du blog ; il mesure le **passage direct**, qui est bien la
   question posée (« quel article travaille ? »).
 - Le lecteur qui passe par la home ou le header entre l'article et le
-  configurateur : compté comme provenance home, pas blog.
+  configurateur : compté comme provenance home **seulement si le second saut
+  recharge la page**. ⚠️ **Faux positif mesuré le 21/11/2026** (vrai gtag.js,
+  collectes interceptées, build de production, identique avant et après la
+  PR #168) : article → accueil Next (chargement complet) → configurateur par le
+  header (navigation côté client, sans rechargement). Le `page_view` que le
+  composant `Analytics` émet pour `/configurator` porte
+  `page_referrer = /blog/guide-tension-cordage-tennis.html`, parce que
+  `document.referrer` reste celui du premier chargement pendant toute la visite
+  côté client. **Ce parcours indirect est donc compté au numérateur comme une
+  arrivée directe**. A3 est surestimé d'autant, sans moyen de le séparer dans
+  l'exploration du §4. La même navigation produit aussi un second `page_view`
+  (celui que GA4 émet seul, « historique », `page_referrer = /`), qui n'est pas
+  compté (provenance hors `/blog/`).
+  Correctif possible : ne joindre la provenance qu'au premier `page_view` de la
+  visite côté client. Ce serait une rupture de série d'A3, à décider avant le
+  relevé de la ligne de base.
 - Les navigateurs qui suppriment le referrer par réglage privé (marginal en
   same-origin, la politique par défaut `strict-origin-when-cross-origin`
   transmet l'URL complète en same-origin).
@@ -72,6 +87,13 @@ c'est précisément ce que `scripts/qa-blog-funnel.mjs` verrouille à chaque
   désormais du schéma React (paramètres du FR), et non plus de
   `public/js/analytics.js` (questionnaire retiré). Aucune comparaison des
   événements EN entre avant et après la fusion.
+- **Liste blanche des paramètres d'URL (fusion de la PR #168)** : `page_location`
+  et `page_referrer` ne portent plus que l'origine, le chemin et les `utm_*`,
+  sur l'app Next comme sur les pages statiques. A3 lit des chemins : **pas de
+  rupture**, vérifié en exécution (`page_view` de `/configurator` avec
+  `page_referrer = /blog/guide-tension-cordage-tennis.html`). Une ligne de
+  l'exploration du §4 qui portait une query (`…/article.html?ref=…`) se
+  regroupe désormais avec la ligne sans query.
 - **Découper FR / EN par le chemin** (`page_location` commençant par `/en/`),
   **jamais** par la dimension GA4 « Langue », qui est la langue du navigateur,
   pas celle de la page.
