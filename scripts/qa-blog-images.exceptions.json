@@ -16,12 +16,6 @@
       "motif": "Antérieur à la règle images du 10/10/2026 ; corrigé le 10/10/2026 (PR #102 : valeurs produit alignées sur la base, urgence d'exactitude) — visuel de corps à créer, première mission de l’équipe éditoriale ; corrigé le 22/10/2026 (appels à l'action : icône 🩺 et promesses « idéale », « parfaite » retirées, charte F7 v1.2, urgence d'exactitude ; visuel de corps toujours à créer) ; configurateur décrit avec le libellé exact de sa case, même jour ; renouvelée le 23/10/2026 : dates de mise à jour posées par tsa-acquisition et dernière correction du rédacteur, toutes deux du 22/10/2026 (PR #134) ; visuel de corps toujours à créer"
     },
     {
-      "fichier": "public/blog/combien-de-temps-dure-un-cordage.html",
-      "empreinte": "sha256:532459b8e0167bf9a512033a1ec5021d98e33c7df9afa1c5948f4fa0b5e732ef",
-      "depuis": "2026-10-23",
-      "motif": "Antérieur à la règle images du 10/10/2026 : couverture conforme, visuel de corps à créer (première mission de l’équipe éditoriale) ; corrigé le 22/10/2026 (avis conditionnés par la santé réécrits en constats chiffrés, charte F7 v1.2, urgence d'exactitude ; visuel de corps toujours à créer) ; puis outils décrits tels qu'ils sont, même jour ; renouvelée le 23/10/2026 : tableau symptôme → action réécrit le 23/10/2026 (douleur : « consultez un professionnel de santé », tsa-redacteur) et dates au 23/10/2026 (tsa-acquisition), PR #136 ; visuel de corps toujours à créer ; puis corrections finales du pigiste et de l'avis Opus 5.5, 23/10/2026"
-    },
-    {
       "fichier": "public/blog/materiel-next-gen-fonseca-mensik-cobolli-jodar.html",
       "empreinte": "sha256:9a1e6702493c7a97928da24c0c23103bed9fc970139f123e601b6f35cef68a96",
       "depuis": "2026-10-23",
@@ -62,12 +56,6 @@
       "empreinte": "sha256:bd649b5e1d27cef1f1bac897f89c7b37d7dc048689efc41b8a837281e511b931",
       "depuis": "2026-10-23",
       "motif": "Antérieur à la règle images du 10/10/2026 ; corrigé le 10/10/2026 (PR #102 : valeurs produit alignées sur la base, urgence d'exactitude) — visuel de corps à créer, première mission de l’équipe éditoriale ; corrigé le 22/10/2026 (appels à l'action : icône 🩺 et promesses « idéale », « parfaite » retirées, charte F7 v1.2, urgence d'exactitude ; visuel de corps toujours à créer) ; renouvelée le 23/10/2026 : dates de mise à jour posées le 22/10/2026 par tsa-acquisition (PR #134) ; corps inchangé, visuel de corps toujours à créer"
-    },
-    {
-      "fichier": "public/en/blog/how-long-do-tennis-strings-last.html",
-      "empreinte": "sha256:f263d431585caa45ce79e5b8e2b5d7858eea6a3c2a6d81e20ff2c887198093ed",
-      "depuis": "2026-10-23",
-      "motif": "Antérieur à la règle images du 10/10/2026 : couverture conforme, visuel de corps à créer (première mission de l’équipe éditoriale) ; corrigé le 22/10/2026 (avis conditionnés par la santé réécrits en constats chiffrés, charte F7 v1.2, urgence d'exactitude ; visuel de corps toujours à créer) ; puis outils décrits tels qu'ils sont, même jour ; renouvelée le 23/10/2026 : tableau symptom → action réécrit le 23/10/2026 (pain: « See a health professional », tsa-redacteur) et dates au 23/10/2026 (tsa-acquisition), PR #136 ; visuel de corps toujours à créer ; puis corrections finales du pigiste et de l'avis Opus 5.5, 23/10/2026"
     },
     {
       "fichier": "public/en/blog/next-gen-tennis-racquets-fonseca-mensik-cobolli-jodar.html",
