@@ -574,7 +574,9 @@ export default function ConfiguratorPage() {
           marginBottom: '0.5rem',
           textShadow: '3px 3px 6px rgba(0,0,0,0.5)'
         }}>
-          Tennis String Advisor Premium
+          {/* « Tennis String Advisor Premium » corrigé le 21/11/2026 : le configurateur est gratuit (seule l'analyse avancée est
+              réservée au Premium), et le Premium ne s'achète pas sur le site anglais, qui rend ce même titre. */}
+          Tennis String Advisor
         </h1>
         <p style={{ color: '#ffffff', fontSize: '1.1rem', textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}>
           {tx.subtitle}
