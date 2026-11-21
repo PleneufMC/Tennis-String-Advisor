@@ -66,7 +66,7 @@ export default function PricingPage() {
       ],
       buttonText: 'Version actuelle',
       buttonStyle: 'secondary',
-      popular: false
+      highlighted: false
     },
     {
       id: 'premium',
@@ -81,7 +81,7 @@ export default function PricingPage() {
       ],
       buttonText: 'Passer Premium',
       buttonStyle: 'primary',
-      popular: true,
+      highlighted: true,
       stripeLinks: {
         monthly: STRIPE_LINKS.monthly,
         yearly: STRIPE_LINKS.yearly
@@ -100,10 +100,13 @@ export default function PricingPage() {
         '✅ Analyse RCS avancée',
         '✅ Export PDF professionnel'
       ],
-      note: 'Prix réservé aux 200 premiers.',
+      // « Prix réservé aux 200 premiers » retiré le 21/11/2026 : aucune limite
+      // n'est posée sur le Payment Link dans Stripe, et `LIFETIME_SEATS`
+      // (premium.ts) ne fait que cesser d'AFFICHER l'offre ; il ne réserve
+      // aucun prix. Ne pas rétablir une rareté que rien n'applique.
       buttonText: 'Accès à vie',
       buttonStyle: 'primary',
-      popular: false,
+      highlighted: false,
       stripeLinks: {
         monthly: STRIPE_LINKS.lifetime,
         yearly: STRIPE_LINKS.lifetime
@@ -282,28 +285,14 @@ export default function PricingPage() {
               borderRadius: '16px',
               padding: '2rem',
               position: 'relative',
-              boxShadow: plan.popular ? '0 25px 50px rgba(0, 0, 0, 0.4)' : '0 20px 40px rgba(0, 0, 0, 0.3)',
-              transform: plan.popular ? 'scale(1.05)' : 'scale(1)',
-              border: plan.popular ? '3px solid #10b981' : 'none'
+              boxShadow: plan.highlighted ? '0 25px 50px rgba(0, 0, 0, 0.4)' : '0 20px 40px rgba(0, 0, 0, 0.3)',
+              transform: plan.highlighted ? 'scale(1.05)' : 'scale(1)',
+              border: plan.highlighted ? '3px solid #10b981' : 'none'
             }}
           >
-            {plan.popular && (
-              <div style={{
-                position: 'absolute',
-                top: '-0.75rem',
-                left: '50%',
-                transform: 'translateX(-50%)',
-                backgroundColor: '#10b981',
-                color: 'white',
-                padding: '0.25rem 1rem',
-                borderRadius: '9999px',
-                fontSize: '0.875rem',
-                fontWeight: 'bold'
-              }}>
-                PLUS POPULAIRE
-              </div>
-            )}
-            
+            {/* Badge « PLUS POPULAIRE » retiré le 21/11/2026 : aucun abonné
+                établi, l'affirmation n'avait aucun fondement. La carte reste
+                mise en avant visuellement (`highlighted`), sans rien affirmer. */}
             <h3 style={{
               fontSize: '1.5rem',
               fontWeight: 'bold',
@@ -319,7 +308,7 @@ export default function PricingPage() {
               <span style={{
                 fontSize: '3rem',
                 fontWeight: 'bold',
-                color: plan.popular ? '#10b981' : 'var(--text-strong)'
+                color: plan.highlighted ? '#10b981' : 'var(--text-strong)'
               }}>
                 €{plan.price[billingPeriod]}
               </span>
@@ -337,16 +326,6 @@ export default function PricingPage() {
                   color: 'var(--text-muted)'
                 }}>
                   Un compte gratuit est nécessaire pour souscrire.
-                </div>
-              )}
-              {plan.note && (
-                <div style={{
-                  marginTop: '0.5rem',
-                  fontSize: '0.875rem',
-                  color: 'var(--text-muted)',
-                  fontWeight: '500'
-                }}>
-                  {plan.note}
                 </div>
               )}
               {billingPeriod === 'yearly' && plan.savings && (
@@ -390,7 +369,7 @@ export default function PricingPage() {
                 backgroundColor:
                   !CHECKOUT_DISPONIBLE && plan.stripeLinks ? '#4b5563' :
                   plan.id === 'free' ? '#e5e7eb' :
-                  plan.popular ? '#10b981' :
+                  plan.highlighted ? '#10b981' :
                   plan.buttonStyle === 'enterprise' ? '#3b82f6' : 'var(--text-muted)',
                 color: plan.id === 'free' ? '#9ca3af' : 'white',
                 borderRadius: '8px',
@@ -473,13 +452,9 @@ export default function PricingPage() {
                 Sauvegardez toutes vos configurations
               </div>
             </div>
-            <div>
-              <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>📊</div>
-              <div style={{ fontWeight: 'bold', color: 'var(--text-strong)' }}>Statistiques</div>
-              <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
-                Analysez vos performances
-              </div>
-            </div>
+            {/* Vignette « Statistiques — Analysez vos performances » retirée le
+                21/11/2026 : /statistics est ouverte à tous, sans garde premium.
+                Ne lister ici que ce que le code réserve réellement au Premium. */}
             <div>
               <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>📄</div>
               <div style={{ fontWeight: 'bold', color: 'var(--text-strong)' }}>Export PDF</div>
@@ -521,10 +496,21 @@ export default function PricingPage() {
             <div style={{ fontWeight: 'bold' }}>Paiement Sécurisé</div>
             <div style={{ fontSize: '0.875rem', opacity: 0.9 }}>Stripe & SSL</div>
           </div>
+          {/* « Annulation Facile — À tout moment » remplacé le 21/11/2026 : le
+              site n'offre aucune résiliation en libre-service (ni portail
+              Stripe, ni bouton dans le compte). La seule voie réelle est une
+              demande à l'adresse de contact déjà publiée sur le site
+              (payment-success) ; la résiliation est alors faite dans Stripe et
+              le webhook retire l'accès (customer.subscription.deleted). */}
           <div style={{ color: 'white' }}>
             <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>💳</div>
-            <div style={{ fontWeight: 'bold' }}>Annulation Facile</div>
-            <div style={{ fontSize: '0.875rem', opacity: 0.9 }}>À tout moment</div>
+            <div style={{ fontWeight: 'bold' }}>Résiliation sur demande</div>
+            <div style={{ fontSize: '0.875rem', opacity: 0.9 }}>
+              par e-mail :{' '}
+              <a href={`mailto:${CONTACT_EMAIL}`} style={{ color: 'white', textDecoration: 'underline' }}>
+                {CONTACT_EMAIL}
+              </a>
+            </div>
           </div>
           <div style={{ color: 'white' }}>
             <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>⏳</div>
