@@ -1,5 +1,6 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
+import { isAffiliateEnabled } from '@/lib/affiliate';
 
 interface AffiliateDisclosureProps {
   className?: string;
@@ -7,19 +8,30 @@ interface AffiliateDisclosureProps {
   variant?: 'inline' | 'block';
 }
 
+/** Mention quand l'affiliation est active (variables Awin renseignées au build). */
+const TEXT_AFFILIATE =
+  'Certains liens « Voir le prix » sont des liens partenaires (affiliation). ' +
+  'Si vous effectuez un achat via ces liens, nous pouvons percevoir une ' +
+  'commission, sans aucun surcoût pour vous. Cela soutient le site et ' +
+  "n'influence pas nos recommandations, fondées sur des critères techniques.";
+
+/** Mention quand l'affiliation est inactive : les liens partent en direct, sans rémunération. */
+const TEXT_DIRECT =
+  'Les liens « Voir le prix » mènent directement chez un revendeur. Ils ne ' +
+  'sont pas rémunérés : nous ne percevons aucune commission. Nos ' +
+  'recommandations reposent sur des critères techniques.';
+
 /**
- * Mention d'affiliation (Audit #3.0).
+ * Mention de transparence des liens « Voir le prix » (Audit #3.0).
  *
- * Obligation légale (transparence consommateur FR / lignes directrices Google) :
- * informer l'utilisateur que certains liens « Voir le prix » sont des liens
- * partenaires pouvant générer une commission, sans surcoût pour lui.
+ * Le texte suit l'état RÉEL de l'affiliation (`isAffiliateEnabled`) : tant
+ * qu'aucun accord n'existe (production au 21/11/2026), annoncer une commission
+ * serait faux. Il bascule seul sur la mention d'affiliation le jour où les
+ * variables Awin sont renseignées et le site reconstruit.
  */
 export function AffiliateDisclosure({ className, variant = 'inline' }: AffiliateDisclosureProps) {
-  const text =
-    'Certains liens « Voir le prix » sont des liens partenaires (affiliation). ' +
-    'Si vous effectuez un achat via ces liens, nous pouvons percevoir une ' +
-    'commission, sans aucun surcoût pour vous. Cela soutient le site et ' +
-    "n'influence pas nos recommandations, fondées sur des critères techniques.";
+  const affiliate = isAffiliateEnabled();
+  const text = affiliate ? TEXT_AFFILIATE : TEXT_DIRECT;
 
   if (variant === 'block') {
     return (
@@ -30,7 +42,9 @@ export function AffiliateDisclosure({ className, variant = 'inline' }: Affiliate
         )}
         role="note"
       >
-        <p className="font-semibold text-gray-700 dark:text-slate-200">Transparence affiliation</p>
+        <p className="font-semibold text-gray-700 dark:text-slate-200">
+          {affiliate ? 'Transparence affiliation' : 'Transparence des liens'}
+        </p>
         <p className="mt-1 leading-relaxed">{text}</p>
       </aside>
     );

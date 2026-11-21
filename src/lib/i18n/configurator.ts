@@ -17,6 +17,11 @@ import { isEnglishPath } from './route-map';
 import { stringRatingNature, isComfortRecalibrated, type RatedString } from '@/lib/string-rating-nature';
 import { COMFORT_RECALIBRATION_RULE } from '@/data/comfort-recalibration';
 import { formatScore20, type RacquetTesterSynthesis } from '@/lib/racquet-scoring';
+import { isAffiliateEnabled } from '@/lib/affiliate';
+
+// Libellé des liens d'achat : « partenaires » seulement si l'affiliation est active (variables Awin renseignées au build). Aucun
+// accord n'existe au 21/11/2026 : les liens partent en direct, sans commission, et le libellé le dit.
+const AFFILIATE_ACTIVE = isAffiliateEnabled();
 
 export type ConfiguratorLocale = 'fr' | 'en';
 
@@ -74,7 +79,7 @@ const FR = {
   rcsIndex: 'Indice RCS:',
   rcsIndexLive: 'Indice RCS',
   compatibility: 'Compatibilité:',
-  buySetup: 'Acheter ce setup — liens partenaires',
+  buySetup: AFFILIATE_ACTIVE ? 'Acheter ce setup — liens partenaires' : 'Acheter ce setup — liens directs, sans commission',
   advancedTitle: '🔬 Analyse RCS Avancée',
   ratingsBasis: (hybrid: boolean) =>
     `Sous-scores et score global : calculés à partir des notes /10 ${hybrid ? 'des deux cordages' : 'du cordage'}, ajustées par la tension, la jauge et la raquette.`,
@@ -280,7 +285,7 @@ const EN: ConfiguratorText = {
   rcsIndex: 'RCS index:',
   rcsIndexLive: 'RCS index',
   compatibility: 'Compatibility:',
-  buySetup: 'Buy this setup — partner links',
+  buySetup: AFFILIATE_ACTIVE ? 'Buy this setup — partner links' : 'Buy this setup — direct links, no commission',
   advancedTitle: '🔬 Advanced RCS Analysis',
   ratingsBasis: (hybrid) =>
     `Sub-scores and overall score: calculated from the ratings out of 10 of ${hybrid ? 'both strings' : 'the string'}, adjusted for tension, gauge and racquet.`,
