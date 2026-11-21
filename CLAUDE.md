@@ -1,7 +1,7 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.3.36
-> **Date** : 20 novembre 2026
+> **Version** : 2.3.37
+> **Date** : 21 novembre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
 > **Branche de référence** : `main` (seule branche longue ; la production Netlify en déploie)
@@ -213,6 +213,16 @@ ET que la route EN rend le composant FR (revus par `tsa-core`). `audit:configura
 seuil, renvoi santé) et les nombres des 77 textes fixes FR/EN. Restent en français sur la page EN : bouton d'affiliation
 (`buy-button.tsx`), lien d'accès rapide du layout, `/pricing`, `/auth/signin`, `/account/configurations`, et `<html lang="fr">` au
 rendu serveur (corrigé à l'hydratation).
+
+**Changelog v2.3.36 → v2.3.37** — **FAQ et page Premium anglaises alignées sur le code** (plan de monétisation du
+21/11/2026 ; Pierre : « Oui on lance les corrections qui peuvent se faire » ; `tsa-acquisition`). `public/en/faq.html` et
+`public/en/premium.html` ne promettent plus d'alertes de prix, d'historique ou de journal de cordage, de support prioritaire, ni
+un calculateur RCS « limité à 1 usage » (il est libre, `rcs-calculator.html:637-644`) ; elles disent que le Premium ne s'achète
+pas sur le site anglais (`premium.html:404`, `CHECKOUT_DISPONIBLE = false`), que l'offre et ses prix sont ceux du site français,
+qu'un compte gratuit garde 3 setups, que « Delete my account » n'efface que les setups (`account.html:492-503`) et qu'aucune page
+de résiliation n'existe dans `src/app/`. JSON-LD `FAQPage` identique au texte visible. Configurateur EN : « partner links »
+devient « direct links, no commission » (aucun accord d'affiliation, Pierre, 20/11/2026). Prix, paiement et articles inchangés.
+§2 corrigé : le paiement EN était dit ouvert.
 
 **Changelog v2.3.25 → v2.3.26** — **Hybrides : un seul indice, celui que l'alerte lit, que le configurateur
 affiche et que le PDF imprime ; contrôle 21 ter** (décision (b)+(a) de l'orchestrateur du 22/10/2026, Pierre ayant délégué ; limite (4)
@@ -1368,8 +1378,10 @@ EN écrire `is_premium = true` depuis le navigateur. Correctif = migration (rév
 l'UPDATE sur les colonnes premium/Stripe) → `db-guardian` + GO de Pierre. Garde-fou : `npm run audit:stripe-webhook`,
 28 contrôles, dans `audit:all`.
 
-✅ **Le paiement est ouvert** depuis le 13/09/2026 — les deux drapeaux
-`CHECKOUT_DISPONIBLE` sont à `true` (`pricing/page.tsx`, `en/premium.html`).
+✅ **Le paiement FR est ouvert** depuis le 13/09/2026 — `CHECKOUT_DISPONIBLE` est à
+`true` dans `pricing/page.tsx`. ⚠️ Corrigé le 21/11/2026 : le drapeau de
+`en/premium.html` est à `false` depuis le 09/10/2026 (constat ci-dessus) ; le site
+anglais n'encaisse rien et sa FAQ et sa page Premium le disent.
 L'endpoint est déclaré dans Stripe sur six événements et les deux secrets sont dans
 Netlify ; la preuve est que `POST /api/stripe/webhook` en production répond **400
 « Signature absente »** et non plus 500. **Aucun paiement sans compte** : un visiteur
@@ -1792,4 +1804,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.3.35 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.3.37 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
