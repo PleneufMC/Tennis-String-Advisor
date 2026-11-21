@@ -4,7 +4,8 @@
  * gtag.js joint à chaque événement `page_location` (URL complète, query comprise) et `page_referrer`. Un formulaire en GET,
  * un lien qui porte un nom ou un numéro, un terme de recherche : tout partait chez Google. Le caviardage du flux GA4 ne
  * remplace que ce qui a la forme d'une adresse e-mail (mesuré : un nom, un téléphone, une adresse doublement encodée
- * passaient en clair). Côté Next, `src/components/analytics/` ne transmet plus que la liste blanche de `url-allowlist.ts`.
+ * passaient en clair). Côté Next, `src/components/analytics/` ne transmet plus que la liste blanche de `url-allowlist.ts` ;
+ * côté pages statiques, `public/js/analytics.js` en porte le miroir.
  *
  * Ce script échoue si :
  *  (a) le filtre laisse passer un paramètre hors liste blanche, une adresse e-mail (même dans un utm, même encodée), un
@@ -13,15 +14,17 @@
  *  (c) `analytics.tsx` émet un événement sans le contexte nettoyé : `set` puis `page_view` nettoyés à chaque navigation,
  *      contexte joint EN DERNIER dans `gaEvent` (aucun appelant ne peut le remplacer), aucune URL brute ;
  *  (d) un fichier de `src/` (hors `components/analytics/` et l'initialisation du layout) appelle gtag directement ;
- *  (e) tests négatifs : un filtre ou un composant dégradé est détecté.
- * Avertissement seulement (hors périmètre, à traiter par son propriétaire) : `public/js/analytics.js`, chargé par les pages
- * statiques, configure gtag sans `page_location` nettoyé.
+ *  (e) tests négatifs : un filtre ou un composant dégradé est détecté ;
+ *  (f) pages statiques : `public/js/analytics.js`, exécuté dans un bac à sable, n'a pas le même filtre (mêmes cas que (a)),
+ *      ne pose pas `set` et `config` nettoyés avant tout événement, ou laisse un appelant de `trackEvent` remplacer le
+ *      contexte ; une page HTML de `public/` charge gtag sans `/js/analytics.js` ou le configure elle-même ; tests négatifs.
  * Hors de portée du code, donc de ce script : le page_view que GA4 émet SEUL à chaque navigation côté client (amélioration
  * de la mesure, « Page changes based on browser history events ») lit l'URL de la barre d'adresse ; il se coupe dans
  * l'administration GA4, et il double le page_view du composant (mesuré le 21/11/2026).
  */
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
+import { runInNewContext } from 'node:vm';
 import {
   GA4_URL_PARAM_ALLOWLIST,
   analyticsPageContext,
@@ -29,15 +32,10 @@ import {
 } from '../src/components/analytics/url-allowlist';
 
 let failures = 0;
-let warnings = 0;
 const ok = (m: string) => process.stdout.write(`  OK    ${m}\n`);
 const fail = (m: string) => {
   failures++;
   process.stdout.write(`  ECHEC ${m}\n`);
-};
-const warn = (m: string) => {
-  warnings++;
-  process.stdout.write(`  AVERT ${m}\n`);
 };
 // Windows écrit des CRLF dans l'arbre de travail (core.autocrlf) : normalisés à la lecture.
 const read = (p: string) => readFileSync(p, 'utf8').replace(/\r\n/g, '\n');
@@ -75,7 +73,8 @@ const values = ['essai', 'test@example.com', 'test%40example.com', 'test%2540exa
 for (const k of keys) for (const v of values) PROPERTY_INPUTS.push(`${SITE}/p?${k}=${v}&utm_source=ok#frag=${v}`);
 
 const allowed = new Set<string>(GA4_URL_PARAM_ALLOWLIST);
-function checkSanitizer(sanitize: Sanitize): string[] {
+type PageContext = (href: string, referrer: string) => { page_location: string; page_referrer?: string };
+function checkSanitizer(sanitize: Sanitize, pageContext: PageContext = analyticsPageContext): string[] {
   const problems: string[] = [];
   for (const [input, expected] of CASES) {
     const got = sanitize(input);
@@ -93,10 +92,10 @@ function checkSanitizer(sanitize: Sanitize): string[] {
       }
     }
   }
-  const ctx = analyticsPageContext(`${SITE}/?email=a%40b.fr`, '');
+  const ctx = pageContext(`${SITE}/?email=a%40b.fr`, '');
   if ('page_referrer' in ctx) problems.push('analyticsPageContext : page_referrer présent sans provenance');
   if (ctx.page_location !== `${SITE}/`) problems.push(`analyticsPageContext : page_location = ${ctx.page_location}`);
-  const ctx2 = analyticsPageContext(`${SITE}/x`, `${SITE}/blog/a.html?email=a%40b.fr`);
+  const ctx2 = pageContext(`${SITE}/x`, `${SITE}/blog/a.html?email=a%40b.fr`);
   if (ctx2.page_referrer !== `${SITE}/blog/a.html`) problems.push(`analyticsPageContext : page_referrer = ${ctx2.page_referrer}`);
   return problems;
 }
@@ -227,20 +226,113 @@ const KNOWN_DIRECT_CALLS: Array<{ file: string; line: RegExp }> = [
   if (detected === total) ok(`tests négatifs : ${detected}/${total} dégradations détectées`);
 }
 
-// Pages statiques : hors périmètre (public/js/analytics.js), signalé à chaque passage tant que rien ne change.
-{
-  const js = read('public/js/analytics.js');
-  if (!/page_location/.test(js)) {
-    warn('public/js/analytics.js : gtag(\'config\') sans page_location nettoyé — les pages statiques envoient la query complète et le referrer complet (caviardage GA4 des seules adresses e-mail)');
-  } else {
-    ok('public/js/analytics.js : page_location renseigné');
+// (f) Pages statiques : `public/js/analytics.js` (propriété tsa-measure depuis le 21/11/2026), exécuté dans un bac à sable
+// avec une page et une provenance qui portent e-mail, nom, utm et fragment.
+const STATIC_JS = 'public/js/analytics.js';
+const PAGE_HREF = `${SITE}/blog/guide.html?email=test%40example.com&nom=Jean%20Dupont&utm_source=essai#access_token=secret`;
+const PAGE_REF = `${SITE}/?email-address=test%40example.com&utm_medium=m`;
+const EXPECTED_CTX = { page_location: `${SITE}/blog/guide.html?utm_source=essai`, page_referrer: `${SITE}/?utm_medium=m` };
+interface StaticSandbox {
+  dataLayer?: ArrayLike<unknown>[];
+  tsaSanitizeUrlForAnalytics?: Sanitize;
+  tsaAnalyticsPageContext?: PageContext;
+  trackEvent?: (name: string, params?: Record<string, unknown>) => void;
+}
+function checkStatic(src: string): string[] {
+  const problems: string[] = [];
+  const sandbox: Record<string, unknown> = {
+    URL,
+    console: { log() {}, error() {} },
+    location: { href: PAGE_HREF },
+    document: { referrer: PAGE_REF, addEventListener() {}, querySelectorAll: () => [] },
+  };
+  sandbox.window = sandbox;
+  try {
+    runInNewContext(src, sandbox);
+  } catch (e) {
+    return [`ne s'exécute pas : ${(e as Error).message}`];
   }
+  const sb = sandbox as StaticSandbox;
+  if (!sb.tsaSanitizeUrlForAnalytics || !sb.tsaAnalyticsPageContext || !sb.trackEvent || !sb.dataLayer) {
+    return ['tsaSanitizeUrlForAnalytics, tsaAnalyticsPageContext, trackEvent ou dataLayer introuvable'];
+  }
+  for (const p of checkSanitizer(sb.tsaSanitizeUrlForAnalytics, sb.tsaAnalyticsPageContext)) problems.push(`filtre : ${p}`);
+  const entries = () => sb.dataLayer!.map((e) => Array.from(e as ArrayLike<unknown>));
+  const atLoad = entries();
+  const setAt = atLoad.findIndex((e) => e[0] === 'set');
+  const configs = atLoad.filter((e) => e[0] === 'config');
+  const configAt = atLoad.findIndex((e) => e[0] === 'config');
+  if (configs.length !== 1) problems.push(`${configs.length} gtag('config') au chargement (attendu : 1)`);
+  if (setAt === -1) problems.push('aucun gtag(\'set\') au chargement');
+  else if (configAt !== -1 && setAt > configAt) problems.push('gtag(\'set\') posé après gtag(\'config\')');
+  if (atLoad.some((e, i) => e[0] === 'event' && (setAt === -1 || i < setAt))) problems.push('événement émis avant gtag(\'set\')');
+  if (setAt !== -1 && JSON.stringify(atLoad[setAt][1]) !== JSON.stringify(EXPECTED_CTX)) {
+    problems.push(`set : ${JSON.stringify(atLoad[setAt][1])} (attendu : ${JSON.stringify(EXPECTED_CTX)})`);
+  }
+  if (configAt !== -1 && JSON.stringify(atLoad[configAt][2]) !== JSON.stringify(EXPECTED_CTX)) {
+    problems.push(`config : ${JSON.stringify(atLoad[configAt][2])} (attendu : ${JSON.stringify(EXPECTED_CTX)})`);
+  }
+  sb.trackEvent('sonde', { page_location: PAGE_HREF, page_referrer: PAGE_REF, valeur: 1 });
+  const last = entries().at(-1) ?? [];
+  const params = (last[2] ?? {}) as Record<string, unknown>;
+  if (last[0] !== 'event' || last[1] !== 'sonde') problems.push('trackEvent n\'émet plus par gtag(\'event\')');
+  else if (params.page_location !== EXPECTED_CTX.page_location || params.page_referrer !== EXPECTED_CTX.page_referrer) {
+    problems.push(`trackEvent : contexte remplaçable par l'appelant (${JSON.stringify(params)})`);
+  } else if (params.valeur !== 1) problems.push('trackEvent : paramètres de l\'appelant perdus');
+  const all = JSON.stringify(entries());
+  if (/example|Dupont|secret|email-address|nom=/.test(all)) problems.push('la donnée de test figure dans le dataLayer');
+  return problems;
+}
+const staticJs = read(STATIC_JS);
+{
+  const problems = checkStatic(staticJs);
+  if (problems.length) for (const p of problems) fail(`${STATIC_JS} : ${p}`);
+  else ok(`${STATIC_JS} : même filtre que l'app (${CASES.length} + ${PROPERTY_INPUTS.length} cas), set puis config nettoyés au chargement, contexte joint en dernier par trackEvent`);
+}
+{
+  const mutants: Array<[string, string]> = [
+    ['config sans contexte', staticJs.replace(/gtag\('config', 'G-YSSLHJ5WYD', [^\n]*\);/, "gtag('config', 'G-YSSLHJ5WYD');")],
+    ['sans set', staticJs.replace(/\ngtag\('set', [^\n]*\);/, '')],
+    ['contexte avant les paramètres', staticJs.replace(/Object\.assign\(\{\}, params, (tsaAnalyticsPageContext\(window\.location\.href, document\.referrer\))\)/, 'Object.assign({}, $1, params)')],
+    ['filtre neutralisé', staticJs.replace(/function tsaSanitizeUrlForAnalytics\(raw, base\) \{/, 'function tsaSanitizeUrlForAnalytics(raw, base) {\n  return raw;')],
+    ['utm portant un @ accepté', staticJs.replace(/ && !\/@\|%40\/i\.test\(value\)/, '')],
+  ];
+  let detected = 0;
+  for (const [label, mutant] of mutants) {
+    if (mutant === staticJs) fail(`test négatif inopérant (statique) : ${label} — motif introuvable`);
+    else if (checkStatic(mutant).length > 0) detected++;
+    else fail(`test négatif non détecté (statique) : ${label}`);
+  }
+  if (detected === mutants.length) ok(`tests négatifs (statique) : ${detected}/${mutants.length} dégradations détectées`);
+}
+{
+  // Toute page qui charge gtag passe par analytics.js, une fois, et ne le configure pas elle-même.
+  const pages: string[] = [];
+  const walk = (dir: string) => {
+    for (const name of readdirSync(dir)) {
+      const p = join(dir, name);
+      if (statSync(p).isDirectory()) walk(p);
+      else if (name.endsWith('.html')) pages.push(p.replace(/\\/g, '/'));
+    }
+  };
+  walk('public');
+  let withGtag = 0;
+  const bad: string[] = [];
+  for (const p of pages) {
+    const html = read(p);
+    if (!/googletagmanager\.com\/gtag\/js/.test(html)) continue;
+    withGtag++;
+    const helpers = (html.match(/src="\/js\/analytics\.js"/g) ?? []).length;
+    if (helpers !== 1) bad.push(`${p} : /js/analytics.js chargé ${helpers} fois (attendu : 1)`);
+    if (/gtag\(\s*['"](config|set)['"]/.test(html)) bad.push(`${p} : gtag('config'|'set') dans la page`);
+  }
+  if (bad.length) for (const b of bad) fail(b);
+  else ok(`public/ : ${withGtag} pages chargent gtag, toutes par /js/analytics.js, aucune ne le configure elle-même`);
 }
 
-if (warnings > 0) process.stdout.write(`\n${warnings} avertissement(s) — hors du périmètre de ce contrôle\n`);
 process.stdout.write(
   failures === 0
-    ? '\nle code de l\'application Next ne transmet à GA4 aucune donnée d\'URL hors liste blanche\n' +
+    ? '\nni l\'application Next ni les pages statiques ne transmettent à GA4 une donnée d\'URL hors liste blanche\n' +
         '(reste hors de portée du code : le page_view « historique » que GA4 émet seul à chaque navigation côté client,\n' +
         ' réglage d\'administration « Page changes based on browser history events »)\n'
     : `\n${failures} échec(s) — des paramètres d'URL hors liste blanche peuvent partir vers GA4\n`
