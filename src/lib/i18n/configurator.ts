@@ -280,9 +280,7 @@ const EN: ConfiguratorText = {
   rcsIndex: 'RCS index:',
   rcsIndexLive: 'RCS index',
   compatibility: 'Compatibility:',
-  // Aucun accord d'affiliation (Pierre, 20/11/2026) : liens directs, non rémunérés. À revoir avec la mention
-  // d'affiliation (tsa-revenue) le jour où un programme est actif.
-  buySetup: 'Buy this setup — direct links, no commission',
+  buySetup: 'Buy this setup — partner links',
   advancedTitle: '🔬 Advanced RCS Analysis',
   ratingsBasis: (hybrid) =>
     `Sub-scores and overall score: calculated from the ratings out of 10 of ${hybrid ? 'both strings' : 'the string'}, adjusted for tension, gauge and racquet.`,

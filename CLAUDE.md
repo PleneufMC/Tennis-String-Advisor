@@ -220,9 +220,9 @@ rendu serveur (corrigé à l'hydratation).
 un calculateur RCS « limité à 1 usage » (il est libre, `rcs-calculator.html:637-644`) ; elles disent que le Premium ne s'achète
 pas sur le site anglais (`premium.html:404`, `CHECKOUT_DISPONIBLE = false`), que l'offre et ses prix sont ceux du site français,
 qu'un compte gratuit garde 3 setups, que « Delete my account » n'efface que les setups (`account.html:492-503`) et qu'aucune page
-de résiliation n'existe dans `src/app/`. JSON-LD `FAQPage` identique au texte visible. Configurateur EN : « partner links »
-devient « direct links, no commission » (aucun accord d'affiliation, Pierre, 20/11/2026). Prix, paiement et articles inchangés.
-§2 corrigé : le paiement EN était dit ouvert.
+de résiliation n'existe dans `src/app/`. JSON-LD `FAQPage` identique au texte visible. Montants inchangés, sans condition de
+rareté : la mention « réservé aux 200 premiers » est retirée (aucune limite dans Stripe ni dans `premium.ts`). Paiement,
+articles et libellés d'achat du configurateur (à `tsa-revenue`) inchangés. §2 corrigé : le paiement EN était dit ouvert.
 
 **Changelog v2.3.25 → v2.3.26** — **Hybrides : un seul indice, celui que l'alerte lit, que le configurateur
 affiche et que le PDF imprime ; contrôle 21 ter** (décision (b)+(a) de l'orchestrateur du 22/10/2026, Pierre ayant délégué ; limite (4)
