@@ -7,6 +7,7 @@
  * Langue : anglais si le `callbackUrl` mène à une page anglaise (`/en/…`), sinon la langue du site (celle de l'en-tête et du pied
  * de page : choix stocké, sinon langue du navigateur). Aucune route, aucun fournisseur, aucun flux NextAuth ne change.
  */
+import { useEffect } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useLanguage } from '@/lib/i18n';
@@ -137,6 +138,21 @@ export const AUTH_TEXT: Record<AuthLocale, AuthText> = { fr: FR, en: EN };
 /** Texte d'une page serveur : `english` vient du `callbackUrl` lu par la page ; sinon la langue du site, après hydratation. */
 export function AuthString({ k, english = false }: { k: AuthTextKey; english?: boolean }) {
   return <>{AUTH_TEXT[useSiteLocale(english)][k]}</>;
+}
+
+/**
+ * Acheteur venu d'une page anglaise (`callbackUrl` en `/en/…`) : en-tête, pied de page et `lang` passent en anglais tant que la
+ * page est affichée, quelle que soit la langue du navigateur. En mémoire seulement : rien n'est stocké, et la langue est rendue
+ * au site dès que la page se démonte ; une page FR visitée ensuite garde la langue du visiteur.
+ */
+export function AuthPageLocale({ english }: { english: boolean }) {
+  const { forceLocale } = useLanguage();
+  useEffect(() => {
+    if (!english) return;
+    forceLocale('en');
+    return () => forceLocale(null);
+  }, [english, forceLocale]);
+  return null;
 }
 
 /** Message de `/auth/error` selon le code NextAuth reçu ; code inconnu = message par défaut. */

@@ -1,14 +1,24 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { SignInForm } from './signin-form';
-import { AuthHomeLink, AuthString } from '../auth-text';
+import { AuthHomeLink, AuthPageLocale, AuthString } from '../auth-text';
 import { isEnglishCallback } from '../auth-locale';
 
-export const metadata: Metadata = {
-  title: 'Connexion',
-  description: 'Connectez-vous à Tennis String Advisor pour sauvegarder vos configurations et accéder aux fonctionnalités Premium.',
-  robots: { index: false, follow: false },
-};
+// Bloc metadata (`tsa-acquisition`) : titre d'onglet en anglais pour un acheteur venu d'une page anglaise (22/11/2026) ; le FR
+// est inchangé.
+export function generateMetadata({ searchParams }: { searchParams: { callbackUrl?: string } }): Metadata {
+  return isEnglishCallback(searchParams.callbackUrl)
+    ? {
+        title: 'Sign in',
+        description: 'Sign in to Tennis String Advisor to save your setups and access Premium features.',
+        robots: { index: false, follow: false },
+      }
+    : {
+        title: 'Connexion',
+        description: 'Connectez-vous à Tennis String Advisor pour sauvegarder vos configurations et accéder aux fonctionnalités Premium.',
+        robots: { index: false, follow: false },
+      };
+}
 
 // Page dynamique : dépend des providers configurés (variables d'env runtime).
 export const dynamic = 'force-dynamic';
@@ -27,6 +37,7 @@ export default function SignInPage({ searchParams }: { searchParams: { callbackU
 
   return (
     <div className="flex min-h-[70vh] items-center justify-center px-4 py-12">
+      <AuthPageLocale english={english} />
       <div className="w-full max-w-md">
         <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-lg dark:border-slate-800 dark:bg-slate-900">
           <div className="mb-6 text-center">

@@ -1,15 +1,25 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { SignUpForm } from './signup-form';
-import { AuthHomeLink, AuthString } from '../auth-text';
+import { AuthHomeLink, AuthPageLocale, AuthString } from '../auth-text';
 import { isEnglishCallback } from '../auth-locale';
 
-export const metadata: Metadata = {
-  title: 'Créer un compte',
-  description:
-    'Créez votre compte Tennis String Advisor pour sauvegarder vos configurations et accéder aux fonctionnalités Premium.',
-  robots: { index: false, follow: false },
-};
+// Bloc metadata (`tsa-acquisition`) : titre d'onglet en anglais pour un acheteur venu d'une page anglaise (22/11/2026) ; le FR
+// est inchangé.
+export function generateMetadata({ searchParams }: { searchParams: { callbackUrl?: string } }): Metadata {
+  return isEnglishCallback(searchParams.callbackUrl)
+    ? {
+        title: 'Create an account',
+        description: 'Create your Tennis String Advisor account to save your setups and access Premium features.',
+        robots: { index: false, follow: false },
+      }
+    : {
+        title: 'Créer un compte',
+        description:
+          'Créez votre compte Tennis String Advisor pour sauvegarder vos configurations et accéder aux fonctionnalités Premium.',
+        robots: { index: false, follow: false },
+      };
+}
 
 export const dynamic = 'force-dynamic';
 
@@ -17,6 +27,7 @@ export default function SignUpPage({ searchParams }: { searchParams: { callbackU
   const english = isEnglishCallback(searchParams.callbackUrl);
   return (
     <div className="flex min-h-[70vh] items-center justify-center px-4 py-12">
+      <AuthPageLocale english={english} />
       <div className="w-full max-w-md">
         <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-lg dark:border-slate-800 dark:bg-slate-900">
           <div className="mb-6 text-center">
