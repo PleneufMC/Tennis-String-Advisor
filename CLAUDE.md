@@ -1,6 +1,6 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.3.39
+> **Version** : 2.3.40
 > **Date** : 22 novembre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
@@ -258,6 +258,23 @@ compris : l'encadré « vous économisez en moyenne 30€ par an » de `/payment
 d'onglet passent aussi en anglais, quelle que soit la langue du navigateur : `forceLocale` du `LanguageProvider`, en mémoire et
 jamais stocké, posé par les pages de connexion et d'inscription ; `generateMetadata` dans signin et signup (blocs de
 `tsa-acquisition`, signalé).
+
+**Changelog v2.3.39 → v2.3.40** — **`audit:stripe-webhook` : le circuit EN est contrôlé par sa structure et le contrôle est juste
+avec ou sans `public/en/premium.html` et `/en/pricing`** (décision de Pierre du 22/11/2026 : « Il n'y a aucune raison de ne pas
+faire une page de paiement en anglais pour le premium en incluant les mêmes liens Stripe » ; `tsa-measure`). **Constat** :
+`scripts/qa-stripe-webhook.mjs` lisait `public/en/premium.html` en dur. Sa suppression (#166) le faisait sortir en 1 (« fichier
+absent »), et la route `/en/pricing` (`tsa-revenue`) n'était pas lue. **Changé** : le contrôle 6 devient structurel. La route
+`src/app/en/pricing/page.tsx`, si elle existe, rend le composant FR (import d'exécution de `src/app/pricing/page.tsx`, ou d'un
+composant de `src/app/pricing/` que la page FR rend aussi). Son graphe d'imports locaux atteint la page FR, et elle ne porte ni
+lien `buy.stripe.com` ni drapeau `CHECKOUT_DISPONIBLE` propre. `premium.html`, tant qu'il existe, reste fermé et sans lien.
+L'absence de l'une ou l'autre est un état valide, signalé en sortie. Contrôle 7 : `src/app/pricing/page.tsx` est le seul fichier
+autorisé à porter des liens, fichiers non suivis compris ; une panne de `git grep` est un échec (hors dépôt, elle donnait un vert
+silencieux). Contrôle 8 : un seul drapeau, celui du FR. **Vérifié** dans les quatre états (page statique présente ou absente ×
+route présente ou absente) sur `origin/main`, sur la tête de #166 et sur des états simulés de `pricing-en` : vert partout, de 25 à
+31 contrôles selon l'état, alors que l'ancien script sortait en 1 dès que `premium.html` manquait. 10 cas négatifs sont détectés,
+dont deux que l'ancien script laissait passer (lien dans un fichier non suivi, exécution hors dépôt git). **Conséquence** : avec
+la grille confinée à `page.tsx`, et sachant que Next refuse les exports nommés d'un `page.tsx`, la seule route EN verte est celle
+qui rend l'export par défaut de la page FR.
 
 **Changelog v2.3.25 → v2.3.26** — **Hybrides : un seul indice, celui que l'alerte lit, que le configurateur
 affiche et que le PDF imprime ; contrôle 21 ter** (décision (b)+(a) de l'orchestrateur du 22/10/2026, Pierre ayant délégué ; limite (4)
@@ -1415,7 +1432,8 @@ auto-attribuable** : la policy `Users can update own profile` (`auth.uid() = id`
 restriction de colonne) et le `GRANT UPDATE` sur toutes les colonnes laissent un compte
 EN écrire `is_premium = true` depuis le navigateur. Correctif = migration (révoquer
 l'UPDATE sur les colonnes premium/Stripe) → `db-guardian` + GO de Pierre. Garde-fou : `npm run audit:stripe-webhook`,
-28 contrôles, dans `audit:all`.
+de 25 à 31 contrôles selon les fichiers présents (29 une fois `premium.html` supprimée et
+`/en/pricing` en place), dans `audit:all`.
 
 ✅ **Le paiement est ouvert** depuis le 13/09/2026 — le drapeau
 `CHECKOUT_DISPONIBLE` de `pricing/page.tsx` est à `true` ; il vaut pour `/pricing` et `/en/pricing`.
@@ -1841,4 +1859,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.3.39 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.3.40 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
