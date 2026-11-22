@@ -112,9 +112,8 @@ export function Footer() {
                   {footerNavigation.resources.map((item) => (
                     <li key={item.key}>
                       <Link
-                        // Premium reste /pricing en anglais aussi : seul circuit de paiement ouvert, celui qui débloque
-                        // l'analyse avancée du configurateur (le paiement de /en/premium.html est fermé).
-                        href={item.href === '/pricing' ? item.href : localizeHref(item.href, pathname)}
+                        // Premium : `/en/pricing` en anglais (22/11/2026), même page et mêmes Payment Links que `/pricing`.
+                        href={localizeHref(item.href, pathname)}
                         className="text-sm leading-6 text-gray-400 hover:text-white transition-colors"
                       >
                         {t(item.key)}

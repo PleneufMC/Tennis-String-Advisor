@@ -1,7 +1,7 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.3.37
-> **Date** : 21 novembre 2026
+> **Version** : 2.3.38
+> **Date** : 22 novembre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
 > **Branche de référence** : `main` (seule branche longue ; la production Netlify en déploie)
@@ -236,6 +236,17 @@ vérifiés) ; la mention du pied de page suit la langue du pied de page (`useLan
 `isAffiliateEnabled()`) ; le titre du configurateur, rendu aussi sur `/en/configurator`, perd « Premium » (la page est gratuite, le
 Premium ne s'achète pas en anglais) et le sous-titre FR/EN décrit la page (« Indice RCS de votre montage, alerte bras et journal de
 cordage »).
+
+**Changelog v2.3.37 → v2.3.38** — **Premium anglais : `/en/pricing`, même page et mêmes Payment Links que `/pricing`** (décision
+de Pierre du 22/11/2026 : « Il n'y a aucune raison de ne pas faire une page de paiement en anglais pour le premium en incluant les
+mêmes liens Stripe » ; `tsa-revenue` ; `[verrou: header.tsx]`). `/en/pricing` est une route Next qui rend le composant de
+`src/app/pricing/page.tsx` : mêmes trois Payment Links, mêmes prix en euros, même rattachement par `client_reference_id` (id
+Prisma `User`), donc un achat anglais est activé par le webhook ; seuls les textes changent, choisis par l'URL
+(`src/lib/i18n/pricing.ts`, valeurs FR extraites à l'identique, texte visible de `/pricing` comparé avant/après : identique). La
+page anglaise dit que le PDF exporté et l'espace compte sont en français. `/en/premium.html` et `/en/premium` → 301 `/en/pricing`
+(`next.config.js`) ; `route-map.ts` : `/pricing` ↔ `/en/pricing` ; lien Premium de l'en-tête vers `/en/pricing` quand la langue du
+visiteur est l'anglais ; lien Premium du pied de page localisé comme les autres. La langue de la page d'achat est notée au clic
+(`localStorage` `tsa-checkout-locale`) pour les pages de retour Stripe (PR empilée).
 
 **Changelog v2.3.25 → v2.3.26** — **Hybrides : un seul indice, celui que l'alerte lit, que le configurateur
 affiche et que le PDF imprime ; contrôle 21 ter** (décision (b)+(a) de l'orchestrateur du 22/10/2026, Pierre ayant délégué ; limite (4)
@@ -1289,8 +1300,8 @@ Links, déploiement Netlify (adaptateur OpenNext). (Zustand est déclaré dans
 **Architecture** : hybride assumé. L'application Next sert le FR à la racine
 (`/configurator`, `/racquets`…). Le blog et la version anglaise sont des pages
 **HTML statiques** dans `public/blog/*.html` et `public/en/*.html`, sauf le
-configurateur EN : route Next `/en/configurator`, même composant que le FR
-(20/11/2026). Le
+configurateur EN (`/en/configurator`, 20/11/2026) et la page Premium EN (`/en/pricing`,
+22/11/2026), routes Next qui rendent les composants FR. Le
 `route-map.ts` fait le pont entre les deux univers.
 
 **Base** : 129 raquettes, 179 cordages (`src/data/*.ts` ; 190 avant le
@@ -1383,17 +1394,20 @@ jamais `emailVerified`. Remboursement et litige retirent l'accès. Les deux circ
 transmettent l'identifiant de compte — ⚠️ **mais seul le circuit FR est activable**
 (constat du 09/10/2026) : l'id EN est un uuid Supabase Auth absent de la table Prisma
 `User`, le webhook acquitte « compte introuvable » et n'écrit jamais
-`profiles.is_premium`. Checkout EN **fermé** (`CHECKOUT_DISPONIBLE = false`) jusqu'à ce
-que le webhook sache activer un compte Supabase (option à arbitrer par Pierre ; toute
-écriture dans `profiles` passe par `db-guardian`). ⚠️ **`profiles.is_premium` est
+`profiles.is_premium`. **Depuis le 22/11/2026, le Premium anglais se vend sur `/en/pricing`** :
+route Next qui rend le composant de `/pricing` (mêmes trois Payment Links,
+`client_reference_id` = id Prisma `User`), activable par le webhook. L'ancien circuit
+Supabase (`/en/premium.html`, fermé depuis le 09/10/2026) est redirigé en 301 vers
+`/en/pricing` et supprimé par #166. Les comptes Supabase Auth des pages statiques EN
+(`auth.html`, `account.html`) ne portent pas le Premium acheté avec le compte du site. ⚠️ **`profiles.is_premium` est
 auto-attribuable** : la policy `Users can update own profile` (`auth.uid() = id`, sans
 restriction de colonne) et le `GRANT UPDATE` sur toutes les colonnes laissent un compte
 EN écrire `is_premium = true` depuis le navigateur. Correctif = migration (révoquer
 l'UPDATE sur les colonnes premium/Stripe) → `db-guardian` + GO de Pierre. Garde-fou : `npm run audit:stripe-webhook`,
 28 contrôles, dans `audit:all`.
 
-✅ **Le paiement est ouvert** depuis le 13/09/2026 — les deux drapeaux
-`CHECKOUT_DISPONIBLE` sont à `true` (`pricing/page.tsx`, `en/premium.html`).
+✅ **Le paiement est ouvert** depuis le 13/09/2026 — le drapeau
+`CHECKOUT_DISPONIBLE` de `pricing/page.tsx` est à `true` ; il vaut pour `/pricing` et `/en/pricing`.
 L'endpoint est déclaré dans Stripe sur six événements et les deux secrets sont dans
 Netlify ; la preuve est que `POST /api/stripe/webhook` en production répond **400
 « Signature absente »** et non plus 500. **Aucun paiement sans compte** : un visiteur

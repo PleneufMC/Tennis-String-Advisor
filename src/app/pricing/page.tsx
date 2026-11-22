@@ -3,7 +3,10 @@
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
+import { PRICING_TEXT, rememberCheckoutLocale, usePricingLocale } from '@/lib/i18n/pricing';
 
+// Page rendue aussi sur `/en/pricing` (src/app/en/pricing) : mêmes liens, même logique de paiement ; seuls les textes changent,
+// choisis par l'URL (src/lib/i18n/pricing.ts).
 // Payment Links vérifiés un par un : produit, montant et récurrence lus sur la
 // page de paiement Stripe, en français et en anglais.
 const STRIPE_LINKS = {
@@ -22,6 +25,8 @@ const CONTACT_EMAIL = 'pleneuftrading@gmail.com';
 
 export default function PricingPage() {
   const { data: session } = useSession();
+  const locale = usePricingLocale();
+  const tx = PRICING_TEXT[locale];
   const [loading, setLoading] = useState<string | null>(null);
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
   // L'offre à vie cesse d'être proposée une fois les places prises. Optimiste
@@ -49,37 +54,20 @@ export default function PricingPage() {
   const plans = [
     {
       id: 'free',
-      name: 'Gratuit',
+      name: tx.free.name,
       price: { monthly: 0, yearly: 0 },
-      // Audit 13/08/2026 : ne lister que ce que le code garde réellement
-      // (quota serveur premium.ts + export PDF). Les promesses sans
-      // implémentation (rappels, stats, support prioritaire) sont retirées.
-      features: [
-        '✅ Configurateur complet',
-        '✅ Calcul RCS',
-        // Sans nombre écrit en dur : « 190 cordages » avait vieilli (181).
-        '✅ Catalogue complet des raquettes et des cordages',
-        '✅ 3 configurations sauvegardées dans votre compte',
-        '❌ Configurations illimitées',
-        '❌ Analyse RCS avancée',
-        '❌ Export PDF'
-      ],
-      buttonText: 'Version actuelle',
+      features: tx.free.features,
+      buttonText: tx.free.button,
       buttonStyle: 'secondary',
       highlighted: false
     },
     {
       id: 'premium',
-      name: 'Premium',
+      name: tx.premium.name,
       price: { monthly: 4.99, yearly: 49.99 },
-      savings: 'près de 2 mois offerts',
-      features: [
-        '✅ Tout du plan gratuit',
-        '✅ Configurations illimitées',
-        '✅ Analyse RCS avancée',
-        '✅ Export PDF professionnel'
-      ],
-      buttonText: 'Passer Premium',
+      savings: tx.premium.savings,
+      features: tx.premium.features,
+      buttonText: tx.premium.button,
       buttonStyle: 'primary',
       highlighted: true,
       stripeLinks: {
@@ -89,22 +77,12 @@ export default function PricingPage() {
     },
     {
       id: 'lifetime',
-      name: 'À vie',
+      name: tx.lifetime.name,
       // Paiement unique : le prix ne suit pas la bascule mensuel / annuel.
       price: { monthly: 19.99, yearly: 19.99 },
       oneTime: true,
-      features: [
-        '✅ Tout du plan Premium',
-        '✅ Payé une seule fois, sans abonnement',
-        '✅ Configurations illimitées',
-        '✅ Analyse RCS avancée',
-        '✅ Export PDF professionnel'
-      ],
-      // « Prix réservé aux 200 premiers » retiré le 21/11/2026 : aucune limite
-      // n'est posée sur le Payment Link dans Stripe, et `LIFETIME_SEATS`
-      // (premium.ts) ne fait que cesser d'AFFICHER l'offre ; il ne réserve
-      // aucun prix. Ne pas rétablir une rareté que rien n'applique.
-      buttonText: 'Accès à vie',
+      features: tx.lifetime.features,
+      buttonText: tx.lifetime.button,
       buttonStyle: 'primary',
       highlighted: false,
       stripeLinks: {
@@ -123,11 +101,13 @@ export default function PricingPage() {
     // AVANT le paiement, plutôt que d'encaisser sans pouvoir livrer.
     const userId = (session?.user as { id?: string } | undefined)?.id;
     if (!userId) {
-      window.location.href = '/auth/signin?callbackUrl=/pricing';
+      window.location.href = tx.signinHref;
       return;
     }
 
     setLoading(plan.id);
+    // L'URL de retour de Stripe est commune aux deux langues : /payment-success relira celle-ci.
+    rememberCheckoutLocale(locale);
 
     // Le Payment Link reçoit de quoi rattacher le paiement au compte.
     const params = new URLSearchParams();
@@ -180,7 +160,7 @@ export default function PricingPage() {
           marginBottom: '0.5rem',
           textShadow: '3px 3px 6px rgba(0,0,0,0.5)'
         }}>
-          Choisissez votre plan
+          {tx.title}
         </h1>
         <p style={{ 
           color: '#ffffff', 
@@ -188,7 +168,7 @@ export default function PricingPage() {
           textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
           marginBottom: '2rem'
         }}>
-          Débloquez toutes les fonctionnalités premium pour optimiser votre jeu
+          {tx.subtitle}
         </p>
         
         {/* Billing Toggle */}
@@ -214,7 +194,7 @@ export default function PricingPage() {
               transition: 'all 0.3s'
             }}
           >
-            Mensuel
+            {tx.monthly}
           </button>
           <button
             onClick={() => setBillingPeriod('yearly')}
@@ -230,7 +210,7 @@ export default function PricingPage() {
               position: 'relative'
             }}
           >
-            Annuel
+            {tx.yearly}
             <span style={{
               position: 'absolute',
               top: '-0.5rem',
@@ -244,14 +224,12 @@ export default function PricingPage() {
               fontWeight: 'bold',
               whiteSpace: 'nowrap'
             }}>
-              {/* « 2 MOIS GRATUITS » corrigé le 21/11/2026 : 12 × 4,99 € −
-                  49,99 € = 9,89 € d'économie, soit 1,98 mois, pas 2. */}
-              PRÈS DE 2 MOIS OFFERTS
+              {tx.yearlyBadge}
             </span>
           </button>
         </div>
         
-        <Link href="/" style={{
+        <Link href={tx.homeHref} style={{
           display: 'inline-block',
           marginTop: '1rem',
           marginLeft: '1rem',
@@ -264,7 +242,7 @@ export default function PricingPage() {
           fontWeight: '500',
           textDecoration: 'none'
         }}>
-          ← Retour
+          {tx.back}
         </Link>
       </div>
 
@@ -320,7 +298,7 @@ export default function PricingPage() {
                 color: 'var(--text-muted)',
                 marginLeft: '0.5rem'
               }}>
-                {plan.oneTime ? 'une fois' : `/${billingPeriod === 'monthly' ? 'mois' : 'an'}`}
+                {plan.oneTime ? tx.oneTime : billingPeriod === 'monthly' ? tx.perMonth : tx.perYear}
               </span>
               {!session?.user && plan.stripeLinks && (
                 <div style={{
@@ -328,7 +306,7 @@ export default function PricingPage() {
                   fontSize: '0.8125rem',
                   color: 'var(--text-muted)'
                 }}>
-                  Un compte gratuit est nécessaire pour souscrire.
+                  {tx.accountRequired}
                 </div>
               )}
               {billingPeriod === 'yearly' && plan.savings && (
@@ -338,7 +316,7 @@ export default function PricingPage() {
                   color: '#10b981',
                   fontWeight: '500'
                 }}>
-                  💰 Économisez €{((plan.price.monthly * 12) - plan.price.yearly).toFixed(2)} ({plan.savings})
+                  {tx.save(((plan.price.monthly * 12) - plan.price.yearly).toFixed(2), plan.savings)}
                 </div>
               )}
             </div>
@@ -395,8 +373,8 @@ export default function PricingPage() {
               }}
             >
               {!CHECKOUT_DISPONIBLE && plan.stripeLinks
-                ? 'Abonnement temporairement indisponible'
-                : loading === plan.id ? 'Chargement...' : plan.buttonText}
+                ? tx.unavailable
+                : loading === plan.id ? tx.loading : plan.buttonText}
             </button>
 
             {!CHECKOUT_DISPONIBLE && plan.stripeLinks && (
@@ -407,8 +385,7 @@ export default function PricingPage() {
                 color: 'var(--text-muted)',
                 textAlign: 'center'
               }}>
-                La souscription est momentanément fermée. Le configurateur et le
-                calcul RCS restent gratuits et complets.{' '}
+                {tx.closedNotice}{' '}
                 <a href={`mailto:${CONTACT_EMAIL}`} style={{ color: '#047857', fontWeight: 600 }}>
                   {CONTACT_EMAIL}
                 </a>
@@ -440,7 +417,7 @@ export default function PricingPage() {
             textAlign: 'center',
             color: 'var(--text-strong)'
           }}>
-            Pourquoi passer Premium ?
+            {tx.whyTitle}
           </h2>
           <div style={{
             display: 'grid',
@@ -450,9 +427,9 @@ export default function PricingPage() {
           }}>
             <div>
               <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>♾️</div>
-              <div style={{ fontWeight: 'bold', color: 'var(--text-strong)' }}>Illimité</div>
+              <div style={{ fontWeight: 'bold', color: 'var(--text-strong)' }}>{tx.unlimitedTitle}</div>
               <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
-                Sauvegardez toutes vos configurations
+                {tx.unlimitedText}
               </div>
             </div>
             {/* Vignette « Statistiques — Analysez vos performances » retirée le
@@ -460,19 +437,24 @@ export default function PricingPage() {
                 Ne lister ici que ce que le code réserve réellement au Premium. */}
             <div>
               <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>📄</div>
-              <div style={{ fontWeight: 'bold', color: 'var(--text-strong)' }}>Export PDF</div>
+              <div style={{ fontWeight: 'bold', color: 'var(--text-strong)' }}>{tx.pdfTitle}</div>
               <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
-                Imprimez vos configurations
+                {tx.pdfText}
               </div>
             </div>
             <div>
               <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>🎯</div>
-              <div style={{ fontWeight: 'bold', color: 'var(--text-strong)' }}>RCS Avancé</div>
+              <div style={{ fontWeight: 'bold', color: 'var(--text-strong)' }}>{tx.rcsTitle}</div>
               <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
-                Recommandations personnalisées
+                {tx.rcsText}
               </div>
             </div>
           </div>
+          {tx.languageNote && (
+            <p style={{ marginTop: '1.5rem', fontSize: '0.875rem', color: 'var(--text-muted)', textAlign: 'center' }}>
+              {tx.languageNote}
+            </p>
+          )}
         </div>
       </div>
 
@@ -496,8 +478,8 @@ export default function PricingPage() {
         }}>
           <div style={{ color: 'white' }}>
             <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🔒</div>
-            <div style={{ fontWeight: 'bold' }}>Paiement Sécurisé</div>
-            <div style={{ fontSize: '0.875rem', opacity: 0.9 }}>Stripe & SSL</div>
+            <div style={{ fontWeight: 'bold' }}>{tx.secureTitle}</div>
+            <div style={{ fontSize: '0.875rem', opacity: 0.9 }}>{tx.secureText}</div>
           </div>
           {/* « Annulation Facile — À tout moment » remplacé le 21/11/2026 : le
               site n'offre aucune résiliation en libre-service (ni portail
@@ -507,9 +489,9 @@ export default function PricingPage() {
               le webhook retire l'accès (customer.subscription.deleted). */}
           <div style={{ color: 'white' }}>
             <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>💳</div>
-            <div style={{ fontWeight: 'bold' }}>Résiliation sur demande</div>
+            <div style={{ fontWeight: 'bold' }}>{tx.cancelTitle}</div>
             <div style={{ fontSize: '0.875rem', opacity: 0.9 }}>
-              par e-mail :{' '}
+              {tx.cancelText}{' '}
               <a href={`mailto:${CONTACT_EMAIL}`} style={{ color: 'white', textDecoration: 'underline' }}>
                 {CONTACT_EMAIL}
               </a>
@@ -523,8 +505,8 @@ export default function PricingPage() {
               vérifiés : rien n'est promis à ce sujet. */}
           <div style={{ color: 'white' }}>
             <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>⏳</div>
-            <div style={{ fontWeight: 'bold' }}>Activation automatique</div>
-            <div style={{ fontSize: '0.875rem', opacity: 0.9 }}>dès l&apos;encaissement du paiement</div>
+            <div style={{ fontWeight: 'bold' }}>{tx.activationTitle}</div>
+            <div style={{ fontSize: '0.875rem', opacity: 0.9 }}>{tx.activationText}</div>
           </div>
         </div>
       </div>
