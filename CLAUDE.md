@@ -1,6 +1,6 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.3.41
+> **Version** : 2.3.42
 > **Date** : 22 novembre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
@@ -292,6 +292,18 @@ Delete my account » n'efface que les setups (`handleDeleteAccount()` d'`account
 `tsa-revenue`) inchangés. `src/app/sitemap.ts` : `/en/premium.html` remplacée par `/en/pricing`. La 301 de #171 prend effet avec
 cette suppression (le fichier statique l'emportait tant qu'il existait). Le §2 (« Le paiement est ouvert ») a été mis à jour par
 #171.
+
+**Changelog v2.3.41 → v2.3.42** — **Pages anglaises hors blog alignées sur le code ; liens Premium vers `/en/pricing`** (suite de
+#166 ; plan de monétisation du 21/11/2026 et décision de Pierre du 22/11/2026 ; `tsa-acquisition` ; périmètre `public/en/` hors
+blog). `index.html` : 3 liens vers `/en/pricing`, badge « New » retiré, formulaire newsletter et son script d'écriture dans
+`newsletter_subscribers` retirés (aucun envoi, aucune désinscription, table lue nulle part ; même décision que le pied de page FR
+de #167). `auth.html`, `account.html`, `setups.html`, `rcs-calculator.html` : le Premium s'achète sur `/en/pricing` et se rattache
+au compte du site ; le compte anglais (Supabase Auth) ne le porte pas et reste limité à 3 setups ; export PDF « (in French) ».
+Blocs jamais affichés et faux retirés : carte `#freeUserCta` d'`account.html`, bloc `#premiumRequired` de `setups.html`, modale de
+paywall du calculateur avec `showPaywall()` et `canCalculate()` (le commentaire « RÈGLE 2 : ne pas rétablir de paywall sur le
+calcul » reste). `racquets.html`, `strings.html`, `setups.html` : `rel` des liens d'achat selon la règle de `buyLinkRel()` (#167),
+`nofollow` tant qu'aucun identifiant d'affiliation n'est présent. Plus aucun lien vers `premium.html` dans `public/en/` hors blog
+(7 deviennent `/en/pricing`, 3 partent avec les blocs morts) ; plus aucune mention « French site ».
 
 **Changelog v2.3.25 → v2.3.26** — **Hybrides : un seul indice, celui que l'alerte lit, que le configurateur
 affiche et que le PDF imprime ; contrôle 21 ter** (décision (b)+(a) de l'orchestrateur du 22/10/2026, Pierre ayant délégué ; limite (4)
@@ -1876,4 +1888,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.3.41 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.3.42 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
