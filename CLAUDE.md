@@ -1,6 +1,6 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.3.40
+> **Version** : 2.3.41
 > **Date** : 22 novembre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
@@ -275,6 +275,23 @@ route présente ou absente) sur `origin/main`, sur la tête de #166 et sur des �
 dont deux que l'ancien script laissait passer (lien dans un fichier non suivi, exécution hors dépôt git). **Conséquence** : avec
 la grille confinée à `page.tsx`, et sachant que Next refuse les exports nommés d'un `page.tsx`, la seule route EN verte est celle
 qui rend l'export par défaut de la page FR.
+
+**Changelog v2.3.40 → v2.3.41** — **FAQ anglaise alignée sur le code, ancienne page Premium anglaise supprimée** (plan de
+monétisation du 21/11/2026 ; Pierre : « Oui on lance les corrections qui peuvent se faire », puis le 22/11/2026 : « Il n'y a
+aucune raison de ne pas faire une page de paiement en anglais pour le premium en incluant les mêmes liens Stripe » ;
+`tsa-acquisition`). **`public/en/premium.html` supprimée** : son circuit (compte Supabase Auth, `CHECKOUT_DISPONIBLE = false`
+depuis le 09/10/2026) est remplacé par la route Next `/en/pricing` de `tsa-revenue` (même composant et mêmes trois Payment Links
+que `/pricing`, achat rattaché au compte NextAuth), qui pose aussi la 301 `/en/premium.html` → `/en/pricing`.
+**`public/en/faq.html`** renvoie vers `/en/pricing` et décrit l'offre comme `/pricing` : 4,99 €/mois, 49,99 €/an ou 19,99 € une
+fois ; configurations illimitées, analyse RCS avancée, export PDF (« in French ») ; compte gratuit requis pour souscrire ;
+résiliation par e-mail ; aucune rareté. Elle dit que le compte créé sur `auth.html` (Supabase) est distinct du compte du site et
+ne porte pas le Premium. Elle ne promet plus d'alertes de prix, d'historique ou de journal de cordage, de support prioritaire, ni
+un calculateur RCS « limité à 1 usage » (il est libre : `canCalculate()` de `rcs-calculator.html` renvoie toujours `true`) ; «
+Delete my account » n'efface que les setups (`handleDeleteAccount()` d'`account.html`) ; aucune page de résiliation n'existe dans
+`src/app/`. JSON-LD `FAQPage` identique au texte visible. Paiement, articles et libellés d'achat du configurateur (à
+`tsa-revenue`) inchangés. `src/app/sitemap.ts` : `/en/premium.html` remplacée par `/en/pricing`. La 301 de #171 prend effet avec
+cette suppression (le fichier statique l'emportait tant qu'il existait). Le §2 (« Le paiement est ouvert ») a été mis à jour par
+#171.
 
 **Changelog v2.3.25 → v2.3.26** — **Hybrides : un seul indice, celui que l'alerte lit, que le configurateur
 affiche et que le PDF imprime ; contrôle 21 ter** (décision (b)+(a) de l'orchestrateur du 22/10/2026, Pierre ayant délégué ; limite (4)
@@ -1859,4 +1876,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.3.40 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.3.41 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
