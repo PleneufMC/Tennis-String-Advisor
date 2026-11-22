@@ -2,6 +2,7 @@
 
 import { useEffect, Suspense } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
+import { analyticsPageContext, sanitizeUrlForAnalytics } from './url-allowlist';
 
 declare global {
   interface Window {
@@ -26,10 +27,21 @@ function AnalyticsInner({ measurementId }: AnalyticsProps) {
     const search = searchParams.toString();
     const url = search ? `${pathname}?${search}` : pathname;
 
+    // Aucune donnée d'URL hors liste blanche ne part (cf. url-allowlist.ts) :
+    // `set` couvre tous les événements suivants, y compris ceux que gtag émet
+    // seul (scroll, user_engagement…), qui liraient sinon l'URL brute.
+    const context = analyticsPageContext(
+      sanitizeUrlForAnalytics(url, window.location.origin),
+      document.referrer
+    );
+    const cleaned = new URL(context.page_location);
+    window.gtag('set', context);
+
     // Un seul page_view par navigation — l'init du layout est en send_page_view: false,
     // un second gtag('config') ici provoquait un double comptage au chargement initial.
     window.gtag('event', 'page_view', {
-      page_path: url,
+      ...context,
+      page_path: `${cleaned.pathname}${cleaned.search}`,
     });
   }, [pathname, searchParams, measurementId]);
 
@@ -48,9 +60,16 @@ export function Analytics({ measurementId }: AnalyticsProps) {
 // --- Events du funnel (nomenclature GA4 de l'audit #0.3) ---------------------
 // Envoi bas-niveau d'un event GA4 avec des paramètres nommés (recommandé GA4),
 // plutôt que la convention event_category/label de l'ancien helper.
+// Le contexte de page nettoyé est joint à chaque événement, en dernier (aucun
+// appelant ne peut le remplacer) : un événement émis avant le premier `set` du
+// composant Analytics (monté plus tard, sous Suspense) partirait sinon avec
+// l'URL brute.
 const gaEvent = (name: string, params: Record<string, unknown> = {}) => {
   if (typeof window !== 'undefined' && window.gtag) {
-    window.gtag('event', name, params);
+    window.gtag('event', name, {
+      ...params,
+      ...analyticsPageContext(window.location.href, document.referrer),
+    });
   }
 };
 

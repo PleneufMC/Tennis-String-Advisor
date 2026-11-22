@@ -1,6 +1,6 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.3.42
+> **Version** : 2.3.43
 > **Date** : 22 novembre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
@@ -304,6 +304,23 @@ paywall du calculateur avec `showPaywall()` et `canCalculate()` (le commentaire 
 calcul » reste). `racquets.html`, `strings.html`, `setups.html` : `rel` des liens d'achat selon la règle de `buyLinkRel()` (#167),
 `nofollow` tant qu'aucun identifiant d'affiliation n'est présent. Plus aucun lien vers `premium.html` dans `public/en/` hors blog
 (7 deviennent `/en/pricing`, 3 partent avec les blocs morts) ; plus aucune mention « French site ».
+
+**Changelog v2.3.42 → v2.3.43** — **GA4 : l'application Next et les pages statiques ne transmettent plus de l'URL que le chemin et
+les cinq `utm_*` ; contrôle `audit:analytics-url`** (plan de monétisation du 21/11/2026 : un formulaire en GET mettait
+`?email-address=…` dans l'URL ; Pierre : « Oui on lance les corrections qui peuvent se faire » ; `tsa-measure`). **Constat, en
+exécution** (vrai gtag.js, collectes interceptées et annulées) : gtag joint `page_location` et `page_referrer` complets à chaque
+événement, y compris ceux qu'il émet seul ; le caviardage du flux GA4 (actif, adresses e-mail seulement) remplaçait l'adresse par
+« (redacted) », mais un nom, un téléphone ou une adresse doublement encodée partaient en clair. **Changé** :
+`src/components/analytics/url-allowlist.ts` (liste blanche `utm_source`, `utm_medium`, `utm_campaign`, `utm_term`, `utm_content` —
+aucun autre paramètre n'est lu par un rapport ; utm portant un @ refusé ; fragment jamais transmis) ; `analytics.tsx` pose
+`gtag('set', …)` nettoyé à chaque navigation et joint le contexte nettoyé, en dernier, à chaque événement ;
+`public/js/analytics.js` (désormais à `tsa-measure`, §5), chargé par les 356 pages statiques (308 fiches EN générées comprises),
+en porte le miroir dans `gtag('set')`, `gtag('config')` et `trackEvent` (mêmes cas vérifiés, exécuté dans un bac à sable). A3
+intact (referrer d'article conservé, vérifié) ; faux positif A3 mesuré (article → accueil → configurateur sans rechargement,
+compté comme arrivée directe), consigné dans le rapport A3. **Reste** : le page_view que GA4 émet seul à chaque navigation côté
+client (« Page changes based on browser history events », actif) lit la barre d'adresse et **double** celui du composant : réglage
+d'administration à couper par Pierre, rupture de série du page_view des navigations internes. La recherche de site GA4 (`q`,
+`search`…) ne voit plus ses termes.
 
 **Changelog v2.3.25 → v2.3.26** — **Hybrides : un seul indice, celui que l'alerte lit, que le configurateur
 affiche et que le PDF imprime ; contrôle 21 ter** (décision (b)+(a) de l'orchestrateur du 22/10/2026, Pierre ayant délégué ; limite (4)
@@ -1403,6 +1420,10 @@ corrigé dans la même PR.
 - **Notes de confort contredites par la mesure, recalées (D2 restreint, 23/10/2026)** : 7 fiches, uniquement à la baisse, étiquetées
   « note de confort recalée sur la rigidité mesurée (TWU) » partout où la note s'affiche. Garde-fous : contrôle 22 (règle) et contrôle 23
   (aucune note de confort ne monte, aucune alerte bras ne disparaît par rapport à la référence du 23/10/2026) de `audit:ratings`.
+- **GA4 ne reçoit de l'URL que le chemin et les `utm_*`** (21/11/2026), app Next et pages statiques : liste blanche de
+  `src/components/analytics/url-allowlist.ts` et son miroir `public/js/analytics.js`, posée par `gtag('set')` et jointe à
+  chaque événement. Garde-fou : `audit:analytics-url`. ⚠️ Hors de portée du code : le page_view automatique « historique » de
+  GA4 (lit la barre d'adresse et double le page_view de chaque navigation interne ; réglage d'administration).
 - Export PDF, thème sombre, i18n FR/EN livrés.
 - Photos produit Tennis Warehouse (29/09/2026), Tennis Warehouse Europe et
   sites officiels des fabricants (10/10 et 22/10/2026) : 75/129 raquettes, 65/179
@@ -1674,7 +1695,7 @@ sa partie du fichier.
 | `src/lib/product-images.ts`, `src/components/product/product-image.tsx`, `public/images/products/` | `tsa-core` |
 | `scripts/scraper/`, `scripts/qa-ratings.mts` | `tsa-core` |
 | `scripts/catalog/` (générateur), `public/js/catalog.js` (chargeur EN), `public/data/catalog.json` (généré, non versionné) | `tsa-core` |
-| `src/components/analytics/` | `tsa-measure` |
+| `src/components/analytics/`, `public/js/analytics.js` (désigné le 21/11/2026) | `tsa-measure` |
 | `scripts/qa-*` (hors `qa-ratings`), `reports/` | `tsa-measure` |
 
 ### Fichiers partagés (verrou explicite)
@@ -1809,6 +1830,7 @@ pas. Les modifications d'articles existants y restent soumises.
   npm run audit:configurator-en # si advanced-rcs.ts, getStringRecommendation, src/lib/i18n/configurator.ts ou configurator/page.tsx est touché
   npm run audit:blog-images   # idem (règle images, §5 ter)
   npm run audit:comptages     # si une page publique, un bloc metadata ou src/data change
+  npm run audit:analytics-url # si src/components/analytics/, public/js/analytics.js ou un appel gtag est touché
   ```
 - **Pas de suite de tests dans le dépôt.** Tout agent qui modifie une fonction de
   calcul ou une règle métier **ajoute un contrôle** dans le script `qa-*`
@@ -1888,4 +1910,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.3.42 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.3.43 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
