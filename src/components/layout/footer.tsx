@@ -58,7 +58,7 @@ function TennisIcon({ className }: { className?: string }) {
 }
 
 export function Footer() {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   // Route anglaise de l'application (`/en/configurator`, 20/11/2026) : liens vers les pages EN équivalentes.
   const pathname = usePathname() || '/';
   const onEnglish = isEnglishPath(pathname);
@@ -150,45 +150,16 @@ export function Footer() {
           </div>
         </div>
 
-        {/* Newsletter section */}
-        <div className="mt-12 border-t border-gray-800 pt-8">
-          <div className="md:flex md:items-center md:justify-between">
-            <div className="max-w-md">
-              <h3 className="text-sm font-semibold leading-6 text-white">
-                {t('footer.newsletter.title')}
-              </h3>
-              <p className="mt-2 text-sm leading-6 text-gray-400">
-                {t('footer.newsletter.desc')}
-              </p>
-            </div>
-            <form className="mt-6 sm:flex sm:max-w-md md:mt-0">
-              <label htmlFor="email-address" className="sr-only">
-                {t('footer.newsletter.emailLabel')}
-              </label>
-              <input
-                type="email"
-                name="email-address"
-                id="email-address"
-                autoComplete="email"
-                required
-                className="w-full min-w-0 appearance-none rounded-lg border-0 bg-white/5 px-3 py-2 text-base text-white shadow-sm ring-1 ring-inset ring-white/10 placeholder:text-gray-500 focus:ring-2 focus:ring-inset focus:ring-green-500 sm:w-64 sm:text-sm sm:leading-6 xl:w-full"
-                placeholder={t('footer.newsletter.placeholder')}
-              />
-              <div className="mt-4 sm:ml-4 sm:mt-0 sm:flex-shrink-0">
-                <button
-                  type="submit"
-                  className="flex w-full items-center justify-center rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-500 transition-colors"
-                >
-                  {t('footer.newsletter.submit')}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+        {/* Formulaire « newsletter » retiré le 21/11/2026 : ni action, ni
+            onSubmit, aucun backend, aucun inscrit. Une soumission rechargeait
+            la page avec ?email-address=… dans l'URL, que le page_view GA4
+            reprenait (page_path). Ne le rétablir qu'avec un vrai traitement
+            (stockage, consentement, désinscription) et une page de
+            confidentialité. */}
 
-        {/* Affiliate disclosure (Audit #3.0) */}
-        <div className="mt-8 border-t border-gray-800 pt-8">
-          <AffiliateDisclosure className="text-gray-500 max-w-3xl" />
+        {/* Mention de transparence des liens « Voir le prix » (Audit #3.0), dans la langue du reste du pied de page. */}
+        <div className="mt-12 border-t border-gray-800 pt-8">
+          <AffiliateDisclosure className="text-gray-500 max-w-3xl" locale={locale} />
         </div>
 
         {/* Bottom bar */}

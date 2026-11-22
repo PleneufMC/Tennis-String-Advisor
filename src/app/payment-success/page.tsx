@@ -3,11 +3,12 @@
 import Link from 'next/link';
 
 // Page de confirmation post-paiement Stripe.
-// IMPORTANT (audit 13/08/2026) : aucun webhook Stripe n'existe — rien n'écrit
-// isPremium automatiquement (activation manuelle, cf. AUTH-SETUP.md). Cette
-// page ne doit donc JAMAIS affirmer que les avantages sont « actifs » :
-// elle annonce une activation sous 24 h et donne un contact réel.
-// À réécrire quand le webhook existera (roadmap Phase 5).
+// Le webhook (src/app/api/stripe/webhook) active le compte dès que Stripe
+// confirme l'encaissement (21/11/2026 : l'ancien texte annonçait une activation
+// manuelle sous 24 h et un e-mail de confirmation que le site n'envoie pas).
+// Cette page ne peut pas savoir si l'activation a eu lieu : elle n'affirme
+// donc jamais que les avantages sont « actifs », et donne un contact réel.
+// Rien n'est promis sur les e-mails de Stripe (réglages du compte non vérifiés).
 export default function PaymentSuccessPage() {
   return (
     <div style={{
@@ -91,9 +92,9 @@ export default function PaymentSuccessPage() {
             color: 'var(--tint-amber-fg)',
             margin: 0
           }}>
-            Votre accès Premium est activé <strong>manuellement sous 24 h ouvrées</strong>.
-            Vous recevrez un email de confirmation dès que c&apos;est fait. Une fois le
-            compte activé, vous disposerez des configurations illimitées, de
+            Votre accès Premium s&apos;active <strong>automatiquement</strong> dès que
+            Stripe nous confirme l&apos;encaissement du paiement. Rechargez ensuite le
+            configurateur : vous disposerez des configurations illimitées, de
             l&apos;export PDF et de l&apos;analyse RCS avancée.
           </p>
         </div>
@@ -106,7 +107,8 @@ export default function PaymentSuccessPage() {
           fontSize: '0.875rem',
           color: 'var(--tint-green-fg)'
         }}>
-          🧾 Conservez le reçu émis par Stripe : il fait foi pour toute question de facturation.
+          🧾 Pour toute question de facturation, gardez l&apos;adresse e-mail utilisée
+          lors du paiement : c&apos;est elle qui permet de retrouver la transaction.
         </div>
 
         <div style={{
@@ -143,7 +145,7 @@ export default function PaymentSuccessPage() {
             color: 'var(--text-muted)',
             marginBottom: '0.5rem'
           }}>
-            Un problème, une question, ou pas de confirmation sous 24 h ?
+            Un problème, une question, ou un accès Premium qui ne s&apos;active pas ?
             Écrivez-nous en précisant l&apos;adresse email utilisée lors du paiement :
           </p>
           <a

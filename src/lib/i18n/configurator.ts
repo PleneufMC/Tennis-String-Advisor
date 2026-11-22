@@ -17,6 +17,11 @@ import { isEnglishPath } from './route-map';
 import { stringRatingNature, isComfortRecalibrated, type RatedString } from '@/lib/string-rating-nature';
 import { COMFORT_RECALIBRATION_RULE } from '@/data/comfort-recalibration';
 import { formatScore20, type RacquetTesterSynthesis } from '@/lib/racquet-scoring';
+import { isAffiliateEnabled } from '@/lib/affiliate';
+
+// Libellé des liens d'achat : « partenaires » seulement si l'affiliation est active (variables Awin renseignées au build). Aucun
+// accord n'existe au 21/11/2026 : les liens partent en direct, sans commission, et le libellé le dit.
+const AFFILIATE_ACTIVE = isAffiliateEnabled();
 
 export type ConfiguratorLocale = 'fr' | 'en';
 
@@ -32,7 +37,9 @@ const gaugeLabelEn = (gauge: string): string => (gauge === '1.30' ? 'Standard' :
 const FR = {
   homeHref: '/',
   signinHref: '/auth/signin?callbackUrl=/configurator',
-  subtitle: 'Système avancé avec journal de cordage professionnel',
+  // Description factuelle de la page (21/11/2026) : l'ancien « Système avancé avec journal de cordage professionnel » qualifiait
+  // sans rien décrire, sous un titre « … Premium » alors que la page est gratuite.
+  subtitle: 'Indice RCS de votre montage, alerte bras et journal de cordage',
   backHome: "← Retour à l'accueil",
   configTitle: 'Configuration et Analyse de Confort',
   configName: 'Nom de la Configuration',
@@ -74,7 +81,7 @@ const FR = {
   rcsIndex: 'Indice RCS:',
   rcsIndexLive: 'Indice RCS',
   compatibility: 'Compatibilité:',
-  buySetup: 'Acheter ce setup — liens partenaires',
+  buySetup: AFFILIATE_ACTIVE ? 'Acheter ce setup — liens partenaires' : 'Acheter ce setup — liens directs, sans commission',
   advancedTitle: '🔬 Analyse RCS Avancée',
   ratingsBasis: (hybrid: boolean) =>
     `Sous-scores et score global : calculés à partir des notes /10 ${hybrid ? 'des deux cordages' : 'du cordage'}, ajustées par la tension, la jauge et la raquette.`,
@@ -238,7 +245,7 @@ const formatScore20En = (value: number) => value.toLocaleString('en-US', { minim
 const EN: ConfiguratorText = {
   homeHref: '/en/',
   signinHref: '/auth/signin?callbackUrl=/en/configurator',
-  subtitle: 'Advanced system with a professional stringing log',
+  subtitle: 'RCS index of your setup, arm alert and stringing log',
   backHome: '← Back to home',
   configTitle: 'Setup and Comfort Analysis',
   configName: 'Setup Name',
@@ -280,7 +287,7 @@ const EN: ConfiguratorText = {
   rcsIndex: 'RCS index:',
   rcsIndexLive: 'RCS index',
   compatibility: 'Compatibility:',
-  buySetup: 'Buy this setup — partner links',
+  buySetup: AFFILIATE_ACTIVE ? 'Buy this setup — partner links' : 'Buy this setup — direct links, no commission',
   advancedTitle: '🔬 Advanced RCS Analysis',
   ratingsBasis: (hybrid) =>
     `Sub-scores and overall score: calculated from the ratings out of 10 of ${hybrid ? 'both strings' : 'the string'}, adjusted for tension, gauge and racquet.`,

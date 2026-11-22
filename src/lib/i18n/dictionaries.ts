@@ -116,12 +116,6 @@ export const dictionaries = {
     'footer.link.terms': 'CGU',
     'footer.link.cookies': 'Cookies',
     'footer.link.legal': 'Mentions légales',
-    'footer.newsletter.title': 'Inscrivez-vous à notre newsletter',
-    'footer.newsletter.desc':
-      'Recevez les dernières actualités tennis, guides et offres exclusives.',
-    'footer.newsletter.placeholder': 'Votre email',
-    'footer.newsletter.emailLabel': 'Adresse email',
-    'footer.newsletter.submit': 'S’inscrire',
   },
 
   en: {
@@ -233,12 +227,6 @@ export const dictionaries = {
     'footer.link.terms': 'Terms',
     'footer.link.cookies': 'Cookies',
     'footer.link.legal': 'Legal notice',
-    'footer.newsletter.title': 'Subscribe to our newsletter',
-    'footer.newsletter.desc':
-      'Get the latest tennis news, guides and exclusive offers.',
-    'footer.newsletter.placeholder': 'Your email',
-    'footer.newsletter.emailLabel': 'Email address',
-    'footer.newsletter.submit': 'Subscribe',
   },
 } as const;
 
