@@ -4,10 +4,13 @@ import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { AUTH_TEXT, useAuthLocale } from '../auth-text';
 
 export function SignUpForm() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get('callbackUrl') || '/';
+  const tx = AUTH_TEXT[useAuthLocale()];
+  const signinHref = callbackUrl === '/' ? '/auth/signin' : `/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`;
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -19,7 +22,7 @@ export function SignUpForm() {
     setError(null);
 
     if (password.length < 8) {
-      setError('Le mot de passe doit contenir au moins 8 caractères.');
+      setError(tx.passwordTooShort);
       return;
     }
 
@@ -33,7 +36,7 @@ export function SignUpForm() {
 
       if (!res.ok) {
         const data = (await res.json().catch(() => ({}))) as { error?: string };
-        setError(data.error || 'Une erreur est survenue. Veuillez réessayer.');
+        setError(data.error ? tx.registerError(data.error) : tx.genericError);
         setLoading(false);
         return;
       }
@@ -48,13 +51,13 @@ export function SignUpForm() {
 
       if (signInRes?.error) {
         // Inscription OK mais connexion auto échouée : on renvoie vers la connexion.
-        window.location.href = `/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`;
+        window.location.href = signinHref;
         return;
       }
 
       window.location.href = callbackUrl;
     } catch {
-      setError('Une erreur réseau est survenue. Veuillez réessayer.');
+      setError(tx.networkError);
       setLoading(false);
     }
   };
@@ -69,21 +72,21 @@ export function SignUpForm() {
 
       <div className="space-y-1">
         <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-slate-200">
-          Nom (facultatif)
+          {tx.name}
         </label>
         <input
           id="name"
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="Votre nom"
+          placeholder={tx.namePlaceholder}
           className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/30 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
         />
       </div>
 
       <div className="space-y-1">
         <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-slate-200">
-          Adresse e-mail
+          {tx.email}
         </label>
         <input
           id="email"
@@ -91,14 +94,14 @@ export function SignUpForm() {
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="vous@exemple.com"
+          placeholder={tx.emailPlaceholder}
           className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/30 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
         />
       </div>
 
       <div className="space-y-1">
         <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-slate-200">
-          Mot de passe
+          {tx.password}
         </label>
         <input
           id="password"
@@ -107,7 +110,7 @@ export function SignUpForm() {
           minLength={8}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          placeholder="8 caractères minimum"
+          placeholder={tx.passwordMin}
           className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/30 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
         />
       </div>
@@ -117,13 +120,13 @@ export function SignUpForm() {
         disabled={loading}
         className="w-full rounded-xl bg-green-600 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-green-700 disabled:opacity-60"
       >
-        {loading ? 'Création du compte…' : 'Créer mon compte'}
+        {loading ? tx.creating : tx.createMine}
       </button>
 
       <p className="text-center text-sm text-gray-500 dark:text-slate-400">
-        Déjà un compte ?{' '}
-        <Link href="/auth/signin" className="font-medium text-green-600 hover:text-green-700 dark:text-tennis-green-400">
-          Se connecter
+        {tx.haveAccount}{' '}
+        <Link href={signinHref} className="font-medium text-green-600 hover:text-green-700 dark:text-tennis-green-400">
+          {tx.signIn}
         </Link>
       </p>
     </form>
