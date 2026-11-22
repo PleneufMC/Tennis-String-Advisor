@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { Suspense } from 'react';
 import { SignInForm } from './signin-form';
+import { AuthHomeLink, AuthString } from '../auth-text';
+import { isEnglishCallback } from '../auth-locale';
 
 export const metadata: Metadata = {
   title: 'Connexion',
@@ -12,7 +13,9 @@ export const metadata: Metadata = {
 // Page dynamique : dépend des providers configurés (variables d'env runtime).
 export const dynamic = 'force-dynamic';
 
-export default function SignInPage() {
+export default function SignInPage({ searchParams }: { searchParams: { callbackUrl?: string } }) {
+  // Acheteur de /en/pricing : page en anglais dès le rendu serveur (sinon, langue du site après hydratation).
+  const english = isEnglishCallback(searchParams.callbackUrl);
   const hasGoogle = Boolean(
     process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
   );
@@ -33,9 +36,9 @@ export default function SignInPage() {
                 <path d="M2 12h20M12 2c2.5 2.5 4 6 4 10s-1.5 7.5-4 10" fill="none" stroke="currentColor" strokeWidth="2" />
               </svg>
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Connexion</h1>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white"><AuthString k="signinTitle" english={english} /></h1>
             <p className="mt-2 text-sm text-gray-500 dark:text-slate-400">
-              Accédez à vos configurations et au Premium.
+              <AuthString k="signinSubtitle" english={english} />
             </p>
           </div>
 
@@ -44,15 +47,12 @@ export default function SignInPage() {
           </Suspense>
 
           <p className="mt-6 text-center text-xs text-gray-400 dark:text-slate-500">
-            En vous connectant, vous acceptez nos conditions d&apos;utilisation et
-            notre politique de confidentialité.
+            <AuthString k="signinTerms" english={english} />
           </p>
         </div>
 
         <p className="mt-6 text-center text-sm text-gray-500 dark:text-slate-400">
-          <Link href="/" className="font-medium text-green-600 hover:text-green-700 dark:text-tennis-green-400">
-            ← Retour à l&apos;accueil
-          </Link>
+          <AuthHomeLink english={english} className="font-medium text-green-600 hover:text-green-700 dark:text-tennis-green-400" />
         </p>
       </div>
     </div>

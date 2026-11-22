@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { Suspense } from 'react';
 import { SignUpForm } from './signup-form';
+import { AuthHomeLink, AuthString } from '../auth-text';
+import { isEnglishCallback } from '../auth-locale';
 
 export const metadata: Metadata = {
   title: 'Créer un compte',
@@ -12,7 +13,8 @@ export const metadata: Metadata = {
 
 export const dynamic = 'force-dynamic';
 
-export default function SignUpPage() {
+export default function SignUpPage({ searchParams }: { searchParams: { callbackUrl?: string } }) {
+  const english = isEnglishCallback(searchParams.callbackUrl);
   return (
     <div className="flex min-h-[70vh] items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
@@ -24,9 +26,9 @@ export default function SignUpPage() {
                 <path d="M2 12h20M12 2c2.5 2.5 4 6 4 10s-1.5 7.5-4 10" fill="none" stroke="currentColor" strokeWidth="2" />
               </svg>
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Créer un compte</h1>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white"><AuthString k="signupTitle" english={english} /></h1>
             <p className="mt-2 text-sm text-gray-500 dark:text-slate-400">
-              Sauvegardez vos configurations et accédez au Premium.
+              <AuthString k="signupSubtitle" english={english} />
             </p>
           </div>
 
@@ -35,15 +37,12 @@ export default function SignUpPage() {
           </Suspense>
 
           <p className="mt-6 text-center text-xs text-gray-400 dark:text-slate-500">
-            En créant un compte, vous acceptez nos conditions d&apos;utilisation et
-            notre politique de confidentialité.
+            <AuthString k="signupTerms" english={english} />
           </p>
         </div>
 
         <p className="mt-6 text-center text-sm text-gray-500 dark:text-slate-400">
-          <Link href="/" className="font-medium text-green-600 hover:text-green-700 dark:text-tennis-green-400">
-            ← Retour à l&apos;accueil
-          </Link>
+          <AuthHomeLink english={english} className="font-medium text-green-600 hover:text-green-700 dark:text-tennis-green-400" />
         </p>
       </div>
     </div>
