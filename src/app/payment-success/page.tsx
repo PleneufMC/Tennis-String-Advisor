@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useCheckoutReturnLocale } from '@/lib/i18n/pricing';
 
 // Page de confirmation post-paiement Stripe.
 // Le webhook (src/app/api/stripe/webhook) active le compte dès que Stripe
@@ -9,7 +10,43 @@ import Link from 'next/link';
 // Cette page ne peut pas savoir si l'activation a eu lieu : elle n'affirme
 // donc jamais que les avantages sont « actifs », et donne un contact réel.
 // Rien n'est promis sur les e-mails de Stripe (réglages du compte non vérifiés).
+// L'URL de retour est fixée dans Stripe, commune aux achats FR et EN : la page suit la langue de la page d'achat
+// (notée au clic sur /pricing ou /en/pricing), sinon celle du site (22/11/2026).
+const TEXT = {
+  fr: {
+    title: 'Merci pour votre paiement !',
+    received: 'Votre paiement a bien été reçu par Stripe.',
+    activationTitle: '⏳ Activation de votre compte Premium',
+    activationBefore: "Votre accès Premium s'active ",
+    activationStrong: 'automatiquement',
+    activationAfter:
+      " dès que Stripe nous confirme l'encaissement du paiement. Rechargez ensuite le configurateur : vous disposerez des configurations illimitées, de l'export PDF et de l'analyse RCS avancée.",
+    billing:
+      "🧾 Pour toute question de facturation, gardez l'adresse e-mail utilisée lors du paiement : c'est elle qui permet de retrouver la transaction.",
+    configuratorHref: '/configurator',
+    configurator: '🎾 Retour au configurateur',
+    contact:
+      "Un problème, une question, ou un accès Premium qui ne s'active pas ? Écrivez-nous en précisant l'adresse email utilisée lors du paiement :",
+  },
+  en: {
+    title: 'Thank you for your payment!',
+    received: 'Stripe has received your payment.',
+    activationTitle: '⏳ Activating your Premium account',
+    activationBefore: 'Your Premium access is activated ',
+    activationStrong: 'automatically',
+    activationAfter:
+      ' as soon as Stripe confirms that the payment has been collected. Then reload the configurator: you will have unlimited setups, the PDF export (in French) and the advanced RCS analysis.',
+    billing:
+      '🧾 For any billing question, keep the email address used for the payment: it is what lets us find the transaction.',
+    configuratorHref: '/en/configurator',
+    configurator: '🎾 Back to the configurator',
+    contact:
+      'A problem, a question, or Premium access that does not activate? Write to us with the email address used for the payment:',
+  },
+};
+
 export default function PaymentSuccessPage() {
+  const tx = TEXT[useCheckoutReturnLocale()];
   return (
     <div style={{
       minHeight: '100vh',
@@ -60,7 +97,7 @@ export default function PaymentSuccessPage() {
           marginBottom: '1rem',
           color: '#10b981'
         }}>
-          Merci pour votre paiement !
+          {tx.title}
         </h1>
 
         <p style={{
@@ -68,7 +105,7 @@ export default function PaymentSuccessPage() {
           color: 'var(--text-strong)',
           marginBottom: '2rem'
         }}>
-          Votre paiement a bien été reçu par Stripe.
+          {tx.received}
         </p>
 
         <div style={{
@@ -85,17 +122,14 @@ export default function PaymentSuccessPage() {
             color: 'var(--tint-amber-fg)',
             marginBottom: '0.75rem'
           }}>
-            ⏳ Activation de votre compte Premium
+            {tx.activationTitle}
           </h3>
           <p style={{
             fontSize: '0.95rem',
             color: 'var(--tint-amber-fg)',
             margin: 0
           }}>
-            Votre accès Premium s&apos;active <strong>automatiquement</strong> dès que
-            Stripe nous confirme l&apos;encaissement du paiement. Rechargez ensuite le
-            configurateur : vous disposerez des configurations illimitées, de
-            l&apos;export PDF et de l&apos;analyse RCS avancée.
+            {tx.activationBefore}<strong>{tx.activationStrong}</strong>{tx.activationAfter}
           </p>
         </div>
 
@@ -107,8 +141,7 @@ export default function PaymentSuccessPage() {
           fontSize: '0.875rem',
           color: 'var(--tint-green-fg)'
         }}>
-          🧾 Pour toute question de facturation, gardez l&apos;adresse e-mail utilisée
-          lors du paiement : c&apos;est elle qui permet de retrouver la transaction.
+          {tx.billing}
         </div>
 
         <div style={{
@@ -117,7 +150,7 @@ export default function PaymentSuccessPage() {
           gap: '1rem'
         }}>
           <Link
-            href="/configurator"
+            href={tx.configuratorHref}
             style={{
               padding: '1rem 2rem',
               backgroundColor: '#10b981',
@@ -131,7 +164,7 @@ export default function PaymentSuccessPage() {
               boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
             }}
           >
-            🎾 Retour au configurateur
+            {tx.configurator}
           </Link>
         </div>
 
@@ -145,8 +178,7 @@ export default function PaymentSuccessPage() {
             color: 'var(--text-muted)',
             marginBottom: '0.5rem'
           }}>
-            Un problème, une question, ou un accès Premium qui ne s&apos;active pas ?
-            Écrivez-nous en précisant l&apos;adresse email utilisée lors du paiement :
+            {tx.contact}
           </p>
           <a
             href="mailto:pleneuftrading@gmail.com"
