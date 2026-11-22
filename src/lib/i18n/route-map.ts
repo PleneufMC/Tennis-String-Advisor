@@ -27,7 +27,9 @@ const FR_TO_EN: Record<string, string> = {
   '/racquets': '/en/racquets.html',
   '/tennis-strings': '/en/strings.html',
   '/compare': '/en/compare.html',
-  '/pricing': '/en/premium.html',
+  // Page Premium EN (22/11/2026) : route Next qui rend le même composant que `/pricing` ; `/en/premium.html` est redirigée en
+  // 301 vers elle (next.config.js).
+  '/pricing': '/en/pricing',
   '/blog': '/en/blog/',
   '/account/configurations': '/en/setups.html',
 };

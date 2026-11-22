@@ -7,6 +7,7 @@ import { buttonVariants } from '@/components/ui/button';
 import { trackAffiliateClick } from '@/components/analytics/analytics';
 import {
   buildProductLink,
+  buyLinkRel,
   getMerchantLabel,
   isAffiliateEnabled,
   DEFAULT_MERCHANT,
@@ -40,8 +41,10 @@ interface BuyButtonProps {
  * Bouton d'affiliation « Voir le prix » (Audit #3.0).
  *
  * - Lien externe vers la boutique du marchand (recherche du produit).
- * - rel="sponsored noopener noreferrer" : obligatoire pour un lien affilié
- *   (conformité Google + sécurité target=_blank).
+ * - `rel` et libellé accessible suivent l'état RÉEL de l'affiliation
+ *   (`buyLinkRel`, `isAffiliateEnabled`) : « sponsored » et « lien partenaire »
+ *   seulement si le lien est rémunéré ; sinon « nofollow » et « lien direct,
+ *   sans commission » (aucun accord d'affiliation au 21/11/2026).
  * - Émet l'événement GA4 `affiliate_click` au clic (helper déjà branché).
  * - Si l'affiliation n'est pas encore activée (pas d'ID Awin), le lien reste
  *   fonctionnel en direct (non tracké) → aucune régression UX.
@@ -59,17 +62,18 @@ export function BuyButton({
   const href = buildProductLink(brand, model, merchant);
   const merchantLabel = getMerchantLabel(merchant);
   const productName = [brand, model].filter(Boolean).join(' ').trim();
+  const affiliate = isAffiliateEnabled(merchant);
 
   return (
     <a
       href={href}
       target="_blank"
-      rel="sponsored noopener noreferrer"
+      rel={buyLinkRel(merchant)}
       onClick={() =>
         trackAffiliateClick(
           merchant,
           productName,
-          isAffiliateEnabled(merchant) ? 'awin' : 'direct',
+          affiliate ? 'awin' : 'direct',
           location
         )
       }
@@ -78,7 +82,7 @@ export function BuyButton({
         'group/buy gap-1.5 no-underline',
         className
       )}
-      aria-label={`Voir le prix de ${productName} sur ${merchantLabel} (lien partenaire)`}
+      aria-label={`Voir le prix de ${productName} sur ${merchantLabel} (${affiliate ? 'lien partenaire' : 'lien direct, sans commission'})`}
     >
       {showIcon && <ShoppingCart className="h-4 w-4" aria-hidden="true" />}
       <span>Voir le prix sur {merchantLabel}</span>

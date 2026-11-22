@@ -134,6 +134,11 @@ const nextConfig = {
       // même composant que le FR. Les deux formes de l'ancienne URL (Netlify servait aussi `/en/configurator` depuis le
       // fichier) aboutissent à la route. `statusCode: 301` comme pour l'article retiré ci-dessus.
       { source: '/en/configurator.html', destination: '/en/configurator', statusCode: 301 },
+      // --- 301 : page Premium EN (22/11/2026, décision de Pierre). `/en/premium.html` (Supabase Auth, paiement fermé depuis le
+      // 09/10/2026) est remplacée par la route Next `/en/pricing`, même composant et mêmes Payment Links que `/pricing`. Les deux
+      // formes de l'ancienne URL : Netlify sert aussi `/en/premium` depuis le fichier tant qu'il existe.
+      { source: '/en/premium.html', destination: '/en/pricing', statusCode: 301 },
+      { source: '/en/premium', destination: '/en/pricing', statusCode: 301 },
       { source: '/premium', destination: '/pricing', permanent: true },
       { source: '/guides', destination: '/blog/', permanent: true },
       { source: '/recommendations', destination: '/configurator', permanent: true },

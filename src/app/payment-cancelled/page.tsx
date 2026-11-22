@@ -1,8 +1,36 @@
 'use client';
 
 import Link from 'next/link';
+import { useCheckoutReturnLocale } from '@/lib/i18n/pricing';
+
+// Même URL pour les achats FR et EN : la page suit la langue de la page d'achat, sinon celle du site (22/11/2026).
+const TEXT = {
+  fr: {
+    title: 'Paiement annulé',
+    cancelled: 'Vous avez annulé votre paiement.',
+    notCharged: "Aucun montant n'a été débité.",
+    pricingHref: '/pricing',
+    pricing: 'Revoir les offres',
+    configuratorHref: '/configurator',
+    configurator: 'Continuer en version gratuite',
+    later1: 'Vous pouvez passer Premium à tout moment',
+    later2: 'sans perdre vos configurations existantes',
+  },
+  en: {
+    title: 'Payment cancelled',
+    cancelled: 'You cancelled your payment.',
+    notCharged: 'No amount has been charged.',
+    pricingHref: '/en/pricing',
+    pricing: 'See the plans again',
+    configuratorHref: '/en/configurator',
+    configurator: 'Continue with the free version',
+    later1: 'You can go Premium at any time',
+    later2: 'without losing your existing setups',
+  },
+};
 
 export default function PaymentCancelledPage() {
+  const tx = TEXT[useCheckoutReturnLocale()];
   return (
     <div style={{
       minHeight: '100vh',
@@ -53,7 +81,7 @@ export default function PaymentCancelledPage() {
           marginBottom: '1rem',
           color: 'var(--text-strong)'
         }}>
-          Paiement annulé
+          {tx.title}
         </h1>
         
         <p style={{
@@ -61,39 +89,20 @@ export default function PaymentCancelledPage() {
           color: 'var(--text-muted)',
           marginBottom: '2rem'
         }}>
-          Vous avez annulé votre paiement.<br />
-          Aucun montant n'a été débité.
+          {tx.cancelled}<br />
+          {tx.notCharged}
         </p>
         
-        <div style={{
-          backgroundColor: 'var(--tint-amber-bg)',
-          borderRadius: '8px',
-          padding: '1rem',
-          marginBottom: '2rem'
-        }}>
-          <h3 style={{
-            fontSize: '1rem',
-            fontWeight: 'bold',
-            color: 'var(--tint-amber-fg)',
-            marginBottom: '0.5rem'
-          }}>
-            💡 Le saviez-vous ?
-          </h3>
-          <p style={{
-            fontSize: '0.875rem',
-            color: 'var(--tint-amber-fg)'
-          }}>
-            Avec Premium, vous économisez en moyenne 30€ par an en évitant les mauvais choix de cordage !
-          </p>
-        </div>
-        
+        {/* Encadré « Le saviez-vous ? — Avec Premium, vous économisez en moyenne 30€ par an en évitant les mauvais choix de
+            cordage ! » retiré le 22/11/2026 : aucune mesure ne fonde ce chiffre (aucun abonné établi). Même motif que les
+            affirmations retirées de /pricing le 21/11/2026 ; ne pas le traduire, ne pas le rétablir. */}
         <div style={{
           display: 'flex',
           flexDirection: 'column',
           gap: '1rem'
         }}>
           <Link
-            href="/pricing"
+            href={tx.pricingHref}
             style={{
               padding: '0.75rem 2rem',
               backgroundColor: '#3b82f6',
@@ -113,11 +122,11 @@ export default function PaymentCancelledPage() {
               e.currentTarget.style.boxShadow = 'none';
             }}
           >
-            Revoir les offres
+            {tx.pricing}
           </Link>
           
           <Link
-            href="/configurator"
+            href={tx.configuratorHref}
             style={{
               padding: '0.75rem 2rem',
               backgroundColor: 'transparent',
@@ -137,7 +146,7 @@ export default function PaymentCancelledPage() {
               e.currentTarget.style.color = 'var(--text-muted)';
             }}
           >
-            Continuer en version gratuite
+            {tx.configurator}
           </Link>
         </div>
         
@@ -146,8 +155,8 @@ export default function PaymentCancelledPage() {
           fontSize: '0.75rem',
           color: 'var(--text-faint)'
         }}>
-          Vous pouvez passer Premium à tout moment<br />
-          sans perdre vos configurations existantes
+          {tx.later1}<br />
+          {tx.later2}
         </div>
       </div>
     </div>
