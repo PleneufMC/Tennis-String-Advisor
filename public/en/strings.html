@@ -694,13 +694,18 @@
       }
     };
 
+    // Meme regle que buyLinkRel() de src/lib/affiliate.ts : `sponsored` seulement si un
+    // identifiant d'affiliation est reellement present (tag non vide) ; sinon `nofollow`.
+    // Aucun accord d'affiliation au 21/11/2026 : tous les tags sont vides, liens non remuneres.
+    const buyLinkRel = (config) => (config.tag ? 'sponsored noopener noreferrer' : 'nofollow noopener noreferrer');
+
     // Show affiliate modal
     function showAffiliate(brand, model) {
       const productName = `${brand} ${model}`.trim();
       const searchQuery = encodeURIComponent(productName);
-      
+
       const affiliateHtml = Object.entries(AFFILIATE_CONFIG).map(([key, config]) => `
-        <a href="${config.url}${searchQuery}${config.tag}" target="_blank" rel="sponsored noopener noreferrer"
+        <a href="${config.url}${searchQuery}${config.tag}" target="_blank" rel="${buyLinkRel(config)}"
           data-affiliate-merchant="${key}" data-affiliate-product="${encodeURIComponent(productName)}"
           class="flex items-center gap-4 p-4 border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-green-500 transition">
           <div class="text-2xl">${config.logo}</div>

@@ -1,7 +1,7 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.3.37
-> **Date** : 21 novembre 2026
+> **Version** : 2.3.43
+> **Date** : 22 novembre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
 > **Branche de référence** : `main` (seule branche longue ; la production Netlify en déploie)
@@ -214,21 +214,113 @@ seuil, renvoi santé) et les nombres des 77 textes fixes FR/EN. Restent en fran�
 (`buy-button.tsx`), lien d'accès rapide du layout, `/pricing`, `/auth/signin`, `/account/configurations`, et `<html lang="fr">` au
 rendu serveur (corrigé à l'hydratation).
 
-**Changelog v2.3.36 → v2.3.37** — **GA4 : l'application Next et les pages statiques ne transmettent plus de l'URL que le chemin
-et les cinq `utm_*` ; contrôle `audit:analytics-url`** (plan de monétisation du 21/11/2026 : un formulaire en GET mettait `?email-address=…` dans l'URL ;
-Pierre : « Oui on lance les corrections qui peuvent se faire » ; `tsa-measure`). **Constat, en exécution** (vrai gtag.js, collectes
-interceptées et annulées) : gtag joint `page_location` et `page_referrer` complets à chaque événement, y compris ceux qu'il émet
-seul ; le caviardage du flux GA4 (actif, adresses e-mail seulement) remplaçait l'adresse par « (redacted) », mais un nom, un
-téléphone ou une adresse doublement encodée partaient en clair. **Changé** : `src/components/analytics/url-allowlist.ts` (liste
-blanche `utm_source`, `utm_medium`, `utm_campaign`, `utm_term`, `utm_content` — aucun autre paramètre n'est lu par un rapport ;
-utm portant un @ refusé ; fragment jamais transmis) ; `analytics.tsx` pose `gtag('set', …)` nettoyé à chaque navigation et joint
-le contexte nettoyé, en dernier, à chaque événement ; `public/js/analytics.js` (désormais à `tsa-measure`, §5), chargé par les
-356 pages statiques (308 fiches EN générées comprises), en porte le miroir dans `gtag('set')`, `gtag('config')` et `trackEvent`
-(mêmes cas vérifiés, exécuté dans un bac à sable). A3 intact (referrer d'article conservé, vérifié) ; faux positif A3 mesuré
-(article → accueil → configurateur sans rechargement, compté comme arrivée directe), consigné dans le rapport A3. **Reste** : le
-page_view que GA4 émet seul à chaque navigation côté client (« Page changes based on browser history events », actif) lit la barre
-d'adresse et **double** celui du composant : réglage d'administration à couper par Pierre, rupture de série du page_view des
-navigations internes. La recherche de site GA4 (`q`, `search`…) ne voit plus ses termes.
+**Changelog v2.3.36 → v2.3.37** — **Offre et liens d'achat : affirmations fausses retirées ; règle 2 rétablie dans le
+configurateur** (plan de monétisation du 21/11/2026 ; Pierre : « Oui on lance les corrections qui peuvent se faire » ; `tsa-revenue` ;
+`[verrou: configurator/page.tsx]`). **Affiliation** : aucun accord n'existe (Pierre, 20/11/2026) ; la mention du pied de page
+(`affiliate-disclosure.tsx`) annonçait une commission possible. Mention, libellés (« liens directs, sans commission » au lieu de
+« liens partenaires » / « partner links », fiches raquette et cordage, `aria-label` du bouton) et `rel` (`nofollow` au lieu de
+`sponsored`, `buyLinkRel` dans `affiliate.ts`) suivent désormais `isAffiliateEnabled()` et basculent seuls au build qui renseignera
+les variables Awin. **`/pricing`** : badge « PLUS POPULAIRE » retiré (aucun abonné établi ; la carte reste mise en avant,
+`highlighted`) ; « Prix réservé aux 200 premiers » retiré (aucune limite dans Stripe ; `LIFETIME_SEATS` ne fait que masquer l'offre ;
+prix inchangé) ; « Annulation Facile — À tout moment » remplacé par « Résiliation sur demande — par e-mail : » et l'adresse déjà
+publiée sur `/payment-success` (aucune résiliation en libre-service n'existe) ; vignette « Statistiques — Analysez vos performances »
+retirée (`/statistics` est ouverte à tous). `CHECKOUT_DISPONIBLE` et les prix inchangés. **Pied de page** : formulaire « newsletter »
+retiré (ni `action` ni `onSubmit`, aucun backend ; une soumission rechargeait la page avec `?email-address=…`, repris par le
+`page_path` du `page_view` GA4) avec ses 5 clés i18n FR/EN ; `footer.tsx` n'est pas dans la carte de propriété (§5). **Règle 2** :
+le bloc d'achat du configurateur précédait le bloc des alertes bras (mesure Playwright du 21/11 : chaque lien 100 à 200 px AU-DESSUS
+de l'alerte, à 390 et 1440 px) ; il suit désormais le bloc « Analyse RCS Avancée », alertes comprises (§2 point 3). **Suite, même
+PR** : `/pricing` « 2 MOIS GRATUITS » devient « PRÈS DE 2 MOIS OFFERTS » (9,89 € d'économie, 1,98 mois) et « Activation sous 24 h —
+Confirmation par email » devient « Activation automatique — dès l'encaissement du paiement » ; `/payment-success` cesse d'annoncer une
+activation manuelle sous 24 h, un e-mail de confirmation (le site n'en envoie aucun) et un reçu Stripe (réglages du compte Stripe non
+vérifiés) ; la mention du pied de page suit la langue du pied de page (`useLanguage().locale`, FR ou EN, même condition
+`isAffiliateEnabled()`) ; le titre du configurateur, rendu aussi sur `/en/configurator`, perd « Premium » (la page est gratuite, le
+Premium ne s'achète pas en anglais) et le sous-titre FR/EN décrit la page (« Indice RCS de votre montage, alerte bras et journal de
+cordage »).
+
+**Changelog v2.3.37 → v2.3.38** — **Premium anglais : `/en/pricing`, même page et mêmes Payment Links que `/pricing`** (décision
+de Pierre du 22/11/2026 : « Il n'y a aucune raison de ne pas faire une page de paiement en anglais pour le premium en incluant les
+mêmes liens Stripe » ; `tsa-revenue` ; `[verrou: header.tsx]`). `/en/pricing` est une route Next qui rend le composant de
+`src/app/pricing/page.tsx` : mêmes trois Payment Links, mêmes prix en euros, même rattachement par `client_reference_id` (id
+Prisma `User`), donc un achat anglais est activé par le webhook ; seuls les textes changent, choisis par l'URL
+(`src/lib/i18n/pricing.ts`, valeurs FR extraites à l'identique, texte visible de `/pricing` comparé avant/après : identique). La
+page anglaise dit que le PDF exporté et l'espace compte sont en français. `/en/premium.html` et `/en/premium` → 301 `/en/pricing`
+(`next.config.js`) ; `route-map.ts` : `/pricing` ↔ `/en/pricing` ; lien Premium de l'en-tête vers `/en/pricing` quand la langue du
+visiteur est l'anglais ; lien Premium du pied de page localisé comme les autres. La langue de la page d'achat est notée au clic
+(`localStorage` `tsa-checkout-locale`) pour les pages de retour Stripe (PR empilée).
+
+**Changelog v2.3.38 → v2.3.39** — **Retours Stripe et pages de connexion dans la langue de l'acheteur** (suite de #171 ;
+`tsa-revenue`). `/payment-success` et `/payment-cancelled` (URL de retour fixée dans Stripe, commune aux deux langues) suivent la
+langue de la page d'achat, notée au clic, sinon celle du site. `/auth/signin`, `/auth/signup`, `/auth/verify-request` et
+`/auth/error` passent en anglais si le `callbackUrl` mène à `/en/…`, sinon suivent la langue du site ; le `callbackUrl` est
+transmis entre connexion et inscription (un acheteur qui crée son compte revient à la page Premium, plus à l'accueil). Retirés, FR
+compris : l'encadré « vous économisez en moyenne 30€ par an » de `/payment-cancelled` (aucune mesure) et « L'équipe a été notifiée
+» de `/auth/error` (aucun suivi d'erreurs). Quand le `callbackUrl` mène à `/en/…`, l'en-tête, le pied de page, `lang` et le titre
+d'onglet passent aussi en anglais, quelle que soit la langue du navigateur : `forceLocale` du `LanguageProvider`, en mémoire et
+jamais stocké, posé par les pages de connexion et d'inscription ; `generateMetadata` dans signin et signup (blocs de
+`tsa-acquisition`, signalé).
+
+**Changelog v2.3.39 → v2.3.40** — **`audit:stripe-webhook` : le circuit EN est contrôlé par sa structure et le contrôle est juste
+avec ou sans `public/en/premium.html` et `/en/pricing`** (décision de Pierre du 22/11/2026 : « Il n'y a aucune raison de ne pas
+faire une page de paiement en anglais pour le premium en incluant les mêmes liens Stripe » ; `tsa-measure`). **Constat** :
+`scripts/qa-stripe-webhook.mjs` lisait `public/en/premium.html` en dur. Sa suppression (#166) le faisait sortir en 1 (« fichier
+absent »), et la route `/en/pricing` (`tsa-revenue`) n'était pas lue. **Changé** : le contrôle 6 devient structurel. La route
+`src/app/en/pricing/page.tsx`, si elle existe, rend le composant FR (import d'exécution de `src/app/pricing/page.tsx`, ou d'un
+composant de `src/app/pricing/` que la page FR rend aussi). Son graphe d'imports locaux atteint la page FR, et elle ne porte ni
+lien `buy.stripe.com` ni drapeau `CHECKOUT_DISPONIBLE` propre. `premium.html`, tant qu'il existe, reste fermé et sans lien.
+L'absence de l'une ou l'autre est un état valide, signalé en sortie. Contrôle 7 : `src/app/pricing/page.tsx` est le seul fichier
+autorisé à porter des liens, fichiers non suivis compris ; une panne de `git grep` est un échec (hors dépôt, elle donnait un vert
+silencieux). Contrôle 8 : un seul drapeau, celui du FR. **Vérifié** dans les quatre états (page statique présente ou absente ×
+route présente ou absente) sur `origin/main`, sur la tête de #166 et sur des états simulés de `pricing-en` : vert partout, de 25 à
+31 contrôles selon l'état, alors que l'ancien script sortait en 1 dès que `premium.html` manquait. 10 cas négatifs sont détectés,
+dont deux que l'ancien script laissait passer (lien dans un fichier non suivi, exécution hors dépôt git). **Conséquence** : avec
+la grille confinée à `page.tsx`, et sachant que Next refuse les exports nommés d'un `page.tsx`, la seule route EN verte est celle
+qui rend l'export par défaut de la page FR.
+
+**Changelog v2.3.40 → v2.3.41** — **FAQ anglaise alignée sur le code, ancienne page Premium anglaise supprimée** (plan de
+monétisation du 21/11/2026 ; Pierre : « Oui on lance les corrections qui peuvent se faire », puis le 22/11/2026 : « Il n'y a
+aucune raison de ne pas faire une page de paiement en anglais pour le premium en incluant les mêmes liens Stripe » ;
+`tsa-acquisition`). **`public/en/premium.html` supprimée** : son circuit (compte Supabase Auth, `CHECKOUT_DISPONIBLE = false`
+depuis le 09/10/2026) est remplacé par la route Next `/en/pricing` de `tsa-revenue` (même composant et mêmes trois Payment Links
+que `/pricing`, achat rattaché au compte NextAuth), qui pose aussi la 301 `/en/premium.html` → `/en/pricing`.
+**`public/en/faq.html`** renvoie vers `/en/pricing` et décrit l'offre comme `/pricing` : 4,99 €/mois, 49,99 €/an ou 19,99 € une
+fois ; configurations illimitées, analyse RCS avancée, export PDF (« in French ») ; compte gratuit requis pour souscrire ;
+résiliation par e-mail ; aucune rareté. Elle dit que le compte créé sur `auth.html` (Supabase) est distinct du compte du site et
+ne porte pas le Premium. Elle ne promet plus d'alertes de prix, d'historique ou de journal de cordage, de support prioritaire, ni
+un calculateur RCS « limité à 1 usage » (il est libre : `canCalculate()` de `rcs-calculator.html` renvoie toujours `true`) ; «
+Delete my account » n'efface que les setups (`handleDeleteAccount()` d'`account.html`) ; aucune page de résiliation n'existe dans
+`src/app/`. JSON-LD `FAQPage` identique au texte visible. Paiement, articles et libellés d'achat du configurateur (à
+`tsa-revenue`) inchangés. `src/app/sitemap.ts` : `/en/premium.html` remplacée par `/en/pricing`. La 301 de #171 prend effet avec
+cette suppression (le fichier statique l'emportait tant qu'il existait). Le §2 (« Le paiement est ouvert ») a été mis à jour par
+#171.
+
+**Changelog v2.3.41 → v2.3.42** — **Pages anglaises hors blog alignées sur le code ; liens Premium vers `/en/pricing`** (suite de
+#166 ; plan de monétisation du 21/11/2026 et décision de Pierre du 22/11/2026 ; `tsa-acquisition` ; périmètre `public/en/` hors
+blog). `index.html` : 3 liens vers `/en/pricing`, badge « New » retiré, formulaire newsletter et son script d'écriture dans
+`newsletter_subscribers` retirés (aucun envoi, aucune désinscription, table lue nulle part ; même décision que le pied de page FR
+de #167). `auth.html`, `account.html`, `setups.html`, `rcs-calculator.html` : le Premium s'achète sur `/en/pricing` et se rattache
+au compte du site ; le compte anglais (Supabase Auth) ne le porte pas et reste limité à 3 setups ; export PDF « (in French) ».
+Blocs jamais affichés et faux retirés : carte `#freeUserCta` d'`account.html`, bloc `#premiumRequired` de `setups.html`, modale de
+paywall du calculateur avec `showPaywall()` et `canCalculate()` (le commentaire « RÈGLE 2 : ne pas rétablir de paywall sur le
+calcul » reste). `racquets.html`, `strings.html`, `setups.html` : `rel` des liens d'achat selon la règle de `buyLinkRel()` (#167),
+`nofollow` tant qu'aucun identifiant d'affiliation n'est présent. Plus aucun lien vers `premium.html` dans `public/en/` hors blog
+(7 deviennent `/en/pricing`, 3 partent avec les blocs morts) ; plus aucune mention « French site ».
+
+**Changelog v2.3.42 → v2.3.43** — **GA4 : l'application Next et les pages statiques ne transmettent plus de l'URL que le chemin et
+les cinq `utm_*` ; contrôle `audit:analytics-url`** (plan de monétisation du 21/11/2026 : un formulaire en GET mettait
+`?email-address=…` dans l'URL ; Pierre : « Oui on lance les corrections qui peuvent se faire » ; `tsa-measure`). **Constat, en
+exécution** (vrai gtag.js, collectes interceptées et annulées) : gtag joint `page_location` et `page_referrer` complets à chaque
+événement, y compris ceux qu'il émet seul ; le caviardage du flux GA4 (actif, adresses e-mail seulement) remplaçait l'adresse par
+« (redacted) », mais un nom, un téléphone ou une adresse doublement encodée partaient en clair. **Changé** :
+`src/components/analytics/url-allowlist.ts` (liste blanche `utm_source`, `utm_medium`, `utm_campaign`, `utm_term`, `utm_content` —
+aucun autre paramètre n'est lu par un rapport ; utm portant un @ refusé ; fragment jamais transmis) ; `analytics.tsx` pose
+`gtag('set', …)` nettoyé à chaque navigation et joint le contexte nettoyé, en dernier, à chaque événement ;
+`public/js/analytics.js` (désormais à `tsa-measure`, §5), chargé par les 356 pages statiques (308 fiches EN générées comprises),
+en porte le miroir dans `gtag('set')`, `gtag('config')` et `trackEvent` (mêmes cas vérifiés, exécuté dans un bac à sable). A3
+intact (referrer d'article conservé, vérifié) ; faux positif A3 mesuré (article → accueil → configurateur sans rechargement,
+compté comme arrivée directe), consigné dans le rapport A3. **Reste** : le page_view que GA4 émet seul à chaque navigation côté
+client (« Page changes based on browser history events », actif) lit la barre d'adresse et **double** celui du composant : réglage
+d'administration à couper par Pierre, rupture de série du page_view des navigations internes. La recherche de site GA4 (`q`,
+`search`…) ne voit plus ses termes.
 
 **Changelog v2.3.25 → v2.3.26** — **Hybrides : un seul indice, celui que l'alerte lit, que le configurateur
 affiche et que le PDF imprime ; contrôle 21 ter** (décision (b)+(a) de l'orchestrateur du 22/10/2026, Pierre ayant délégué ; limite (4)
@@ -1282,8 +1374,8 @@ Links, déploiement Netlify (adaptateur OpenNext). (Zustand est déclaré dans
 **Architecture** : hybride assumé. L'application Next sert le FR à la racine
 (`/configurator`, `/racquets`…). Le blog et la version anglaise sont des pages
 **HTML statiques** dans `public/blog/*.html` et `public/en/*.html`, sauf le
-configurateur EN : route Next `/en/configurator`, même composant que le FR
-(20/11/2026). Le
+configurateur EN (`/en/configurator`, 20/11/2026) et la page Premium EN (`/en/pricing`,
+22/11/2026), routes Next qui rendent les composants FR. Le
 `route-map.ts` fait le pont entre les deux univers.
 
 **Base** : 129 raquettes, 179 cordages (`src/data/*.ts` ; 190 avant le
@@ -1362,8 +1454,9 @@ corrigé dans la même PR.
 | # | Problème | Impact |
 |---|---|---|
 | 1 | **Aucun webhook Stripe.** ⚠️ Complété le 13/09/2026 : les **deux Payment Links FR** renvoient « The link is no longer active. » (navigation réelle, HTTP 200 + page d'erreur Stripe), tandis que les **deux liens EN de `public/en/premium.html` sont actifs** — à **2,99 €/mois et 24,99 €/an**, soit la moitié des tarifs annoncés en FR (4,99 / 49,90). Un visiteur EN peut donc payer aujourd'hui, sans qu'aucun droit ne s'active. Côté FR, le CTA est désamorcé depuis `pricing/page.tsx` (drapeau `CHECKOUT_DISPONIBLE`) et annonce l'indisponibilité. **Grille unique depuis le 13/09/2026, trois offres** — 4,99 €/mois
-(`…8Vi0b`), 49,99 €/an (`…8Vi0f`), 19,99 € une fois (`…8Vi0d`, « prix réservé aux
-200 premiers »). Les trois liens ont été **ouverts et lus** avant d'être collés ;
+(`…8Vi0b`), 49,99 €/an (`…8Vi0f`), 19,99 € une fois (`…8Vi0d` ; la mention « prix réservé aux
+200 premiers » est retirée de `/pricing` le 21/11/2026 : aucune limite n'est posée dans Stripe et `LIFETIME_SEATS` ne fait que
+masquer l'offre). Les trois liens ont été **ouverts et lus** avant d'être collés ;
 trois candidats ont été écartés à la lecture, dont un intitulé « Annuel » qui
 facturait 49,99 € **par mois**. Les deux circuits, FR et EN, portent les mêmes
 liens et la même grille.
@@ -1379,17 +1472,21 @@ jamais `emailVerified`. Remboursement et litige retirent l'accès. Les deux circ
 transmettent l'identifiant de compte — ⚠️ **mais seul le circuit FR est activable**
 (constat du 09/10/2026) : l'id EN est un uuid Supabase Auth absent de la table Prisma
 `User`, le webhook acquitte « compte introuvable » et n'écrit jamais
-`profiles.is_premium`. Checkout EN **fermé** (`CHECKOUT_DISPONIBLE = false`) jusqu'à ce
-que le webhook sache activer un compte Supabase (option à arbitrer par Pierre ; toute
-écriture dans `profiles` passe par `db-guardian`). ⚠️ **`profiles.is_premium` est
+`profiles.is_premium`. **Depuis le 22/11/2026, le Premium anglais se vend sur `/en/pricing`** :
+route Next qui rend le composant de `/pricing` (mêmes trois Payment Links,
+`client_reference_id` = id Prisma `User`), activable par le webhook. L'ancien circuit
+Supabase (`/en/premium.html`, fermé depuis le 09/10/2026) est redirigé en 301 vers
+`/en/pricing` et supprimé par #166. Les comptes Supabase Auth des pages statiques EN
+(`auth.html`, `account.html`) ne portent pas le Premium acheté avec le compte du site. ⚠️ **`profiles.is_premium` est
 auto-attribuable** : la policy `Users can update own profile` (`auth.uid() = id`, sans
 restriction de colonne) et le `GRANT UPDATE` sur toutes les colonnes laissent un compte
 EN écrire `is_premium = true` depuis le navigateur. Correctif = migration (révoquer
 l'UPDATE sur les colonnes premium/Stripe) → `db-guardian` + GO de Pierre. Garde-fou : `npm run audit:stripe-webhook`,
-28 contrôles, dans `audit:all`.
+de 25 à 31 contrôles selon les fichiers présents (29 une fois `premium.html` supprimée et
+`/en/pricing` en place), dans `audit:all`.
 
-✅ **Le paiement est ouvert** depuis le 13/09/2026 — les deux drapeaux
-`CHECKOUT_DISPONIBLE` sont à `true` (`pricing/page.tsx`, `en/premium.html`).
+✅ **Le paiement est ouvert** depuis le 13/09/2026 — le drapeau
+`CHECKOUT_DISPONIBLE` de `pricing/page.tsx` est à `true` ; il vaut pour `/pricing` et `/en/pricing`.
 L'endpoint est déclaré dans Stripe sur six événements et les deux secrets sont dans
 Netlify ; la preuve est que `POST /api/stripe/webhook` en production répond **400
 « Signature absente »** et non plus 500. **Aucun paiement sans compte** : un visiteur
@@ -1401,9 +1498,9 @@ d'arrivée. Deux points non tranchés : la **limite de
 quantité** sur le lien à vie — `LIFETIME_SEATS` cesse d'afficher l'offre au 200ᵉ,
 mais ne protège rien, une URL connue restant ouvrable ; seule une limite posée
 dans Stripe l'empêche — et le fait que l'offre à vie, à 19,99 €, **rend les deux
-abonnements sans objet** tant qu'elle dure. Le Payment Link FR ne transporte pas `client_reference_id`, rien n'écrit `isPremium`. Et un **second circuit de paiement EN** existe en parallèle (`public/en/premium.html` : Supabase Auth direct, **2** Payment Links libellés en **€** — et non 3 en $ —, tarifs divergents ; l'offre « Lifetime 19,99 € » affichée sur `public/en/configurator.html` n'a **aucun Payment Link** : son lien mène à `premium.html`, qui vend un abonnement) — **4** Payment Links au total, chacun ouvert et vérifié le 13/09/2026, 2 systèmes d'identité, 0 consommateur serveur. | Un client qui paie reste plafonné à 3 configs. La page `payment-success` a été désamorcée (13/08) : elle annonce désormais une activation manuelle sous 24 h au lieu de mentir. |
-| 2 | **Affiliation câblée mais inactive.** `NEXT_PUBLIC_AWIN_ID` et `NEXT_PUBLIC_AWIN_TENNISPOINT_MID` vides → liens directs non rémunérés. ⚠️ Ces variables `NEXT_PUBLIC_*` sont inlinées au build : les renseigner dans Netlify **exige un redéploiement** (les commentaires « sans redéploiement » dans `affiliate.ts` et `.env.example` sont faux). | 0 € sur 100 % des clics. |
-| 3 | **Résolu depuis le 13/08** (`15c6649`), constaté dans le code le 31/08 : import `BuyButton` ligne 16 de `configurator/page.tsx`, trois instances (cordage principal, travers, raquette) sous « Acheter ce setup — liens partenaires », placées après le bloc RCS conformément à la règle 1. Vérifié **en exécution** le 31/08 par `tsa-revenue` (Playwright, stub gtag) : liens `rel="sponsored"` vers tennis-point.fr en HTTP 200, alertes bras `role="alert"` affichées AVANT les liens (règle 2), séquence `configurator_step` → `arm_warning_shown` → `configurator_result_view` → `configurator_complete` → `affiliate_click` complète, bascule Awin vérifiée en dev ET sur build de production (`npm run build` exit 0 dans les deux cas ; sans variables : lien tennis-point.fr direct, `link_type: direct` ; avec `NEXT_PUBLIC_AWIN_ID`/`_TENNISPOINT_MID` factices : lien `awin1.com/cread.php?awinmid=…&awinaffid=…&ued=…`, `link_type: awin` — zéro changement de code entre les deux builds). L'entrée du 13/08 était périmée le jour même de sa rédaction. | Le moment de plus forte intention est équipé. Ces clics restent non rémunérés tant que le point 2 (AWIN) tient — c'est le point 2, pas celui-ci. Verrou `configurator/page.tsx` rendu par `tsa-revenue` le 31/08 (surface d'émission `location` propagée sur les 6 appelants, merge `c93ef38`). Procédure d'activation et de vérification : `reports/r2-activation-awin.md`. |
+abonnements sans objet** tant qu'elle dure. Le Payment Link FR ne transporte pas `client_reference_id`, rien n'écrit `isPremium`. Et un **second circuit de paiement EN** existe en parallèle (`public/en/premium.html` : Supabase Auth direct, **2** Payment Links libellés en **€** — et non 3 en $ —, tarifs divergents ; l'offre « Lifetime 19,99 € » affichée sur `public/en/configurator.html` n'a **aucun Payment Link** : son lien mène à `premium.html`, qui vend un abonnement) — **4** Payment Links au total, chacun ouvert et vérifié le 13/09/2026, 2 systèmes d'identité, 0 consommateur serveur. | Un client qui paie reste plafonné à 3 configs. La page `payment-success` a été désamorcée (13/08) : elle annonçait une activation manuelle sous 24 h ; depuis le 21/11/2026, elle annonce l'activation automatique par le webhook dès l'encaissement, sans promettre d'e-mail (le site n'en envoie aucun ; ceux de Stripe dépendent de réglages non vérifiés). |
+| 2 | **Affiliation câblée mais inactive.** `NEXT_PUBLIC_AWIN_ID` et `NEXT_PUBLIC_AWIN_TENNISPOINT_MID` vides → liens directs non rémunérés. **Aucun accord d'affiliation n'existe** (Pierre, 20/11/2026). Depuis le 21/11/2026, la mention du pied de page, les libellés (« liens directs, sans commission », fiches et configurateur FR/EN, `aria-label` du bouton) et l'attribut `rel` (`nofollow`, `sponsored` seulement si actif : `buyLinkRel`) suivent `isAffiliateEnabled()` ; ils basculent seuls au build qui renseignera les variables. ⚠️ Ces variables `NEXT_PUBLIC_*` sont inlinées au build : les renseigner dans Netlify **exige un redéploiement** (les commentaires « sans redéploiement » dans `affiliate.ts` et `.env.example` sont faux). | 0 € sur 100 % des clics. |
+| 3 | **Résolu depuis le 13/08** (`15c6649`), constaté dans le code le 31/08 : import `BuyButton` ligne 16 de `configurator/page.tsx`, trois instances (cordage principal, travers, raquette) sous « Acheter ce setup — liens partenaires », placées après le bloc RCS conformément à la règle 1. Vérifié **en exécution** le 31/08 par `tsa-revenue` (Playwright, stub gtag) : liens `rel="sponsored"` vers tennis-point.fr en HTTP 200, alertes bras `role="alert"` affichées AVANT les liens (règle 2 ; **plus vrai au 21/11/2026, voir la fin de ce point**), séquence `configurator_step` → `arm_warning_shown` → `configurator_result_view` → `configurator_complete` → `affiliate_click` complète, bascule Awin vérifiée en dev ET sur build de production (`npm run build` exit 0 dans les deux cas ; sans variables : lien tennis-point.fr direct, `link_type: direct` ; avec `NEXT_PUBLIC_AWIN_ID`/`_TENNISPOINT_MID` factices : lien `awin1.com/cread.php?awinmid=…&awinaffid=…&ued=…`, `link_type: awin` — zéro changement de code entre les deux builds). L'entrée du 13/08 était périmée le jour même de sa rédaction. ⚠️ **Règle 2 infirmée le 21/11/2026, en exécution** (`tsa-revenue`, Playwright, Chrome, 390 et 1440 px, Babolat Pure Aero Standard (2026) + Luxilon 4G, 24 / 22 kg, indice 38, avec et sans travers ALU Power, indice 36) : le code avait bougé depuis le 31/08 — le bloc d'achat fermait le panneau « Analyse RCS en temps réel », AVANT le bloc « Analyse RCS Avancée » qui porte les alertes ; **chaque lien d'achat s'affichait 100 à 200 px au-dessus de l'alerte bras** (2/2 et 3/3 liens, aux deux largeurs). Corrigé (`[verrou: configurator/page.tsx]`) : le bloc d'achat suit désormais le bloc « Analyse RCS Avancée », alertes comprises ; indice et palier → alerte → liens d'achat, premier lien 494 à 677 px sous le bas de l'alerte. | Le moment de plus forte intention est équipé. Ces clics restent non rémunérés tant que le point 2 (AWIN) tient — c'est le point 2, pas celui-ci. Verrou `configurator/page.tsx` rendu par `tsa-revenue` le 31/08 (surface d'émission `location` propagée sur les 6 appelants, merge `c93ef38`). Procédure d'activation et de vérification : `reports/r2-activation-awin.md`. |
 | 4 | **Incitation inversée du quota** (reformulé 13/08 — il n'existe **aucun mur d'authentification** : pas de middleware, configurateur 100 % public). L'anonyme sauvegarde en illimité dans `localStorage` ; se connecter impose le quota de 3 (`premium.ts` appliqué seulement dans `POST /api/configurations`). Créer un compte retire une capacité. Les chiffres (160 vues signin vs 45 configurateur, 39 `form_start` → 1 `form_submit`) décrivent un problème de navigation/attractivité, pas un blocage technique. | L'entonnoir compte → premium est à l'envers. Arbitrage A5 en attente. |
 | 5 | **Largement résorbé le 14/08** (`b227ba7`, vérifié dans le code le 31/08) : `calculateRCS` (`strings-database.ts`, gain 2 / offset −27) est l'unique source de vérité ; `rcsIndex` y **délègue** (plus une copie) ; `public/js/rcs-calculator*.js` en est un **miroir exact**, comparé valeur par valeur à chaque `audit:ratings` (le script charge les moteurs JS). Reste : le miroir est une duplication par convention (toute évolution se fait dans `strings-database.ts` PUIS dans les 2 JS), et `calculateCompatibility` (`racquets-database.ts`) demeure une échelle homonyme distincte, documentée dans `racquet-scoring.ts`. | Un même montage affiche le même RCS FR/EN. La dette restante (miroir manuel, homonyme) est contrôlée par script, plus silencieuse. |
 | 6 | **Résolu le 09/10/2026 (C3)** — la divergence FR/EN était structurelle : FR lisait `src/data/*.ts`, 7 pages EN lisaient les tables Supabase `racquets` (107) / `strings` (173) — 12 raquettes communes sur 129, 61 cordages communs en conflit hors description, 30 rigidités différentes (O-Toro 210 vs 165,7). **Le TypeScript fait foi** : `npm run build:catalog` (branché en `prebuild` et `predev`, donc exécuté par Netlify à chaque `npm run build`) sérialise `racquetsDatabase` / `stringsDatabase` au schéma snake_case que les pages EN consommaient, dans `public/data/catalog.json` (non versionné, `null` pour tout champ absent, aucune provenance testeurs) ; les pages le lisent via `public/js/catalog.js`. Le contrôle 15 de `audit:ratings` échoue si un fichier de `public/` relit le catalogue dans Supabase (`.from('racquets'|'strings')`, `/rest/v1/…`, jointure `racquets(*)`), si le JSON diffère du TS, s'il est versionné ou n'est plus généré au build. Les 95 raquettes et 17 cordages présents seulement dans Supabase disparaissent de l'EN ; aucune URL EN ne portait d'id produit. | Une correction de donnée se fait **une fois**, dans `src/data/`. Les tables Supabase `racquets` / `strings` sont orphelines : leur sort (miroir, archivage, suppression) relève de `deploy-captain` + GO de Pierre. |
@@ -1813,4 +1910,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.3.37 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.3.43 — Tennis String Advisor — « Mesurer avant d'affirmer. »*

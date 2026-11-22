@@ -96,7 +96,8 @@ const EN_PAGES: Array<{ path: string; priority: number }> = [
   { path: '/en/compare.html', priority: 0.6 },
   { path: '/en/rcs-calculator.html', priority: 0.6 },
   { path: '/en/faq.html', priority: 0.5 },
-  { path: '/en/premium.html', priority: 0.5 },
+  // Premium EN : route Next (même composant que /pricing) ; l'ancienne page statique redirige ici.
+  { path: '/en/pricing', priority: 0.5 },
 ];
 
 // Articles de blog anglais réellement présents dans `public/en/blog/*.html`.

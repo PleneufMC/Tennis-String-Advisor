@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { AUTH_TEXT, useAuthLocale } from '../auth-text';
 
 interface SignInFormProps {
   hasGoogle: boolean;
@@ -38,6 +39,9 @@ type LoadingState = 'google' | 'credentials' | 'magic' | null;
 export function SignInForm({ hasGoogle, hasEmail }: SignInFormProps) {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get('callbackUrl') || '/';
+  const tx = AUTH_TEXT[useAuthLocale()];
+  // Le passage vers l'inscription garde la page de retour (un acheteur revient à /pricing ou /en/pricing, pas à l'accueil).
+  const signupHref = callbackUrl === '/' ? '/auth/signup' : `/auth/signup?callbackUrl=${encodeURIComponent(callbackUrl)}`;
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState<LoadingState>(null);
@@ -61,7 +65,7 @@ export function SignInForm({ hasGoogle, hasEmail }: SignInFormProps) {
       callbackUrl,
     });
     if (res?.error) {
-      setError('E-mail ou mot de passe incorrect.');
+      setError(tx.wrongCredentials);
       setLoading(null);
       return;
     }
@@ -72,7 +76,7 @@ export function SignInForm({ hasGoogle, hasEmail }: SignInFormProps) {
   const handleMagicLink = async () => {
     setError(null);
     if (!email) {
-      setError('Saisissez votre adresse e-mail pour recevoir un lien.');
+      setError(tx.emailForLink);
       return;
     }
     setLoading('magic');
@@ -95,14 +99,14 @@ export function SignInForm({ hasGoogle, hasEmail }: SignInFormProps) {
           className="flex w-full items-center justify-center gap-3 rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-60 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800"
         >
           <GoogleIcon className="h-5 w-5" />
-          {loading === 'google' ? 'Redirection…' : 'Continuer avec Google'}
+          {loading === 'google' ? tx.redirecting : tx.google}
         </button>
       )}
 
       {hasGoogle && (
         <div className="flex items-center gap-3">
           <div className="h-px flex-1 bg-gray-200 dark:bg-slate-700" />
-          <span className="text-xs text-gray-400 dark:text-slate-500">ou</span>
+          <span className="text-xs text-gray-400 dark:text-slate-500">{tx.or}</span>
           <div className="h-px flex-1 bg-gray-200 dark:bg-slate-700" />
         </div>
       )}
@@ -111,7 +115,7 @@ export function SignInForm({ hasGoogle, hasEmail }: SignInFormProps) {
       <form onSubmit={handleCredentials} className="space-y-3">
         <div className="space-y-1">
           <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-slate-200">
-            Adresse e-mail
+            {tx.email}
           </label>
           <input
             id="email"
@@ -119,20 +123,20 @@ export function SignInForm({ hasGoogle, hasEmail }: SignInFormProps) {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="vous@exemple.com"
+            placeholder={tx.emailPlaceholder}
             className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/30 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
           />
         </div>
         <div className="space-y-1">
           <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-slate-200">
-            Mot de passe
+            {tx.password}
           </label>
           <input
             id="password"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Votre mot de passe"
+            placeholder={tx.passwordPlaceholder}
             className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/30 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
           />
         </div>
@@ -141,7 +145,7 @@ export function SignInForm({ hasGoogle, hasEmail }: SignInFormProps) {
           disabled={loading !== null}
           className="w-full rounded-xl bg-green-600 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-green-700 disabled:opacity-60"
         >
-          {loading === 'credentials' ? 'Connexion…' : 'Se connecter'}
+          {loading === 'credentials' ? tx.signingIn : tx.signIn}
         </button>
       </form>
 
@@ -153,14 +157,14 @@ export function SignInForm({ hasGoogle, hasEmail }: SignInFormProps) {
           disabled={loading !== null}
           className="w-full rounded-xl border border-green-600 px-4 py-3 text-sm font-semibold text-green-700 transition-colors hover:bg-green-50 disabled:opacity-60 dark:border-green-500/60 dark:text-green-400 dark:hover:bg-green-400/10"
         >
-          {loading === 'magic' ? 'Envoi du lien…' : 'Recevoir un lien de connexion par e-mail'}
+          {loading === 'magic' ? tx.sendingLink : tx.magicLink}
         </button>
       )}
 
       <p className="text-center text-sm text-gray-500 dark:text-slate-400">
-        Pas encore de compte ?{' '}
-        <Link href="/auth/signup" className="font-medium text-green-600 hover:text-green-700 dark:text-tennis-green-400">
-          Créer un compte
+        {tx.noAccount}{' '}
+        <Link href={signupHref} className="font-medium text-green-600 hover:text-green-700 dark:text-tennis-green-400">
+          {tx.createAccount}
         </Link>
       </p>
     </div>

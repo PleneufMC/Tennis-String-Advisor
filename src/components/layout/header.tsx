@@ -83,7 +83,9 @@ function SparklesIcon({ className }: { className?: string }) {
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
+  // Page Premium dans la langue du visiteur (22/11/2026) : `/en/pricing` rend la même page que `/pricing`, mêmes Payment Links.
+  const premiumHref = locale === 'en' ? '/en/pricing' : '/pricing';
 
   const isActive = (href: string) => {
     if (href === '/') return pathname === '/';
@@ -151,7 +153,7 @@ export function Header() {
 
             {/* Premium CTA - Hidden on mobile */}
             <Link
-              href="/pricing"
+              href={premiumHref}
               onClick={() => trackPremiumCtaClick('header_desktop')}
               className="hidden md:inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-amber-700 bg-amber-100 rounded-lg hover:bg-amber-200 transition-colors dark:bg-amber-400/15 dark:text-amber-300 dark:hover:bg-amber-400/25"
             >
@@ -221,7 +223,7 @@ export function Header() {
               
               {/* Mobile Premium CTA */}
               <Link
-                href="/pricing"
+                href={premiumHref}
                 onClick={() => {
                   trackPremiumCtaClick('header_mobile');
                   setMobileMenuOpen(false);

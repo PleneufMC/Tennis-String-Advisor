@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { stringsDatabase } from '@/data/strings-database';
 import { BuyButton } from '@/components/product/buy-button';
+import { isAffiliateEnabled } from '@/lib/affiliate';
 import { ProductImage } from '@/components/product/product-image';
 import { SpecList, RatingBar, type Spec } from '@/components/product/spec-list';
 import { StringRatingLabel, StringRatingsNotice } from '@/components/product/string-rating-label';
@@ -241,7 +242,8 @@ export default function StringPage({ params }: { params: { slug: string } }) {
       {/* Lien partenaire APRÈS l'information produit — règle 1 du §4. */}
       <section className="mt-8 border-t border-slate-200 pt-6 dark:border-slate-700">
         <h2 className="mb-3 text-sm font-medium text-slate-600 dark:text-slate-400">
-          Où acheter — lien partenaire
+          {/* « partenaire » seulement si le lien est rémunéré (aucun accord d'affiliation au 21/11/2026). */}
+          {isAffiliateEnabled() ? 'Où acheter — lien partenaire' : 'Où acheter — lien direct, sans commission'}
         </h2>
         {/* `catalog_card` : la fiche détail relève de la surface catalogue —
             l'union de `location` ne distingue que configurateur vs catalogue. */}

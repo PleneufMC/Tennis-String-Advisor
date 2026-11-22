@@ -16,6 +16,8 @@ interface LanguageContextType {
   setLocale: (locale: Locale) => void;
   toggleLocale: () => void;
   t: (key: TranslationKey) => string;
+  /** Langue imposée par la page affichée, en mémoire seulement (jamais stockée) ; `null` la retire. */
+  forceLocale: (locale: Locale | null) => void;
 }
 
 const LanguageContext = React.createContext<LanguageContextType | undefined>(undefined);
@@ -27,7 +29,10 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   // Route anglaise de l'application (`/en/configurator`, 20/11/2026) : la langue de l'URL l'emporte sur la langue stockée, pour
   // que l'en-tête et le pied de page suivent la page. Ailleurs, comportement inchangé (langue stockée, sinon navigateur).
   const pathname = usePathname();
-  const locale: Locale = isEnglishPath(pathname || '/') ? 'en' : storedLocale;
+  // Langue imposée par une page hors `/en/` (22/11/2026 : connexion d'un acheteur venu de `/en/pricing`). État du composant
+  // seulement : rien n'est écrit dans le stockage, la page qui l'impose la retire en se démontant.
+  const [forcedLocale, setForcedLocale] = React.useState<Locale | null>(null);
+  const locale: Locale = isEnglishPath(pathname || '/') ? 'en' : forcedLocale ?? storedLocale;
 
   React.useEffect(() => {
     // 1) langue stockée, sinon 2) langue du navigateur, sinon défaut
@@ -65,7 +70,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   );
 
   const value = React.useMemo(
-    () => ({ locale, setLocale, toggleLocale, t }),
+    () => ({ locale, setLocale, toggleLocale, t, forceLocale: setForcedLocale }),
     [locale, setLocale, toggleLocale, t]
   );
 
