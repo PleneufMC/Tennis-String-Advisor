@@ -574,7 +574,9 @@ export default function ConfiguratorPage() {
           marginBottom: '0.5rem',
           textShadow: '3px 3px 6px rgba(0,0,0,0.5)'
         }}>
-          Tennis String Advisor Premium
+          {/* « Tennis String Advisor Premium » corrigé le 21/11/2026 : le configurateur est gratuit (seule l'analyse avancée est
+              réservée au Premium), et le Premium ne s'achète pas sur le site anglais, qui rend ce même titre. */}
+          Tennis String Advisor
         </h1>
         <p style={{ color: '#ffffff', fontSize: '1.1rem', textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}>
           {tx.subtitle}
@@ -1364,53 +1366,6 @@ export default function ConfiguratorPage() {
                     {rcsData.compatibility.toFixed(0)}%
                   </span>
                 </div>
-
-                {/* Liens partenaires — RÈGLE 1 (§4 CLAUDE.md) : ils apparaissent
-                    APRÈS la recommandation, n'entrent ni dans le calcul du RCS,
-                    ni dans l'ordre de tri, ni dans la sélection des cordages.
-                    Placés ici pour monétiser le moment de plus forte intention
-                    (audit 13/08/2026 : BuyButton n'existait que sur les cartes
-                    catalogue, jamais sur le résultat du configurateur). */}
-                <div style={{
-                  marginTop: '0.75rem',
-                  paddingTop: '0.75rem',
-                  borderTop: '1px solid var(--surface-border)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '0.5rem'
-                }}>
-                  {/* --tint-blue-fg (et non --text-muted) : ce libellé est posé
-                      sur le fond --tint-blue-bg du panneau. Mélanger une variable
-                      de texte neutre avec un fond teinté donnait 3,96:1, sous le
-                      seuil AA de 4,5:1 (détecté par npm run audit:style-contrast). */}
-                  <div style={{ fontSize: '0.75rem', color: 'var(--tint-blue-fg)' }}>
-                    {tx.buySetup}
-                  </div>
-                  {selectedMainString && (
-                    <BuyButton
-                      brand={selectedMainString.brand}
-                      model={selectedMainString.model}
-                      variant="outline"
-                      location="configurator_result"
-                    />
-                  )}
-                  {selectedCrossString && selectedCrossString.id !== selectedMainString?.id && (
-                    <BuyButton
-                      brand={selectedCrossString.brand}
-                      model={selectedCrossString.model}
-                      variant="outline"
-                      location="configurator_result"
-                    />
-                  )}
-                  {selectedRacquet && (
-                    <BuyButton
-                      brand={selectedRacquet.brand}
-                      model={selectedRacquet.model}
-                      variant="outline"
-                      location="configurator_result"
-                    />
-                  )}
-                </div>
               </div>
             </div>
           )}
@@ -1670,7 +1625,7 @@ export default function ConfiguratorPage() {
                       {tx.lockedTitle}
                     </span>
                     <Link
-                      href="/pricing"
+                      href={tx.pricingHref}
                       // Ce CTA n'émettait aucun événement : les premium_cta_click
                       // mesurés venaient tous du header, jamais du moment de
                       // plus forte intention (audit 13/08/2026).
@@ -1690,6 +1645,54 @@ export default function ConfiguratorPage() {
                   </div>
                 )}
               </div>
+            </div>
+          )}
+
+          {/* Liens d'achat. RÈGLE 1 (§4 CLAUDE.md) : APRÈS la recommandation (indice, palier, verdict), hors du calcul du RCS, de
+              l'ordre de tri et de la sélection des cordages. RÈGLE 2 : APRÈS les alertes bras (`role="alert"`, bloc ci-dessus), jamais
+              au-dessus. Jusqu'au 21/11/2026 ce bloc fermait le panneau « Analyse RCS en temps réel », AVANT le bloc des alertes :
+              mesuré à 390 et 1440 px, chaque lien d'achat s'affichait 100 à 200 px au-dessus de l'alerte bras. Posé sur le fond de la
+              carte (et non plus sur --tint-blue-bg du panneau) : libellé en --text-muted. */}
+          {rcsData && (
+            <div
+              data-testid="configurator-buy-links"
+              style={{
+                marginTop: '1rem',
+                marginBottom: '1.5rem',
+                paddingTop: '0.75rem',
+                borderTop: '1px solid var(--surface-border)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.5rem'
+              }}
+            >
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                {tx.buySetup}
+              </div>
+              {selectedMainString && (
+                <BuyButton
+                  brand={selectedMainString.brand}
+                  model={selectedMainString.model}
+                  variant="outline"
+                  location="configurator_result"
+                />
+              )}
+              {selectedCrossString && selectedCrossString.id !== selectedMainString?.id && (
+                <BuyButton
+                  brand={selectedCrossString.brand}
+                  model={selectedCrossString.model}
+                  variant="outline"
+                  location="configurator_result"
+                />
+              )}
+              {selectedRacquet && (
+                <BuyButton
+                  brand={selectedRacquet.brand}
+                  model={selectedRacquet.model}
+                  variant="outline"
+                  location="configurator_result"
+                />
+              )}
             </div>
           )}
 

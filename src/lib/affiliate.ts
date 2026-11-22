@@ -72,6 +72,26 @@ export function isAffiliateEnabled(merchant: MerchantKey = DEFAULT_MERCHANT): bo
 }
 
 /**
+ * Attribut `rel` des liens « Voir le prix », aligné sur l'état RÉEL de
+ * l'affiliation, comme les libellés qui les entourent.
+ *
+ * - Affiliation active : `sponsored`, la qualification que Google demande pour
+ *   un lien rémunéré.
+ * - Affiliation inactive (production au 21/11/2026 : aucun accord n'existe,
+ *   les liens partent en direct, non rémunérés) : `nofollow`. Écrire
+ *   `sponsored` déclarerait aux moteurs une rémunération qui n'existe pas ;
+ *   `nofollow` dit seulement que le site ne recommande pas la page liée (une
+ *   page de résultats de recherche d'un revendeur), sans rien affirmer de faux.
+ *
+ * `noopener noreferrer` dans les deux cas (lien ouvert dans un nouvel onglet).
+ */
+export function buyLinkRel(merchant: MerchantKey = DEFAULT_MERCHANT): string {
+  return isAffiliateEnabled(merchant)
+    ? 'sponsored noopener noreferrer'
+    : 'nofollow noopener noreferrer';
+}
+
+/**
  * Enrobe une URL marchande dans un deep-link Awin tracké si l'affiliation est
  * active ; sinon retourne l'URL directe inchangée.
  */
