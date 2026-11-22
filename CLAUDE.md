@@ -214,15 +214,18 @@ seuil, renvoi santé) et les nombres des 77 textes fixes FR/EN. Restent en fran�
 (`buy-button.tsx`), lien d'accès rapide du layout, `/pricing`, `/auth/signin`, `/account/configurations`, et `<html lang="fr">` au
 rendu serveur (corrigé à l'hydratation).
 
-**Changelog v2.3.36 → v2.3.37** — **FAQ et page Premium anglaises alignées sur le code** (plan de monétisation du
-21/11/2026 ; Pierre : « Oui on lance les corrections qui peuvent se faire » ; `tsa-acquisition`). `public/en/faq.html` et
-`public/en/premium.html` ne promettent plus d'alertes de prix, d'historique ou de journal de cordage, de support prioritaire, ni
-un calculateur RCS « limité à 1 usage » (il est libre, `rcs-calculator.html:637-644`) ; elles disent que le Premium ne s'achète
-pas sur le site anglais (`premium.html:404`, `CHECKOUT_DISPONIBLE = false`), que l'offre et ses prix sont ceux du site français,
-qu'un compte gratuit garde 3 setups, que « Delete my account » n'efface que les setups (`account.html:492-503`) et qu'aucune page
-de résiliation n'existe dans `src/app/`. JSON-LD `FAQPage` identique au texte visible. Montants inchangés, sans condition de
-rareté : la mention « réservé aux 200 premiers » est retirée (Stripe ne pose aucune limite de quantité ; `LIFETIME_SEATS =
-200` de `premium.ts` ne fait que masquer l'offre à vie de `/pricing` une fois 200 accès à vie comptés, sans bloquer un achat). Paiement,
+**Changelog v2.3.36 → v2.3.37** — **FAQ anglaise alignée sur le code, ancienne page Premium anglaise supprimée** (plan de
+monétisation du 21/11/2026 ; Pierre : « Oui on lance les corrections qui peuvent se faire », puis le 22/11/2026 : « Il n'y a aucune
+raison de ne pas faire une page de paiement en anglais pour le premium en incluant les mêmes liens Stripe » ; `tsa-acquisition`).
+**`public/en/premium.html` supprimée** : son circuit (compte Supabase Auth, `CHECKOUT_DISPONIBLE = false` depuis le 09/10/2026) est
+remplacé par la route Next `/en/pricing` de `tsa-revenue` (même composant et mêmes trois Payment Links que `/pricing`, achat rattaché
+au compte NextAuth), qui pose aussi la 301 `/en/premium.html` → `/en/pricing`. **`public/en/faq.html`** renvoie vers `/en/pricing` et
+décrit l'offre comme `/pricing` : 4,99 €/mois, 49,99 €/an ou 19,99 € une fois ; configurations illimitées, analyse RCS avancée, export
+PDF ; compte gratuit requis pour souscrire ; résiliation par e-mail ; aucune rareté. Elle dit que le compte créé sur `auth.html`
+(Supabase) est distinct du compte du site et ne porte pas le Premium. Elle ne promet plus d'alertes de prix, d'historique ou de journal
+de cordage, de support prioritaire, ni un calculateur RCS « limité à 1 usage » (il est libre : `canCalculate()` de
+`rcs-calculator.html` renvoie toujours `true`) ; « Delete my account » n'efface que les setups (`handleDeleteAccount()`
+d'`account.html`) ; aucune page de résiliation n'existe dans `src/app/`. JSON-LD `FAQPage` identique au texte visible. Paiement,
 articles et libellés d'achat du configurateur (à `tsa-revenue`) inchangés. §2 corrigé : le paiement EN était dit ouvert.
 
 **Changelog v2.3.25 → v2.3.26** — **Hybrides : un seul indice, celui que l'alerte lit, que le configurateur
@@ -1381,8 +1384,10 @@ l'UPDATE sur les colonnes premium/Stripe) → `db-guardian` + GO de Pierre. Gard
 
 ✅ **Le paiement FR est ouvert** depuis le 13/09/2026 — `CHECKOUT_DISPONIBLE` est à
 `true` dans `pricing/page.tsx`. ⚠️ Corrigé le 21/11/2026 : le drapeau de
-`en/premium.html` est à `false` depuis le 09/10/2026 (constat ci-dessus) ; le site
-anglais n'encaisse rien et sa FAQ et sa page Premium le disent.
+`en/premium.html` était à `false` depuis le 09/10/2026 (constat ci-dessus). Le
+22/11/2026, la page est supprimée et le Premium anglais se vend sur `/en/pricing`
+(PR de `tsa-revenue` : même composant et mêmes Payment Links que `/pricing`, 301
+depuis l'ancienne URL).
 L'endpoint est déclaré dans Stripe sur six événements et les deux secrets sont dans
 Netlify ; la preuve est que `POST /api/stripe/webhook` en production répond **400
 « Signature absente »** et non plus 500. **Aucun paiement sans compte** : un visiteur
