@@ -1,6 +1,6 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.3.38
+> **Version** : 2.3.39
 > **Date** : 22 novembre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
@@ -247,6 +247,17 @@ page anglaise dit que le PDF exporté et l'espace compte sont en français. `/en
 (`next.config.js`) ; `route-map.ts` : `/pricing` ↔ `/en/pricing` ; lien Premium de l'en-tête vers `/en/pricing` quand la langue du
 visiteur est l'anglais ; lien Premium du pied de page localisé comme les autres. La langue de la page d'achat est notée au clic
 (`localStorage` `tsa-checkout-locale`) pour les pages de retour Stripe (PR empilée).
+
+**Changelog v2.3.38 → v2.3.39** — **Retours Stripe et pages de connexion dans la langue de l'acheteur** (suite de #171 ;
+`tsa-revenue`). `/payment-success` et `/payment-cancelled` (URL de retour fixée dans Stripe, commune aux deux langues) suivent la
+langue de la page d'achat, notée au clic, sinon celle du site. `/auth/signin`, `/auth/signup`, `/auth/verify-request` et
+`/auth/error` passent en anglais si le `callbackUrl` mène à `/en/…`, sinon suivent la langue du site ; le `callbackUrl` est
+transmis entre connexion et inscription (un acheteur qui crée son compte revient à la page Premium, plus à l'accueil). Retirés, FR
+compris : l'encadré « vous économisez en moyenne 30€ par an » de `/payment-cancelled` (aucune mesure) et « L'équipe a été notifiée
+» de `/auth/error` (aucun suivi d'erreurs). Quand le `callbackUrl` mène à `/en/…`, l'en-tête, le pied de page, `lang` et le titre
+d'onglet passent aussi en anglais, quelle que soit la langue du navigateur : `forceLocale` du `LanguageProvider`, en mémoire et
+jamais stocké, posé par les pages de connexion et d'inscription ; `generateMetadata` dans signin et signup (blocs de
+`tsa-acquisition`, signalé).
 
 **Changelog v2.3.25 → v2.3.26** — **Hybrides : un seul indice, celui que l'alerte lit, que le configurateur
 affiche et que le PDF imprime ; contrôle 21 ter** (décision (b)+(a) de l'orchestrateur du 22/10/2026, Pierre ayant délégué ; limite (4)
