@@ -1625,7 +1625,7 @@ export default function ConfiguratorPage() {
                       {tx.lockedTitle}
                     </span>
                     <Link
-                      href="/pricing"
+                      href={tx.pricingHref}
                       // Ce CTA n'émettait aucun événement : les premium_cta_click
                       // mesurés venaient tous du header, jamais du moment de
                       // plus forte intention (audit 13/08/2026).
