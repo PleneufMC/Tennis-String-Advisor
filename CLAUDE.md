@@ -1841,4 +1841,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.3.37 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.3.39 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
