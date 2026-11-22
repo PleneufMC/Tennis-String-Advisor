@@ -37,6 +37,8 @@ const gaugeLabelEn = (gauge: string): string => (gauge === '1.30' ? 'Standard' :
 const FR = {
   homeHref: '/',
   signinHref: '/auth/signin?callbackUrl=/configurator',
+  // Page Premium de la langue du configurateur (22/11/2026) : `/en/pricing` rend la même page, mêmes Payment Links.
+  pricingHref: '/pricing',
   // Description factuelle de la page (21/11/2026) : l'ancien « Système avancé avec journal de cordage professionnel » qualifiait
   // sans rien décrire, sous un titre « … Premium » alors que la page est gratuite.
   subtitle: 'Indice RCS de votre montage, alerte bras et journal de cordage',
@@ -245,6 +247,7 @@ const formatScore20En = (value: number) => value.toLocaleString('en-US', { minim
 const EN: ConfiguratorText = {
   homeHref: '/en/',
   signinHref: '/auth/signin?callbackUrl=/en/configurator',
+  pricingHref: '/en/pricing',
   subtitle: 'RCS index of your setup, arm alert and stringing log',
   backHome: '← Back to home',
   configTitle: 'Setup and Comfort Analysis',
