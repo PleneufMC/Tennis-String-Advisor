@@ -1109,6 +1109,121 @@ Toutes appliquées, en FR et en EN ; la `FAQPage` est recopiée de la FAQ visibl
   - la biographie d'auteur (« depuis plus de 15 ans ») est le gabarit de 10 articles du blog ;
   - les titres de `citation` du JSON-LD ont été revus par `tsa-acquisition` au 4b.
 
+### Contre-vérification du 2026-11-23 — `tsa-pigiste`
+
+*Sur le commit `764bf52`, qui comprend la passe finale (`8d4f1c6`), le retrait A-3 (`0cf25d8`) et les `citation` de `tsa-acquisition` (`764bf52`). Périmètre fixé par l'orchestrateur : C1 à C13, la FAQ 1, les phrases Q-8 / A-3, les renvois P1 et les mots ajoutés.*
+
+**Verdict : non soldé, 3 corrections restantes, mineures (R1 à R3 ci-dessous).**
+- C1 à C13 sont soldées sur le fond.
+- R1 à R3 portent sur un mot ou une incise : une attribution (C10), une nuance de la source perdue en FR (C6) et une nuance du FR perdue en EN (C8).
+- La FAQ 1, les phrases Q-8 / A-3 et les renvois P1 sont conformes.
+- FAQ visible et `FAQPage` : 4 questions sur 4 identiques en FR comme en EN, réponses comprises, une fois `&nbsp;` ramené à l'espace.
+
+**C1 à C13, phrase finale citée (FR · EN) :**
+
+| C | Soldée | Phrase finale |
+|---|---|---|
+| C1 | oui | « Trois choses ont été mesurées : le glissement des montants sur les travers, le frottement entre cordes et, sur le seul essai trouvé, la raideur du tamis dans les deux sens ; le reste relève de l'usage. » · « Three things have been measured: […] and, in the one test we found, the bed's stiffness both ways round; the rest is habit. » |
+| C2 | oui | « Usage défendu par Jonas Eriksson (Tennisnerd), partenaire de Toroline ; non mesuré » · « Habit defended by Jonas Eriksson (Tennisnerd), a Toroline partner; not measured » |
+| C3 a | oui | « Sur les 650 hybrides polyester / multifilament de nos cordages mesurés où le polyester, plus rigide, est en montants, l'estimation est de 0 à 7 points sous le polyester monté seul, et le palier change dans 372 cas. » · « Across the 650 polyester/multifilament hybrids from our measured strings where the stiffer polyester is in the mains, […] » |
+| C3 b | oui | « Sur les 1 826 paires de cordages mesurés de rigidités différentes » · « Across the 1,826 pairs of measured strings with different stiffness » |
+| C4 | oui | « l'un des huit couples profilé/rond dont les deux cordages sont mesurés et la forme sourcée, celui dont l'écart de rigidité est le plus grand » · « one of eight shaped/round pairs with both strings measured and a sourced profile, the one with the widest stiffness gap » |
+| C5 | oui | « Leur fiche produit affiche une rigidité dérivée de leurs deux cordages et la signale comme telle ; le configurateur reprend ce chiffre : ce n'est pas une mesure du set. » · « Their product pages show a stiffness derived from their two strings and say so; the configurator uses that figure: […] » |
+| C6 | oui ; **R2** en FR | « En hybride, la presse spécialisée décrit l'usage de tendre davantage le cordage le plus souple ; plus généralement, selon Jonas Eriksson, beaucoup de joueurs tendent un peu moins les travers, et 4 lb (environ 2 kg) est le plus grand écart qu'on voie. Aucun de ces usages n'est mesuré. » · « […] more generally, according to Jonas Eriksson, many players string the crosses a little looser, and 4 lb (about 2 kg) is about as big a gap as you'll see. None of these habits is measured. » |
+| C7 | oui | « Sur notre indice, le cordage le plus rigide en montants donne un chiffre égal ou plus haut qu'à l'envers, de 0 à 2 points. » · « On our index, the stiffer string in the mains gives the same figure as the other way round or a higher one, by 0 to 2 points. » |
+| C8 | FR oui ; **R3** en EN | « Sur notre indice, il n'est jamais plus ferme que son polyester monté seul quand ce polyester, plus rigide, est en montants : de 0 à 7 points de moins sur nos 650 couples polyester / multifilament mesurés. Il n'est pas forcément confortable pour autant : […] » · « […] That does not make it comfortable: none of our six examples reaches the Comfortable tier. » |
+| C9 | oui | « Pas avec nos deux exemples : […] Cela dépend du polyester : sur nos 45 polyesters mesurés, 3 donnent 25 ou moins avec ce travers. Nous n'avons trouvé aucun essai publié […] » · « Not with our two examples: […] of our 45 measured polyesters, 3 give 25 or less with this cross. […] » |
+| C10 | oui sur le fond ; **R1** | « Roger Federer jouait boyau en montants et polyester (Luxilon ALU Power Rough) en travers, selon Tennis.com en 2009 et The New Yorker en 2014. Un cadre de joueur professionnel n'est souvent pas le modèle du commerce, et ce montage ne dit rien de celui qui vous conviendrait. » · « Roger Federer played gut in the mains and polyester (Luxilon ALU Power Rough) in the crosses, according to Tennis.com in 2009 and The New Yorker in 2014. A professional's frame is often not the retail model, and that setup says nothing about the one that would suit you. » |
+| C11 | oui | « l'indice lit la rigidité de la fiche, quelle que soit la jauge choisie ; pour un cordage marqué †, c'est celle de sa jauge la plus rigide mesurée » · « for a string marked †, that is its stiffest measured gauge » |
+| C12 | oui | « — collaboration avec Toroline (son cordage Vamos) et liens vers des partenaires, dont Toroline, déclarés par l'auteur » · « — the author discloses a collaboration with Toroline (his Vamos string) and links to partners, Toroline among them » |
+| C13 | oui, 7 sur 7 | « nous n'avons trouvé aucune mesure de la combinaison » ; « Nous n'avons trouvé qu'un essai publié qui compare » ; « sans mesure publiée trouvée à l'appui » ; « Nous n'avons trouvé aucune source primaire qui fixe un écart » ; FAQ 1 « Nous n'avons trouvé aucune mesure qui désigne un meilleur travers » ; FAQ 3 « Nous n'avons trouvé aucun essai publié qui compare » ; « aucune mesure publiée trouvée ». EN de même |
+
+**Points précis demandés :**
+- **C6, l'attribution à Eriksson est juste**, d'après la page relue (F25) : « many players run the crosses a little lower than the mains » et « Four pounds, or about two kilos, is about as big a gap as you'll see ».
+  - L'usage propre à l'hybride, « presse spécialisée », est GT-F22 (Tennis.com, 2024).
+  - Le joueur de l'exemple d'Eriksson n'est pas nommé.
+  - Seul écart : le FR perd le « about » (R2).
+- **C10 est daté** (2009 et 2014, au passé), porte la réserve pro stock (F4) et ne donne aucun conseil : « ne dit rien de celui qui vous conviendrait ». Les sources visibles et les `citation` (Tennis.com 2009 ; Longreads 2014, `isBasedOn` The New Yorker, M. Steinberger, 2014) concordent avec F37 et F38.
+  - Écart (R1) : la parenthèse « Luxilon ALU Power Rough » se lit comme attribuée aux deux sources, alors que seul Tennis.com nomme ce cordage ; The New Yorker dit « polyester ».
+
+**FAQ 1, par le moteur** : « Un travers plus souple abaisse l'indice ou le laisse inchangé » est juste. Il n'est jamais relevé, ni par rapport au polyester seul, ni entre deux travers. Il est inchangé dans 244 des 1 677 couples mesurés, de même nature que G23 (36 sur 650).
+
+```
+2026-11-23T11:39:50+01:00
+$ npx --yes tsx <scratchpad>\pig-hybride\faq1-4a.mts
+commit 0cf25d8 ; src/data, src/lib : conformes au commit
+Cordages mesurés (61) : polyesters mesurés × travers mesurés
+  (a) polyester en montants, travers plus souple que lui : 1677 couples ; indice abaissé 1433 ; inchangé 244 ; relevé 0
+  (b) même polyester, travers A plus souple que B : 79475 comparaisons ; A plus haut que B 0 ; égal 14511
+Toute la base (179) : polyesters × tous travers
+  (a) polyester en montants, travers plus souple que lui : 12562 couples ; indice abaissé 10920 ; inchangé 1642 ; relevé 0
+  (b) même polyester, travers A plus souple que B : 1591262 comparaisons ; A plus haut que B 0 ; égal 263285
+```
+
+**Phrases Q-8 et A-3 des articles existants : conformes.**
+- `cordage-mono-vs-multifilament.html` :
+  - l. 618 : « À l'inverse, Roger Federer jouait boyau aux montants, mono aux travers, selon Tennis.com en 2009 (qui nomme le Luxilon ALU Power Rough) et The New Yorker en 2014. »
+  - l. 664 : J. Levey, « Winning Combination », 2 octobre 2009 ; M. Steinberger, 2014, lu dans l'extrait publié par Longreads le 4 septembre 2014.
+- `polyester-vs-multifilament-strings.html` :
+  - l. 387 : « The reverse configuration, gut mains and poly crosses, is what Roger Federer played, according to Tennis.com in 2009 (which names Luxilon ALU Power Rough) and The New Yorker in 2014. »
+  - l. 464 : même référence.
+- Les sources et les dates correspondent à mes extraits de Q-8. « Luxilon Alu Power Rough » est bien dans l'extrait de Tennis.com : « He uses natural gut in his mains, and Luxilon Alu Power Rough in his crosses. »
+- Aucune affirmation non sourcée ne reste dans ces phrases : « le célèbre », « privilégie le toucher… » et « il s'use vite… » sont retirés.
+- Les dates visibles et `dateModified` sont passées au 2026-11-23 (F11).
+
+**Renvois P1 : conformes.** `cordage-polyester-tennis-elbow` §6 et `polyester-strings-tennis-elbow` §6 ajoutent une phrase (« Pour un hybride dont les deux cordages ont une rigidité alignée sur une mesure de laboratoire, notre article […] donne une estimation de l'indice, avec ses bornes »), conforme à A-1 et F3. Aucun autre mot ne change ; « 15 de nos 45 multifilaments » reste juste (S2 §B).
+
+**Glissance des mots ajoutés :**
+
+| Mots ajoutés | Défense |
+|---|---|
+| « sur le seul essai trouvé » ; « Nous n'avons trouvé… » (C1, C13) | F20 ; Q1, F23, F30, GT-F28 (introuvables) |
+| « Jonas Eriksson (Tennisnerd), partenaire de Toroline » ; « collaboration avec Toroline (son cordage Vamos) » (C2, C12) | F24 corrigé : « Vamos is my collab with Toroline » |
+| « de rigidités différentes » ; « où le polyester, plus rigide, est en montants » ; « jamais plus ferme » ; « égal ou plus haut » (C3, C7, C8) | S2 §E et §F ; contrôles de `--check` |
+| « l'un des huit […] le plus grand écart » (C4) | S2 §H : 8 couples ; 216,6 − 164,6 = 52 lb/in, le plus grand des huit |
+| « Leur fiche produit […] la signale comme telle ; le configurateur reprend ce chiffre » (C5) | F35 |
+| « selon Jonas Eriksson, beaucoup de joueurs… » (C6) | F25 ; « est le plus grand écart » : **R2** |
+| « 3 donnent 25 ou moins » (C9) | F36 |
+| « pour un cordage marqué † » (C11) | F5 ; réponse de `tsa-core` à Q-4 |
+| Federer, daté ; « Un cadre de joueur professionnel n'est souvent pas le modèle du commerce » (C10) | F37, F38 ; charte F4 ; parenthèse attribuée aux deux sources : **R1** |
+| « That does not make it comfortable » (C8, EN) | **R3** : le FR dit « pas forcément » ; un hybride mesuré peut être Confortable (F36 : Yonex Poly Tour Air / X-One Biphase, 24) |
+| « abaisse l'indice ou le laisse inchangé » (FAQ 1) | moteur, ci-dessus |
+| Phrases Q-8 et P1 des quatre articles existants | F37, F38 ; A-1, F3 |
+| Ajouts de la 4b (P3 à P6 : intertitre, liens, titres des sources) | aucun fait nouveau ; titres relevés par `tsa-acquisition` le 23/11 |
+
+**Corrections restantes, à `tsa-redacteur` :**
+- **R1** · FAQ 4, FR, EN et `FAQPage` (C10).
+  - En cause : « polyester (Luxilon ALU Power Rough) en travers, selon Tennis.com en 2009 et The New Yorker en 2014 ».
+  - Attendu, comme dans les articles existants : « Roger Federer jouait boyau en montants et polyester en travers, selon Tennis.com en 2009 (qui nomme le Luxilon ALU Power Rough) et The New Yorker en 2014. » · « Roger Federer played gut in the mains and polyester in the crosses, according to Tennis.com in 2009 (which names Luxilon ALU Power Rough) and The New Yorker in 2014. »
+- **R2** · §5, FR seul (C6).
+  - En cause : « et 4 lb (environ 2 kg) est le plus grand écart qu'on voie ».
+  - Attendu : « et 4 lb (environ 2 kg) est à peu près le plus grand écart qu'on voie », comme l'EN et la source (F25).
+- **R3** · FAQ 2, EN et `FAQPage` EN (C8).
+  - En cause : « That does not make it comfortable ».
+  - Attendu : « That does not necessarily make it comfortable », comme le FR (« pas forcément »).
+
+Ensuite : `--check`, `redaction:valeurs` et `audit:jsonld`. Aucune expression contrôlée par `expectations()` n'est touchée.
+
+**Sorties**, 2026-11-23, avant R1 à R3 :
+
+```
+2026-11-23T11:40:32+01:00 · commit 764bf52
+$ npx --yes tsx scripts/blog-covers/build-hybride-figures.mts --check
+  OK    public/blog/montage-hybride-cordage-tennis.html : bloc « schema » conforme à la base
+  OK    public/blog/montage-hybride-cordage-tennis.html : bloc « tableau » conforme à la base
+  OK    public/blog/montage-hybride-cordage-tennis.html : bloc « graphique » conforme à la base
+  OK    public/en/blog/hybrid-tennis-string-setup.html : bloc « schema » conforme à la base
+  OK    public/en/blog/hybrid-tennis-string-setup.html : bloc « tableau » conforme à la base
+  OK    public/en/blog/hybrid-tennis-string-setup.html : bloc « graphique » conforme à la base
+
+blocs et chiffres du texte conformes à la base
+exit=0
+
+$ npm run redaction:valeurs -- docs/redaction/montage-hybride-cordage-tennis.md
+33 valeur(s) contrôlée(s), 0 écart(s)
+exit=0
+```
+
 ---
 
 ## 6. Revue SEO — `tsa-acquisition`
@@ -1366,3 +1481,12 @@ $ npx next start -p 3100   (port libéré avant ; serveur arrêté par son PID 6
   - `citation` Tennis.com 2009 et Longreads / The New Yorker 2014 ajoutées aux deux nouveaux articles, titres relevés sur les pages ; rien sur les articles existants, qui n'ont pas de `citation`.
   - `build` 329/329, `audit:jsonld` 0 échec et 0 AVERT, `audit:claims` 0 échec.
   - Corps non touché. RELAIS → orchestrateur : PR, après la contre-vérification de `tsa-pigiste`.
+- 2026-11-23 · `tsa-pigiste` — contre-vérification ciblée avant la PR (§5, « Contre-vérification du 2026-11-23 »), au commit `764bf52`.
+  - **Non soldé : 3 corrections mineures restantes**, R1 à R3. C1 à C13 sont soldées sur le fond ; FAQ visible et `FAQPage` identiques (4 sur 4, FR et EN).
+    - R1 : FAQ 4, la parenthèse « Luxilon ALU Power Rough » est à attribuer à Tennis.com seul.
+    - R2 : C6 en FR, « à peu près le plus grand écart », comme la source et l'EN.
+    - R3 : C8 en EN, « not necessarily », comme le FR.
+  - **FAQ 1 vérifiée par le moteur** : jamais relevé ; inchangé dans 244 des 1 677 couples mesurés.
+  - **Q-8 et A-3** (`cordage-mono-vs-multifilament` l. 618 et 664 ; `polyester-vs-multifilament-strings` l. 387 et 464) et **P1** : conformes.
+  - `--check` : exit 0. `redaction:valeurs` : 33 valeurs, 0 écart.
+  - RELAIS → `tsa-redacteur` : R1 à R3, puis `--check`, `redaction:valeurs` et `audit:jsonld`. Le fact-check est soldé dès que R1 à R3 sont appliquées à l'identique, sans nouvelle passe du pigiste.
