@@ -7,7 +7,7 @@
 | Branche | `agent/redaction/montage-hybride-cordage-tennis` (worktree `C:\Users\plene\Documents\_wt\redac-hybride`) |
 | Ouvert le | 2026-11-23, par l'orchestrateur |
 | Demande d'origine | Pierre, 23/11/2026 : « allez chercher là dedans des idées d'articles pour le blog complémentaire à ce qui est déjà en ligne » (classeur « TSA · Idées d'articles », idée 2026-W46-2) ; puis « GO sur le montage hybride en anglais et en français » ; puis « je te laisse faire tous les arbitrages nécéssaires à la rédaction de cet article » (délégation à l'orchestrateur ; la mise en ligne reste soumise au GO de Pierre sur la PR, charte §6) |
-| Statut | vérification (étape 4 : fact-check et passe on-page) |
+| Statut | passe finale (étape 5) |
 | Mise à jour planifiée | sans objet (aucune année dans le titre ni le slug de travail) |
 
 > Règles : `docs/redaction/CHARTE.md`. Déroulé : `docs/redaction/README.md`.
@@ -562,6 +562,13 @@ L'intégral de chaque cordage est la borne « seul » de la même ligne : au mê
       - ne pas en tirer que le set Champion's Choice « est » le montage de Federer (Q-5).
     - **Hors de Q-8, non vérifié et non demandé** : la suite des deux phrases (« privilégie le toucher avec un soupçon de contrôle — mais il s'use vite chez les gros lifteurs » ; « prioritises touch with a hint of control, but it wears out fast for heavy topspin players ») et « la combinaison la plus courante en club » n'ont aucun fait au dossier. L'orchestrateur a limité le circuit court à la mention de Federer : je les signale sans demander de coupe.
     - **Conséquence pour le nouvel article** : sa FAQ sur les joueurs professionnels écrit qu'« aucun montage de professionnel ne réunit deux sources indépendantes ». C'est devenu faux : correction C10 du §5.
+
+- **A-3** · arbitrage de l'orchestrateur · 2026-11-23 — **La phrase sur Federer dans les articles existants.** Le fact-check (4a) établit le montage de Federer par deux sources (réponse sous Q-8). Il relève aussi que la suite de la même phrase n'a aucune source : « il s'use vite chez les gros lifteurs » (`cordage-mono-vs-multifilament` §08, l. 618) et « it wears out fast for heavy topspin players » (`polyester-vs-multifilament-strings`, l. 387).
+  - **Décision.** Dans les seules phrases retouchées par Q-8, **rien ne reste sans source**. Le montage est cité daté, avec ses deux sources (ou sa source principale et un renvoi vers le dossier), jamais au présent. La fin non sourcée est retirée.
+  - **Périmètre.** Les autres phrases de ces articles ne sont pas touchées. « La combinaison la plus courante en club » et ses équivalents relèvent d'un circuit court séparé, signalé à Pierre.
+  - **Pourquoi.** Poser deux sources sur une phrase qui garde une affirmation non sourcée ferait croire que tout est sourcé.
+- **A-4** · arbitrage de l'orchestrateur · 2026-11-23 — **Federer dans le nouvel article.** Il passe désormais la règle d'A-2. Le rédacteur choisit de le citer ou non (correction C10). S'il le cite, c'est daté (2009 et 2014), avec la réserve pro stock (F4), sans en tirer de conseil pour le lecteur.
+
 ---
 
 ## 5. Fact-check final — `tsa-pigiste`
@@ -1245,3 +1252,4 @@ Aucune ne touche un fait, un chiffre, un verdict ni un conseil de santé. Les li
   - **A-2** : aucune vidéo dans les sources ; l'article écrit de Tennisnerd n'établit aucun fait.
   - Aucun fichier de `public/`, `src/` ni `scripts/` modifié. Scripts et sorties hors dépôt : `C:\Users\plene\AppData\Local\Temp\claude\9519414f725d5b3e\cbc91433-ac54-48b8-b83a-537568efd73b\scratchpad\pig-hybride\` (`fact-check-4a.mts`, `sortie-*.txt`, pages relues dans `web-q8\`).
   - RELAIS → `tsa-redacteur` : passe finale (étape 5). Solder C1 à C13 du §5 en FR, en EN et dans la `FAQPage` ; appliquer Q-8 (§4) à `cordage-mono-vs-multifilament` §08 et `polyester-vs-multifilament-strings` ; relancer `--check`, `redaction:valeurs` et `audit:jsonld`.
+- 2026-11-23 · orchestrateur — 4a et 4b relus. 4a : fact-check non soldé, 13 corrections (C1 à C13) ; chiffres du moteur justes ; Federer établi par deux sources. 4b : en-tête, sitemap et index faits, `audit:jsonld` vert, propositions P1 à P6. Arbitrages A-3 (phrases Q-8 entièrement sourcées) et A-4 (Federer dans le nouvel article, au choix du rédacteur, daté). RELAIS → `tsa-redacteur` : passe finale (étape 5) et contrôles (étape 6) ; contre-vérification ciblée de `tsa-pigiste` avant la PR.
