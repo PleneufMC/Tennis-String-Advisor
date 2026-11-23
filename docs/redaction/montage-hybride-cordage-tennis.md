@@ -451,6 +451,12 @@ L'intégral de chaque cordage est la borne « seul » de la même ligne : au mê
     - `toroline-o-toro-tour` porte deux jauges (1,23 et 1,20) pour une seule mesurée (216,6 en 1,23) : c'est une couverture partielle, que la provenance noterait « valeur plancher ».
   - **Question** : un hybride dont un cordage est une fiche Toroline peut-il être chiffré dans l'article (exemple F15, O-Toro Tour / O-Toro Snap) ?
   - **Sans réponse** : le rédacteur retire F15. Les chiffres de grille valables sont alors ceux de la ligne « sans les 8 Toroline » (F17 : 1 428 paires, inversion de 0 à 2 points). Non bloquant pour l'étape 3.
+  - → `tsa-core`, 2026-11-23 : **oui pour 7 fiches sur 8, non pour Toroline Absolute ; l'exemple F15 (O-Toro Tour / O-Toro Snap) tient.** Établi au commit `18d657e` en rejouant l'appariement strict des contrôles 13 ter et 13 quater (`scripts/qa-ratings.mts` l. 1575-1587 et 1897-1908) sur `data/reference/twu-releve-complet.json`. Script et sortie hors dépôt : `C:\Users\plene\AppData\Local\Temp\claude\9519414f725d5b3e\cbc91433-ac54-48b8-b83a-537568efd73b\scratchpad\core-hybride\q3-q5.mts` et `sortie.txt`.
+    - **Oui, jauge unique mesurée** : O-Toro (165,7), O-Toro Snap (164,6), O-Toro Spin (173,2), Super Toro (189,7), Cash (182,9), Snapper (190,9). La rigidité de chaque fiche est l'unique ligne TWU du modèle exact à la jauge nominale de la fiche (polyester, 51 lbs, Fast), identique dans les deux copies versionnées du relevé. Le contrôle 13 quater vérifie déjà leur `stiffnessByGauge` contre ce relevé : elles sont parmi les « 61 fiches égales au maximum de leur table » (`npm run audit:ratings` du 23/11, vert). Il ne leur manque que l'entrée de provenance (`appliquee`, règle `jauge-unique`) : c'est un défaut d'écriture, pas de mesure. Le † de l'O-Toro dans `cordage-tennis-elbow` §3 est donc juste.
+    - **Oui, avec une couverture partielle** : O-Toro Tour (216,6, mesurée en 1,23 ; la 1,20 de la fiche n'est pas mesurée, `src/data/strings-database.ts` l. 3530-3531). C'est le cas de Mach-10, d'Ice Code ou d'Hyper-G (F13), qui sont `appliquee` avec la mention « valeur plancher » (`src/data/string-stiffness-provenance.ts` l. 315, 429 et 435). Réserve de F5 : l'exemple ne vaut pas « en 1,20 ».
+    - **Non : Toroline Absolute (180,6).** Sa ligne TWU, « Toroline Absolute 17 (1.20) », n'a pas de jauge nominale ; seul l'intitulé porte 1,20 (la base le dit, `strings-database.ts` l. 3466). Or l'appariement strict exige la jauge nominale (13 ter l. 1576 et 1639-1640 ; 13 quater l. 1898). La fiche n'a donc pas de table, et une entrée `appliquee` ferait échouer 13 ter. `alignedOnTwu` (`scripts/blog-covers/build-rigidite-figures.mts` l. 101-103) la compte sur le seul commentaire. Elle n'est dans aucun exemple de l'article.
+    - **Chiffres à reprendre** (même méthode que S1 §F, sans Absolute) : **61 cordages mesurés sur 179** (polyesters 45 sur 102 ; multifilaments 15 ; synthétiques 1 ; boyaux 0 ; sets 0). Grille F17 : **1 826 paires** ; l'inversion change l'indice de 0, 1 ou 2 points (1 086 / 723 / 17 paires) et le palier dans 162 cas. Polyester/multifilament : 650 paires (280 / 356 / 14) ; palier changé par l'inversion : 60 ; palier différent des montants en intégral : 372 ; baisse de 0 à 7 points. Les conclusions ne changent pas. Le chiffre « 1 887 paires » de F17 et de I8 devient 1 826.
+    - Correction de la base : chantier (a), proposé sous Q-5. Hors de cette PR.
 - **Q-4** · `tsa-pigiste` → `tsa-core` · 2026-11-23 — **Fiches mesurées par TWU sans entrée de provenance.**
   - **Le constat** (F8, F9) : ces fiches ont une `stiffnessByGauge` tirée du relevé TWU, mais leur rigidité de fiche dépasse la plus haute mesure et elles n'ont aucune entrée de provenance :
     - RPM Blast : 240 contre 236,6 au plus, ses 4 jauges étant mesurées ;
@@ -464,11 +470,49 @@ L'intégral de chaque cordage est la borne « seul » de la même ligne : au mê
     1. Cette absence est-elle voulue ?
     2. L'article peut-il écrire, pour dire pourquoi il ne chiffre pas un hybride à boyau, que « la rigidité de fiche du boyau n'est pas alignée sur une mesure de laboratoire » ?
   - Rien ne change dans les exemples : ces cordages restent non chiffrés. Non bloquant.
+  - → `tsa-core`, 2026-11-23 : **non, ces fiches ne sont pas « mesurées » au sens d'A-1. La valeur est voulue, l'absence de trace ne l'est pas, et elles sont 40, pas 6.**
+    - **Pourquoi non** : l'indice lit la rigidité de fiche (F5). Pour ces six fiches, c'est l'ancienne valeur sans source, au-dessus de toutes leurs jauges mesurées (`src/data/strings-database.ts` : RPM Blast l. 98, boyau Wilson l. 495, ALU Power Rough l. 1931, Xcel l. 916, Poly Tour Pro l. 300, Hawk Touch l. 428). Aucune surface du site ne lit leur table par jauge avant D2/D3.
+    - **La valeur est voulue** : aligner ces fiches sur la mesure ferait BAISSER leur rigidité et retirerait des alertes. La règle 2 et la décision de Pierre du 10/10 l'interdisent sans GO donné fiche par fiche (`src/data/string-stiffness-provenance.ts` l. 17-18). Le seul GO de baisse (P6, 26/10) portait sur les 13 fiches qui remplissaient les trois critères de la mesure AD : toutes les jauges mesurées, appariement strict, série non suspecte (`CLAUDE.md` l. 152-159). Aucune des six ne les remplit :
+      - le RPM Blast a ses 4 jauges mesurées, mais sa série est suspecte (1,25 = 233,7 > 1,30 = 232,6) ;
+      - la jauge 1,30 du boyau Wilson est ambiguë (deux lignes TWU, 96,6 et 92,6) ;
+      - les quatre autres ont des jauges non mesurées.
+    - **La trace manque** : le statut `retenue-jauge` est prévu pour ce cas exact (en-tête, l. 26-27), mais il n'a jamais été écrit. `audit:ratings` du 23/11 le montre : 13 ter annonce « 0 retenues car C baisserait », tandis que 13 quater compte « 40 à valeur de fiche supérieure (baisse sans GO : non appliquée) », sans les nommer. Ce sont 22 polyesters, 12 multifilaments, 4 synthétiques et 2 boyaux ; aucun ne remplit les critères de P6. Les six de Q-4 en font partie.
+    - **Question 2 : oui**, sous cette forme : « la rigidité que notre base retient pour le boyau n'est pas alignée sur une mesure de laboratoire ». C'est vrai des 7 boyaux de la base (0 sur 7, F7). Deux limites :
+      - ne pas écrire que le boyau n'a jamais été mesuré : TWU l'a mesuré ;
+      - ne calculer aucun indice avec 80,6 ni avec une rigidité de jauge. Ce serait publier une baisse non validée (règle 2), sur une jauge que l'indice ignore (F5).
+    - Correction de la base : chantier (b), proposé sous Q-5. Hors de cette PR.
 - **Q-5** · `tsa-pigiste` → `tsa-core` · 2026-11-23 — **Sets prémontés : valeur tenue et doublon** (F18).
   1. **Wilson Duo Control.** La fiche est tenue à 222 depuis le 26/10, pour une valeur dérivée de 194,4, en attente d'un GO de Pierre. Est-ce toujours l'état voulu ?
   2. **Champion's Choice et Champion's Choice Duo.** Les deux fiches ont la même composition (boyau Wilson et ALU Power Rough) et la même valeur (178). Leurs sources diffèrent : TW pour l'une, TennisCompanion pour l'autre. Est-ce un même produit sous deux noms ?
   - **Sans réponse** : l'article cite la composition une seule fois, sous le nom de la source L2 (« Champion's Choice », Tennis Warehouse), et ne dit rien du « Duo ».
   - Non bloquant pour l'étape 2 ; à trancher avant la phrase « sets » de l'étape 3.
+  - → `tsa-core`, 2026-11-23 :
+    - **1. Duo Control : oui, toujours tenu à 222.**
+      - Où : `src/data/prepacked-hybrids.ts` l. 91-94 (`held` du 26/10) ; fiche à `src/data/strings-database.ts` l. 3105.
+      - Valeur dérivée recalculée ce jour : 194,4 (4G Rough à 216, `appliquee` ; NXT Control à 162, en quarantaine).
+      - Le contrôle 24 accepte la tenue (« sauf 1 tenue(s) datée(s) au-dessus (règle 2 : wilson-duo-control) », `audit:ratings` du 23/11).
+      - Aucun GO depuis : le dernier commit sur le fichier est `c0a0811` (26/10), et `origin/main` (`dba4f8d`) n'a pas bougé.
+      - C'est l'état qu'exige la règle 2 tant que Pierre n'a pas tranché. L'effet de la baisse, relevé le 26/10, serait de −16 alertes standard, −274 bras sensible et −198 compatibilité (`CLAUDE.md` l. 162-163) ; il est à remesurer avant tout GO.
+      - **Pour l'article** : ni 222, ni 194,4, ni le mot « tenue ». Le set ne se chiffre pas de toute façon : NXT Control n'est pas mesuré (A-1, Q-1). Composition citable : Luxilon 4G Rough 1,25 + Wilson NXT Control 16, sens au choix (Tennis Warehouse, L2, lu le 23/10).
+    - **2. Champion's Choice et Champion's Choice Duo : doublon probable, non établi.**
+      - En commun : la composition (boyau Wilson + ALU Power Rough), le sens au choix, les jauges de fiche (1.25/1.30) et la valeur dérivée (178).
+      - Différents : le nom ; la source (Tennis Warehouse, « Champions Choice Hybrid 16 », L2 ; TennisCompanion, « Champion's Choice Duo », L3) ; le prix (45 € et 32 €) ; le coloris ; les notes /10, sans source.
+      - Un indice : le 22/10, le catalogue Wilson ne listait que le « Champion's Choice Duo » (`scripts/scraper/product-images-mapping.json` l. 141 et 279).
+      - Mais aucune page ouverte ne dit que les deux noms désignent le même produit. La base écrit elle-même « doublon probable, fusion à arbitrer » (`prepacked-hybrids.ts` l. 110 ; `CLAUDE.md` l. 97-98). Je ne tranche pas à la plausibilité (C5).
+      - **Pour l'article** : le repli prévu par Q-5 est juste. La composition se cite une fois, sous le nom que lui donne sa source, sans dire ni nier que le « Duo » est le même set.
+      - **Piège** : la fiche `wilson-champions-choice` (`strings-database.ts` l. 201-202) fixe un sens (« boyau naturel en montants ») et un joueur (« Roger Federer »), sans source. Or la source donne les deux sens (`orderFixed: false`), et F33 ne tient aucun joueur. L'article ne les reprend pas.
+    - **Chantiers de base pour plus tard, hors de cette PR.** Chacun relève de `tsa-core`, a sa propre PR et finit avec `npm run audit:ratings` à 0. Depuis C3, le TypeScript fait foi : rien à reporter dans Supabase.
+      - (a) **Toroline** :
+        - écrire 6 entrées `appliquee` en `jauge-unique`, et O-Toro Tour en `plus-rigide` (couverture partielle) ;
+        - la baisse de l'O-Toro (210 → 165,7 : `fa8594d`, PR #62 fusionnée le 29/09, avant la règle du 10/10) se consigne en `loweringApprovedBy` ou va à Pierre, sinon 13 ter échoue (l. 1656) ;
+        - Absolute part en quarantaine ou reçoit une exception datée. Si elle reste non mesurée, son † et le décompte « 46 polyesters » des articles publiés se recalculent par `build-rigidite-figures.mts` (circuit court) ;
+        - enfin, `alignedOnTwu` ne lit plus que la provenance : une seule définition, contrôlée.
+      - (b) **Les 40 fiches** « à valeur de fiche supérieure » passent en `retenue-jauge`, pour que l'audit les nomme (RPM Blast : série suspecte en plus).
+      - (c) **Duo Control** : dossier de GO pour Pierre (222 → 194,4), avec un effet remesuré.
+      - (d) **Champion's Choice** :
+        - dossier C5 (deux noms, sources, prix, coloris) ;
+        - si Pierre tranche « même produit », fusion avec alias et plancher, sur le modèle de `tecnifibre-4s` ;
+        - retirer de la description le sens et le joueur non sourcés.
 - **Q-6** · `tsa-pigiste` → orchestrateur · 2026-11-23 — **Le fact-check de l'étape 4 ne pourra pas contrôler les indices d'hybride par `redaction:valeurs`.**
   - **Le constat** : `scripts/redaction/verifier-valeurs.mts` n'accepte que `rcs <raquette> + <cordage> @ <kg>`. Il ne connaît ni l'hybride, ni le montage de référence sans raquette nommée (RA 64).
   - **Proposition** : à l'étape 4, ajouter à mon outil une ligne `rcs ref + <montants> / <travers> @ <tm>/<tc> | rcs | <valeur>`, qui appelle `setupFirmnessIndex`. Le contrôle devient plus strict, jamais plus souple. Sinon, le contrôle des chiffres F10 à F16 se fera en relançant le script S1, dont la sortie sera collée au §5.
@@ -555,3 +599,9 @@ Sortie de `npm run redaction:valeurs -- docs/redaction/<slug-fr>.md` :
   - **Questions** : Q-3, Q-4 et Q-5 à `tsa-core` ; Q-6 à l'orchestrateur.
   - RELAIS → `tsa-redacteur` : article FR et adaptation EN à partir du §2 seul (faits F1 à F34, sortie S1), visuels I1, I6, I7 et éventuellement I8 du §3. Exemple F15 sous réserve de Q-3. Aucun indice de set (Q-1). Lire les « Points glissants » avant d'écrire.
 - 2026-11-23 · orchestrateur — dossier de faits relu (34 faits F1-F34, sortie du moteur collée, `1 887` paires, points glissants présents). Réponse à Q-6 : pas d'extension du vérificateur, le moteur est relancé au fact-check. RELAIS → `tsa-core` : Q-3, Q-4, Q-5 ; et en parallèle → `tsa-redacteur` : étape 3, article FR, adaptation EN et visuels.
+- 2026-11-23 · `tsa-core` — réponses à Q-3, Q-4 et Q-5 (§4), au commit `18d657e`, code en lecture seule. `npm run audit:ratings` est vert ; lignes citées : 13 ter, 13 quater et 24. Le script est hors dépôt (chemin sous Q-3).
+  - **Q-3** : 7 Toroline sur 8 sont mesurées. Absolute ne l'est pas : sa jauge nominale TWU est vide, donc pas d'appariement strict. F15 tient. Décompte : 61 sur 179 ; grille : 1 826 paires. F7, F17 et I8 sont à reprendre.
+  - **Q-4** : non mesurées. La valeur est voulue (règle 2 ; critères de P6 non remplis), mais la trace manque, et elles sont 40, pas 6. La phrase sur le boyau est acceptée sous la forme donnée.
+  - **Q-5** : Duo Control toujours tenu à 222, aucun GO depuis le 26/10. Champion's Choice / Duo : doublon probable, non établi ; composition citée une fois ; ni le sens ni le joueur de la fiche ne se reprennent.
+  - **Chantiers de base** (a) à (d), sous Q-5, hors de cette PR.
+  - RELAIS → `tsa-redacteur` : F15 utilisable ; chiffres de grille 61 et 1 826 ; phrases « boyau » et « sets » selon Q-4 et Q-5. → `tsa-pigiste` : reprendre F7, F17 et I8 au §2 et au §3 avant le 4a.
