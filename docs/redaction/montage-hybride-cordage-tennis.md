@@ -7,7 +7,7 @@
 | Branche | `agent/redaction/montage-hybride-cordage-tennis` (worktree `C:\Users\plene\Documents\_wt\redac-hybride`) |
 | Ouvert le | 2026-11-23, par l'orchestrateur |
 | Demande d'origine | Pierre, 23/11/2026 : « allez chercher là dedans des idées d'articles pour le blog complémentaire à ce qui est déjà en ligne » (classeur « TSA · Idées d'articles », idée 2026-W46-2) ; puis « GO sur le montage hybride en anglais et en français » ; puis « je te laisse faire tous les arbitrages nécéssaires à la rédaction de cet article » (délégation à l'orchestrateur ; la mise en ligne reste soumise au GO de Pierre sur la PR, charte §6) |
-| Statut | contre-vérification avant PR |
+| Statut | PR #173 ; en attente du GO de Pierre |
 | Mise à jour planifiée | sans objet (aucune année dans le titre ni le slug de travail) |
 
 > Règles : `docs/redaction/CHARTE.md`. Déroulé : `docs/redaction/README.md`.
@@ -1542,3 +1542,4 @@ $ grep -rn "À SOURCER" public/blog public/en/blog | wc -l
 0
 ```
   - Fact-check soldé (R1 à R3 appliquées). RELAIS → étape 7 : push de la branche et PR vers `main`, sans fusion.
+- 2026-11-23 · `tsa-redacteur` — étape 7 : branche poussée (`git push -u origin agent/redaction/montage-hybride-cordage-tennis`, dernier commit de contenu `20c1081`) ; PR #173 ouverte vers `main` (https://github.com/PleneufMC/Tennis-String-Advisor/pull/173), titre « feat(blog): montage hybride, montants, travers et fermeté (FR + EN) ». Corps : les deux URL, l'apport, les fichiers par groupe, les arbitrages A-1 à A-4, Q-1, Q-2, Q-6 et Q-8, les contrôles, ce qui n'est pas vérifié (SERP Google et Bing, production à l'étape 8), « À fusionner sur GO explicite de Pierre ». En-tête du dossier : statut mis à jour. Aucune fusion. RELAIS → Pierre : relecture et GO sur la PR ; puis `tsa-acquisition` : étape 8.
