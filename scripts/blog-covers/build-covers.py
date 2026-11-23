@@ -154,6 +154,25 @@ def motif_two_heads(img: Image.Image) -> None:
     img.paste(layer, (0, 0), layer)
 
 
+def motif_hybrid(img: Image.Image) -> None:
+    """Tamis générique vu de face, cordé en hybride : montants blancs, travers vert-jaune (deux cordages, deux sens)."""
+    layer, d = overlay(img)
+    cx, cy, rx, ry = 930 * S, 300 * S, 190 * S, 245 * S
+    inset = 12 * S  # les cordes s'arrêtent sous le cadre
+    for j in range(-8, 9):
+        dy = j * 28 * S
+        w = rx * math.sqrt(max(0.0, 1 - (dy / ry) ** 2)) - inset
+        if w > 0:
+            d.line([(cx - w, cy + dy), (cx + w, cy + dy)], fill=ACCENT + (255,), width=8 * S)
+    for i in range(-6, 7):
+        dx = i * 28 * S
+        h = ry * math.sqrt(max(0.0, 1 - (dx / rx) ** 2)) - inset
+        if h > 0:
+            d.line([(cx + dx, cy - h), (cx + dx, cy + h)], fill=(255, 255, 255, 250), width=7 * S)
+    d.ellipse([cx - rx, cy - ry, cx + rx, cy + ry], outline=(255, 255, 255, 240), width=16 * S)
+    img.paste(layer, (0, 0), layer)
+
+
 def ball(d: ImageDraw.ImageDraw, bx: int, by: int, br: int) -> None:
     """Balle de tennis générique : disque et deux coutures incurvées."""
     d.ellipse([bx - br, by - br, bx + br, by + br], fill=ACCENT + (255,))
@@ -221,6 +240,10 @@ COVERS = [
      "Même tension, tamis différent", "Comparer deux montages de cordage sans se tromper"),
     ("couverture-comparer-deux-montages-en.webp", motif_two_heads, "Tension",
      "Same tension, different head", "How to compare two string setups without fooling yourself"),
+    ("couverture-montage-hybride-fr.webp", motif_hybrid, "Cordage",
+     "Cordage hybride", "Que mettre en montants, que mettre en travers, et quelle fermeté attendre"),
+    ("couverture-montage-hybride-en.webp", motif_hybrid, "Strings",
+     "Hybrid string setup", "What goes in the mains, what goes in the crosses, and how firm it gets"),
     ("couverture-blog-fr.webp", motif_grid, "Blog",
      "Cordage, tension et confort du bras", "Guides et analyses fondés sur des mesures publiées"),
     ("couverture-blog-en.webp", motif_grid, "Blog",

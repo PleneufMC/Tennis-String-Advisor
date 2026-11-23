@@ -80,6 +80,8 @@ Graphiques SVG **en ligne** dans les articles (aucun fichier dans ce dossier, do
 |---|---|---|---|---|
 | Répartition de la rigidité des polyesters : un point par fiche (cerclé si alignée sur une mesure TWU), zones à 200 et 240 lb/in, médiane, seuils d'alerte du montage d'exemple (RA 65, 22 kg) | `scripts/blog-covers/build-rigidite-figures.mts` | `stringsDatabase` (polyesters), `string-stiffness-provenance.ts`, `calculateRCS`, seuils de `advanced-rcs.ts` | cordage-polyester-tennis-elbow (FR), polyester-strings-tennis-elbow (EN) | 10/10/2026 |
 | Rigidité par famille de cordage (minimum, médiane, maximum) avec la bande d'indice RCS du montage d'exemple | `scripts/blog-covers/build-rigidite-figures.mts` | `stringsDatabase` (cinq familles), `calculateRCS`, `getStringRecommendation` | cordage-tennis-elbow (FR), best-tennis-strings-for-tennis-elbow (EN) | 10/10/2026 |
+| Schéma montants / travers d'un hybride (Tecnifibre Ice Code en montants, Tecnifibre NRG2 en travers) : cordage, tension et indice de chaque sens monté seul, estimation de l'hybride | `scripts/blog-covers/build-hybride-figures.mts` | `stringsDatabase`, `string-stiffness-provenance.ts`, `setupFirmnessIndex` et `ARM_ALERT_RCS` (`src/lib/advanced-rcs.ts`), paliers de `getStringRecommendation`, `DEFAULT_RACQUET_RA`, `REF_TENSION` ; exemples du dossier `montage-hybride-cordage-tennis` (F10 à F15) | montage-hybride-cordage-tennis (FR), hybrid-tennis-string-setup (EN) | 23/11/2026 |
+| « Où tombe l'indice d'un hybride » : montants seuls, travers seuls et estimation de l'hybride pour six couples de cordages alignés sur une mesure TWU, bandes des paliers publiés, seuils d'alerte 32 et 35 (même script, qui génère aussi le tableau des exemples) | `scripts/blog-covers/build-hybride-figures.mts` | mêmes sources ; montage de référence RA 64, 24 kg dans les deux sens | montage-hybride-cordage-tennis (FR), hybrid-tennis-string-setup (EN) | 23/11/2026 |
 
 ## Couvertures illustrées
 
@@ -98,6 +100,7 @@ image).
 | couverture-polyester-tennis-elbow-fr.webp / -en.webp | Générée | Tennis String Advisor | Propriété TSA | Jauge de fermeté en cinq zones, sans graduation chiffrée | cordage-polyester-tennis-elbow (FR), polyester-strings-tennis-elbow (EN) | 09/10/2026 |
 | couverture-blog-fr.webp / -en.webp | Générée | Tennis String Advisor | Propriété TSA | Tamis de cordage et balle | og:image de /blog/ et /en/blog/ | 09/10/2026 |
 | couverture-comparer-deux-montages-fr.webp / -en.webp | Générée le 13/11/2026 par le même script (`--only couverture-comparer-deux-montages`), sous Linux : police DejaVu Sans, et non Segoe UI | Tennis String Advisor | Propriété TSA | Deux tamis génériques de tailles différentes, corde centrale soulignée ; aucun chiffre | comparer-deux-montages-cordage-tension (FR), compare-two-string-setups-same-tension (EN) | 13/11/2026 |
+| couverture-montage-hybride-fr.webp / -en.webp | Générée le 23/11/2026 par le même script (`--only couverture-montage-hybride`), sous Windows : police Segoe UI | Tennis String Advisor | Propriété TSA | Tamis générique cordé en hybride, montants blancs et travers vert-jaune ; aucun chiffre | montage-hybride-cordage-tennis (FR), hybrid-tennis-string-setup (EN) | 23/11/2026 |
 
 ## Illustrations générées
 
