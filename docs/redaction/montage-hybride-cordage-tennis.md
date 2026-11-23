@@ -7,7 +7,7 @@
 | Branche | `agent/redaction/montage-hybride-cordage-tennis` (worktree `C:\Users\plene\Documents\_wt\redac-hybride`) |
 | Ouvert le | 2026-11-23, par l'orchestrateur |
 | Demande d'origine | Pierre, 23/11/2026 : « allez chercher là dedans des idées d'articles pour le blog complémentaire à ce qui est déjà en ligne » (classeur « TSA · Idées d'articles », idée 2026-W46-2) ; puis « GO sur le montage hybride en anglais et en français » ; puis « je te laisse faire tous les arbitrages nécéssaires à la rédaction de cet article » (délégation à l'orchestrateur ; la mise en ligne reste soumise au GO de Pierre sur la PR, charte §6) |
-| Statut | PR #173 ; en attente du GO de Pierre |
+| Statut | PR #173 ouverte le 23/11/2026 · GO de Pierre le 23/11/2026 (« Allez on merge la PR ») · fusionnée le 23/11/2026 à 13:08 UTC (`12a6552`) · en ligne le 23/11/2026, vérifiée en production (§6) · relevé S+4 le 21/12/2026 avec `tsa-measure` |
 | Mise à jour planifiée | sans objet (aucune année dans le titre ni le slug de travail) |
 
 > Règles : `docs/redaction/CHARTE.md`. Déroulé : `docs/redaction/README.md`.
@@ -1583,3 +1583,4 @@ $ grep -rn "À SOURCER" public/blog public/en/blog | wc -l
   - Hors PR, pour A1 : la production réécrit les liens internes sans `.html`, et chaque article répond 200 à deux URL, dont celle que la canonical écarte.
   - Relevé S+4 le 21/12/2026, avec `tsa-measure`.
   - RELAIS → orchestrateur : ligne Statut de l'en-tête, puis PR de ce relevé ; planifier le S+4 du 21/12/2026 avec `tsa-measure`.
+- 2026-11-23 · orchestrateur — consentement de Pierre, cité mot pour mot : « Allez on merge la PR ». Fusion de la PR #173 dans `main` (commit de fusion `12a6552`, 13:08:35 UTC) ; site à jour à 13:10 UTC. Ce consentement vaut pour cette PR et rien d'autre (charte §6) : aucune soumission à Bing ni à Search Console. Étape 8 confiée à `tsa-acquisition` (entrée ci-dessus, §6) ; en-tête mis à jour. L'écart des liens réécrits sans `.html` est hors de cette PR : signalé à Pierre pour A1, rien n'est corrigé. RELAIS → `tsa-measure` et `tsa-acquisition` : relevé S+4 le 21/12/2026.
