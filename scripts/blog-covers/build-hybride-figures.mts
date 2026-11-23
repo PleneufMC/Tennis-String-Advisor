@@ -178,6 +178,14 @@ export function computeFacts() {
   };
   const grid = gridOf(all, all);
   const gridPolyMulti = gridOf(all.filter((s) => s.type === 'Polyester'), all.filter((s) => s.type === 'Multifilament'));
+  // FAQ « X-One Biphase » : chaque polyester mesuré en montants, X-One Biphase en travers, comparé au X-One Biphase seul (F36)
+  const XONE = 'tecnifibre-x-one-biphase';
+  const measuredPolys = all.filter((s) => s.type === 'Polyester');
+  const xoneCross = {
+    nPolys: measuredPolys.length,
+    full: fullBed(XONE),
+    atOrBelow: measuredPolys.filter((s) => hybrid(s.id, XONE).rcs <= fullBed(XONE)).length,
+  };
   const byType = (t: TennisString['type']) => DB.filter((s) => s.type === t);
   return {
     asOf: AS_OF,
@@ -193,6 +201,7 @@ export function computeFacts() {
     tension,
     grid,
     gridPolyMulti,
+    xoneCross,
   };
 }
 type Facts = ReturnType<typeof computeFacts>;
@@ -434,6 +443,19 @@ function expectations(fa: Facts, lang: Lang): { re: RegExp; what: string }[] {
   if (razor.rcs !== tn.razor2422 || razor.rcs !== tn.razor2323) out.push({ re: NEVER, what: 'Razor Code / X-One Biphase : les trois tensions ne donnent plus le même indice' });
   if (fa.examples.some((e) => e.rcs < Math.min(e.mains, e.crosses) || e.rcs > Math.max(e.mains, e.crosses))) out.push({ re: NEVER, what: 'une estimation sort de ses bornes (« reste entre les deux cordages »)' });
   if (fa.examples.some((e) => level(e.rcs, 'fr') === 'Confortable' || level(e.rcs, 'fr') === 'Très confortable')) out.push({ re: NEVER, what: 'un exemple atteint le palier Confortable (FAQ : « aucun de nos exemples »)' });
+  if (pm.dropMin < 0) out.push({ re: NEVER, what: 'un hybride polyester (plus rigide, en montants) / multifilament dépasse le polyester seul (FAQ : « jamais plus ferme »)' });
+  const xo = fa.xoneCross;
+  if (lang === 'fr') {
+    out.push(
+      { re: rx(`de ${pm.dropMin} à ${pm.dropMax} points de moins sur nos ${pm.pairs} couples polyester / multifilament mesurés`), what: 'FAQ confort : grille polyester / multifilament' },
+      { re: rx(`sur nos ${xo.nPolys} polyesters mesurés, ${xo.atOrBelow} donnent ${xo.full} ou moins avec ce travers`), what: 'FAQ X-One Biphase : polyesters à 25 ou moins' },
+    );
+  } else {
+    out.push(
+      { re: rx(`${pm.dropMin} to ${pm.dropMax} points lower across our ${pm.pairs} measured polyester/multifilament pairs`), what: 'FAQ confort : grille polyester / multifilament' },
+      { re: rx(`of our ${xo.nPolys} measured polyesters, ${xo.atOrBelow} give ${xo.full} or less with this cross`), what: 'FAQ X-One Biphase : polyesters à 25 ou moins' },
+    );
+  }
   if (lang === 'fr') {
     out.push(
       { re: rx(`l'Ice Code en montants et le NRG2 en travers donnent ${ice.rcs}, palier ${level(ice.rcs, 'fr')}, entre ${ice.mains} pour l'Ice Code seul et ${ice.crosses} pour le NRG2 seul`), what: "L'essentiel : Ice Code / NRG2" },

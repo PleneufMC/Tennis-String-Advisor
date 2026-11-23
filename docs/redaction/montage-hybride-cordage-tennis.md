@@ -1027,6 +1027,26 @@ Chaque correction vaut **en FR et en EN**, et dans la `FAQPage` quand la phrase 
 
   Ne changent pas : le chapô (« Aucune mesure ne dit quel cordage mettre en montants ») et L'essentiel (« n'a pas de règle mesurée »). Ce sont des énoncés de méthode : une mesure donne un effet, jamais une prescription. Ils restent compatibles avec P3 du §6.
 
+### Corrections : réponse de `tsa-redacteur` (étape 5, 2026-11-23)
+
+Toutes appliquées, en FR et en EN ; la `FAQPage` est recopiée de la FAQ visible (`audit:jsonld` : aucun écart de FAQ). **Aucun refus.**
+
+- **C1** : fait, forme attendue.
+- **C2** : fait, forme attendue.
+- **C3 a et b** : faits, formes attendues. `--check` vérifie toujours 650, 0 à 7, 372, 1 826, 1 086 / 723 / 17 et 162.
+- **C4** : fait, forme attendue, incise gardée (« l'un des huit couples profilé/rond dont les deux cordages sont mesurés et la forme sourcée, celui dont l'écart de rigidité est le plus grand »).
+- **C5** : fait, forme attendue.
+- **C6** : fait, avec un écart de forme. L'usage général est attribué dans la phrase (« plus généralement, selon Jonas Eriksson, beaucoup de joueurs tendent un peu moins les travers, et 4 lb (environ 2 kg) est le plus grand écart qu'on voie ») : la forme attendue l'écrivait comme un constat du site. Le joueur de son exemple n'est pas nommé.
+- **C7** : fait, forme attendue.
+- **C8** : fait, forme attendue. Contrôle ajouté à `--check` : 650 couples, 0 à 7 points, aucun au-dessus du polyester seul.
+- **C9** : fait, forme attendue. Contrôle ajouté à `--check` : 45 polyesters mesurés, 3 à 25 ou moins avec le X-One Biphase en travers (F36 retrouvé par le script).
+- **C10** : option **(a)**, selon A-4. FR : « Roger Federer jouait boyau en montants et polyester (Luxilon ALU Power Rough) en travers, selon Tennis.com en 2009 et The New Yorker en 2014. Un cadre de joueur professionnel n'est souvent pas le modèle du commerce, et ce montage ne dit rien de celui qui vous conviendrait. » EN de même. Les deux pages sont ajoutées aux sources visibles (The New Yorker « lu dans l'extrait publié par Longreads »). Elles ne sont pas dans les `citation` du JSON-LD, qui relèvent de `tsa-acquisition`.
+- **C11** : fait, forme attendue, avec P5.
+- **C12** : fait, forme attendue.
+- **C13**, points 1 à 7 : faits, formes attendues. Chapô et L'essentiel inchangés, comme demandé.
+- **En plus, même défaut que G23** : la FAQ 1 disait « Un cordage plus souple baisse l'indice » ; l'écart est nul dans 36 des 650 couples. Elle dit maintenant « Un travers plus souple abaisse l'indice ou le laisse inchangé » (EN « A softer cross lowers the index or leaves it unchanged »). À contre-vérifier avec C1 à C13.
+- **Longueur après la passe** : 1 948 mots FR, 1 958 EN (périmètre du §7). C'est au-dessus des 1 800 du brief et dans la fourchette du circuit (2 000). Je n'ai rien coupé de plus, pour ne pas toucher au texte que le pigiste contre-vérifie.
+
 ### Test de glissance
 
 | # | Affirmation contestable | Par qui | Défense (fait n°) ou « sans défense » |
@@ -1173,12 +1193,12 @@ Aucune ne touche un fait, un chiffre, un verdict ni un conseil de santé. Les li
 
 | # | Où | Proposition | Motif SEO | Réponse du rédacteur |
 |---|---|---|---|---|
-| P1 | `cordage-polyester-tennis-elbow` §6 (`#hybrides`) et `polyester-strings-tennis-elbow` §6 (`#hybrids`), après « …une précision qu'il n'a pas. » / « …a precision it does not have. » | Ajouter une phrase. FR : « Pour un hybride dont les deux cordages ont une rigidité mesurée, notre article `<a href="/blog/montage-hybride-cordage-tennis.html">`cordage hybride&nbsp;: montants, travers et fermeté`</a>` donne une estimation de l'indice, avec ses bornes. » EN : « For a hybrid whose two strings both have a lab-measured stiffness, our `<a href="/en/blog/hybrid-tennis-string-setup.html">`hybrid tennis string setup`</a>` guide gives an estimate of the index, with its bounds. » | Lien entrant depuis la page la plus proche par l'intention (« hybride polyester tennis elbow », §1), ancre qui porte la requête principale. « Nous ne la chiffrons pas ici » reste vrai (A-1). La phrase parle de l'indice, pas du bras (F7). Date : même règle que tes quatre autres liens entrants | |
-| P2 | H3 du §2, FR et EN | « Profilé en montants, rond en travers&nbsp;: un usage » → « Profilé en montants, rond en travers (poly/poly)&nbsp;: un usage » ; « Shaped mains, round crosses: a habit » → « Shaped mains, round crosses (poly/poly): a habit » | La requête secondaire « hybride poly poly » / « poly poly hybrid » (§1) n'est dans aucun intertitre, seulement au tableau et au §4. Un intertitre pèse plus qu'une cellule | |
-| P3 | Chapô, première phrase, FR et EN | « Aucune mesure ne dit… » → « Dans un cordage hybride, aucune mesure ne dit… » ; « No measurement tells you… » → « In a hybrid setup, no measurement tells you… ». Le reste ne change pas | La requête principale n'apparaît pas dans le chapô. Sa première phrase est l'extrait probable quand le moteur n'affiche pas la meta (Bing, Copilot) | |
-| P4 | §5, après « …se juge donc à la sensation. » / « …a matter of feel. » | FR : « Pour comparer deux montages, voir notre `<a href="/blog/comparer-deux-montages-cordage-tension.html">`protocole de comparaison`</a>`. » EN : « To compare two setups, see our `<a href="/en/blog/compare-two-string-setups-same-tension.html">`comparison protocol`</a>`. » | Lien sortant prévu au §1 et absent. Il mène au satellite du même ensemble (tension, fermeté), à l'endroit où le lecteur doit juger à la sensation | |
-| P5 | « Ce que cet article ne dit pas », ligne « La jauge » / « Gauge », FR et EN | Ajouter en fin de ligne : « (voir notre `<a href="/blog/jauge-cordage-tennis.html">`guide des jauges`</a>`) » ; « (see our `<a href="/en/blog/tennis-string-gauge.html">`string gauge guide`</a>`) » | Lien sortant prévu au §1 (jauge des travers) et absent. Il répond à la question que cette limite fait naître | |
-| P6 | Sources visibles, FR et EN (facultatif) | Écrire les titres exacts, vérifiés le 23/11 : « Static Friction and Spin » (`COF.php`), « Sliding Friction and Spin » (`slidingCOF.php`), « Klip X-Plosive Tennis String Review » (test TW), à la place des libellés descriptifs | Même titre dans la liste visible et dans les `citation` du JSON-LD ; un titre exact se retrouve par une recherche | |
+| P1 | `cordage-polyester-tennis-elbow` §6 (`#hybrides`) et `polyester-strings-tennis-elbow` §6 (`#hybrids`), après « …une précision qu'il n'a pas. » / « …a precision it does not have. » | Ajouter une phrase. FR : « Pour un hybride dont les deux cordages ont une rigidité mesurée, notre article `<a href="/blog/montage-hybride-cordage-tennis.html">`cordage hybride&nbsp;: montants, travers et fermeté`</a>` donne une estimation de l'indice, avec ses bornes. » EN : « For a hybrid whose two strings both have a lab-measured stiffness, our `<a href="/en/blog/hybrid-tennis-string-setup.html">`hybrid tennis string setup`</a>` guide gives an estimate of the index, with its bounds. » | Lien entrant depuis la page la plus proche par l'intention (« hybride polyester tennis elbow », §1), ancre qui porte la requête principale. « Nous ne la chiffrons pas ici » reste vrai (A-1). La phrase parle de l'indice, pas du bras (F7). Date : même règle que tes quatre autres liens entrants | **Acceptée**, avec une retouche : « rigidité mesurée » devient « rigidité alignée sur une mesure de laboratoire », le vocabulaire du paragraphe qui la reçoit (A-1). FR et EN posées. Dates inchangées : aucun fait de ces articles ne change. |
+| P2 | H3 du §2, FR et EN | « Profilé en montants, rond en travers&nbsp;: un usage » → « Profilé en montants, rond en travers (poly/poly)&nbsp;: un usage » ; « Shaped mains, round crosses: a habit » → « Shaped mains, round crosses (poly/poly): a habit » | La requête secondaire « hybride poly poly » / « poly poly hybrid » (§1) n'est dans aucun intertitre, seulement au tableau et au §4. Un intertitre pèse plus qu'une cellule | **Acceptée**, FR et EN. |
+| P3 | Chapô, première phrase, FR et EN | « Aucune mesure ne dit… » → « Dans un cordage hybride, aucune mesure ne dit… » ; « No measurement tells you… » → « In a hybrid setup, no measurement tells you… ». Le reste ne change pas | La requête principale n'apparaît pas dans le chapô. Sa première phrase est l'extrait probable quand le moteur n'affiche pas la meta (Bing, Copilot) | **Acceptée**, FR et EN. Les deux premières phrases restent la réponse. |
+| P4 | §5, après « …se juge donc à la sensation. » / « …a matter of feel. » | FR : « Pour comparer deux montages, voir notre `<a href="/blog/comparer-deux-montages-cordage-tension.html">`protocole de comparaison`</a>`. » EN : « To compare two setups, see our `<a href="/en/blog/compare-two-string-setups-same-tension.html">`comparison protocol`</a>`. » | Lien sortant prévu au §1 et absent. Il mène au satellite du même ensemble (tension, fermeté), à l'endroit où le lecteur doit juger à la sensation | **Acceptée**, FR et EN. |
+| P5 | « Ce que cet article ne dit pas », ligne « La jauge » / « Gauge », FR et EN | Ajouter en fin de ligne : « (voir notre `<a href="/blog/jauge-cordage-tennis.html">`guide des jauges`</a>`) » ; « (see our `<a href="/en/blog/tennis-string-gauge.html">`string gauge guide`</a>`) » | Lien sortant prévu au §1 (jauge des travers) et absent. Il répond à la question que cette limite fait naître | **Acceptée**, fusionnée avec C11, FR et EN. |
+| P6 | Sources visibles, FR et EN (facultatif) | Écrire les titres exacts, vérifiés le 23/11 : « Static Friction and Spin » (`COF.php`), « Sliding Friction and Spin » (`slidingCOF.php`), « Klip X-Plosive Tennis String Review » (test TW), à la place des libellés descriptifs | Même titre dans la liste visible et dans les `citation` du JSON-LD ; un titre exact se retrouve par une recherche | **Acceptée**. Les titres exacts figurent dans la liste visible et sont identiques aux `citation`. |
 
 ### Vérification en production (après fusion)
 
@@ -1253,3 +1273,63 @@ Aucune ne touche un fait, un chiffre, un verdict ni un conseil de santé. Les li
   - Aucun fichier de `public/`, `src/` ni `scripts/` modifié. Scripts et sorties hors dépôt : `C:\Users\plene\AppData\Local\Temp\claude\9519414f725d5b3e\cbc91433-ac54-48b8-b83a-537568efd73b\scratchpad\pig-hybride\` (`fact-check-4a.mts`, `sortie-*.txt`, pages relues dans `web-q8\`).
   - RELAIS → `tsa-redacteur` : passe finale (étape 5). Solder C1 à C13 du §5 en FR, en EN et dans la `FAQPage` ; appliquer Q-8 (§4) à `cordage-mono-vs-multifilament` §08 et `polyester-vs-multifilament-strings` ; relancer `--check`, `redaction:valeurs` et `audit:jsonld`.
 - 2026-11-23 · orchestrateur — 4a et 4b relus. 4a : fact-check non soldé, 13 corrections (C1 à C13) ; chiffres du moteur justes ; Federer établi par deux sources. 4b : en-tête, sitemap et index faits, `audit:jsonld` vert, propositions P1 à P6. Arbitrages A-3 (phrases Q-8 entièrement sourcées) et A-4 (Federer dans le nouvel article, au choix du rédacteur, daté). RELAIS → `tsa-redacteur` : passe finale (étape 5) et contrôles (étape 6) ; contre-vérification ciblée de `tsa-pigiste` avant la PR.
+- 2026-11-23 · `tsa-redacteur` — étapes 5 (passe finale) et 6 (contrôles), sur `1dc96b4`. Relus avant d'écrire : §2 (F7, F15, F17, F24, F25, F29, F33 corrigés ; F35 à F39), §4 (réponse sous Q-8, A-3, A-4), §5 (C1 à C13, test de glissance), §6 (P1 à P6).
+  - **C1 à C13** : toutes appliquées, aucun refus (détail au §5, « Corrections : réponse de `tsa-redacteur` »). C6 est attribuée à Eriksson dans la phrase. C10 suit l'option (a), datée, avec la réserve pro stock et sans conseil. Une correction de plus, de même nature que G23 : la FAQ 1.
+  - **Q-8 et A-3**, une phrase et une ligne de sources par article :
+    - `cordage-mono-vs-multifilament` §08 : « À l'inverse, Roger Federer jouait boyau aux montants, mono aux travers, selon Tennis.com en 2009 (qui nomme le Luxilon ALU Power Rough) et The New Yorker en 2014. »
+    - `polyester-vs-multifilament-strings` : « The reverse configuration, gut mains and poly crosses, is what Roger Federer played, according to Tennis.com in 2009 (which names Luxilon ALU Power Rough) and The New Yorker in 2014. »
+    - Dans les deux, la ligne « Perfect Tennis, Tennisnerd, Tennis Companion » est remplacée par les deux sources datées.
+    - Retirés de la même phrase, faute de source (A-3, « rien ne reste sans source ») : « il s'use vite chez les gros lifteurs » / « it wears out fast for heavy topspin players », comme demandé ; et aussi « le célèbre » / « famous » et « privilégie le toucher avec un soupçon de contrôle » / « prioritises touch with a hint of control », qui n'avaient pas de source non plus. Aucune autre phrase touchée.
+    - **Dates (F11)** : un fait daté sur le matériel d'un joueur entre dans ces deux pages, et une affirmation en sort. `dateModified` passe à **2026-11-23**, ainsi que la date visible (« Mis à jour le 23 novembre 2026 » ; « updated November 23, 2026 »).
+    - **À reporter dans `src/app/sitemap.ts` par `tsa-acquisition`** (non modifié par moi) : `cordage-mono-vs-multifilament.html` et `polyester-vs-multifilament-strings.html`, `modified: '2026-11-23'`. D'ici là, `audit:jsonld` échoue sur ces deux articles (4 lignes ci-dessous).
+  - **P1 à P6** : acceptées (§6). P1 est posée dans `cordage-polyester-tennis-elbow` §6 et `polyester-strings-tennis-elbow` §6, sans changement de date.
+  - **Fichiers** : les deux nouveaux articles ; `cordage-mono-vs-multifilament.html`, `polyester-vs-multifilament-strings.html`, `cordage-polyester-tennis-elbow.html`, `polyester-strings-tennis-elbow.html` ; `scripts/blog-covers/build-hybride-figures.mts` (contrôles C8 et C9 ajoutés). Ni `src/`, ni le sitemap, ni les index.
+  - **Contrôles (étape 6)**, au 23/11 :
+
+```
+$ npx --yes tsx scripts/blog-covers/build-hybride-figures.mts --check
+  OK    public/blog/montage-hybride-cordage-tennis.html : bloc « schema » / « tableau » / « graphique » conforme à la base
+  OK    public/en/blog/hybrid-tennis-string-setup.html : bloc « schema » / « tableau » / « graphique » conforme à la base
+blocs et chiffres du texte conformes à la base                         → exit 0
+
+$ npm run redaction:valeurs -- docs/redaction/montage-hybride-cordage-tennis.md
+33 valeur(s) contrôlée(s), 0 écart(s)                                  → exit 0
+
+$ npm run type-check
+> tsc --noEmit                                                         → exit 0
+
+$ npm run build
+ ✓ Generating static pages (329/329)                                   → exit 0
+
+$ npm run audit:jsonld                                                 → exit 1, attendu
+  ECHEC sitemap.ts:70 BLOG_ARTICLES : « cordage-mono-vs-multifilament.html » déclare modified 2026-10-26, son JSON-LD dit dateModified 2026-11-23
+  ECHEC sitemap.ts:114 EN_BLOG_ARTICLES : « polyester-vs-multifilament-strings.html » déclare modified 2026-10-26, son JSON-LD dit dateModified 2026-11-23
+  ECHEC sitemap construit : …/blog/cordage-mono-vs-multifilament.html : <lastmod> 2026-10-26, le JSON-LD de l'article dit 2026-11-23
+  ECHEC sitemap construit : …/en/blog/polyester-vs-multifilament-strings.html : <lastmod> 2026-10-26, le JSON-LD de l'article dit 2026-11-23
+NON CONFORME — 4 échec(s), 0 avertissement(s)   (aucun écart de FAQPage)
+
+$ npm run audit:blog-funnel
+instrument A3 intact : la lecture GA4 referrer -> configurateur reste valide   (1 AVERT, article next-gen EN, antérieur)
+
+$ npm run audit:blog-images
+images du blog conformes à la règle du 10/10/2026                      (11 AVERT, exceptions d'autres articles)
+
+$ npm run audit:comptages
+Conforme — 0 échec(s), 0 avertissement(s)
+
+$ npm run audit:claims
+Conforme — 0 échec(s), 10 avertissement(s)
+$ node scripts/qa-claims.mjs --all   → aucun AVERT sur les deux nouveaux articles ni sur mono/multi ; 2 AVERT antérieurs sur cordage-polyester-tennis-elbow l. 223 et polyester-strings-tennis-elbow l. 184 (« ne soigne pas un tendon », une négation), hors des lignes touchées
+
+$ npm run audit:contrast
+  Résultat : toutes les paires respectent WCAG AA.
+
+$ grep -rn "À SOURCER" public/blog public/en/blog | wc -l
+0
+
+$ npx next start -p 3100   (port libéré avant ; serveur arrêté par son PID 6120 après)
+200 montage-hybride-cordage-tennis · hybrid-tennis-string-setup : 1280 et 390 px, clair et sombre — débordement 0 px, 0 image cassée, 2 SVG, 0 requête en échec
+200 cordage-mono-vs-multifilament · polyester-vs-multifilament-strings · cordage-polyester-tennis-elbow · polyester-strings-tennis-elbow : 390 px, clair et sombre — débordement 0 px, 0 image cassée, 0 requête en échec
+(les pages EN n'ont pas de thème sombre : gabarit EN)
+```
+  - RELAIS → orchestrateur : contre-vérification de C1 à C13 et de la FAQ 1 par `tsa-pigiste` ; dates du sitemap à reporter par `tsa-acquisition` (ci-dessus) ; `citation` Tennis.com et The New Yorker à ajouter au JSON-LD si `tsa-acquisition` le juge utile. Pas de PR ouverte.
