@@ -523,6 +523,18 @@ L'intégral de chaque cordage est la borne « seul » de la même ligne : au mê
   - Une `citation` s'écarte du titre exact : la page Babolat s'intitule « Hybrid stringing: the ideal combination ». « ideal combination » déclenche le motif `absolu/parfait-ideal-en` d'`audit:claims` (AVERT) ; le texte visible dit « page de blog sur le cordage hybride » (EN « blog page on hybrid stringing ») et la `citation` « Hybrid stringing (Babolat blog) ». À garder ou à remplacer par le titre exact, à ton choix.
   - À faire : `src/app/sitemap.ts` (`BLOG_ARTICLES`, `EN_BLOG_ARTICLES`, `modified` = 2026-11-23) et les deux index du blog. D'ici là, `audit:jsonld` échoue sur ces deux lignes, comme prévu.
   - Maillage entrant posé dans cette PR, une phrase chacun, sans changement de chiffre ni de date : `cordage-mono-vs-multifilament` §08 et `polyester-vs-multifilament-strings`, `guide-tension-cordage-tennis` §3 et `tennis-string-tension-guide` §3 (la page EN n'a pas d'ancre de section : lien vers la page). **Non posés** : `cordage-polyester-tennis-elbow` §6 / `polyester-strings-tennis-elbow` §6, que le §1 et A-1 renvoient à ta proposition du 4b (je l'appliquerai au 5) ; `cordage-tennis-elbow` / `best-tennis-strings-for-tennis-elbow`, non modifiés selon la réponse à Q-1 ; `guide-materiel-tennis` §5 (Q-2).
+  - → `tsa-acquisition`, 2026-11-23 : **`<head>` repris, sitemap et index faits, `audit:jsonld` vert.** Détail et sorties au §6.
+    - **Conservé** : title, meta, canonical, H1, slugs, hreflang, `Article` / `BlogPosting`, `BreadcrumbList`, `FAQPage` (4 questions identiques à la FAQ visible). Dates : 2026-11-23, celle de la page.
+    - **Modifié** : espaces insécables (charte §5) dans la meta, `og`, `twitter` et les `alt` de partage ; `og:title` et `twitter:title` raccourcis (FR 63 caractères au lieu de 89, EN 68 au lieu de 103), car les cartes de partage coupent le H1.
+    - **`citation` Babolat** : « Hybrid stringing », le titre principal de la page sans son sous-titre. « the ideal combination » est une formule de la marque que le site ne reprend pas, et qui déclencherait `parfait-ideal-en`. L'URL identifie la page.
+    - **Trois autres `citation` portaient un libellé descriptif**, pas le titre de la page (pages ouvertes le 23/11) :
+      - `COF.php` : « Static Friction and Spin » (août 2010, révisé en février 2011) ;
+      - `slidingCOF.php` : « Sliding Friction and Spin » ;
+      - test TW : « Klip X-Plosive Tennis String Review ».
+
+      Holabird porte désormais son titre complet, « Ask the Stringer: Why Are My Crosses Wearing Out so Quickly? ».
+    - **hreflang** : `fr`, `en` et `x-default` vers le FR, et non `fr-FR` / `en-US`. C'est la convention des 37 articles du blog ; les codes régionaux ne servent qu'aux routes Next et aux fiches EN générées. `fr` vise tous les francophones.
+    - **Lien depuis `cordage-polyester-tennis-elbow` §6** : proposé au §6 (P1), FR et EN.
 - **Q-8** · `tsa-redacteur` → orchestrateur (copie `tsa-pigiste`) · 2026-11-23 — **Deux articles qui reçoivent un lien entrant citent un hybride de pro sans source.** Non bloquant.
   - `cordage-mono-vs-multifilament` §08 (« le célèbre montage de Roger Federer ») et `polyester-vs-multifilament-strings` (« Roger Federer's famous gut mains, poly crosses ») nomment un joueur que F33 ne tient pas (charte F4). Le même §08 écrit « la combinaison la plus courante en club » sans source au dossier. C'est le cas de Q-2, sur deux articles qui recevront désormais un lien vers le nouvel article.
   - **Question** : circuit court séparé (vérification par le pigiste, coupe ou source par le rédacteur), ou rattachement à P3 ? Je n'ai rien touché d'autre que la phrase du lien.
@@ -569,18 +581,91 @@ Sortie de `npm run redaction:valeurs -- docs/redaction/<slug-fr>.md` :
 
 ### Contrôle on-page
 
-- [ ] title, meta, H1 et slug FR et EN conformes au brief, ou écart motivé
-- [ ] canonical ; hreflang réciproques sur la paire FR/EN
-- [ ] JSON-LD Article valide (`image`, `datePublished`, `dateModified`) ; Breadcrumb ; FAQPage seulement si une FAQ visible lui correspond
-- [ ] og:image et twitter:image en 1200 × 630, avec `og:image:alt`
-- [ ] index du blog FR et EN ; sitemap (`BLOG_SLUGS`, `EN_BLOG_SLUGS`)
-- [ ] maillage : liens entrants posés, sortants présents, lien vers le configurateur dans le corps (A3)
-- [ ] `npm run audit:blog-funnel` et `npm run audit:blog-images` verts
+*Passe du 2026-11-23, sur le commit `ca9326d` plus mes modifications (commit de l'étape 4b, §7).*
+
+- [x] **Balises conformes au §1.**
+  - FR : title « Cordage hybride tennis : montants, travers et fermeté » (53 caractères) ; meta de 145.
+  - EN : title « Hybrid Tennis String Setup: Mains, Crosses and Firmness » (55) ; meta de 151.
+  - H1 et slugs : ceux du §1.
+  - Un écart motivé : `og:title` et `twitter:title` ne reprennent plus le H1, coupé par les cartes de partage (89 et 103 caractères). FR « Cordage hybride : montants, travers, et quelle fermeté attendre » (63) ; EN « Hybrid Tennis Strings: Mains, Crosses and How Firm the Setup Will Be » (68).
+- [x] **Canonical et hreflang.** Canonical sur l'URL de chaque page. hreflang réciproques `fr`, `en`, `x-default` vers le FR (convention du blog, Q-7), vers deux URL qui répondent 200 (`next start`, port 3102).
+- [x] **JSON-LD**, analysé sans erreur :
+  - `Article` (FR) et `BlogPosting` (EN) : `image` = `og:image` (fichier présent, 1200 × 630) ; `datePublished` et `dateModified` 2026-11-23, comme la date visible ; auteur `#pierre-fermanian`, l'auteur en vigueur ; `mainEntityOfPage` = canonical ;
+  - 8 `citation` : titres réels (Q-7) ;
+  - `BreadcrumbList` (Accueil / Blog / Cordage hybride ; Home / Blog / Hybrid String Setup) ;
+  - `FAQPage` : 4 questions, identiques à la FAQ visible (`audit:jsonld`).
+- [x] **Partage.** `og:image` = `twitter:image`, 1200 × 630, avec `og:image:alt`. Couvertures regardées : titre, tamis générique, aucune marque.
+- [x] **Index et sitemap.**
+  - Index FR : première carte de « Tous nos articles », comme l'ajout du 13/11.
+  - Index EN : première carte « Featured Article », même précédent.
+  - `src/app/sitemap.ts` : `BLOG_ARTICLES` et `EN_BLOG_ARTICLES` (noms réels des tableaux ; le modèle dit `BLOG_SLUGS`), `modified` 2026-11-23. Le sitemap construit porte les deux URL avec `<lastmod>2026-11-23</lastmod>`.
+- [x] **Maillage.**
+  - Configurateur dans le corps, sans `noreferrer` ni `referrerpolicy` : FR 3 liens (encart, §4, §6), EN 3 plus l'encart final.
+  - Fiches produit liées dans le tableau.
+  - 4 liens entrants posés par le rédacteur (`cordage-mono-vs-multifilament`, `guide-tension-cordage-tennis`, et leurs pages EN).
+  - Lien depuis `cordage-polyester-tennis-elbow` §6 : proposé (P1).
+  - **Aucun lien entrant depuis `guide-materiel-tennis` §5** (réponse à Q-2).
+- [x] **Contrôles verts**, sorties ci-dessous.
+
+### Contrôles (commande et sortie)
+
+Worktree `C:\Users\plene\Documents\_wt\redac-hybride`, 2026-11-23, après mes modifications. Lignes de bilan copiées des sorties ; journaux complets hors dépôt (`scratchpad\acq-*.log`).
+
+```
+$ npm run build                → exit 0
+ ✓ Compiled successfully
+ ✓ Generating static pages (329/329)
+
+$ npm run type-check           → exit 0
+
+$ npm run audit:jsonld         → exit 0
+  OK    FAQPage : 34 FAQ, 157 questions, chaque question et chaque réponse figurent en entier dans le texte visible
+  OK    sitemap : 38 articles, chaque date `modified` est le dateModified de l'article, aucun new Date() sans argument
+  OK    sitemap construit : 38 <lastmod>, tous sur des articles et à leur vraie date
+Conforme — 0 échec(s), 0 avertissement(s)
+
+$ npm run audit:comptages      → exit 0
+  OK    blog : 40 pages lues, aucun total divergent
+  OK    public/data/catalog.json : mêmes totaux que src/data (129 / 179)
+Conforme — 0 échec(s), 0 avertissement(s)
+
+$ npm run audit:claims         → exit 0
+  OK    index du blog FR et EN : 2 fichiers lus, aucune allégation ni claim faux
+        (articles : 38 pages lues, 10 motif(s) signalé(s) à tsa-pigiste / tsa-redacteur, jamais bloquants)
+Conforme — 0 échec(s), 10 avertissement(s)
+$ node scripts/qa-claims.mjs --all   → exit 0 ; aucun des 10 AVERT ne porte sur les deux nouveaux articles
+
+$ npm run audit:blog-funnel    → exit 0
+  OK    public/blog : 22 pages contrôlées (GA4 unique, referrer intact)
+  AVERT public/en/blog/next-gen-tennis-racquets-fonseca-mensik-cobolli-jodar.html : aucun lien vers le configurateur EN (antérieur, hors de cette PR)
+  OK    public/en/blog : 18 pages contrôlées (GA4 unique, referrer intact)
+instrument A3 intact : la lecture GA4 referrer -> configurateur reste valide
+
+$ npm run audit:blog-images    → exit 0
+  OK    public/blog : 21 articles FR + index — couverture, partage, JSON-LD et provenance conformes ; 6 en exception (visuel de corps)
+  OK    public/en/blog : 17 articles EN + index — couverture, partage, JSON-LD et provenance conformes ; 5 en exception (visuel de corps)
+images du blog conformes à la règle du 10/10/2026
+
+$ npx next start -p 3102       (port libéré avant, serveur arrêté par son PID après)
+200 /blog/montage-hybride-cordage-tennis.html · 200 /en/blog/hybrid-tennis-string-setup.html
+200 /blog/index.html (carte présente) · 200 /en/blog/index.html (carte présente) · 200 /sitemap.xml (deux URL présentes)
+200 couverture-montage-hybride-fr.webp · 200 couverture-montage-hybride-en.webp
+```
+
+Non vérifié : `/blog/` et `/en/blog/` répondent 308 puis 404 sous `next start` (sortie `standalone`), pour tous les articles et avant cette PR. Les fichiers `index.html` sont servis. La production se vérifie à l'étape 8. Le rendu visuel des deux cartes n'a pas été regardé dans un navigateur : elles reprennent le gabarit des cartes voisines.
 
 ### Propositions au rédacteur
 
+Aucune ne touche un fait, un chiffre, un verdict ni un conseil de santé. Les liens proposés pointent vers des pages qui existent (vérifié le 23/11), et aucun des articles visés n'est dans `scripts/qa-blog-images.exceptions.json`.
+
 | # | Où | Proposition | Motif SEO | Réponse du rédacteur |
 |---|---|---|---|---|
+| P1 | `cordage-polyester-tennis-elbow` §6 (`#hybrides`) et `polyester-strings-tennis-elbow` §6 (`#hybrids`), après « …une précision qu'il n'a pas. » / « …a precision it does not have. » | Ajouter une phrase. FR : « Pour un hybride dont les deux cordages ont une rigidité mesurée, notre article `<a href="/blog/montage-hybride-cordage-tennis.html">`cordage hybride&nbsp;: montants, travers et fermeté`</a>` donne une estimation de l'indice, avec ses bornes. » EN : « For a hybrid whose two strings both have a lab-measured stiffness, our `<a href="/en/blog/hybrid-tennis-string-setup.html">`hybrid tennis string setup`</a>` guide gives an estimate of the index, with its bounds. » | Lien entrant depuis la page la plus proche par l'intention (« hybride polyester tennis elbow », §1), ancre qui porte la requête principale. « Nous ne la chiffrons pas ici » reste vrai (A-1). La phrase parle de l'indice, pas du bras (F7). Date : même règle que tes quatre autres liens entrants | |
+| P2 | H3 du §2, FR et EN | « Profilé en montants, rond en travers&nbsp;: un usage » → « Profilé en montants, rond en travers (poly/poly)&nbsp;: un usage » ; « Shaped mains, round crosses: a habit » → « Shaped mains, round crosses (poly/poly): a habit » | La requête secondaire « hybride poly poly » / « poly poly hybrid » (§1) n'est dans aucun intertitre, seulement au tableau et au §4. Un intertitre pèse plus qu'une cellule | |
+| P3 | Chapô, première phrase, FR et EN | « Aucune mesure ne dit… » → « Dans un cordage hybride, aucune mesure ne dit… » ; « No measurement tells you… » → « In a hybrid setup, no measurement tells you… ». Le reste ne change pas | La requête principale n'apparaît pas dans le chapô. Sa première phrase est l'extrait probable quand le moteur n'affiche pas la meta (Bing, Copilot) | |
+| P4 | §5, après « …se juge donc à la sensation. » / « …a matter of feel. » | FR : « Pour comparer deux montages, voir notre `<a href="/blog/comparer-deux-montages-cordage-tension.html">`protocole de comparaison`</a>`. » EN : « To compare two setups, see our `<a href="/en/blog/compare-two-string-setups-same-tension.html">`comparison protocol`</a>`. » | Lien sortant prévu au §1 et absent. Il mène au satellite du même ensemble (tension, fermeté), à l'endroit où le lecteur doit juger à la sensation | |
+| P5 | « Ce que cet article ne dit pas », ligne « La jauge » / « Gauge », FR et EN | Ajouter en fin de ligne : « (voir notre `<a href="/blog/jauge-cordage-tennis.html">`guide des jauges`</a>`) » ; « (see our `<a href="/en/blog/tennis-string-gauge.html">`string gauge guide`</a>`) » | Lien sortant prévu au §1 (jauge des travers) et absent. Il répond à la question que cette limite fait naître | |
+| P6 | Sources visibles, FR et EN (facultatif) | Écrire les titres exacts, vérifiés le 23/11 : « Static Friction and Spin » (`COF.php`), « Sliding Friction and Spin » (`slidingCOF.php`), « Klip X-Plosive Tennis String Review » (test TW), à la place des libellés descriptifs | Même titre dans la liste visible et dans les `citation` du JSON-LD ; un titre exact se retrouve par une recherche | |
 
 ### Vérification en production (après fusion)
 
@@ -630,3 +715,16 @@ Sortie de `npm run redaction:valeurs -- docs/redaction/<slug-fr>.md` :
   - **Contrôles**, au 23/11 : `npm ci` (0) ; `npm run build` compilé, 329/329 pages ; `audit:blog-funnel` intact (1 AVERT, autre article) ; `audit:blog-images` conforme (11 AVERT, exceptions d'autres articles) ; `audit:jsonld` **2 ECHEC attendus** (les deux articles absents de `sitemap.ts`, Q-7), aucun écart de FAQ ; `audit:comptages` conforme, 0 AVERT ; `audit:claims` conforme, 0 AVERT sur les six articles touchés (`--all`) ; `audit:contrast` toutes paires AA ; aucun « À SOURCER ». Rendu Playwright (Chrome, `next start` port 3100, arrêté par son PID) FR et EN à 1280 et 390 px, clair et sombre : 0 px de débordement, toutes les images chargées, aucune requête en échec, deux SVG par page lisibles en sombre ; la page EN n'a pas de thème sombre (gabarit EN). Non fait : `redaction:valeurs` (bloc du §5 vide, étape 4a).
   - Questions : Q-7 à `tsa-acquisition`, Q-8 à l'orchestrateur. RELAIS → `tsa-pigiste` (fact-check 4a, FR et EN, en relançant le moteur ; reprendre F7, F17 et I8 au §2) ET `tsa-acquisition` (passe on-page 4b, Q-7).
 - 2026-11-23 · orchestrateur — rédaction relue (commit `246dba2` : FR 1 788 mots, EN 1 799 ; aucun joueur cité ; aucun lien d'achat ; 5 liens FR et 6 liens EN vers le configurateur ; build 329/329 ; `audit:jsonld` rouge en attendant le sitemap, comme prévu). Réponse à Q-8 : circuit court sur la mention de Federer dans §08, FR et EN. RELAIS → `tsa-pigiste` (4a : fact-check, F7, F17 et I8 à reprendre, vérification F4 de Federer) ET `tsa-acquisition` (4b : passe on-page, Q-7), en parallèle.
+- 2026-11-23 · `tsa-acquisition` — étape 4b : passe on-page, réponse à Q-7 (§4), revue au §6.
+  - **Fichiers** :
+    - `<head>` FR et EN : espaces insécables, `og:title` et `twitter:title` raccourcis, `citation` corrigées (Babolat, plus trois titres descriptifs remplacés par les titres réels, pages ouvertes le 23/11) ;
+    - `src/app/sitemap.ts` : une entrée FR, une EN, `modified` 2026-11-23 ;
+    - une carte dans chacun des deux index du blog.
+  - Corps des articles non touché.
+  - **Contrôles** : `build` (329/329), `type-check`, `audit:jsonld` (0 échec, 0 AVERT, sitemap compris), `audit:comptages`, `audit:claims` (0 AVERT sur les deux articles), `audit:blog-funnel`, `audit:blog-images` : tous en 0. Pages, index, sitemap et couvertures en 200 sous `next start` (port 3102, arrêté par son PID).
+  - **Propositions au rédacteur** : P1 à P6 au §6. P1 est le lien depuis `cordage-polyester-tennis-elbow` §6, FR et EN. Aucun lien depuis `guide-materiel-tennis` §5 (Q-2).
+  - Hors périmètre, relevé pour plus tard :
+    - la carte d'index « Cordage polyester et tennis elbow », FR et EN, dit « 46 polyesters » dans le titre et « 36 » dans le résumé ; `tsa-core` compte 45 polyesters mesurés depuis Q-3 ;
+    - l'index FR annonce encore en « Prochains articles » le classement des raquettes 2026, déjà publié ;
+    - l'article EN next-gen n'a aucun lien vers le configurateur (`audit:blog-funnel`).
+  - RELAIS → `tsa-redacteur` : passe finale (étape 5). Répondre à P1 à P6 dans la colonne « Réponse » du §6 ; appliquer P1 si accepté.

@@ -80,6 +80,8 @@ const BLOG_ARTICLES: Array<{ slug: string; modified: string }> = [
   { slug: 'meilleures-raquettes-tennis-2026.html', modified: '2026-10-23' },
   // Polyester et tennis elbow, tri par rigidité (09/10/2026), appairé en hreflang.
   { slug: 'cordage-polyester-tennis-elbow.html', modified: '2026-10-26' },
+  // Montage hybride, montants et travers (23/11/2026), appairé en hreflang.
+  { slug: 'montage-hybride-cordage-tennis.html', modified: '2026-11-23' },
 ];
 
 // Pages anglaises statiques publiques (`public/en/*.html`).
@@ -133,6 +135,8 @@ const EN_BLOG_ARTICLES: Array<{ slug: string; modified: string }> = [
   { slug: 'polyester-strings-tennis-elbow.html', modified: '2026-10-26' },
   // Adapté du FR cordage-terre-battue (12/11/2026), appairé en hreflang.
   { slug: 'tennis-strings-for-clay-courts.html', modified: '2026-11-12' },
+  // Adapté du FR montage-hybride-cordage-tennis (23/11/2026), appairé en hreflang.
+  { slug: 'hybrid-tennis-string-setup.html', modified: '2026-11-23' },
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
