@@ -1224,6 +1224,14 @@ $ npm run redaction:valeurs -- docs/redaction/montage-hybride-cordage-tennis.md
 exit=0
 ```
 
+
+**R1 à R3 appliquées par `tsa-redacteur`, 2026-11-23**, à l'identique des formes attendues ci-dessus, et rien d'autre dans le texte :
+- R1 : FAQ 4, FR, EN et `FAQPage` FR et EN ;
+- R2 : §5, FR ;
+- R3 : FAQ 2, EN et `FAQPage` EN.
+
+Sorties après R1 à R3 : §7, entrée « étape 6, contrôles avant la PR ».
+
 ---
 
 ## 6. Revue SEO — `tsa-acquisition`
@@ -1490,3 +1498,47 @@ $ npx next start -p 3100   (port libéré avant ; serveur arrêté par son PID 6
   - **Q-8 et A-3** (`cordage-mono-vs-multifilament` l. 618 et 664 ; `polyester-vs-multifilament-strings` l. 387 et 464) et **P1** : conformes.
   - `--check` : exit 0. `redaction:valeurs` : 33 valeurs, 0 écart.
   - RELAIS → `tsa-redacteur` : R1 à R3, puis `--check`, `redaction:valeurs` et `audit:jsonld`. Le fact-check est soldé dès que R1 à R3 sont appliquées à l'identique, sans nouvelle passe du pigiste.
+- 2026-11-23 · `tsa-redacteur` — R1 à R3 de la contre-vérification appliquées à l'identique (§5), puis étape 6, contrôles avant la PR, sur `7e4bf74` plus R1 à R3 :
+
+```
+$ npx --yes tsx scripts/blog-covers/build-hybride-figures.mts --check
+  OK    public/blog/montage-hybride-cordage-tennis.html : bloc « schema » conforme à la base
+  OK    public/blog/montage-hybride-cordage-tennis.html : bloc « tableau » conforme à la base
+  OK    public/blog/montage-hybride-cordage-tennis.html : bloc « graphique » conforme à la base
+  OK    public/en/blog/hybrid-tennis-string-setup.html : bloc « schema » conforme à la base
+  OK    public/en/blog/hybrid-tennis-string-setup.html : bloc « tableau » conforme à la base
+  OK    public/en/blog/hybrid-tennis-string-setup.html : bloc « graphique » conforme à la base
+blocs et chiffres du texte conformes à la base                                   → exit 0
+
+$ npm run redaction:valeurs -- docs/redaction/montage-hybride-cordage-tennis.md
+33 valeur(s) contrôlée(s), 0 écart(s)                                            → exit 0
+
+$ npm run type-check
+> tsc --noEmit                                                                   → exit 0
+
+$ npm run build
+ ✓ Compiled successfully
+ ✓ Generating static pages (329/329)                                             → exit 0
+
+$ npm run audit:jsonld
+  OK    FAQPage : 34 FAQ, 157 questions, chaque question et chaque réponse figurent en entier dans le texte visible
+  OK    sitemap : 38 articles, chaque date `modified` est le dateModified de l'article, aucun new Date() sans argument
+  OK    sitemap construit : 38 <lastmod>, tous sur des articles et à leur vraie date
+Conforme — 0 échec(s), 0 avertissement(s)                                        → exit 0
+
+$ npm run audit:blog-funnel
+instrument A3 intact : la lecture GA4 referrer -> configurateur reste valide     → exit 0 (1 AVERT : article next-gen EN, antérieur)
+
+$ npm run audit:blog-images
+images du blog conformes à la règle du 10/10/2026                                → exit 0 (11 AVERT : exceptions d'autres articles)
+
+$ npm run audit:comptages
+Conforme — 0 échec(s), 0 avertissement(s)                                        → exit 0
+
+$ npm run audit:claims
+Conforme — 0 échec(s), 10 avertissement(s)                                       → exit 0 (aucun sur les deux nouveaux articles)
+
+$ grep -rn "À SOURCER" public/blog public/en/blog | wc -l
+0
+```
+  - Fact-check soldé (R1 à R3 appliquées). RELAIS → étape 7 : push de la branche et PR vers `main`, sans fusion.
