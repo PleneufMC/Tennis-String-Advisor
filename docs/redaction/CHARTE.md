@@ -1,6 +1,6 @@
 # Charte éditoriale — Tennis String Advisor
 
-> **Version 1.2 — 21 octobre 2026.** Règles communes à la chaîne éditoriale :
+> **Version 1.3 — 23 novembre 2026.** Règles communes à la chaîne éditoriale :
 > `tsa-pigiste`, `tsa-redacteur`, `tsa-acquisition` et l'orchestrateur. Elles
 > sont écrites **ici, une seule fois** ; les prompts des agents y renvoient sans
 > les recopier. Le déroulé du travail (qui fait quoi, dans quel ordre) est dans
@@ -8,7 +8,10 @@
 > 10/10/2026 : evergreen d'abord (§1), images générées par son outil MCP (§4),
 > consentement avant toute publication (§6). La v1.2 réécrit F7 (§2) sur sa
 > décision du 21/10/2026 : qualifier franchement un montage, confort compris,
-> ne jamais prêter au matériel un effet sur la santé.
+> ne jamais prêter au matériel un effet sur la santé. La v1.3 lève la
+> prudence sur les joueurs, sur la décision de Pierre du 23/11/2026 : les
+> noms de joueurs sont bienvenus (§1), une source datée suffit pour leur
+> matériel (F4), une vraie photo de joueur sous licence est permise (§4).
 >
 > **Rang.** Les neuf règles non négociables de `CLAUDE.md` §4 passent avant
 > tout ; cette charte les applique au contenu. En cas de conflit, `CLAUDE.md`
@@ -35,6 +38,17 @@ Trois conséquences :
   mot-clé le justifie ;
 - chaque article mène au configurateur, à l'endroit où le lecteur en a besoin
   (règle A3, prompt de `tsa-acquisition`).
+
+**Les joueurs sont bienvenus.** Pierre, le 23/11/2026 : « cette phobie d'utiliser les noms des joueurs sans insistance de ma part dans la rédaction d'article est ridicule. Tout le marketing du tennis est basé là dessus ».
+Nommer des joueurs, leur jeu, leur matériel et leurs réglages, en titre, en
+introduction ou en exemple, est **encouragé** : c'est par eux que la plupart
+des lecteurs entrent dans un sujet de matériel. Aucun agent n'attend que Pierre
+le demande. Le joueur sert d'accroche, le sujet reste une question de choix
+(evergreen d'abord, ci-dessous). Deux limites seulement :
+
+- un fait sur un joueur est exact et daté (F4, F11) ;
+- aucun joueur n'est présenté comme recommandant TSA ou un produit vendu par
+  nos liens.
 
 **Evergreen d'abord.** Pierre, le 10/10/2026 : « Un article semaine serait top
 mais il faut viser le plus evergreen possible. » La cible est **un article par
@@ -80,13 +94,21 @@ ne s'écrit pas comme un fait.
 *Origine : le « +2 kg » pour passer d'un cordage à un autre, introuvable en
 octobre 2026, qui bloque l'article sur l'équivalence de tension.*
 
-**F4 — Matériel des pros : « pro stock » n'est pas le modèle du commerce.** Le
-cadre d'un joueur professionnel est souvent un modèle ancien ou personnalisé,
-peint aux couleurs du modèle courant. Toute affirmation sur le matériel d'un
-joueur exige deux sources indépendantes et la mention explicite de cette
-réserve ; elle ne reprend jamais les specs de la fiche du commerce.
+**F4 — Matériel des pros : une source datée suffit ; « pro stock » se dit pour
+les cadres.** Une affirmation sur le matériel ou le réglage d'un joueur (cadre,
+cordage, tension, montage) repose sur **une** source ouverte et datée : le
+joueur ou son équipe, le fabricant qui l'équipe, son cordeur, l'ATP ou la WTA,
+un média de tennis reconnu. L'article donne la date de la source (F11). Si deux
+sources se contredisent, il le dit. Pour un **cadre**, la réserve s'écrit : le
+cadre d'un professionnel est souvent un modèle ancien ou personnalisé, peint aux
+couleurs du modèle courant, et l'article ne lui prête jamais les specs de la
+fiche du commerce. Faute de source, le fait ne s'écrit pas comme un fait ; le
+joueur, lui, peut toujours être nommé pour autre chose.
 *Origine : Zverev présenté avec une « Gravity Tour 100 in², 18 × 20 », modèle
-qui n'existe pas au catalogue (corrigé le 10/10/2026).*
+qui n'existe pas au catalogue (corrigé le 10/10/2026). Jusqu'au 23/11/2026, F4
+exigeait deux sources indépendantes. Cette exigence a fait retirer les tensions
+de Sinner et d'Alcaraz du guide des tensions, et écrire « nous ne citons aucun
+joueur » dans un brouillon. Pierre l'a levée le 23/11/2026 (§1).*
 
 **F5 — Les testeurs ne sont pas les auteurs des notes du site.** Les notes de
 TSA sont une appréciation éditoriale du site. Les trois chaînes de testeurs dont
@@ -243,7 +265,10 @@ décorative. À service égal, on suit cet ordre.
      licence et mention « recadrée » si l'on recadre ;
    - Unsplash et Pexels, selon leur licence lue (jamais Unsplash+).
 
-   Page de la photo ouverte, licence lue et datée dans le dossier.
+   Page de la photo ouverte, licence lue et datée dans le dossier. Une photo
+   de **joueur** en match, à l'entraînement ou en conférence est permise
+   (décision de Pierre du 23/11/2026, §1), avec une légende factuelle : qui,
+   où, quand.
 2. **Visuels générés par script**, produits par le rédacteur : couvertures,
    schémas de principe, graphiques dont **chaque chiffre vient de la base ou du
    dossier**. Ils passent par `scripts/blog-covers/` ou sont dessinés à la main
@@ -289,7 +314,10 @@ décorative. À service égal, on suit cet ordre.
 
 - une image générée ou retouchée d'un **produit réel**, présentée comme sa
   photo (règle 3) ;
-- une **personne réelle identifiable**, a fortiori un joueur nommé ;
+- une image **générée ou retouchée** d'une personne réelle identifiable,
+  joueur compris (une vraie photo sous licence relève de la voie 1) ;
+- une image qui présente un joueur comme recommandant TSA ou un produit vendu
+  par nos liens ;
 - un **logo** ou une marque lisible ;
 - une fausse scène présentée comme un reportage ;
 - une photo de produit prise sur un site marchand. Seules les photos du

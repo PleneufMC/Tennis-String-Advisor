@@ -145,9 +145,12 @@ Pour chaque visuel suggéré par le brief, et au moins pour la couverture :
 2. Ouvre la page de la photo et lis la licence affichée.
 3. Écarte toute photo qui montre :
    - un logo ou une marque lisible ;
-   - une personne identifiable ;
+   - une personne identifiable, **sauf un joueur** photographié en match, à
+     l'entraînement ou en conférence, dont la légende peut dire qui, où et
+     quand (charte §4, voie 1 ; décision de Pierre du 23/11/2026) ;
    - un produit de marque reconnaissable ;
-   - une scène qu'on pourrait prendre pour un reportage sur un joueur nommé.
+   - une scène qu'on pourrait prendre pour un reportage alors qu'elle n'en est
+     pas un.
 4. Note au §3 la page, l'auteur, la licence lue et datée, les obligations
    (crédit, lien de licence, partage à l'identique) et les risques.
 
