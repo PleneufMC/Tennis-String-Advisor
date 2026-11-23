@@ -7,7 +7,7 @@
 | Branche | `agent/redaction/montage-hybride-cordage-tennis` (worktree `C:\Users\plene\Documents\_wt\redac-hybride`) |
 | Ouvert le | 2026-11-23, par l'orchestrateur |
 | Demande d'origine | Pierre, 23/11/2026 : « allez chercher là dedans des idées d'articles pour le blog complémentaire à ce qui est déjà en ligne » (classeur « TSA · Idées d'articles », idée 2026-W46-2) ; puis « GO sur le montage hybride en anglais et en français » ; puis « je te laisse faire tous les arbitrages nécéssaires à la rédaction de cet article » (délégation à l'orchestrateur ; la mise en ligne reste soumise au GO de Pierre sur la PR, charte §6) |
-| Statut | passe finale (étape 5) |
+| Statut | contre-vérification avant PR |
 | Mise à jour planifiée | sans objet (aucune année dans le titre ni le slug de travail) |
 
 > Règles : `docs/redaction/CHARTE.md`. Déroulé : `docs/redaction/README.md`.
@@ -567,6 +567,7 @@ L'intégral de chaque cordage est la borne « seul » de la même ligne : au mê
   - **Décision.** Dans les seules phrases retouchées par Q-8, **rien ne reste sans source**. Le montage est cité daté, avec ses deux sources (ou sa source principale et un renvoi vers le dossier), jamais au présent. La fin non sourcée est retirée.
   - **Périmètre.** Les autres phrases de ces articles ne sont pas touchées. « La combinaison la plus courante en club » et ses équivalents relèvent d'un circuit court séparé, signalé à Pierre.
   - **Pourquoi.** Poser deux sources sur une phrase qui garde une affirmation non sourcée ferait croire que tout est sourcé.
+  - → orchestrateur, 2026-11-23, après la passe finale (`8d4f1c6`) : **retrait validé** de « le célèbre » et de « privilégie le toucher avec un soupçon de contrôle » (EN « famous », « prioritises touch with a hint of control »), retirés dans la même phrase par le rédacteur. Aucun n'avait de source ; c'est l'application d'A-3 et non un écart. Les dates (`dateModified` 2026-11-23) des deux articles suivent la charte.
 - **A-4** · arbitrage de l'orchestrateur · 2026-11-23 — **Federer dans le nouvel article.** Il passe désormais la règle d'A-2. Le rédacteur choisit de le citer ou non (correction C10). S'il le cite, c'est daté (2009 et 2014), avec la réserve pro stock (F4), sans en tirer de conseil pour le lecteur.
 
 ---
@@ -1333,3 +1334,4 @@ $ npx next start -p 3100   (port libéré avant ; serveur arrêté par son PID 6
 (les pages EN n'ont pas de thème sombre : gabarit EN)
 ```
   - RELAIS → orchestrateur : contre-vérification de C1 à C13 et de la FAQ 1 par `tsa-pigiste` ; dates du sitemap à reporter par `tsa-acquisition` (ci-dessus) ; `citation` Tennis.com et The New Yorker à ajouter au JSON-LD si `tsa-acquisition` le juge utile. Pas de PR ouverte.
+- 2026-11-23 · orchestrateur — passe finale relue (`8d4f1c6` : C1 à C13 appliquées sans refus, FAQ 1 corrigée en plus, Federer daté et sourcé, P1 à P6 acceptées ; `audit:jsonld` rouge sur deux dates du sitemap seulement). Retrait complémentaire validé (A-3). RELAIS → `tsa-pigiste` (contre-vérification de C1 à C13, de la FAQ 1 et des phrases Q-8) ET `tsa-acquisition` (dates du sitemap, `citation` Federer facultatives), en parallèle ; ensuite la PR.
