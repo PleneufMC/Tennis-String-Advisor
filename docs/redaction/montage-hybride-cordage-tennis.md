@@ -1201,6 +1201,32 @@ Aucune ne touche un fait, un chiffre, un verdict ni un conseil de santé. Les li
 | P5 | « Ce que cet article ne dit pas », ligne « La jauge » / « Gauge », FR et EN | Ajouter en fin de ligne : « (voir notre `<a href="/blog/jauge-cordage-tennis.html">`guide des jauges`</a>`) » ; « (see our `<a href="/en/blog/tennis-string-gauge.html">`string gauge guide`</a>`) » | Lien sortant prévu au §1 (jauge des travers) et absent. Il répond à la question que cette limite fait naître | **Acceptée**, fusionnée avec C11, FR et EN. |
 | P6 | Sources visibles, FR et EN (facultatif) | Écrire les titres exacts, vérifiés le 23/11 : « Static Friction and Spin » (`COF.php`), « Sliding Friction and Spin » (`slidingCOF.php`), « Klip X-Plosive Tennis String Review » (test TW), à la place des libellés descriptifs | Même titre dans la liste visible et dans les `citation` du JSON-LD ; un titre exact se retrouve par une recherche | **Acceptée**. Les titres exacts figurent dans la liste visible et sont identiques aux `citation`. |
 
+### Reprise avant la PR (2026-11-23, sur `0cf25d8`)
+
+- **Sitemap** : `modified` passe à `'2026-11-23'` pour `cordage-mono-vs-multifilament.html` et `polyester-vs-multifilament-strings.html`, datés par la passe finale (phrases Federer, Q-8 et A-3). Les dates des deux nouveaux articles restent justes (2026-11-23).
+- **`citation`** des deux nouveaux articles, FR et EN : ajout des deux sources Federer de la liste visible. Titres relevés sur les pages ouvertes le 23/11 :
+  - « Winning Combination », Jon Levey, Tennis.com, 2009-10-02 ;
+  - « Meet the Team That Tennis Pros Pay $40K a Year to String Their Racquets », Longreads, 2014-09-04, avec `isBasedOn` : Michael Steinberger, The New Yorker, 2014, sans titre ni URL (page non ouverte, F9).
+- **Articles existants retouchés** : leur `<head>` ne porte aucune `citation`, donc rien n'est ajouté.
+
+```
+$ npm run build                → exit 0
+ ✓ Compiled successfully
+ ✓ Generating static pages (329/329)
+
+$ npm run audit:jsonld         → exit 0
+  OK    FAQPage : 34 FAQ, 157 questions, chaque question et chaque réponse figurent en entier dans le texte visible
+  OK    sitemap : 38 articles, chaque date `modified` est le dateModified de l'article, aucun new Date() sans argument
+  OK    sitemap construit : 38 <lastmod>, tous sur des articles et à leur vraie date
+Conforme — 0 échec(s), 0 avertissement(s)
+
+$ npm run audit:claims         → exit 0
+  OK    index du blog FR et EN : 2 fichiers lus, aucune allégation ni claim faux
+        (articles : 38 pages lues, 10 motif(s) signalé(s) à tsa-pigiste / tsa-redacteur, jamais bloquants)
+Conforme — 0 échec(s), 10 avertissement(s)
+$ node scripts/qa-claims.mjs --all   → aucun AVERT sur les deux nouveaux articles
+```
+
 ### Vérification en production (après fusion)
 
 - …
@@ -1335,3 +1361,8 @@ $ npx next start -p 3100   (port libéré avant ; serveur arrêté par son PID 6
 ```
   - RELAIS → orchestrateur : contre-vérification de C1 à C13 et de la FAQ 1 par `tsa-pigiste` ; dates du sitemap à reporter par `tsa-acquisition` (ci-dessus) ; `citation` Tennis.com et The New Yorker à ajouter au JSON-LD si `tsa-acquisition` le juge utile. Pas de PR ouverte.
 - 2026-11-23 · orchestrateur — passe finale relue (`8d4f1c6` : C1 à C13 appliquées sans refus, FAQ 1 corrigée en plus, Federer daté et sourcé, P1 à P6 acceptées ; `audit:jsonld` rouge sur deux dates du sitemap seulement). Retrait complémentaire validé (A-3). RELAIS → `tsa-pigiste` (contre-vérification de C1 à C13, de la FAQ 1 et des phrases Q-8) ET `tsa-acquisition` (dates du sitemap, `citation` Federer facultatives), en parallèle ; ensuite la PR.
+- 2026-11-23 · `tsa-acquisition` — reprise avant la PR, sur `0cf25d8` (§6).
+  - Sitemap : deux dates passent au 2026-11-23.
+  - `citation` Tennis.com 2009 et Longreads / The New Yorker 2014 ajoutées aux deux nouveaux articles, titres relevés sur les pages ; rien sur les articles existants, qui n'ont pas de `citation`.
+  - `build` 329/329, `audit:jsonld` 0 échec et 0 AVERT, `audit:claims` 0 échec.
+  - Corps non touché. RELAIS → orchestrateur : PR, après la contre-vérification de `tsa-pigiste`.

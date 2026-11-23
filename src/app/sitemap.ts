@@ -67,7 +67,8 @@ const BLOG_ARTICLES: Array<{ slug: string; modified: string }> = [
   { slug: 'cordage-terre-battue.html', modified: '2026-10-23' },
   { slug: 'challengers-sinner-alcaraz-2026.html', modified: '2026-10-22' },
   { slug: 'actualite-materiel-tennis-2026-guerre-du-spin.html', modified: '2026-10-26' },
-  { slug: 'cordage-mono-vs-multifilament.html', modified: '2026-10-26' },
+  // Phrase Federer sourcée dans la PR du montage hybride (23/11/2026).
+  { slug: 'cordage-mono-vs-multifilament.html', modified: '2026-11-23' },
   { slug: 'cordage-tennis-chaleur.html', modified: '2026-10-26' },
   { slug: 'tension-cordage-hiver.html', modified: '2026-10-26' },
   { slug: 'raquette-point-fort-ou-point-faible.html', modified: '2026-10-23' },
@@ -111,7 +112,8 @@ const EN_BLOG_ARTICLES: Array<{ slug: string; modified: string }> = [
   // avec leur source FR.
   { slug: 'tennis-string-gauge.html', modified: '2026-10-23' },
   { slug: 'tennis-string-pattern.html', modified: '2026-10-23' },
-  { slug: 'polyester-vs-multifilament-strings.html', modified: '2026-10-26' },
+  // Phrase Federer sourcée dans la PR du montage hybride (23/11/2026).
+  { slug: 'polyester-vs-multifilament-strings.html', modified: '2026-11-23' },
   { slug: 'tennis-string-tension-guide.html', modified: '2026-11-12' },
   // Adapté du FR comparer-deux-montages-cordage-tension (13/11/2026), appairé en hreflang.
   { slug: 'compare-two-string-setups-same-tension.html', modified: '2026-11-13' },
