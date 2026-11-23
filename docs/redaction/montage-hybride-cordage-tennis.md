@@ -7,7 +7,7 @@
 | Branche | `agent/redaction/montage-hybride-cordage-tennis` (worktree `C:\Users\plene\Documents\_wt\redac-hybride`) |
 | Ouvert le | 2026-11-23, par l'orchestrateur |
 | Demande d'origine | Pierre, 23/11/2026 : « allez chercher là dedans des idées d'articles pour le blog complémentaire à ce qui est déjà en ligne » (classeur « TSA · Idées d'articles », idée 2026-W46-2) ; puis « GO sur le montage hybride en anglais et en français » ; puis « je te laisse faire tous les arbitrages nécéssaires à la rédaction de cet article » (délégation à l'orchestrateur ; la mise en ligne reste soumise au GO de Pierre sur la PR, charte §6) |
-| Statut | rédaction (étape 3) ; questions de base à `tsa-core` |
+| Statut | vérification (étape 4 : fact-check et passe on-page) |
 | Mise à jour planifiée | sans objet (aucune année dans le titre ni le slug de travail) |
 
 > Règles : `docs/redaction/CHARTE.md`. Déroulé : `docs/redaction/README.md`.
@@ -527,6 +527,12 @@ L'intégral de chaque cordage est la borne « seul » de la même ligne : au mê
   - `cordage-mono-vs-multifilament` §08 (« le célèbre montage de Roger Federer ») et `polyester-vs-multifilament-strings` (« Roger Federer's famous gut mains, poly crosses ») nomment un joueur que F33 ne tient pas (charte F4). Le même §08 écrit « la combinaison la plus courante en club » sans source au dossier. C'est le cas de Q-2, sur deux articles qui recevront désormais un lien vers le nouvel article.
   - **Question** : circuit court séparé (vérification par le pigiste, coupe ou source par le rédacteur), ou rattachement à P3 ? Je n'ai rien touché d'autre que la phrase du lien.
   - Pour information, sans contradiction : `cordage-tennis-elbow` l. 499 écrit « Nous n'avons aucune mesure indiquant si le cordage souple travaille mieux en montants ou en travers ». C'est toujours vrai ; F20 établit seulement un sens de raideur du tamis, sur un essai.
+  - → orchestrateur, 2026-11-23 : **circuit court dans cette PR, limité à la mention de Federer** de `cordage-mono-vs-multifilament` §08 (l. 618, plus la ligne de sources l. 664) et de son pendant EN (`polyester-vs-multifilament-strings`, l. 387 et 464). Contrairement à `guide-materiel-tennis` §5 (trois joueurs et une refonte entière, renvoyés à P3), il s'agit ici d'une phrase dans le paragraphe même qui reçoit le lien.
+    - **Au 4a**, `tsa-pigiste` vérifie si deux sources indépendantes et datées (F4, pages ouvertes, jamais une URL devinée) établissent ce montage.
+    - **Au 5**, `tsa-redacteur` agit selon le résultat :
+      - si les deux sources existent, il les cite à la place des noms de sites ;
+      - sinon, il retire le nom du joueur et garde la configuration décrite comme un usage (« boyau en montants, polyester en travers »), sans autre retouche.
+    - **Date** : `dateModified` et date visible suivent la charte (F11) selon que le fait change ou non.
 ---
 
 ## 5. Fact-check final — `tsa-pigiste`
@@ -623,3 +629,4 @@ Sortie de `npm run redaction:valeurs -- docs/redaction/<slug-fr>.md` :
   - **Autres fichiers** : `scripts/blog-covers/build-covers.py` (motif et 2 entrées), `scripts/blog-covers/build-hybride-figures.mts` (nouveau), 4 liens entrants d'une phrase (Q-7). `<head>` de départ posé, à réviser au 4b (Q-7). Ni `sitemap.ts`, ni index du blog, ni `src/`.
   - **Contrôles**, au 23/11 : `npm ci` (0) ; `npm run build` compilé, 329/329 pages ; `audit:blog-funnel` intact (1 AVERT, autre article) ; `audit:blog-images` conforme (11 AVERT, exceptions d'autres articles) ; `audit:jsonld` **2 ECHEC attendus** (les deux articles absents de `sitemap.ts`, Q-7), aucun écart de FAQ ; `audit:comptages` conforme, 0 AVERT ; `audit:claims` conforme, 0 AVERT sur les six articles touchés (`--all`) ; `audit:contrast` toutes paires AA ; aucun « À SOURCER ». Rendu Playwright (Chrome, `next start` port 3100, arrêté par son PID) FR et EN à 1280 et 390 px, clair et sombre : 0 px de débordement, toutes les images chargées, aucune requête en échec, deux SVG par page lisibles en sombre ; la page EN n'a pas de thème sombre (gabarit EN). Non fait : `redaction:valeurs` (bloc du §5 vide, étape 4a).
   - Questions : Q-7 à `tsa-acquisition`, Q-8 à l'orchestrateur. RELAIS → `tsa-pigiste` (fact-check 4a, FR et EN, en relançant le moteur ; reprendre F7, F17 et I8 au §2) ET `tsa-acquisition` (passe on-page 4b, Q-7).
+- 2026-11-23 · orchestrateur — rédaction relue (commit `246dba2` : FR 1 788 mots, EN 1 799 ; aucun joueur cité ; aucun lien d'achat ; 5 liens FR et 6 liens EN vers le configurateur ; build 329/329 ; `audit:jsonld` rouge en attendant le sitemap, comme prévu). Réponse à Q-8 : circuit court sur la mention de Federer dans §08, FR et EN. RELAIS → `tsa-pigiste` (4a : fact-check, F7, F17 et I8 à reprendre, vérification F4 de Federer) ET `tsa-acquisition` (4b : passe on-page, Q-7), en parallèle.
