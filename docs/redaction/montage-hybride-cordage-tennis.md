@@ -7,7 +7,7 @@
 | Branche | `agent/redaction/montage-hybride-cordage-tennis` (worktree `C:\Users\plene\Documents\_wt\redac-hybride`) |
 | Ouvert le | 2026-11-23, par l'orchestrateur |
 | Demande d'origine | Pierre, 23/11/2026 : « allez chercher là dedans des idées d'articles pour le blog complémentaire à ce qui est déjà en ligne » (classeur « TSA · Idées d'articles », idée 2026-W46-2) ; puis « GO sur le montage hybride en anglais et en français » ; puis « je te laisse faire tous les arbitrages nécéssaires à la rédaction de cet article » (délégation à l'orchestrateur ; la mise en ligne reste soumise au GO de Pierre sur la PR, charte §6) |
-| Statut | faits (étape 2) |
+| Statut | rédaction (étape 3) ; questions de base à `tsa-core` |
 | Mise à jour planifiée | sans objet (aucune année dans le titre ni le slug de travail) |
 
 > Règles : `docs/redaction/CHARTE.md`. Déroulé : `docs/redaction/README.md`.
@@ -473,7 +473,7 @@ L'intégral de chaque cordage est la borne « seul » de la même ligne : au mê
   - **Le constat** : `scripts/redaction/verifier-valeurs.mts` n'accepte que `rcs <raquette> + <cordage> @ <kg>`. Il ne connaît ni l'hybride, ni le montage de référence sans raquette nommée (RA 64).
   - **Proposition** : à l'étape 4, ajouter à mon outil une ligne `rcs ref + <montants> / <travers> @ <tm>/<tc> | rcs | <valeur>`, qui appelle `setupFirmnessIndex`. Le contrôle devient plus strict, jamais plus souple. Sinon, le contrôle des chiffres F10 à F16 se fera en relançant le script S1, dont la sortie sera collée au §5.
   - **Question** : GO pour cette évolution à l'étape 4 ? Le brief de l'étape 2 m'interdisait tout autre fichier. Non bloquant pour l'étape 3.
-
+  - → orchestrateur, 2026-11-23 : **pas d'extension de `redaction:valeurs` dans cette PR.** Au 4a, le fact-check relance le moteur réel (le script `dossier-faits.mts` du scratchpad, ou son équivalent) sur **chaque** indice et chaque borne du texte FR et EN final, et colle au §5 la commande et la sortie, avec la date et le commit. Le contrôle est aussi strict, et la PR reste limitée à l'article. L'extension du vérificateur aux hybrides est un chantier séparé de `tsa-pigiste` (propriétaire de `scripts/redaction/`) ; l'orchestrateur la propose à Pierre après la fusion.
 ---
 
 ## 5. Fact-check final — `tsa-pigiste`
@@ -554,3 +554,4 @@ Sortie de `npm run redaction:valeurs -- docs/redaction/<slug-fr>.md` :
   - **Iconographie** : aucune photo libre ne montre un tamis hybride sans marque ; la couverture passe par la voie 2. Le graphique a ses données au §3.
   - **Questions** : Q-3, Q-4 et Q-5 à `tsa-core` ; Q-6 à l'orchestrateur.
   - RELAIS → `tsa-redacteur` : article FR et adaptation EN à partir du §2 seul (faits F1 à F34, sortie S1), visuels I1, I6, I7 et éventuellement I8 du §3. Exemple F15 sous réserve de Q-3. Aucun indice de set (Q-1). Lire les « Points glissants » avant d'écrire.
+- 2026-11-23 · orchestrateur — dossier de faits relu (34 faits F1-F34, sortie du moteur collée, `1 887` paires, points glissants présents). Réponse à Q-6 : pas d'extension du vérificateur, le moteur est relancé au fact-check. RELAIS → `tsa-core` : Q-3, Q-4, Q-5 ; et en parallèle → `tsa-redacteur` : étape 3, article FR, adaptation EN et visuels.
