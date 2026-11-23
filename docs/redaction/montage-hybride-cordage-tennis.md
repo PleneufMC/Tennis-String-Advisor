@@ -7,7 +7,7 @@
 | Branche | `agent/redaction/montage-hybride-cordage-tennis` (worktree `C:\Users\plene\Documents\_wt\redac-hybride`) |
 | Ouvert le | 2026-11-23, par l'orchestrateur |
 | Demande d'origine | Pierre, 23/11/2026 : « allez chercher là dedans des idées d'articles pour le blog complémentaire à ce qui est déjà en ligne » (classeur « TSA · Idées d'articles », idée 2026-W46-2) ; puis « GO sur le montage hybride en anglais et en français » ; puis « je te laisse faire tous les arbitrages nécéssaires à la rédaction de cet article » (délégation à l'orchestrateur ; la mise en ligne reste soumise au GO de Pierre sur la PR, charte §6) |
-| Statut | brief (étape 1) |
+| Statut | faits (étape 2) |
 | Mise à jour planifiée | sans objet (aucune année dans le titre ni le slug de travail) |
 
 > Règles : `docs/redaction/CHARTE.md`. Déroulé : `docs/redaction/README.md`.
@@ -243,10 +243,12 @@ rédacteur note ici le prompt employé, puis le recopie dans `CREDITS.md`.
   - **Question** : un set publié dont un cordage n'est pas mesuré se cite-t-il avec sa rigidité dérivée étiquetée, ou sans chiffre ?
   - **Avis d'acquisition**, sur la seule découvrabilité : l'intention est de composer son hybride. L'article tient sans chiffrer les sets, et les montages faits à la main avec deux cordages mesurés suffisent aux exemples, Razor Code + X-One et Ice Code + NRG2 compris, montés hors set.
   - Non bloquant pour l'étape 2 ; bloquant pour la section « sets » de l'étape 3.
+  - → orchestrateur, 2026-11-23 (délégation de Pierre) : **sans chiffre.** Un set prémonté n'est chiffré dans l'article que si ses deux cordages ont une rigidité alignée sur une mesure ; aujourd'hui, aucun des 5 sets à composition publiée ne l'est. L'article peut citer leur composition sourcée (utile au lecteur) et dit en une phrase pourquoi il ne leur donne pas d'indice. Le configurateur et `cordage-tennis-elbow` §3 affichent une rigidité de fiche ou dérivée, étiquetée comme telle ; ce n'est pas une mesure du set, puisqu'au moins un de ses deux cordages n'est pas mesuré. La phrase n'invalide pas ces pages et ne les contredit pas : elle dit le statut de leur chiffre. Les deux sets « fiche » de Tecnifibre ne sont pas présentés comme des sets, faute de composition établie. Razor Code + X-One Biphase et Ice Code + NRG2 peuvent servir d'exemples **montés à la main**, sans les attribuer à ces sets. La clause d'A-1 sur les sets prémontés est remplacée par cette réponse. `cordage-tennis-elbow` n'est pas modifié dans cette PR.
 - **Q-2** · `tsa-acquisition` → orchestrateur · 2026-11-23 — **`guide-materiel-tennis` §5 cite trois hybrides de pros sans source de page** (Federer, Djokovic, Serena Williams). A-2 et F4 interdisent d'en citer un sans deux sources indépendantes.
   - Ce §5 recevra un lien vers le nouvel article. Le site afficherait alors d'un côté des hybrides de pros sans source, de l'autre un article qui refuse de les citer.
   - **Question** : faut-il ouvrir un circuit court sur ce §5 (vérification F4 par le pigiste, puis coupe ou source par le rédacteur), dans la même PR que le lien entrant ou à part ?
   - Non bloquant pour l'étape 2. Sans réponse, je retire ce lien entrant de la liste au 4b.
+  - → orchestrateur, 2026-11-23 : **pas de circuit court dans cette PR, et pas de lien entrant depuis `guide-materiel-tennis` §5.** Corriger ce §5 sort du périmètre de l'article. Ce correctif fait partie de la refonte du guide matériel (proposition P3 du 23/11, soumise à Pierre, sans GO à ce jour), où les trois hybrides de pros seront sourcés selon F4 ou retirés, et où le lien vers le nouvel article sera posé. L'orchestrateur signale le point à Pierre.
 
 ---
 
@@ -313,3 +315,4 @@ Sortie de `npm run redaction:valeurs -- docs/redaction/<slug-fr>.md` :
   - Aucun article à lier en entrée n'est dans `qa-blog-images.exceptions.json`.
   - Questions Q-1 (A-1 et sets prémontés) et Q-2 (`guide-materiel-tennis` §5) posées à l'orchestrateur au §4.
   - RELAIS → `tsa-pigiste` : dossier de faits (§2) et candidats d'iconographie (§3) sur les questions Q1 à Q10 du §1 de `docs/redaction/montage-hybride-cordage-tennis.md`, circuit complet. En priorité : Q3 et Q4 (cordages mesurés et exemples chiffrés par `setupFirmnessIndex`, avec contrôle de `tsa-core`), puis Q1 (poids de chaque sens, pistes TWU et TW non ouvertes). Faits du guide des tensions à reprendre depuis `docs/redaction/guide-tension-cordage-tennis.md`.
+- 2026-11-23 · orchestrateur — brief relu (§1 : requêtes, SERP par l'outil de recherche de la session faute d'accès à Bing et Google, plan en 9 sections, Q1 à Q10, visuels). Réponses à Q-1 (sets prémontés sans chiffre) et Q-2 (pas de lien entrant depuis `guide-materiel-tennis` §5 ; correctif renvoyé à P3). Correction : 9 sets, dont 5 à composition publiée, et non 6 comme l'écrivait l'orchestrateur. RELAIS → `tsa-pigiste` : dossier de faits (§2) et iconographie (§3), Q1 à Q10.
