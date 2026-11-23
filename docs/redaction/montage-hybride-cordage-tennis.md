@@ -201,9 +201,9 @@ Statuts : **confirmé** · **divergent** (→ `tsa-core`) · **introuvable** · 
   - (a) « les montants cassent avant les travers » : **signal**. Le mécanisme est mesuré : les montants glissent sur les travers (F26, L1). L'ordre de casse ne repose que sur un revendeur cordeur (F27).
   - (b) « profilé en montants, rond en travers » : **signal**. TWU mesure que moins de frottement entre cordes laisse bouger les montants (F22). Les cordages profilés ou texturés frottent en général davantage (F23). La combinaison elle-même n'a jamais été mesurée. Elle reste un usage, défendu par un blog lié à une marque (F24). À noter : sur le frottement statique, TWU classe le poly en travers sur boyau en montants parmi les plus bas, et l'inverse parmi les plus hauts (F21).
   - (c) « on tend davantage le cordage le plus souple » : **signal**, déjà instruit (GT-F19 à GT-F23, GT-F28). La SERP ajoute un signal contraire (F25). L'indice lit la tension moyenne (F16, GT-F30).
-- **Q3, cordages mesurés** : **confirmé** (BASE). 62 fiches sur 179 (F6, F7). Le relevé du brief était incomplet : 54 fiches ont le statut `appliquee`, pas 11. 8 fiches Toroline ne sont « mesurées » que par la définition du † (commentaire TWU dans la base, sans entrée de provenance), d'où la question **Q-3 à `tsa-core`**. Les cordages cités par le brief sans statut, ou en quarantaine, sont confirmés « non mesurés » (F8, F9).
+- **Q3, cordages mesurés** : **confirmé** (BASE). 62 fiches sur 179 (F6, F7) *[corrigé le 23/11/2026 au 4a, réponse de `tsa-core` à Q-3 : **61 sur 179**, Toroline Absolute n'étant pas mesurée ; voir F7]*. Le relevé du brief était incomplet : 54 fiches ont le statut `appliquee`, pas 11. 8 fiches Toroline ne sont « mesurées » que par la définition du † (commentaire TWU dans la base, sans entrée de provenance), d'où la question **Q-3 à `tsa-core`**. Les cordages cités par le brief sans statut, ou en quarantaine, sont confirmés « non mesurés » (F8, F9).
 - **Q4, exemples chiffrés** : **confirmé** (BASE, F10 à F17). Les deux hypothèses du brief se vérifient :
-  - un hybride polyester/multifilament change souvent de palier par rapport aux montants en intégral (372 paires sur 665) ;
+  - un hybride polyester/multifilament change souvent de palier par rapport aux montants en intégral (372 paires sur 665 *[corrigé le 23/11 au 4a : 372 sur **650**, voir F17]*) ;
   - inverser le sens change l'indice de 0, 1 ou 2 points, jamais plus, et cela suffit parfois à changer de palier (Razor Code / X-One Biphase : 30 Ferme, 29 Standard).
 - **Q5, forme de section** : **partiel**. La base n'a pas de champ « forme ». Seules les descriptions des fiches Toroline la donnent, avec leur source constructeur (F29). Pour les autres exemples, rien n'a été établi ce jour : solincosports.com a renvoyé un 403 et toroline.com un 429. tecnifibre.com et wilson.com refusent les robots (notes de `prepacked-hybrids.ts`). luxilon.com n'a pas été tenté.
 - **Q6, sets prémontés** : **confirmé** (BASE, F18). 9 sets : 5 à composition publiée, 3 « fiche », 1 non publiée. Aucun set publié n'a ses deux cordages mesurés. La valeur tenue du Duo Control et le doublon Champion's Choice sont dans la question **Q-5 à `tsa-core`**.
@@ -224,7 +224,7 @@ Statuts : **confirmé** · **divergent** (→ `tsa-core`) · **introuvable** · 
 | F5 | L'indice ignore la jauge choisie : il lit la rigidité de la fiche, celle de la jauge la plus rigide mesurée (règle C) | ex. Razor Code : fiche 242,9 (mesure 1,30) ; 1,25 mesurée à 229,2, non utilisée | BASE | `setupFirmnessIndex` (aucun paramètre de jauge) ; `stiffnessByGauge` de `tecnifibre-razor-code` | 2026-11-23 | « Aucune surface du site ne la lit avant D2/D3 » (`strings-database.ts`, `stiffnessByGauge`) | GT-F32 | oui | confirmé |
 | **B** | **Cordages « mesurés » (Q3)** | | | | | | | | |
 | F6 | Définition du dépôt pour « aligné sur une mesure TWU », identique au † des articles : statut `appliquee` de `string-stiffness-provenance.ts`, **ou** commentaire « Rigidité : TWU « … » » dans la base (8 fiches Toroline antérieures à ce fichier) | 2 voies | BASE | `scripts/blog-covers/build-rigidite-figures.mts` l. 95-104 (`alignedOnTwu`) ; charte F7 | 2026-11-23 | « C'est la même définition que le marqueur † des tableaux des articles. » | charte F7 : « statut `appliquee` […], mesures TWU citées dans la base » | oui | confirmé ; volet Toroline à confirmer (**Q-3**) |
-| F7 | Décompte des fiches alignées | **62 sur 179** : polyesters 46/102, multifilaments 15/45, synthétiques 1/16 (Wilson Synthetic Gut Extreme), boyaux 0/7, sets hybrides 0/9. 54 par provenance, 8 Toroline par commentaire | BASE | sortie S1 §B | 2026-11-23 (`c30eed7`) | — | « 15 de nos 45 multifilaments » (`cordage-polyester-tennis-elbow` §6, cité en A-1) : concordant | oui | confirmé |
+| F7 | Décompte des fiches alignées | ~~**62 sur 179** : polyesters 46/102~~, multifilaments 15/45, synthétiques 1/16 (Wilson Synthetic Gut Extreme), boyaux 0/7, sets hybrides 0/9. ~~54 par provenance, 8 Toroline par commentaire~~ *Corrigé le 23/11/2026 (4a), réponse de `tsa-core` à Q-3, rétabli par le moteur (sortie S2 §B, au §5)* : **61 sur 179**, polyesters **45**/102 ; 54 par provenance et 7 Toroline par commentaire, Toroline Absolute n'étant pas mesurée (pas de jauge nominale dans sa ligne TWU) | BASE | sortie S1 §B | 2026-11-23 (`c30eed7`) | — | « 15 de nos 45 multifilaments » (`cordage-polyester-tennis-elbow` §6, cité en A-1) : concordant | oui | confirmé (corrigé au 4a) |
 | F8 | Statut des cordages cités par le brief | aucune entrée de provenance, donc non alignés : RPM Blast (240 ; TWU par jauge 189,2 à 236,6), ALU Power (230), ALU Power Rough (230 ; TWU 1,25 : 209,2), Hawk Touch (215), Poly Tour Pro (220), RPM Rough (235), Xcel (155 ; TWU 1,30 : 150,9), Touch VS (92). Quarantaine : NXT Power (145), NXT Control (162). Absents de la base : Hyper-G Round, Ashaway MonoGut ZX, Toroline Truffle X | BASE | sortie S1 §C | 2026-11-23 | — | relevé du brief : liste confirmée ; il omettait 43 fiches `appliquee` | oui | confirmé ; RPM Blast et consorts → **Q-4** |
 | F9 | Boyaux : aucune fiche alignée. Boyau Wilson : fiche 100 lb/in, mesure TWU de sa jauge 1,25 = 80,6 | 0/7 ; 100 contre 80,6 | BASE | sortie S1 §B-C ; `stiffnessByGauge` généré depuis le relevé TWU versionné | 2026-11-23 | — | A-1 : « boyau naturel compris » | oui | confirmé ; libellé à confirmer (**Q-4**) |
 | **C** | **Exemples chiffrés par `setupFirmnessIndex`, RA 64, 24/24 kg sauf mention (Q4)** | | | | | | | | |
@@ -233,9 +233,9 @@ Statuts : **confirmé** · **divergent** (→ `tsa-core`) · **introuvable** · 
 | F12 | Ice Code † (221,2) / NRG2 † (164) | **29, Standard** (entre 25 et 31) ; inverse 28 Standard ; intégral 31 Ferme / 25 Standard | BASE | sortie S1 §D | 2026-11-23 | « estimation pour un hybride, entre 25 et 31 » | — | oui | confirmé |
 | F13 | Hyper-G † (218,3) / Vanquish † (160) | **28, Standard** (entre 24 et 31) ; inverse 28 ; intégral 31 Ferme / 24 Confortable | BASE | sortie S1 §D | 2026-11-23 | « estimation pour un hybride, entre 24 et 31 » | — | oui | confirmé |
 | F14 | 4G † (286,9) / NXT † (173,7) | **33, Ferme** (entre 26 et 38) ; inverse 32 Ferme ; intégral 38 Très ferme / 26 Standard. Constat : 33 et 32 sont au seuil d'alerte bras sensible (32) ou au-dessus, sous 35 | BASE | sortie S1 §D | 2026-11-23 | « estimation pour un hybride, entre 26 et 38 » | F2 | oui | confirmé |
-| F15 | Poly/poly profilé/rond : O-Toro Tour † (216,6, section hexagonale) / O-Toro Snap † (164,6, section ronde) | **28, Standard** (entre 25 et 31) ; inverse 28 ; intégral 31 Ferme / 25 Standard | BASE | sortie S1 §D ; formes : F29 | 2026-11-23 | « estimation pour un hybride, entre 25 et 31 » | seul couple poly/poly profilé/rond de la base dont les deux cordages sont alignés et la forme sourcée | oui | confirmé **sous réserve de Q-3** |
+| F15 | Poly/poly profilé/rond : O-Toro Tour † (216,6, section hexagonale) / O-Toro Snap † (164,6, section ronde) | **28, Standard** (entre 25 et 31) ; inverse 28 ; intégral 31 Ferme / 25 Standard | BASE | sortie S1 §D ; formes : F29 | 2026-11-23 | « estimation pour un hybride, entre 25 et 31 » | ~~seul couple poly/poly profilé/rond de la base dont les deux cordages sont alignés et la forme sourcée~~ *Corrigé le 23/11/2026 (4a) : ce n'est pas le seul. Avec les formes sourcées des fiches Toroline, **8 couples** profilé/rond ont leurs deux cordages mesurés ; celui-ci a le plus grand écart de rigidité des huit (52 lb/in). On en compte **24** avec les profils, non sourcés, des autres descriptions (sortie S2 §H, au §5)* | oui | confirmé (Q-3 : tient) |
 | F16 | Écart de tension autour de la même moyenne | Ice Code / NRG2 : 24/24 → **29** ; 24/22 → **28** (bornes 24 et 31) ; 23/23 → **28**. Razor Code / X-One : 24/24, 24/22 et 23/23 → **30** (l'arrondi absorbe le demi-point) | BASE | sortie S1 §E | 2026-11-23 | — | GT-F30 (Lynx Tour, 12/11) : même conclusion | oui | confirmé |
-| F17 | Grille de toutes les paires alignées, le plus rigide en montants, comparé au sens inverse | 1 887 paires : écart de 0 point (1 124), 1 (745), 2 (18) ; palier changé par l'inversion : 168. Poly/multi : 665 paires, 0/1/2 = 291/360/14 ; palier changé : 61 ; palier différent des montants en intégral : 372 ; baisse de 0 à 7 points. Sans les 8 Toroline : 1 428 paires, 0/1/2 = 830/583/15 | BASE | sortie S1 §F | 2026-11-23 | — | hypothèse du brief (« environ un point ») : vérifiée, au plus 2 | oui | confirmé |
+| F17 | Grille de toutes les paires alignées, le plus rigide en montants, comparé au sens inverse | ~~1 887 paires : écart de 0 point (1 124), 1 (745), 2 (18) ; palier changé par l'inversion : 168. Poly/multi : 665 paires, 0/1/2 = 291/360/14 ; palier changé : 61 ; palier différent des montants en intégral : 372 ; baisse de 0 à 7 points. Sans les 8 Toroline : 1 428 paires, 0/1/2 = 830/583/15~~ *Corrigé le 23/11/2026 (4a), sur 61 cordages mesurés (réponse de `tsa-core` à Q-3), rétabli par le moteur (sorties S2 §E-F et R, au §5)* : **1 826 paires** de rigidités différentes, sur 1 830 (4 paires à rigidités égales) ; écart 0 / 1 / 2 = **1 086 / 723 / 17**, jamais plus ; palier changé par l'inversion : **162**. Poly/multi, polyester en montants : 675 combinaisons, dont **650** où le polyester est le plus rigide ; sur ces 650, 0/1/2 = 280/356/14, palier changé par l'inversion : 60, palier différent du polyester seul : **372**, baisse de **0 à 7** points (nulle dans 36 cas). Dans les 25 autres, le multifilament est aussi rigide ou plus, et l'estimation dépasse 2 fois le polyester seul (Yonex Poly Tour Air 154,9 / Wilson NXT 173,7 : 25 contre 24) | BASE | sortie S1 §F | 2026-11-23 | — | hypothèse du brief (« environ un point ») : vérifiée, au plus 2 | oui | confirmé (corrigé au 4a) |
 | **D** | **Sets prémontés (Q6)** | | | | | | | | |
 | F18 | 9 sets dans `PREPACKED_HYBRIDS` : 5 « publiée », 3 « fiche », 1 « non publiée ». Aucun set publié n'a ses deux cordages alignés (le Duo Control en a un, le 4G Rough †). Compositions sourcées : RPM Blast 125 + Touch VS 130 (babolat.com, L0) ; Duo Power = ALU Power 1,25 + NXT Power 1,30 (TW et Game-Set-Match, L2) ; Duo Control = 4G Rough 1,25 + NXT Control 16 (TW, L2) ; Champion's Choice = boyau Wilson 16 + ALU Power Rough 16L (TW, L2) ; Champion's Choice Duo = même composition (TennisCompanion, L3). Sources lues par `tsa-core` le 23/10/2026, toutes à ordre libre | Duo Control : fiche **tenue à 222**, valeur dérivée 194,4 (tenue du 26/10). Champion's Choice et Champion's Choice Duo : 178 chacun. Sets « fiche » Tecnifibre : Razor Code † + X-One † (212,5) et Ice Code † + NRG2 † (198,4), set introuvable | BASE | `src/data/prepacked-hybrids.ts` ; sortie S1 §G | 2026-11-23 | « Tenue à 222 jusqu'à un GO explicite (règle 2). » | Q-1 de l'orchestrateur : **aucun indice de set dans l'article** | oui | confirmé ; doublon et tenue → **Q-5** |
 | **E** | **Poids de chaque sens (Q1)** | | | | | | | | |
@@ -245,21 +245,27 @@ Statuts : **confirmé** · **divergent** (→ `tsa-core`) · **introuvable** · 
 | F21 | TWU, frottement statique entre cordes : le poly en travers sur boyau en montants a le plus faible ; l'inverse (boyau en travers, poly en montants) compte parmi les plus élevés. Hypothèse avancée : un montant s'enfonce dans un travers plus souple | classement | L1 (C. Lindsey, août 2010, révisé en février 2011) | https://twu.tennis-warehouse.com/learning_center/COF.php | 2026-11-23 | « It is very interesting that the hybrid with poly crosses and gut mains is the combination with the lowest static COF. » | F23 (même auteur, frottement de glissement) | — | confirmé. Tension et appareil du test non indiqués |
 | F22 | TWU : moins de frottement statique, plus de mouvement des cordes, donc plus d'effet si elles reviennent pendant le contact. Sans mouvement latéral, tous les cordages donnent à peu près le même effet | qualitatif | L1 | idem F21 | 2026-11-23 | « If the strings don't move sideways, all strings produce about the same spin. » | GT-F27 (TWU, 2011) | — | confirmé |
 | F23 | TWU, frottement de glissement : les cordages profilés ou texturés sont en général en bas du classement (frottement plus élevé) ; les polyesters ont le plus faible ; le boyau en montants donne les combinaisons les plus glissantes | qualitatif | L1 (C. Lindsey, 07/12/2010) | https://twu.tennis-warehouse.com/learning_center/slidingCOF.php | 2026-11-23 | « Most shaped/textured strings gravitate to the bottom of the list (higher sliding COF). » | F21 | — | confirmé. La combinaison « profilé en montants, rond en travers » n'est **pas** testée |
-| F24 | Usage « profilé en montants, rond et lisse en travers » : un travers glissant aiderait les montants à bouger ; deux profilés accrocheraient | sans mesure | L3 (J. Eriksson, Tennisnerd, 06/11/2026 ; partenariat Toroline et liens affiliés déclarés) | https://www.tennisnerd.net/?p=70402 | 2026-11-23 | « The slick cross helps the mains move. » · « Put two shaped strings together and you often get too much friction, because the edges grip each other. » | va dans le sens de F23 pour le travers ; combinaison non mesurée | — | **signal** |
-| F25 | Même page : travers un peu moins tendus que les montants, et 4 lb comme écart maximal observé | 4 lb (≈ 2 kg) | L3 (idem F24) | idem F24 | 2026-11-23 | « Four pounds, or about two kilos, is about as big a gap as you'll see. » | contredit GT-F22 (le plus souple plus tendu) ; aucune prescription sourcée (GT-F28) | — | **signal** |
+| F24 | Usage « profilé en montants, rond et lisse en travers » : un travers glissant aiderait les montants à bouger ; deux profilés accrocheraient | sans mesure | L3 (J. Eriksson, Tennisnerd, 06/11/2026 ; ~~partenariat Toroline et liens affiliés déclarés~~ *corrigé le 23/11 (4a), page relue : article écrit, sans vidéo intégrée ; collaboration avec Toroline déclarée (« Vamos is my collab with Toroline »), liens « Head over to our partners here: Toroline, Restring, Tennis Warehouse and Tennis Warehouse Europe » ; aucune mention d'affiliation*) | https://www.tennisnerd.net/?p=70402 | 2026-11-23 | « The slick cross helps the mains move. » · « Put two shaped strings together and you often get too much friction, because the edges grip each other. » | va dans le sens de F23 pour le travers ; combinaison non mesurée | — | **signal** |
+| F25 | Même page : travers un peu moins tendus que les montants, et 4 lb comme écart maximal observé. *Précisé le 23/11 (4a), page relue : l'usage est énoncé en général (« many players run the crosses a little lower than the mains »), non pour l'hybride ; les 4 lb illustrent le montage en cordage unique d'un joueur (« Carlos Alcaraz strings RPM Team at 55 lbs mains and 51 lbs crosses in his Aero 98 »), une seule source, donc joueur non écrivable (F4)* | 4 lb (≈ 2 kg) | L3 (idem F24) | idem F24 | 2026-11-23 | « Four pounds, or about two kilos, is about as big a gap as you'll see. » | contredit GT-F22 (le plus souple plus tendu) ; aucune prescription sourcée (GT-F28) | — | **signal** |
 | F26 | TWU : quand la force latérale de la balle dépasse le frottement statique, les montants glissent sur les travers. La page ne dit pas lesquels cassent en premier | qualitatif | L1 (C. Lindsey, « String Snap-Back and Spin in Tennis », 30/01/2011) | https://twu.tennis-warehouse.com/learning_center/stringmovementPart2.php | 2026-11-23 | « …then the main strings will slide across the cross strings. » | F21-F23 | — | confirmé (mécanisme) |
 | F27 | Un revendeur cordeur : les montants cassent en général en premier parce qu'ils glissent le plus. En hybride, des montants profilés ou texturés peuvent abîmer un travers souple jusqu'à la casse | qualitatif | L2 (Holabird Sports, article non signé, 25/11/2013) | https://www.holabirdsports.com/blogs/news/ask-the-stringer-why-are-my-crosses-wearing-out-so-quickly | 2026-11-23 | « Although the main strings commonly break first since they're doing most of the sliding around during ball impact... » | une seule source ; F26 pour le mécanisme | — | **signal** |
 | F28 | Faits de tension montants/travers repris du guide des tensions | GT-F4 (à consigne égale, les travers sortent jusqu'à 10 kg moins tendus) ; GT-F19 et GT-F20 (« +4 lb aux travers », forum 2011) ; GT-F21 à GT-F23 (usages contraires, dont « le plus souple plus tendu » en hybride) ; GT-F28 (aucune prescription chiffrée) ; GT-F30 (l'indice lit la tension moyenne) | MÉD, L4, L3, BASE (selon GT) | `docs/redaction/guide-tension-cordage-tennis.md` §2 | faits du 2026-11-12 | — | F16 (moyenne, au 23/11) | voir GT | repris, statuts de GT inchangés |
 | **G** | **Forme de section (Q5)** | | | | | | | | |
-| F29 | La base n'a pas de champ « forme ». Seules les descriptions des fiches Toroline la donnent, sourcées sur la fiche officielle (commentaire de la base, relevé du 28/09/2026) : O-Toro Tour hexagonale, O-Toro Snap ronde ; Super Toro, Absolute hexagonales, Cash ronde, Snapper octogonale, O-Toro Spin pentagonale. Pour Razor Code, X-One Biphase, ALU Power Soft, Ice Code, NRG2, Hyper-G, Vanquish, 4G et NXT : aucune forme dans la base, et aucune page L0 ouverte ce jour | voir énoncé | BASE (Toroline) ; L0 non ouvert | `src/data/strings-database.ts` (descriptions et commentaires des fiches `toroline-*`) ; toroline.com : **429** sur `o-toro-tour` et `o-toro-snap-sample` ; solincosports.com : **403** | 2026-11-23 | « Déclinaison de l'O-Toro à section ronde, jauge 1,25 mm. » · « Version plus rigide de l'O-Toro, section hexagonale, jauges 1,23 et 1,20 mm. » | page constructeur non rouverte (F9 de la charte) | oui (description) | confirmé pour Toroline (BASE) ; **introuvable** ce jour pour les autres |
+| F29 | La base n'a pas de champ « forme ». ~~Seules les descriptions des fiches Toroline la donnent~~ *Corrigé le 23/11 (4a) : seules les descriptions des fiches Toroline la donnent **avec une source** ; d'autres descriptions donnent un profil sans source (par exemple `strings-database.ts` l. 111, 157, 775 et 864), et les seules sections rondes de la base sont celles de l'O-Toro Snap et de la Cash.* Formes Toroline sourcées sur la fiche officielle (commentaire de la base, relevé du 28/09/2026) : O-Toro Tour hexagonale, O-Toro Snap ronde ; Super Toro, Absolute hexagonales, Cash ronde, Snapper octogonale, O-Toro Spin pentagonale. Pour Razor Code, X-One Biphase, ALU Power Soft, Ice Code, NRG2, Hyper-G, Vanquish, 4G et NXT : aucune forme dans la base, et aucune page L0 ouverte ce jour | voir énoncé | BASE (Toroline) ; L0 non ouvert | `src/data/strings-database.ts` (descriptions et commentaires des fiches `toroline-*`) ; toroline.com : **429** sur `o-toro-tour` et `o-toro-snap-sample` ; solincosports.com : **403** | 2026-11-23 | « Déclinaison de l'O-Toro à section ronde, jauge 1,25 mm. » · « Version plus rigide de l'O-Toro, section hexagonale, jauges 1,23 et 1,20 mm. » | page constructeur non rouverte (F9 de la charte) | oui (description) | confirmé pour Toroline (BASE) ; **introuvable** ce jour pour les autres |
 | **H** | **Hybride contre intégral (Q7)** | | | | | | | | |
 | F30 | Étude ou test publié qui compare, à cordages identiques, durabilité, casse ou perte de tension d'un hybride et d'un intégral | — | — | recherche du 2026-11-23 : tests TW de sets isolés (ex. F20 : rigidité de tamis à 24 h, sans comparaison avec un intégral des mêmes cordages) ; blogs sans mesure | 2026-11-23 | — | — | — | **introuvable** |
 | **I** | **Pros et chiffres de marque (Q8)** | | | | | | | | |
 | F31 | Chiffre de marque : part des joueurs en hybride. **Ni source ni saison** sur la page. « 65 % » porte sur « the WTA », sans « top 20 » : le brief écrivait « 65 % des joueuses » | 45 % du top 20 ATP ; 65 % « in the WTA » | L0 (Babolat, « Hybrid stringing: the ideal combination », 28/07/2020 ; expert cité : Lucien Noguès) | https://www.babolat.com/us/news-articles-blog-tennis-hybrid/tennis-hybrid.html | 2026-11-23 | « 45% of players in the top 20 ATP and 65% in the WTA are using this “magic formula.” » | aucun | — | confirmé comme **allégation de marque** : attribuée et datée, ou rien |
 | F32 | Même page : un hybride impose un cordage à quatre nœuds, qui tiendrait mieux la tension | qualitatif | L0 (idem F31) | idem F31 | 2026-11-23 | « it implies a string job with four knots. This allows for better tension hold. » | GT-F9 (un seul essai, Racketpedia : 4 nœuds −0,8 kg en 4 h, 2 nœuds −1,1 à −1,3) | — | allégation de marque ; **signal** |
-| F33 | Federer en hybride boyau / polyester Luxilon. Tennisnerd (J. Eriksson, 26/01/2018) : « Champions Choice », boyau et ALU Power, sans dire le sens. Tennis.com (J. Levey, 20/07/2025) : « le montage que Federer a popularisé ». La phrase ne nomme pas les cordages ; seul son contexte, un passage sur le boyau en montants, les désigne. Ni l'une ni l'autre ne cite de source primaire. Djokovic, Paul et Zverev : une seule source chacun (Tennis.com 2025) | — | L3 | https://www.tennisnerd.net/?p=7952 ; https://www.tennis.com/news/articles/gear-qa-when-it-comes-to-tennis-string-go-with-your-gut | 2026-11-23 | « Federer strung his racquets with Champions Choice strings, a hybrid of natural gut and Luxilon Alu Power. » · « This was the setup Roger Federer made popular, and Novak Djokovic still employs today. » | les deux ne disent ni la même variante (Rough ou non) ni explicitement le sens | — | **signal** : charte F4 non tenue, aucun joueur citable |
+| F33 | Federer en hybride boyau / polyester Luxilon. Tennisnerd (J. Eriksson, 26/01/2018) : « Champions Choice », boyau et ALU Power, sans dire le sens. Tennis.com (J. Levey, 20/07/2025) : « le montage que Federer a popularisé ». La phrase ne nomme pas les cordages ; seul son contexte, un passage sur le boyau en montants, les désigne. Ni l'une ni l'autre ne cite de source primaire. Djokovic, Paul et Zverev : une seule source chacun (Tennis.com 2025) | — | L3 | https://www.tennisnerd.net/?p=7952 ; https://www.tennis.com/news/articles/gear-qa-when-it-comes-to-tennis-string-go-with-your-gut | 2026-11-23 | « Federer strung his racquets with Champions Choice strings, a hybrid of natural gut and Luxilon Alu Power. » · « This was the setup Roger Federer made popular, and Novak Djokovic still employs today. » | les deux ne disent ni la même variante (Rough ou non) ni explicitement le sens | — | ~~**signal** : charte F4 non tenue, aucun joueur citable~~ *Mis à jour le 23/11 (4a, Q-8) : **confirmé pour Federer**, boyau en montants et polyester en travers, par F37 et F38 (deux sources indépendantes et datées, 2009 et 2014), avec F39 en appui ; Djokovic, Paul et Zverev : inchangés, une source chacun* |
 | **J** | **Configurateur (Q10)** | | | | | | | | |
 | F34 | Libellés et comportement du configurateur, même composant en FR (`/configurator`) et en EN (`/en/configurator`) | FR : champ « Cordage Travers (Hybride optionnel) » ; aide « 💡 Laissez vide pour un cordage uniforme, ou choisissez un autre cordage pour un hybride » ; curseurs « Principal » et « Travers » (15 à 35 kg) ; en-tête « Tension {moyenne arrondie} kg » ; résultats « Montants seuls (X kg): », « Travers seuls (X kg): », « Indice RCS: », puis la mention « estimation pour un hybride, entre X et Y ». EN : « Cross String (optional hybrid) » ; « 💡 Leave empty to use one string throughout, or pick another string for a hybrid » ; « Mains » / « Crosses » ; « Mains only (X kg): », « Crosses only (X kg): », « RCS index: » ; « estimate for a hybrid, between X and Y ». **Tensions par défaut : 24 kg montants, 22 kg travers.** Le cordage de travers n'a pas de jauge propre dans l'indice (F5) | BASE | `src/lib/i18n/configurator.ts` l. 58-91, 184-188, 265-298 ; `src/app/configurator/page.tsx` l. 133-143, 1151, 1305-1336 ; `src/app/en/configurator/page.tsx` | 2026-11-23 (`c30eed7`) | « Cette route rend LE MÊME composant que `/configurator` » (`src/app/en/configurator/page.tsx`) | brief §1, angle 6 | oui | confirmé |
+| **K** | **Ajouts du fact-check (4a, 23/11/2026)** | | | | | | | | |
+| F35 | Le configurateur affiche un set prémonté comme tout cordage, `{string.type} \| {tx.stiffness}: {string.stiffness} lb/in`, sans mention de dérivation. La fiche produit, elle, marque comme estimée la rigidité d'un set à composition et affiche la mention de `prepackedHybridNotice` (« Rigidité dérivée des deux cordages du set… ») | — | BASE | `src/app/configurator/page.tsx` l. 98, 923 et 1050 ; `src/app/tennis-strings/[slug]/page.tsx` l. 83-91 ; `src/components/product/spec-list.tsx` l. 9 et 44 ; `src/data/prepacked-hybrids.ts` l. 163-167 | 2026-11-23 (`ff3e85a`) | « Une valeur dérivée passe `estimated` et porte une mention explicite. » (`spec-list.tsx`, l. 9) | contredit la réponse à Q-1 sur un point (« Le configurateur […] étiquetée comme telle ») ; vrai pour la fiche produit | oui | confirmé |
+| F36 | X-One Biphase en travers, chacun des 45 polyesters mesurés en montants (RA 64, 24/24 kg) | indices 24 (1), 25 (2), 26 (4), 27 (7), 28 (14), 29 (8), 30 (5), 31 (1), 32 (1), 33 (2) ; X-One Biphase intégral : 25. À 25 ou moins : Yonex Poly Tour Air (154,9) → 24 ; Toroline O-Toro (165,7) → 25 ; Toroline O-Toro Snap (164,6) → 25 | BASE | sortie S2 §G (§5) | 2026-11-23 (`ff3e85a`) | — | F10, F11 | oui | confirmé |
+| F37 | Federer : boyau en montants, Luxilon ALU Power Rough en travers | — | L3 (Tennis.com, J. Levey, « Winning Combination », 02/10/2009 ; l'article ne cite pas sa source) | https://www.tennis.com/news/articles/winning-combination | 2026-11-23 | « He uses natural gut in his mains, and Luxilon Alu Power Rough in his crosses. » | F38, indépendante ; F39 | — | confirmé (F4, avec F38) |
+| F38 | Federer : boyau sur les seize montants, polyester sur les dix-neuf travers, dans un reportage auprès de son cordeur (« Yu » dans l'extrait) | — | L3 (The New Yorker, M. Steinberger, 2014, lu dans l'extrait publié par Longreads le 04/09/2014 ; newyorker.com n'a pas pu être ouvert par l'outil : arrêt sans nouvel essai, F9) | https://longreads.com/2014/09/04/meet-the-team-that-tennis-pros-pay-40k-a-year-to-string-their-rackets/ (lien de la page vers l'original : `newyorker.com/news/sporting-scene/stringing-roger-federers-nine-rackets`) | 2026-11-23 | « Federer was using natural gut for the sixteen main strings and polyester for the nineteen cross strings » | F37, indépendante (2009) ; F39 | — | confirmé (F4, avec F37) |
+| F39 | Federer, selon Tennis-X, après sa victoire sur Sam Groth à l'US Open 2014 : boyau en montants, « synthetic » en travers ; un demi-demi boyau et Luxilon depuis 2002-2003, jamais inversé | — | L3 (Tennis-X, T. Gainey, 30/08/2014 ; propos rapportés, sans nom de média ni de conférence) | https://www.tennis-x.com/xblog/2014-08-30/16887.php | 2026-11-23 | « Federer explained his stringing preference of gut in the main, synthetic in the crosses. » · « I’ve never switched Luxilon or gut in the main or the crosses. » | appui de F37 et F38 ; « synthetic » ne dit pas « polyester » | — | appui |
 
 ### Calculs de la base : commande et sortie (S1)
 
@@ -337,7 +343,7 @@ G. Sets prémontés (PREPACKED_HYBRIDS)
 - **Q2 (a)** : une seconde source indépendante pour « les montants cassent en premier » (F27). La prescription chiffrée d'un écart de tension reste introuvable (GT-F28).
 - **Q5** : la forme de section, en page constructeur ouverte ce jour, des cordages d'exemple hors Toroline (F29).
 - **Q7** : un test qui compare un hybride et un intégral des mêmes cordages, en durabilité, casse ou perte de tension (F30).
-- **Q8** : un hybride de joueur professionnel tenu par deux sources indépendantes et datées qui disent la même chose (F33). La source et la saison du chiffre Babolat (F31).
+- **Q8** : un hybride de joueur professionnel tenu par deux sources indépendantes et datées qui disent la même chose (F33). La source et la saison du chiffre Babolat (F31). *Mis à jour le 23/11 (4a) : trouvé pour Federer (F37, F38) ; introuvable pour les autres joueurs.*
 
 ### Divergences avec la base (pour `tsa-core`)
 
@@ -355,7 +361,7 @@ Aucune nouvelle divergence de **valeur** entre une source externe et la base : a
 - **« Mesuré » ne qualifie jamais un hybride.** Seules les rigidités de ses deux cordages le sont. L'indice est une estimation dérivée (F3, A-1). L'article ne parle pas d'« indice mesuré d'un hybride ».
 - **La « pondération 60/40 » n'est vraie que montants plus rigides.** Avec des montants plus souples, l'indice prend la moyenne 50/50 (F3). Écrire « les montants comptent pour 60 % » sans cette condition serait faux pour un hybride inversé.
 - **Pas de comparaison de natures.** Les 76 et 70 RDC du test TW (F20) ne se comparent ni aux lb/in ni à l'indice (charte F2). On peut en tirer le sens, pas un nombre.
-- **« Inverser change peu »** doit être chiffré : 0 à 2 points sur 1 887 paires (F17). Cela peut faire changer de palier (F10 : 30 Ferme contre 29 Standard).
+- **« Inverser change peu »** doit être chiffré : 0 à 2 points sur ~~1 887~~ **1 826** paires (F17, corrigé le 23/11 au 4a). Cela peut faire changer de palier (F10 : 30 Ferme contre 29 Standard).
 - **Le signal classim** (« plus solide qu'un X-One intégral sans perte de confort ») :
   - la base le contredit pour Razor Code / X-One : 30, palier Ferme, contre 25 en intégral (F10) ;
   - elle le nuance pour ALU Power Soft / X-One : 27 contre 25, palier Standard dans les deux cas (F11) ;
@@ -391,7 +397,7 @@ rédacteur note ici le prompt employé, puis le recopie dans `CREDITS.md`.
 | I5 | couverture (secours décoratif seulement) | 1 | https://www.pexels.com/photo/close-up-shot-of-tennis-racket-on-dark-background-29102005/ | Arbiansyah Sulud (publiée le 25/10/2024) | « Free », lien vers la licence Pexels (mention lue le 2026-11-23 ; texte de la licence non rouvert) | crédit conseillé | aperçu de 519 × 750 px examiné le 23/11 : raquette ancienne en métal, tamis d'une seule couleur (pas un hybride), marque au pochoir peut-être visible au centre, portrait à recadrer en 1200 × 630. Ne sert pas le sujet | Écartée : ne sert pas le sujet ; I1 suffit. |
 | I6 | corps 1 : schéma montants / travers | 2 | partir de `public/blog/images/schema-hybride-montants-travers-fr.svg` et `-en.svg`, appelés par `<use href>` au §08 de `cordage-mono-vs-multifilament`, et étiqueter chaque sens avec son cordage et sa tension. Exemple tiré du §2 : Ice Code à 24 kg en montants, NRG2 à 22 kg en travers, indice 28 (F16) | Tennis String Advisor | création du site | légende « Schéma Tennis String Advisor » ; aucun fichier dans `CREDITS.md` si le SVG est écrit dans la page | texte en SVG, traduisible ; aucun logo dessiné | **Retenu, adapté.** Bloc `schema` généré par `scripts/blog-covers/build-hybride-figures.mts` (SVG en ligne, `tsa-schema`, thèmes clair et sombre), géométrie reprise du schéma du §08 de `cordage-mono-vs-multifilament`. Exemple Ice Code / NRG2 à **24/24 kg** (seuls 31 et 25, hybride 29 Standard, F12) et non 24/22 kg : même montage que le tableau, comme le demande la consigne (RA 64, 24 kg dans les deux sens). Le cas 24/22 kg (28, F16) est dans le texte (§4 configurateur, §5). Aucun fichier dans `public/blog/images/` ; ligne ajoutée à la section « Graphiques générés depuis la base » de `CREDITS.md`. |
 | I7 | corps 2 : graphique « où tombe l'indice d'un hybride » | 2 | script à écrire dans `scripts/blog-covers/`, qui relit la base et le moteur, sur le modèle de `build-rigidite-figures.mts`, qui échoue si le code change. Données exactes dans le tableau ci-dessous | Tennis String Advisor | création du site | date d'état de la base dans la légende (charte F11) ; « estimation, pas une mesure » (F3) | l'exemple O-Toro Tour / O-Toro Snap tombe si Q-3 répond non | **Retenu.** Bloc `graphique` du même script : six exemples (F10 à F15 ; F15 maintenu après la réponse de `tsa-core` à Q-3), montants seuls, travers seuls et estimation, bandes des paliers publiés, seuils d'alerte 32 et 35 posés entre deux entiers. Le script échoue si un cordage d'exemple n'est pas mesuré (Toroline Absolute exclue, Q-3) ; `--check` compare les blocs à la base et vérifie 12 phrases chiffrées par langue et 4 cohérences. Le tableau des exemples est généré par le même script (bloc `tableau`). |
-| I8 | corps 3, facultatif : « inverser le sens, changer l'écart autour de la même moyenne » | 2 | tableau-figure (F10, F12, F16, F17) : Ice Code / NRG2 donne 29 à 24/24 kg, 28 à 24/22 kg, 28 à 23/23 kg et 28 dans le sens inverse ; Razor Code / X-One Biphase donne 30 (Ferme) et 29 (Standard) dans le sens inverse ; sur 1 887 paires mesurées, l'inversion change l'indice de 0, 1 ou 2 points | Tennis String Advisor | création du site | même légende que I7 | — | Non produit : l'inversion tient dans la colonne « Sens inverse » du tableau et l'écart de tension dans le texte (§4, §5). Chiffre de grille du texte : **1 826 paires** (réponse de `tsa-core` à Q-3), pas 1 887. |
+| I8 | corps 3, facultatif : « inverser le sens, changer l'écart autour de la même moyenne » | 2 | tableau-figure (F10, F12, F16, F17) : Ice Code / NRG2 donne 29 à 24/24 kg, 28 à 24/22 kg, 28 à 23/23 kg et 28 dans le sens inverse ; Razor Code / X-One Biphase donne 30 (Ferme) et 29 (Standard) dans le sens inverse ; sur ~~1 887~~ **1 826** paires mesurées (corrigé le 23/11 au 4a, F17), l'inversion change l'indice de 0, 1 ou 2 points | Tennis String Advisor | création du site | même légende que I7 | — | Non produit : l'inversion tient dans la colonne « Sens inverse » du tableau et l'écart de tension dans le texte (§4, §5). Chiffre de grille du texte : **1 826 paires** (réponse de `tsa-core` à Q-3), pas 1 887. |
 
 Photos vues et écartées sans ligne propre :
 - `Cordagenoir.jpg` (Commons) : bobine attribuée à Babolat, auteur et source « Babolat » ;
@@ -545,9 +551,33 @@ L'intégral de chaque cordage est la borne « seul » de la même ligne : au mê
       - si les deux sources existent, il les cite à la place des noms de sites ;
       - sinon, il retire le nom du joueur et garde la configuration décrite comme un usage (« boyau en montants, polyester en travers »), sans autre retouche.
     - **Date** : `dateModified` et date visible suivent la charte (F11) selon que le fait change ou non.
+  - → `tsa-pigiste`, 2026-11-23 (4a), **à `tsa-redacteur`** : **F4 tenu pour Federer, boyau en montants et polyester en travers.** Deux sources indépendantes et datées, pages ouvertes le 23/11 (F37 et F38 du §2) :
+    - **Tennis.com**, Jon Levey, « Winning Combination », 2 octobre 2009 : https://www.tennis.com/news/articles/winning-combination — « He uses natural gut in his mains, and Luxilon Alu Power Rough in his crosses. »
+    - **The New Yorker**, Michael Steinberger, 2014, lu dans l'extrait publié par Longreads le 4 septembre 2014 : https://longreads.com/2014/09/04/meet-the-team-that-tennis-pros-pay-40k-a-year-to-string-their-rackets/ — « Federer was using natural gut for the sixteen main strings and polyester for the nineteen cross strings ». La page de The New Yorker n'a pas pu être ouverte par l'outil : arrêt sans nouvel essai (F9). À citer comme « The New Yorker (2014), cité par Longreads », avec le lien de Longreads.
+    - En appui, les propos de Federer rapportés par **Tennis-X** (Tom Gainey, 30 août 2014) : https://www.tennis-x.com/xblog/2014-08-30/16887.php — « Federer explained his stringing preference of gut in the main, synthetic in the crosses. » (F39).
+    - **Pour la phrase corrigée** :
+      - dater le montage (F11), par exemple « selon Tennis.com en 2009 et The New Yorker en 2014 », jamais au présent : ces pages ne disent rien d'après 2014 ;
+      - « mono aux travers » / « poly crosses » est tenu : les deux sources disent polyester, et Tennis.com nomme l'ALU Power Rough ;
+      - la réserve pro stock de F4 porte sur le cadre ; pour un cordage, la date en tient lieu ;
+      - ne pas en tirer que le set Champion's Choice « est » le montage de Federer (Q-5).
+    - **Hors de Q-8, non vérifié et non demandé** : la suite des deux phrases (« privilégie le toucher avec un soupçon de contrôle — mais il s'use vite chez les gros lifteurs » ; « prioritises touch with a hint of control, but it wears out fast for heavy topspin players ») et « la combinaison la plus courante en club » n'ont aucun fait au dossier. L'orchestrateur a limité le circuit court à la mention de Federer : je les signale sans demander de coupe.
+    - **Conséquence pour le nouvel article** : sa FAQ sur les joueurs professionnels écrit qu'« aucun montage de professionnel ne réunit deux sources indépendantes ». C'est devenu faux : correction C10 du §5.
 ---
 
 ## 5. Fact-check final — `tsa-pigiste`
+
+*Passe du 2026-11-23 (étape 4a, circuit complet), sur le worktree au commit `ff3e85a`. Le corps des deux articles y est celui de `246dba2` : la passe 4b n'a touché que le `<head>`, les index et le sitemap. Articles lus en entier, FR et EN : texte, tableaux, légendes, SVG en ligne (titres, libellés, données), FAQ visible et `FAQPage`. Faits ajoutés ou corrigés au §2 ce jour : F7, F15, F17, F24, F25, F29, F33 corrigés ; F35 à F39 ajoutés.*
+
+**Verdict : corrections demandées, 13 (C1 à C13 ci-dessous).**
+- **Les chiffres du moteur sont tous justes.** Deux implémentations indépendantes (S2 et `--check` / `--facts`) concordent sur chaque indice, chaque borne, chaque palier et chaque décompte.
+- **Les corrections portent sur autre chose** :
+  - la portée de cinq phrases chiffrées (C3, C4, C7, C8, C9) ;
+  - une FAQ que Q-8 rend fausse (C10) ;
+  - la description du configurateur (C5) ;
+  - une mention de source (C12) ;
+  - quatre précisions (C1, C2, C6, C11) ;
+  - sept phrases qui écrivent un « introuvable » comme un fait (C13).
+- **Le verdict principal passe le test de glissance** : la fermeté d'un hybride, estimée, tombe entre celles de ses deux cordages, et on ne la chiffre que si les deux sont mesurés.
 
 ### Valeurs produit (contrôle automatique)
 
@@ -556,24 +586,500 @@ tableaux, telle qu'elle est écrite. Champs : voir l'en-tête de
 `scripts/redaction/verifier-valeurs.mts`.
 
 ```valeurs-produit
-# sujet                                   | champ           | valeur citée | où
+# sujet                                   | champ    | valeur citée  | où
+# FR : tableau « Six hybrides chiffrés » (§4), rigidités en lb/in, virgule décimale
+cordage tecnifibre-razor-code             | rigidite | 242,9         | FR tableau §4
+cordage tecnifibre-x-one-biphase          | rigidite | 166,9         | FR tableau §4 (deux lignes)
+cordage luxilon-alu-power-soft            | rigidite | 197,7         | FR tableau §4
+cordage tecnifibre-ice-code               | rigidite | 221,2         | FR tableau §4
+cordage tecnifibre-nrg2                   | rigidite | 164           | FR tableau §4
+cordage solinco-hyper-g                   | rigidite | 218,3         | FR tableau §4
+cordage solinco-vanquish                  | rigidite | 160           | FR tableau §4
+cordage luxilon-4g                        | rigidite | 286,9         | FR tableau §4
+cordage wilson-nxt                        | rigidite | 173,7         | FR tableau §4
+cordage toroline-o-toro-tour              | rigidite | 216,6         | FR tableau §4
+cordage toroline-o-toro-snap              | rigidite | 164,6         | FR tableau §4
+# EN : même tableau, point décimal
+cordage tecnifibre-razor-code             | rigidite | 242.9         | EN table §4
+cordage tecnifibre-x-one-biphase          | rigidite | 166.9         | EN table §4 (two rows)
+cordage luxilon-alu-power-soft            | rigidite | 197.7         | EN table §4
+cordage tecnifibre-ice-code               | rigidite | 221.2         | EN table §4
+cordage tecnifibre-nrg2                   | rigidite | 164           | EN table §4
+cordage solinco-hyper-g                   | rigidite | 218.3         | EN table §4
+cordage solinco-vanquish                  | rigidite | 160           | EN table §4
+cordage luxilon-4g                        | rigidite | 286.9         | EN table §4
+cordage wilson-nxt                        | rigidite | 173.7         | EN table §4
+cordage toroline-o-toro-tour              | rigidite | 216.6         | EN table §4
+cordage toroline-o-toro-snap              | rigidite | 164.6         | EN table §4
+# Types implicites du tableau des familles (§3 : « cinq exemples » polyester / multifilament, « un exemple » poly/poly)
+cordage tecnifibre-razor-code             | type     | Polyester     | FR/EN §3
+cordage luxilon-alu-power-soft            | type     | Polyester     | FR/EN §3
+cordage tecnifibre-ice-code               | type     | Polyester     | FR/EN §3
+cordage solinco-hyper-g                   | type     | Polyester     | FR/EN §3
+cordage luxilon-4g                        | type     | Polyester     | FR/EN §3
+cordage toroline-o-toro-tour              | type     | Polyester     | FR/EN §3
+cordage toroline-o-toro-snap              | type     | Polyester     | FR/EN §3
+cordage tecnifibre-x-one-biphase          | type     | Multifilament | FR/EN §3
+cordage tecnifibre-nrg2                   | type     | Multifilament | FR/EN §3
+cordage solinco-vanquish                  | type     | Multifilament | FR/EN §3
+cordage wilson-nxt                        | type     | Multifilament | FR/EN §3
+# Non contrôlables par l'outil (Q-6) : les indices d'hybride, au montage de référence sans raquette nommée.
+# Ils sont contrôlés par le moteur réel : sorties S2, --check et --facts ci-dessous.
+# Jauges des sets (RPM Blast 1,25 · Touch VS 1,30 · ALU Power 1,25 · NXT Power 1,30 · 4G Rough 1,25 · NXT Control 16 ·
+# boyau Wilson 16 · ALU Power Rough 16L) : compositions de source (F18), pas des champs de la base ; relues à la main.
 ```
 
-Sortie de `npm run redaction:valeurs -- docs/redaction/<slug-fr>.md` :
+Sortie de `npm run redaction:valeurs -- docs/redaction/montage-hybride-cordage-tennis.md` (2026-11-23, commit `ff3e85a` plus ce dossier) :
 
 ```
-(coller la sortie)
+$ npm run redaction:valeurs -- docs/redaction/montage-hybride-cordage-tennis.md
+  OK    cordage tecnifibre-razor-code | rigidite | 242,9
+  OK    cordage tecnifibre-x-one-biphase | rigidite | 166,9
+  OK    cordage luxilon-alu-power-soft | rigidite | 197,7
+  OK    cordage tecnifibre-ice-code | rigidite | 221,2
+  OK    cordage tecnifibre-nrg2 | rigidite | 164
+  OK    cordage solinco-hyper-g | rigidite | 218,3
+  OK    cordage solinco-vanquish | rigidite | 160
+  OK    cordage luxilon-4g | rigidite | 286,9
+  OK    cordage wilson-nxt | rigidite | 173,7
+  OK    cordage toroline-o-toro-tour | rigidite | 216,6
+  OK    cordage toroline-o-toro-snap | rigidite | 164,6
+  OK    cordage tecnifibre-razor-code | rigidite | 242.9
+  OK    cordage tecnifibre-x-one-biphase | rigidite | 166.9
+  OK    cordage luxilon-alu-power-soft | rigidite | 197.7
+  OK    cordage tecnifibre-ice-code | rigidite | 221.2
+  OK    cordage tecnifibre-nrg2 | rigidite | 164
+  OK    cordage solinco-hyper-g | rigidite | 218.3
+  OK    cordage solinco-vanquish | rigidite | 160
+  OK    cordage luxilon-4g | rigidite | 286.9
+  OK    cordage wilson-nxt | rigidite | 173.7
+  OK    cordage toroline-o-toro-tour | rigidite | 216.6
+  OK    cordage toroline-o-toro-snap | rigidite | 164.6
+  OK    cordage tecnifibre-razor-code | type | Polyester
+  OK    cordage luxilon-alu-power-soft | type | Polyester
+  OK    cordage tecnifibre-ice-code | type | Polyester
+  OK    cordage solinco-hyper-g | type | Polyester
+  OK    cordage luxilon-4g | type | Polyester
+  OK    cordage toroline-o-toro-tour | type | Polyester
+  OK    cordage toroline-o-toro-snap | type | Polyester
+  OK    cordage tecnifibre-x-one-biphase | type | Multifilament
+  OK    cordage tecnifibre-nrg2 | type | Multifilament
+  OK    cordage solinco-vanquish | type | Multifilament
+  OK    cordage wilson-nxt | type | Multifilament
+
+33 valeur(s) contrôlée(s), 0 écart(s)
+exit=0
 ```
+
+### Indices et bornes : le moteur réel (réponse à Q-6)
+
+Chaque indice et chaque borne cités, FR et EN, sortent de deux implémentations du même moteur (`setupFirmnessIndex`), écrites séparément. Leurs chiffres concordent tous :
+- **S2** : mon script hors dépôt, `C:\Users\plene\AppData\Local\Temp\claude\9519414f725d5b3e\cbc91433-ac54-48b8-b83a-537568efd73b\scratchpad\pig-hybride\fact-check-4a.mts`. Il reprend la définition du † sans Toroline Absolute (réponse de `tsa-core` à Q-3), sans importer le script du rédacteur ;
+- **R** : `scripts/blog-covers/build-hybride-figures.mts`, le script du rédacteur, en `--check` (les trois blocs générés et 12 phrases chiffrées par langue) et en `--facts`.
+
+**S2**, 2026-11-23 :
+
+```
+$ cd C:\Users\plene\Documents\_wt\redac-hybride && npx --yes tsx <scratchpad>\pig-hybride\fact-check-4a.mts
+2026-11-23T11:20:05+01:00 · commit ff3e85a · src/data, src/lib, qa-ratings.mts : conformes au commit
+A. Montage, seuils, paliers
+  RA 64 ; REF_TENSION 24 kg ; ARM_ALERT_RCS {"sensitive":32,"standard":35} ; paliers 0→Très Confortable 20→Confortable 25→Standard 30→Ferme 35→Très Ferme
+B. Cordages mesurés (Q-3 : sans toroline-absolute)
+  Polyester : 45 sur 102
+  Hybrid : 0 sur 9
+  Multifilament : 15 sur 45
+  Natural Gut : 0 sur 7
+  Synthetic : 1 sur 16
+  total : 61 sur 179
+C. Six exemples, RA 64, 24/24 kg : direct · inverse · intégraux · type
+  Tecnifibre Razor Code 242.9 (Polyester, mesuré true) / Tecnifibre X-One Biphase 166.9 (Multifilament, mesuré true) : 30 Ferme [montants seuls 33, travers seuls 25] « estimation pour un hybride, entre 25 et 33 » ; inverse 29 Standard ; intégral 33 Ferme / 25 Standard
+  Luxilon ALU Power Soft 197.7 (Polyester, mesuré true) / Tecnifibre X-One Biphase 166.9 (Multifilament, mesuré true) : 27 Standard [montants seuls 29, travers seuls 25] « estimation pour un hybride, entre 25 et 29 » ; inverse 27 Standard ; intégral 29 Standard / 25 Standard
+  Tecnifibre Ice Code 221.2 (Polyester, mesuré true) / Tecnifibre NRG2 164 (Multifilament, mesuré true) : 29 Standard [montants seuls 31, travers seuls 25] « estimation pour un hybride, entre 25 et 31 » ; inverse 28 Standard ; intégral 31 Ferme / 25 Standard
+  Solinco Hyper-G 218.3 (Polyester, mesuré true) / Solinco Vanquish 160 (Multifilament, mesuré true) : 28 Standard [montants seuls 31, travers seuls 24] « estimation pour un hybride, entre 24 et 31 » ; inverse 28 Standard ; intégral 31 Ferme / 24 Confortable
+  Luxilon 4G 286.9 (Polyester, mesuré true) / Wilson NXT 173.7 (Multifilament, mesuré true) : 33 Ferme [montants seuls 38, travers seuls 26] « estimation pour un hybride, entre 26 et 38 » ; inverse 32 Ferme ; intégral 38 Très Ferme / 26 Standard
+  Toroline O-Toro Tour 216.6 (Polyester, mesuré true) / Toroline O-Toro Snap 164.6 (Polyester, mesuré true) : 28 Standard [montants seuls 31, travers seuls 25] « estimation pour un hybride, entre 25 et 31 » ; inverse 28 Standard ; intégral 31 Ferme / 25 Standard
+D. Écart de tension (kg)
+  Ice Code / NRG2 24/24 : 29 Standard [montants seuls 31, travers seuls 25] « estimation pour un hybride, entre 25 et 31 »
+  Ice Code / NRG2 24/22 : 28 Standard [montants seuls 31, travers seuls 24] « estimation pour un hybride, entre 24 et 31 »
+  Ice Code / NRG2 23/23 : 28 Standard [montants seuls 31, travers seuls 24] « estimation pour un hybride, entre 24 et 31 »
+  Razor Code / X-One Biphase 24/24 : 30 Ferme [montants seuls 33, travers seuls 25] « estimation pour un hybride, entre 25 et 33 »
+  Razor Code / X-One Biphase 24/22 : 30 Ferme [montants seuls 33, travers seuls 24] « estimation pour un hybride, entre 24 et 33 »
+  Razor Code / X-One Biphase 23/23 : 30 Ferme [montants seuls 33, travers seuls 25] « estimation pour un hybride, entre 25 et 33 »
+E. Grille de toutes les paires mesurées (le plus rigide en montants, comparé au sens inverse)
+  paires non ordonnées : 1830 ; dont rigidités égales : 4 ; paires de rigidités différentes : 1826
+  écart direct − inverse {"0":1086,"1":723,"2":17} ; palier changé 162
+F. Polyester / multifilament mesurés, polyester en montants
+  combinaisons 45 × 15 = 675 ; polyester plus rigide : 650 ; multifilament aussi rigide ou plus : 25 (hybride au-dessus du polyester seul : 2)
+  sur les 650 : baisse 0 à 7 pts {"0":36,"1":94,"2":240,"3":184,"4":48,"5":37,"6":10,"7":1} ; baisse nulle 36 ; palier différent du polyester seul 372
+  multifilament ≥ polyester : Poly Tour Air 154.9 / X-One Biphase 166.9 : 24 (seul 24) ; Poly Tour Air 154.9 / Reflex MLT 159.4 : 24 (seul 24) ; Poly Tour Air 154.9 / TGV 165.2 : 24 (seul 24) ; Poly Tour Air 154.9 / NRG2 164 : 24 (seul 24) ; Poly Tour Air 154.9 / NXT 173.7 : 25 (seul 24) ; Poly Tour Air 154.9 / Xalt 165.2 : 24 (seul 24) ; …
+G. X-One Biphase en travers, chaque polyester mesuré en montants (FAQ « aussi souple qu’un X-One intégral »)
+  X-One intégral 25 ; 45 polyesters : indices {"24":1,"25":2,"26":4,"27":7,"28":14,"29":8,"30":5,"31":1,"32":1,"33":2} ; les plus bas : Poly Tour Air 154.9 → 24 ; O-Toro 165.7 → 25 ; O-Toro Snap 164.6 → 25 ; Cream 177.7 → 26
+H. Couples profilé / rond, deux cordages mesurés, forme dans la description de la base
+  ronds mesurés : toroline-o-toro-snap 164.6 ; toroline-cash 182.9
+  profilés mesurés : head-lynx-tour 228.6 ; luxilon-element 208 ; tecnifibre-black-code-4s 242.9 ; yonex-poly-tour-spin 213.7 ; gamma-moto 226.9 ; luxilon-savage 234.3 ; tecnifibre-black-code 249.7 ; luxilon-eco-spin 213.2 ; toroline-o-toro-spin 173.2 ; toroline-super-toro 189.7 ; toroline-o-toro-tour 216.6 ; toroline-snapper 190.9
+  couples profilé (montants) / rond (travers) : 24, dont formes sourcées (fiches Toroline) : 8
+    O-Toro Spin 173.2 / O-Toro Snap 164.6 : 25 Standard
+    O-Toro Spin 173.2 / Cash 182.9 : 26 Standard
+    Super Toro 189.7 / O-Toro Snap 164.6 : 27 Standard
+    Super Toro 189.7 / Cash 182.9 : 27 Standard
+    O-Toro Tour 216.6 / O-Toro Snap 164.6 : 28 Standard
+    O-Toro Tour 216.6 / Cash 182.9 : 29 Standard
+    Snapper 190.9 / O-Toro Snap 164.6 : 27 Standard
+    Snapper 190.9 / Cash 182.9 : 27 Standard
+```
+
+**R, contrôle** :
+
+```
+2026-11-23T11:21:42+01:00 · commit ff3e85a
+$ npx --yes tsx scripts/blog-covers/build-hybride-figures.mts --check
+  OK    public/blog/montage-hybride-cordage-tennis.html : bloc « schema » conforme à la base
+  OK    public/blog/montage-hybride-cordage-tennis.html : bloc « tableau » conforme à la base
+  OK    public/blog/montage-hybride-cordage-tennis.html : bloc « graphique » conforme à la base
+  OK    public/en/blog/hybrid-tennis-string-setup.html : bloc « schema » conforme à la base
+  OK    public/en/blog/hybrid-tennis-string-setup.html : bloc « tableau » conforme à la base
+  OK    public/en/blog/hybrid-tennis-string-setup.html : bloc « graphique » conforme à la base
+
+blocs et chiffres du texte conformes à la base
+exit=0
+```
+
+**R, chiffres** (même date, même commit) :
+
+```
+$ npx --yes tsx scripts/blog-covers/build-hybride-figures.mts --facts
+{
+  "asOf": {
+    "fr": "23 novembre 2026",
+    "en": "November 23, 2026"
+  },
+  "ra": 64,
+  "kg": 24,
+  "alert": {
+    "sensitive": 32,
+    "standard": 35
+  },
+  "bands": [
+    {
+      "from": 0,
+      "level": "Très Confortable"
+    },
+    {
+      "from": 20,
+      "level": "Confortable"
+    },
+    {
+      "from": 25,
+      "level": "Standard"
+    },
+    {
+      "from": 30,
+      "level": "Ferme"
+    },
+    {
+      "from": 35,
+      "level": "Très Ferme"
+    }
+  ],
+  "nMeasured": 61,
+  "nStrings": 179,
+  "nGut": 7,
+  "nGutMeasured": 0,
+  "tension": {
+    "t2424": {
+      "rcs": 29,
+      "mains": 31,
+      "crosses": 25
+    },
+    "t2422": {
+      "rcs": 28,
+      "mains": 31,
+      "crosses": 24
+    },
+    "t2323": {
+      "rcs": 28,
+      "mains": 31,
+      "crosses": 24
+    },
+    "razor2422": 30,
+    "razor2323": 30
+  },
+  "grid": {
+    "pairs": 1826,
+    "diff": {
+      "0": 1086,
+      "1": 723,
+      "2": 17
+    },
+    "levelChanged": 162,
+    "dropMin": 0,
+    "dropMax": 7,
+    "levelVsFull": 655
+  },
+  "gridPolyMulti": {
+    "pairs": 650,
+    "diff": {
+      "0": 280,
+      "1": 356,
+      "2": 14
+    },
+    "levelChanged": 60,
+    "dropMin": 0,
+    "dropMax": 7,
+    "levelVsFull": 372
+  },
+  "examples": [
+    "Tecnifibre Razor Code (242.9) / Tecnifibre X-One Biphase (166.9) : 30 Ferme [montants seuls 33, travers seuls 25] ; inverse 29 Standard",
+    "Luxilon ALU Power Soft (197.7) / Tecnifibre X-One Biphase (166.9) : 27 Standard [montants seuls 29, travers seuls 25] ; inverse 27 Standard",
+    "Tecnifibre Ice Code (221.2) / Tecnifibre NRG2 (164) : 29 Standard [montants seuls 31, travers seuls 25] ; inverse 28 Standard",
+    "Solinco Hyper-G (218.3) / Solinco Vanquish (160) : 28 Standard [montants seuls 31, travers seuls 24] ; inverse 28 Standard",
+    "Luxilon 4G (286.9) / Wilson NXT (173.7) : 33 Ferme [montants seuls 38, travers seuls 26] ; inverse 32 Ferme",
+    "Toroline O-Toro Tour (216.6) / Toroline O-Toro Snap (164.6) : 28 Standard [montants seuls 31, travers seuls 25] ; inverse 28 Standard"
+  ]
+}
+```
+
+Où se lit chaque chiffre du texte :
+- **six exemples** : S2 §C et R `examples`. Cela couvre le schéma, le tableau, le graphique, L'essentiel, le §4 et les FAQ 1 à 3 ;
+- **écart de tension** : S2 §D et R `tension`, pour le §4 (configurateur à 24/22 kg) et le §5 ;
+- **61 sur 179** : S2 §B et R `nMeasured` / `nStrings`. **0 boyau mesuré sur 7** : R `nGut` / `nGutMeasured` ;
+- **1 826 paires, 1 086 / 723 / 17, 162** : S2 §E et R `grid` ;
+- **650, 0 à 7 points, 372** : S2 §F et R `gridPolyMulti`, avec la portée exacte en S2 §F (C3, C8) ;
+- **seuils 32 et 35, paliers** : S2 §A et R `alert` / `bands`.
+
+Les conversions EN sont justes : 24 kg = 52,9 lb, arrondi à 53 ; 22 kg = 48,5 lb ; 23 kg = 50,7 lb ; « 4 lb (about 2 kg) » est la formule d'Eriksson.
 
 ### Affirmations
 
+« FR · EN » : la même affirmation dans les deux langues ; une ligne EN seule est marquée. Conforme : **oui**, **non** (correction Cn), ou **hors fait** (définition, conseil sans fait).
+
 | # | Phrase de l'article (FR · EN) | Fait n° | Conforme | Correction demandée |
 |---|---|---|---|---|
+| A1 | Chapô : « Aucune mesure ne dit quel cordage mettre en montants : le sens se choisit selon votre jeu » · « No measurement tells you which string belongs in the mains » | F19, F20 | oui | — (prescription : l'essai F20 donne un effet, pas une règle) |
+| A2 | Chapô, L'essentiel : « l'inverser ne déplace notre indice de fermeté que de 0 à 2 points » · « flipping it moves our firmness index by 0 to 2 points » | F17 (S2 §E) | oui | — |
+| A3 | Chapô : « La fermeté d'un hybride se place entre celles de ses deux cordages : c'est une estimation, que nous ne chiffrons que lorsque leurs deux rigidités sont mesurées » · idem EN | F3, F6, A-1 | oui | — |
+| A4 | L'essentiel : RA 64, 24 kg dans les deux sens, Ice Code / NRG2 → 29, palier Standard, entre 31 et 25 · « 53 lb (24 kg) both ways … 29, Standard tier » | F12, S2 §C | oui | — |
+| A5 | L'essentiel : « Le 60/40 donné aux montants est une convention du site, pas une mesure » · idem EN | F4 | oui | — |
+| A6 | L'essentiel : « Pas de chiffre pour le boyau naturel, les cordages non mesurés ni les sets prémontés » · idem EN | A-1, Q-1, F7, F18 | oui | — |
+| A7 | L'essentiel : « Un écart de tension autour de la même moyenne ne change pas l'indice » · idem EN | F16, S2 §D | oui | — |
+| A8 | §1 : montants = cordes verticales, travers = horizontales · idem EN | définition | hors fait | — |
+| A9 | §1 : « on le monte à partir de deux garnitures, ou on l'achète en set prémonté » · idem EN | F18 | oui | — |
+| A10 | Schéma (SVG, titre, légende) : Ice Code † 24 kg, seul 31 Ferme ; NRG2 † 24 kg, seul 25 Standard ; hybride 29 Standard, « estimation, entre 25 et 31 » ; RA 64 ; † défini ; état au 23/11/2026 · EN « 53 lb (24 kg) » | F2, F6, F12 ; S2 §C ; R `--check` | oui | — |
+| A11 | §2 : « Deux choses sont mesurées […] ; le reste relève de l'usage » · « Two things have been measured […]; the rest is habit » | F21-F23, F26 ; F20 cité plus bas dans la même section | non | **C1** |
+| A12 | §2 : TWU : les montants glissent quand la balle les pousse de côté plus fort que le frottement ne les retient · idem EN | F26 | oui | — |
+| A13 | §2 : s'ils reviennent en place pendant le contact, la balle prend plus d'effet · idem EN | F22 | oui | — |
+| A14 | §2 : boyau en montants / polyester en travers : frottement statique le plus faible ; l'inverse : l'un des plus élevés · idem EN | F21 | oui | — |
+| A15 | §2 : profilés ou texturés frottent davantage, polyesters le moins · idem EN | F23 (frottement de glissement) | oui | — |
+| A16 | §2 : « Que les montants cassent les premiers est une observation de cordeur (Holabird Sports, 2013), pas une mesure » · idem EN | F27 (attribué) | oui | — |
+| A17 | §2 : J. Eriksson (Tennisnerd, 6/11/2026, partenaire déclaré de Toroline) conseille profilé en montants, rond et lisse en travers · idem EN | F24 corrigé (usage attribué nommément) | oui | — |
+| A18 | §2 : « TWU va dans ce sens pour le travers ; la combinaison n'a jamais été mesurée » · « …has never been measured » | F23 ; « jamais » : introuvable (Q2 b) | non | **C13**-1 |
+| A19 | §2 : Klip X-Plosive (TW, non daté) : 76 unités avec le polyester en montants, 70 avec le boyau ; « Un seul essai publié » · « One published test » | F20 (valeurs) ; « un seul » : aucun second trouvé | non (forme) | **C13**-2 |
+| A20 | §2 : l'essai donne le sens, pas le poids ; unités non convertibles en indice · idem EN | F20, charte F2 | oui | — |
+| A21 | §2 : « Nous n'avons trouvé aucune mesure publiée de la part des montants et des travers » · idem EN | Q1 introuvable | oui | — |
+| A22 | §3 : poly / multi : « Aucune mesure propre à ce couple dans nos sources » ; « cinq exemples plus bas » · idem EN | S2 §C (types) ; bloc `valeurs-produit` | oui | — |
+| A23 | §3 : poly / boyau : frottement statique parmi les plus élevés (TWU) ; non chiffré · idem EN | F21, A-1 | oui | — |
+| A24 | §3 : boyau / poly, « hybride dit « inversé » » : frottement le plus faible ; tamis moins ferme que dans l'autre sens (un essai) ; non chiffré · idem EN | F21, F20 ; terme d'usage relevé au §1 (SERP Decathlon) | oui | — |
+| A25 | §3 : poly profilé / poly rond : « Usage défendu par un blog partenaire d'une marque ; non mesuré » ; un exemple · idem EN | F24, F23, F15 ; A-2 | non (attribution) | **C2** |
+| A26 | §4 : un hybride se place entre ses deux cordages, au milieu ou un peu plus près des montants quand ils sont les plus rigides · idem EN | F3 | oui | — |
+| A27 | §4 : estimation tirée de deux rigidités mesurées, jamais une mesure du montage · idem EN | F3, A-1 | oui | — |
+| A28 | §4 : l'indice combine RA, rigidité du cordage (lb/in) et tension · idem EN | F3 (paramètres de `setupFirmnessIndex`), F5 | oui | — |
+| A29 | §4 : deux estimations à la tension moyenne, 60/40 et moyenne simple, la plus haute retenue · idem EN | F3 | oui | — |
+| A30 | §4 : « Le 60/40 est une convention du site qu'aucune mesure publiée ne fonde ; il ne joue que si les montants sont les plus rigides » · « …that no published measurement backs… » | F4 (fondement introuvable), F3 | non (forme) | **C13**-3 |
+| A31 | §4 : « 61 des 179 cordages de notre base au 23 novembre 2026 » · idem EN | F7 corrigé, S2 §B | oui | — |
+| A32 | Tableau des six hybrides : rigidités, estimation et palier, bornes, sens inverse, note (RA 64, 24 kg ; bornes = intégraux ; † ; pas des sets) · idem EN | F10-F15 ; S2 §C ; R `--check` ; bloc `valeurs-produit` | oui | — |
+| A33 | Graphique (SVG, titre, légende) : trois marques par exemple, bandes des paliers, seuils 32 (« bras sensible déclaré ») et 35 (« tous profils ») · idem EN | F2, F10-F15 ; R `--check` | oui | — |
+| A34 | §4 : l'Ice Code passe de 31, Ferme, seul, à 29, Standard, avec du NRG2 · idem EN | F12 | oui | — |
+| A35 | §4 : le 4G avec du NXT reste à 33, Ferme, au-dessus du seuil d'alerte bras sensible (32) et sous 35 · idem EN | F14, F2 (constat, montage de référence) | oui | — |
+| A36 | §4 : « Sur les 650 hybrides polyester / multifilament que permettent nos cordages mesurés, polyester en montants, … 0 à 7 points … 372 cas » · « Across the 650 … our measured strings allow » | F17 corrigé, S2 §F : 675 combinaisons ; 650 où le polyester est le plus rigide | non (portée) | **C3** a |
+| A37 | §4 : O-Toro Tour hexagonale / O-Toro Snap ronde ; « le seul couple profilé/rond de la base dont les deux cordages sont mesurés et la forme connue » · « the only shaped/round pair » | F15 et F29 corrigés, S2 §H : 8 couples (formes sourcées), 24 (toutes formes) | non | **C4** |
+| A38 | Encadré : champ « Cordage Travers (Hybride optionnel) » ; l'estimation et ses deux bornes, chacune à sa tension · « Cross String (optional hybrid) » | F34, F3 | oui | — |
+| A39 | §4 : configurateur à 24/22 kg ; curseurs « Principal » et « Travers » ; une raquette de RA 64 ; sans y toucher, Ice Code / NRG2 → 28, pas 29 · EN « 53 lb (24 kg) … 48.5 lb (22 kg), on sliders in kilos », « Mains » / « Crosses » | F34, F16 ; 16 raquettes du catalogue à RA 64 (relevé du 23/11, `racquets-database.ts`) | oui | — |
+| A40 | §4 : 1 826 paires ; 1 086 / 723 / 17, jamais plus ; palier changé 162 · idem EN | F17 corrigé, S2 §E : chiffres justes ; 1 830 paires, dont 4 à rigidités égales | non (portée) | **C3** b |
+| A41 | §4 : Razor Code / X-One Biphase : 30, Ferme, et 29, Standard, à l'envers, « où la moyenne simple l'emporte » · idem EN | F10, F3 | oui | — |
+| A42 | §4 : sans rigidité alignée pour ses deux cordages, pas d'indice : « une précision qu'il n'a pas » · idem EN | A-1 | oui | — |
+| A43 | §4 : tout hybride à boyau : « la rigidité que notre base retient pour le boyau n'est pas alignée sur une mesure de laboratoire » · idem EN | Q-4 (forme acceptée par `tsa-core`), F7 (0 sur 7) | oui | — |
+| A44 | §4 : hybrides au Babolat RPM Blast ou au Luxilon ALU Power non chiffrés · idem EN | F8 | oui | — |
+| A45 | §4 : sets à composition publiée, aucun avec ses deux cordages mesurés · idem EN | F18, Q-1 | oui | — |
+| A46 | §4 : quatre compositions, jauges et sources ; « sens au choix » ; Champion's Choice une fois, sous son nom Tennis Warehouse ; ni sens, ni joueur, ni valeur du Duo Control · idem EN | F18, Q-5 ; noms conformes à la base (relevé du 23/11) | oui | — |
+| A47 | §4 : « Le configurateur leur donne une rigidité de fiche ou dérivée, étiquetée comme telle » · « The configurator gives them … labelled as such » | F35 | non | **C5** |
+| A48 | §5 : « Aucune source primaire ne fixe d'écart » · « No primary source sets a gap » | GT-F28 (introuvable) | non (forme) | **C13**-4 |
+| A49 | §5 : « En hybride, deux usages s'opposent […] 4 lb (environ 2 kg) étant selon Jonas Eriksson le plus grand écart qu'on voie ; aucun n'est mesuré » · idem EN | GT-F22 ; F25 précisé (usage général, montage en cordage unique) ; GT-F23 (4 nœuds) | non (portée) | **C6** |
+| A50 | §5 : Ice Code / NRG2 : 29 à 24/24 kg, 28 à 24/22 kg comme à 23/23 kg ; Razor Code / X-One Biphase : 30 dans les trois cas ; « se juge donc à la sensation » · EN avec lb | F16, S2 §D ; GT-F30 | oui | — |
+| A51 | §6, question 1 : « Ce sont eux qui glissent. Le cordage le plus rigide y fait le tamis le plus ferme des deux sens, de 0 à 2 points » · idem EN | F26 (glissement) ; S2 §E : écart nul dans 1 086 cas ; indice, pas mesure (F3) | non | **C7** |
+| A52 | §6, question 2 : choisir un palier, puis deux cordages dont les indices montés seuls l'encadrent · idem EN | F3 (bornes), F2 ; condition de jeu, pas de santé (F7) | oui | — |
+| A53 | §6, question 3 : entrer raquette, deux cordages, deux tensions dans le configurateur · idem EN | F34 | oui | — |
+| A54 | FAQ 1 : « Aucune mesure ne désigne un meilleur travers » ; plus souple, indice plus bas : Ice Code 31 → 29 avec NRG2 (RA 64, 24 kg) · idem EN et `FAQPage` | chiffres : F12 ; 1re phrase : introuvable (Q1, Q2) | non (forme) | **C13**-5 |
+| A55 | FAQ 2 : « Il est moins ferme sur notre indice que son polyester monté seul » ; aucun des six exemples au palier Confortable · idem EN et `FAQPage` | S2 §F : 36 égalités sur 650, 2 dépassements sur 25 ; F10-F15 pour la 2e partie | non | **C8** |
+| A56 | FAQ 3 : « Non, selon l'indice » ; Razor Code 30 Ferme, ALU Power Soft 27 Standard, X-One Biphase intégral 25 Standard ; « Aucun essai publié ne compare la durée de vie » · idem EN et `FAQPage` | chiffres : F10, F11 ; « Non » : F36 (3 polyesters sur 45 à 25 ou moins) ; durée : F30 introuvable | non | **C9**, **C13**-6 |
+| A57 | FAQ 4 : Babolat, 2020 : 45 % du top 20 ATP, 65 % « de la WTA », sans source ni saison, affirmation de marque ; « Nous ne citons aucun joueur : aucun montage de professionnel ne réunit deux sources indépendantes qui disent la même chose » · idem EN et `FAQPage` | Babolat : F31, conforme ; seconde phrase : contredite par F37 et F38 (Q-8) | non | **C10** |
+| A58 | Limites : « Le poids de chaque sens : aucune mesure publiée » · idem EN | Q1 introuvable | non (forme) | **C13**-7 |
+| A59 | Limites : « La jauge : l'indice lit la rigidité de la fiche, celle de la jauge la plus rigide mesurée, quelle que soit la jauge choisie » · idem EN | F5 (vrai pour les cordages †) ; Q-4 : 40 fiches au-dessus de leurs jauges mesurées | non (portée) | **C11** |
+| A60 | Limites : « Indice RCS : calculé, non mesuré ; valeurs au 23 novembre 2026 » · idem EN | F3, F11 | oui | — |
+| A61 | Limites : l'indice décrit la fermeté, pas l'effet sur un bras ; « Si une douleur persiste, consultez un professionnel de santé » · idem EN | charte F7 | oui | — |
+| A62 | Sources : quatre pages TWU, dates et descriptions · idem EN | F19, F21, F23, F26 | oui | — |
+| A63 | Sources : essai Klip X-Plosive (non daté) · idem EN | F20 | oui | — |
+| A64 | Sources : Tennisnerd, 6/11/2026, « partenariat avec Toroline et liens d'affiliation déclarés par l'auteur » · « discloses a Toroline partnership and affiliate links » | F24 corrigé : collaboration et « partners », aucune affiliation déclarée | non | **C12** |
+| A65 | Sources : Holabird Sports, non signé, 25/11/2013 · idem EN | F27 | oui | — |
+| A66 | Sources : Babolat, 28/07/2020 · idem EN | F31 | oui | — |
+| A67 | Sources : compositions lues le 23/10/2026 (Babolat, Tennis Warehouse, Game-Set-Match) · idem EN | F18 | oui | — |
+| A68 | Sources : base au 23/11/2026 · idem EN | S2, R | oui | — |
+| A69 | `<head>` : meta et `og:description`, « estimer sa fermeté à partir de deux cordages mesurés » · idem EN ; `alt` de couverture (image regardée : titre, tamis montants blancs, travers vert-jaune) | A-1 ; image | oui | — |
+| A70 | EN seul : « The pound conversions are ours » ; 53, 48.5, 50.7 lb | arithmétique (ci-dessus), charte §5 | oui | — |
+| A71 | EN seul : « This is the English edition of our French article of November 23, 2026; the content is the same » | conforme si C1 à C13 sont reportées dans les deux langues | oui | — |
+| A72 | EN seul, encart final : « the configurator gives your hybrid's firmness index with its bounds » | F34, F3 | oui | — |
+
+**Décompte** : **69 affirmations vérifiées en FR** (A1 à A69 : 49 conformes, 1 hors fait, 19 non conformes) et **72 en EN** (les mêmes, plus A70 à A72, conformes). Les 19 lignes non conformes renvoient aux 13 corrections. Aucune affirmation EN ne dit ce que le FR ne dit pas : A70 à A72 sont une conversion, une mention d'édition et un rappel de l'outil.
+
+### Corrections demandées à `tsa-redacteur`
+
+Chaque correction vaut **en FR et en EN**, et dans la `FAQPage` quand la phrase est dans la FAQ : `audit:jsonld` exige la FAQ visible mot pour mot. Les formulations proposées gardent les débuts de phrase que contrôle `expectations()` de `build-hybride-figures.mts` (C3, C8, C9). Relancer `--check` après la passe.
+
+- **C1** · §2, première phrase.
+  - En cause : « Deux choses sont mesurées, le glissement des montants sur les travers et le frottement entre cordes ; le reste relève de l'usage. » · « Two things have been measured, the mains sliding over the crosses and the friction between strings; the rest is habit. »
+  - Fait : la H3 « Quel sens pèse le plus sur la fermeté ? » de la même section cite une troisième mesure, la raideur du tamis dans les deux sens (F20, un essai).
+  - Attendu : « Trois choses ont été mesurées : le glissement des montants sur les travers, le frottement entre cordes et, sur le seul essai trouvé, la raideur du tamis dans les deux sens ; le reste relève de l'usage. » · « Three things have been measured: the mains sliding over the crosses, the friction between strings and, in the one test we found, the bed's stiffness both ways round; the rest is habit. »
+- **C2** · §3, tableau, ligne « Polyester profilé / Polyester rond ».
+  - En cause : « Usage défendu par un blog partenaire d'une marque ; non mesuré » · « Habit defended by a blog partnered with a brand; not measured ».
+  - Fait : A-2 : une source partenaire d'une marque ne sert qu'à un usage **attribué nommément** ; F24.
+  - Attendu : « Usage défendu par Jonas Eriksson (Tennisnerd), partenaire de Toroline ; non mesuré » · « Habit defended by Jonas Eriksson (Tennisnerd), a Toroline partner; not measured ».
+- **C3** · §4 : la portée de deux décomptes.
+  - **a. Phrase après le graphique.**
+    - En cause : « Sur les 650 hybrides polyester / multifilament que permettent nos cordages mesurés, polyester en montants, l'estimation est de 0 à 7 points sous le polyester monté seul… » · « Across the 650 polyester/multifilament hybrids our measured strings allow, polyester in the mains… ».
+    - Fait : S2 §F et F17 corrigé. Il y a 675 combinaisons avec le polyester en montants ; les 650 sont celles où **le polyester est le plus rigide**. Dans les 25 autres, l'estimation peut dépasser le polyester seul (2 cas, par exemple Yonex Poly Tour Air / Wilson NXT : 25 contre 24).
+    - Attendu : « Sur les 650 hybrides polyester / multifilament de nos cordages mesurés où le polyester, plus rigide, est en montants, l'estimation est de 0 à 7 points sous le polyester monté seul, et le palier change dans 372 cas. » · « Across the 650 polyester/multifilament hybrids from our measured strings where the stiffer polyester is in the mains, the estimate is 0 to 7 points below the polyester on its own, and the tier changes in 372 cases. »
+  - **b. H3 « Inverser montants et travers ».**
+    - En cause : « Sur les 1 826 paires que permettent nos cordages mesurés » · « Across the 1,826 pairs our measured strings allow ».
+    - Fait : S2 §E. Les cordages mesurés forment 1 830 paires, dont 4 à rigidités égales, où il n'y a pas de sens à comparer.
+    - Attendu : « Sur les 1 826 paires de cordages mesurés de rigidités différentes » · « Across the 1,826 pairs of measured strings with different stiffness ».
+- **C4** · §4, paragraphe poly/poly.
+  - En cause : « …selon notre base : le seul couple profilé/rond de la base dont les deux cordages sont mesurés et la forme connue. » · « …the only shaped/round pair in it with both strings measured and a known profile. »
+  - Fait : S2 §H, F15 et F29 corrigés. **8 couples** profilé/rond ont leurs deux cordages mesurés et une forme sourcée, tous chez Toroline ; on en compte 24 avec les profils non sourcés des descriptions. Celui-ci a le plus grand écart de rigidité des huit (52 lb/in).
+  - Attendu : « …selon notre base : l'un des huit couples profilé/rond dont les deux cordages sont mesurés et la forme sourcée, celui dont l'écart de rigidité est le plus grand. » · « …one of eight shaped/round pairs with both strings measured and a sourced profile, the one with the widest stiffness gap. » On peut aussi supprimer l'incise.
+- **C5** · §4, dernière phrase de « Ce que nous ne chiffrons pas ».
+  - En cause : « Le configurateur leur donne une rigidité de fiche ou dérivée, étiquetée comme telle : ce n'est pas une mesure du set. » · « The configurator gives them a product-page or derived stiffness, labelled as such… »
+  - Fait : F35. Le configurateur affiche « Hybrid | Rigidité : X lb/in » sans aucune mention. C'est la **fiche produit** qui signale la valeur comme estimée et la dit dérivée des deux cordages. La phrase reprenait la réponse à Q-1, inexacte sur ce point.
+  - Attendu : « Leur fiche produit affiche une rigidité dérivée de leurs deux cordages et la signale comme telle ; le configurateur reprend ce chiffre : ce n'est pas une mesure du set. » · « Their product pages show a stiffness derived from their two strings and say so; the configurator uses that figure: it is not a measurement of the set. »
+- **C6** · §5, premier paragraphe.
+  - En cause : « En hybride, deux usages s'opposent, tendre davantage le cordage le plus souple ou tendre un peu moins les travers, 4 lb (environ 2 kg) étant selon Jonas Eriksson le plus grand écart qu'on voie ; aucun n'est mesuré. » · idem EN.
+  - Fait : F25 précisé.
+    - Eriksson présente les travers un peu moins tendus comme un usage général (« many players run the crosses a little lower than the mains »), pas comme un usage d'hybride.
+    - Ses 4 lb illustrent le montage en cordage unique d'un joueur.
+    - GT-F23 porte sur un montage 4 nœuds, sans hybride.
+    - Seul GT-F22 est propre à l'hybride.
+  - Attendu : « En hybride, la presse spécialisée décrit l'usage de tendre davantage le cordage le plus souple ; plus généralement, beaucoup de joueurs tendent un peu moins les travers, et Jonas Eriksson tient 4 lb (environ 2 kg) pour le plus grand écart qu'on voie. Aucun de ces usages n'est mesuré. » EN de même. Ne pas nommer le joueur de l'exemple d'Eriksson : une seule source (F4).
+- **C7** · §6, question 1.
+  - En cause : « Le cordage le plus rigide y fait le tamis le plus ferme des deux sens, de 0 à 2 points. » · « The stiffer string there makes the firmer bed of the two directions, by 0 to 2 points. »
+  - Fait : S2 §E. L'écart est nul dans 1 086 paires sur 1 826. C'est l'indice, une estimation, pas une mesure du tamis (F3 ; F20 n'est qu'un essai).
+  - Attendu : « Sur notre indice, le cordage le plus rigide en montants donne un chiffre égal ou plus haut qu'à l'envers, de 0 à 2 points. » · « On our index, the stiffer string in the mains gives the same figure as the other way round or a higher one, by 0 to 2 points. »
+- **C8** · FAQ « Un hybride est-il plus confortable qu'un polyester intégral ? », visible et `FAQPage`.
+  - En cause : « Il est moins ferme sur notre indice que son polyester monté seul, sans être forcément confortable… » · « It is less firm on our index than its polyester on its own… »
+  - Fait : S2 §F. Sur les 650 couples où le polyester est le plus rigide, 36 gardent le même indice. Dans les 25 autres, 2 dépassent le polyester seul.
+  - Attendu : « Sur notre indice, il n'est jamais plus ferme que son polyester monté seul quand ce polyester, plus rigide, est en montants : de 0 à 7 points de moins sur nos 650 couples polyester / multifilament mesurés. Il n'est pas forcément confortable pour autant : aucun de nos six exemples n'atteint le palier Confortable. » EN de même.
+- **C9** · FAQ « Un hybride polyester / X-One Biphase est-il aussi souple qu'un X-One Biphase intégral ? », visible et `FAQPage`.
+  - En cause : « Non, selon l'indice : … » · « No, according to the index: … »
+  - Fait : F36 (S2 §G). Avec du X-One Biphase en travers, 3 des 45 polyesters mesurés donnent 25 ou moins : Yonex Poly Tour Air (24), Toroline O-Toro et O-Toro Snap (25).
+  - Attendu : « Pas avec nos deux exemples : avec du X-One Biphase en travers, le Razor Code en montants donne 30 (Ferme) et l'ALU Power Soft 27 (Standard), contre 25 (Standard) pour le X-One Biphase en intégral (RA 64, 24 kg). Cela dépend du polyester : sur nos 45 polyesters mesurés, 3 donnent 25 ou moins avec ce travers. » EN de même. Les deux dernières phrases suivent C13-6.
+- **C10** · FAQ « Les joueurs professionnels jouent-ils en hybride ? », visible et `FAQPage`.
+  - En cause : « Nous ne citons aucun joueur : aucun montage de professionnel ne réunit deux sources indépendantes qui disent la même chose. » · « We name no player: no professional's setup is backed by two independent sources saying the same thing. »
+  - Fait : Q-8 au §4, F37 et F38. Le montage de Roger Federer (boyau en montants, polyester en travers) a deux sources indépendantes et datées, 2009 et 2014.
+  - Attendu, au choix du rédacteur :
+    - **(a)** citer le montage, daté et sourcé : « Roger Federer jouait boyau en montants et polyester (Luxilon ALU Power Rough) en travers, selon Tennis.com en 2009 et The New Yorker en 2014 », et ajouter les deux pages aux sources ;
+    - **(b)** garder la seule première proposition : « Nous ne citons pas de joueur ici. »
+
+    Dans les deux cas, aucune affirmation générale sur l'absence de sources.
+- **C11** · « Ce que cet article ne dit pas », ligne « La jauge ».
+  - En cause : « l'indice lit la rigidité de la fiche, celle de la jauge la plus rigide mesurée, quelle que soit la jauge choisie » · « the index reads the product-page stiffness, that of the stiffest measured gauge, whatever gauge you pick ».
+  - Fait : F5. La règle C ne vaut que pour les cordages marqués † ; selon la réponse de `tsa-core` à Q-4, 40 fiches gardent une valeur sans source au-dessus de leurs jauges mesurées.
+  - Attendu : « l'indice lit la rigidité de la fiche, quelle que soit la jauge choisie ; pour un cordage marqué †, c'est celle de sa jauge la plus rigide mesurée » · « the index reads the product-page stiffness, whatever gauge you pick; for a string marked †, that is its stiffest measured gauge ». Compatible avec P5 du §6.
+- **C12** · Sources, ligne Tennisnerd.
+  - En cause : « — partenariat avec Toroline et liens d'affiliation déclarés par l'auteur » · « — the author discloses a Toroline partnership and affiliate links ».
+  - Fait : F24 corrigé, page relue le 23/11. Elle déclare une collaboration avec Toroline et renvoie à « our partners » ; elle ne parle d'affiliation nulle part.
+  - Attendu : « — collaboration avec Toroline (son cordage Vamos) et liens vers des partenaires, dont Toroline, déclarés par l'auteur » · « — the author discloses a collaboration with Toroline (his Vamos string) and links to partners, Toroline among them ».
+- **C13** · Sept phrases qui écrivent comme un fait l'absence d'une publication que nous n'avons pas trouvée (charte F3 ; au §2, Q1, F4, F20, F23, F30 et GT-F28 sont « introuvables »). Pour chacune, la forme attendue en FR, puis en EN :
+  1. §2 :
+     - « la combinaison n'a jamais été mesurée » → « nous n'avons trouvé aucune mesure de la combinaison » ;
+     - « the pairing itself has never been measured » → « we found no measurement of the pairing itself ».
+  2. §2 :
+     - « Un seul essai publié compare » → « Nous n'avons trouvé qu'un essai publié qui compare » ;
+     - « One published test compares » → « We found only one published test that compares ».
+  3. §4 :
+     - « une convention du site qu'aucune mesure publiée ne fonde » → « une convention du site, sans mesure publiée trouvée à l'appui » ;
+     - « that no published measurement backs » → « with no published measurement we could find behind it ».
+  4. §5 :
+     - « Aucune source primaire ne fixe d'écart » → « Nous n'avons trouvé aucune source primaire qui fixe un écart » ;
+     - « No primary source sets a gap » → « We found no primary source that sets a gap ».
+  5. FAQ 1, visible et `FAQPage` :
+     - « Aucune mesure ne désigne un meilleur travers. » → « Nous n'avons trouvé aucune mesure qui désigne un meilleur travers. » ;
+     - « No measurement points to a best cross. » → « We found no measurement that points to a best cross. »
+  6. FAQ 3, visible et `FAQPage` :
+     - « Aucun essai publié ne compare la durée de vie… » → « Nous n'avons trouvé aucun essai publié qui compare la durée de vie… » ;
+     - « No published test compares… » → « We found no published test that compares… »
+  7. Limites :
+     - « aucune mesure publiée » → « aucune mesure publiée trouvée » ;
+     - « no published measurement » → « no published measurement found ».
+
+  Ne changent pas : le chapô (« Aucune mesure ne dit quel cordage mettre en montants ») et L'essentiel (« n'a pas de règle mesurée »). Ce sont des énoncés de méthode : une mesure donne un effet, jamais une prescription. Ils restent compatibles avec P3 du §6.
 
 ### Test de glissance
 
-| Affirmation contestable | Par qui (fabricant · cordeur · médecin) | Défense (fait n°) ou « sans défense » |
-|---|---|---|
+| # | Affirmation contestable | Par qui | Défense (fait n°) ou « sans défense » |
+|---|---|---|---|
+| G1 | « Aucune mesure ne dit quel cordage mettre en montants » | cordeur | F19, F20 : un essai donne un sens de raideur, aucune source ne prescrit |
+| G2 | Inverser ne bouge l'indice que de 0 à 2 points | cordeur, fabricant (« un hybride inversé se joue tout autrement ») | F17, S2 §E : énoncé sur l'**indice**, pas sur la sensation ; défendu |
+| G3 | Le 60/40 est une convention, pas une mesure | fabricant (« les montants dominent ») | F4, F19, F20 ; défendu (forme : C13-3) |
+| G4 | La fermeté d'un hybride tombe entre celles de ses deux cordages (estimation) | cordeur | F3, S2 §C : chaque estimation est entre ses bornes ; défendu comme estimation |
+| G5 | « Deux choses sont mesurées » | cordeur | **sans défense** : F20 en est une troisième → C1 |
+| G6 | Les montants glissent ; plus d'effet s'ils reviennent | fabricant | F22, F26 (TWU, L1) ; défendu |
+| G7 | Boyau en montants / poly en travers : frottement statique le plus faible | fabricant | F21 (L1) ; défendu |
+| G8 | Les montants cassent les premiers (attribué à Holabird) | cordeur | F27 : présenté comme observation attribuée, pas comme fait ; défendu |
+| G9 | Profilé en montants, rond en travers (attribué à Eriksson) | fabricant (Toroline, Solinco) | F24 (usage attribué), F23 ; défendu (attribution du tableau : C2) |
+| G10 | « La combinaison n'a jamais été mesurée » ; « un seul essai publié » | fabricant | F23, F24, F20 : défendu seulement sous « nous n'avons trouvé » → C13-1, C13-2 |
+| G11 | Klip X-Plosive : 76 contre 70 | fabricant (Klip) | F20, extrait mot pour mot ; défendu |
+| G12 | Indices et paliers des six exemples (Razor Code / X-One 30 Ferme ; 4G / NXT 33 Ferme…) | fabricants (Tecnifibre, Luxilon, Solinco, Wilson, Toroline) | F10-F15, S2 §C, R ; rigidités † (bloc `valeurs-produit`) ; présentés comme estimations ; défendu |
+| G13 | 4G / NXT au-dessus du seuil d'alerte bras sensible | fabricant ; médecin | F14, F2 : constat de position, montage nommé, sans conseil de santé (charte F7) ; défendu |
+| G14 | « 650 hybrides … polyester en montants … 0 à 7 points sous le polyester seul » | fabricant | **sans défense** dans sa portée : 675 combinaisons, 2 au-dessus → C3 a |
+| G15 | « Le seul couple profilé/rond » mesuré | fabricant (Toroline : Super Toro / Cash…) | **sans défense** : 8 couples (S2 §H) → C4 |
+| G16 | 1 826 paires ; 162 changements de palier | — | S2 §E, chiffres justes ; portée : C3 b |
+| G17 | Le boyau : rigidité « pas alignée sur une mesure de laboratoire » | fabricant (Wilson, Babolat : « TWU a mesuré le boyau ») | Q-4 : la phrase ne dit pas que le boyau n'a jamais été mesuré ; 0 sur 7 (F7) ; défendu |
+| G18 | Aucun set publié n'a ses deux cordages mesurés | Babolat, Wilson | F18, Q-1, Q-4 ; défendu |
+| G19 | Le configurateur « étiquette » la rigidité des sets | lecteur, `tsa-core` | **sans défense** : F35 → C5 |
+| G20 | « En hybride, deux usages s'opposent » ; 4 lb | cordeur | GT-F22 défendu ; le second usage n'est pas propre à l'hybride : **sans défense** dans cette portée → C6 |
+| G21 | Un écart autour de la même moyenne ne change pas l'indice ; « se juge à la sensation » | cordeur | F16, GT-F30 : énoncé sur l'indice ; défendu |
+| G22 | « Le cordage le plus rigide y fait le tamis le plus ferme » | cordeur | **sans défense** tel quel (indice ; écart nul dans 1 086 cas) → C7 |
+| G23 | « Il est moins ferme … que son polyester monté seul » | fabricant | **sans défense** : 36 égalités, 2 dépassements → C8 |
+| G24 | « Non » : un hybride polyester / X-One Biphase n'est jamais aussi souple qu'un X-One intégral | Tecnifibre, Yonex, Toroline | **sans défense** en général : 3 polyesters sur 45 (F36) → C9 |
+| G25 | Babolat : 45 % du top 20 ATP, 65 % de la WTA | Babolat | F31 : mot pour mot, attribué, daté, périmètre juste, « sans source ni saison » ; défendu |
+| G26 | « Aucun montage de professionnel ne réunit deux sources indépendantes » | tout lecteur (Federer) | **sans défense** : F37, F38 → C10 |
+| G27 | « La jauge la plus rigide mesurée » pour tout cordage | fabricant | **sans défense** hors des cordages † (Q-4) → C11 |
+| G28 | Santé : l'indice ne dit rien de l'effet sur un bras ; seuils d'alerte ; renvoi à un professionnel | médecin | charte F7 : aucun effet prêté au matériel, aucun conseil conditionné par la santé, le renvoi est présent ; défendu |
+| G29 | Tennisnerd : « liens d'affiliation déclarés » | l'auteur cité | **sans défense** : F24 corrigé → C12 |
+| G30 | « Aucune source primaire ne fixe d'écart » ; « Aucune mesure ne désigne un meilleur travers » ; « Aucun essai publié ne compare la durée de vie » ; « aucune mesure publiée » du poids de chaque sens | fabricant, cordeur | GT-F28, Q1, Q2, F30 : défendu seulement sous « nous n'avons trouvé » → C13-3 à C13-7 |
+| G31 | « Hybride dit « inversé » » pour boyau en montants | cordeur (la terminologie varie) | terme présenté comme une appellation (« dit »), relevé au §1 ; défendu |
+
+**Bilan** : 31 affirmations contestables. 11 sont sans défense en l'état (G5, G14, G15, G19, G20, G22, G23, G24, G26, G27, G29 ; corrections C1, C3 à C12). 2 ne sont défendues que sous la forme « nous n'avons trouvé » (G10, G30 ; C13). 18 sont défendues. Le verdict principal (G4, G12) passe.
+
+### Points de vigilance du brief
+
+- **A-2, la source « vidéo ».** Les sources des deux articles ne citent **aucune vidéo**.
+  - La ligne « partenariat avec Toroline… » vise l'article **écrit** de Tennisnerd (J. Eriksson, 6/11/2026), relu le 23/11 : il n'a pas de vidéo intégrée, seulement des liens vers la chaîne YouTube du site.
+  - Il n'établit **aucun fait** de l'article. Il sert à deux usages attribués nommément à son auteur, présentés comme tels (A17 ; les 4 lb, A49), et à une cellule de tableau à attribuer nommément (C2).
+  - L'usage « travers un peu moins tendus » a une seconde source, sans lien de marque : GT-F23 (Racketpedia).
+  - La mention du partenariat est à corriger (C12).
+- **Q-1, sets.** Aucun set n'est chiffré. Champion's Choice est cité une seule fois, sous son nom Tennis Warehouse, sans sens, sans joueur et sans 222. Ni 222 (seule occurrence : une coordonnée du schéma SVG), ni 194,4, ni « tenue » dans les deux articles (recherche du 23/11). Les deux sets « fiche » Tecnifibre ne sont pas présentés comme des sets (note du tableau : « pas des sets prémontés »).
+- **Q-4.** Aucun indice ne lit 80,6 : la chaîne « 80,6 » est absente des deux articles, et les six exemples n'ont aucun boyau. Aucune fiche sans provenance n'est dite mesurée : les 11 cordages du tableau sont mesurés (S2 §C : « mesuré true ») ; RPM Blast et ALU Power sont cités comme non chiffrés.
+- **Q1, le 60/40.** Il est dit « convention du site » (A5, A30), jamais mesure. « Profilé en montants, rond en travers » est présenté comme un usage (titre de H3, A17, A25).
+- **Babolat 2020.** Attribué, daté, périmètre « de la WTA » / « in the WTA » (65 %, pas « des joueuses du top 20 »), « sans source ni saison » (A57).
+- **Santé (F7, règle 2).** Aucune promesse pour le bras, aucun effet tiré de l'indice, aucun avis conditionné par un état de santé. Les seuils s'écrivent en constat. La douleur renvoie à un professionnel de santé, en FR et en EN (A61).
+- **Q-8 : Federer.** F4 est tenu : deux sources indépendantes et datées (F37 : Tennis.com, 2009 ; F38 : The New Yorker, 2014, lu dans l'extrait de Longreads), plus les propos de Federer rapportés par Tennis-X en 2014 (F39). Le détail est au §4, sous Q-8.
+- **Les quatre liens entrants** (diff `dba4f8d...ff3e85a`). `cordage-mono-vs-multifilament` §08, `polyester-vs-multifilament-strings`, `guide-tension-cordage-tennis` §3 et `tennis-string-tension-guide` : chacun ajoute une phrase de renvoi en fin de paragraphe, sans changer un chiffre, une date ni une autre phrase.
+- **F5, F6, F8, F11.**
+  - F5 : aucune chaîne de testeurs n'est donnée comme auteur d'une note.
+  - F6 : aucune métadonnée interne.
+  - F8 : aucun lien d'affiliation ; les seuls liens produit vont vers les fiches du site.
+  - F11 : chaque chiffre qui vieillit porte sa date : base au 23/11/2026, Babolat 2020, compositions lues le 23/10/2026.
+- **Hors périmètre**, sans correction :
+  - la biographie d'auteur (« depuis plus de 15 ans ») est le gabarit de 10 articles du blog ;
+  - les titres de `citation` du JSON-LD ont été revus par `tsa-acquisition` au 4b.
 
 ---
 
@@ -728,3 +1234,14 @@ Aucune ne touche un fait, un chiffre, un verdict ni un conseil de santé. Les li
     - l'index FR annonce encore en « Prochains articles » le classement des raquettes 2026, déjà publié ;
     - l'article EN next-gen n'a aucun lien vers le configurateur (`audit:blog-funnel`).
   - RELAIS → `tsa-redacteur` : passe finale (étape 5). Répondre à P1 à P6 dans la colonne « Réponse » du §6 ; appliquer P1 si accepté.
+- 2026-11-23 · `tsa-pigiste` — étape 4a : fact-check FR et EN, test de glissance (§5), réponse à Q-8 (§4), au commit `ff3e85a`.
+  - **Verdict : 13 corrections demandées** (C1 à C13 au §5), aucune erreur de chiffre du moteur. 69 affirmations vérifiées en FR, 72 en EN ; 31 contestables, dont 11 sans défense et 2 à reformuler.
+  - **Moteur relancé** (réponse à Q-6) : mon script `fact-check-4a.mts` (S2) et `build-hybride-figures.mts --check` / `--facts` (R) concordent sur chaque indice, chaque borne et chaque décompte. `redaction:valeurs` : 33 valeurs contrôlées, 0 écart. Sorties au §5.
+  - **§2 corrigé par éditions ciblées**, anciennes valeurs barrées :
+    - F7 (61 sur 179), F17 (1 826 paires ; 1 086 / 723 / 17 ; 162 ; polyester/multifilament : 650 sur 675 combinaisons, 0 à 7 points, 372) et I8 (1 826), d'après la réponse de `tsa-core` à Q-3 ;
+    - mes propres erreurs de l'étape 2 : F15 (« seul couple » profilé/rond : il y en a 8), F24 (aucune affiliation déclarée), F25 (usage général, exemple en cordage unique), F29 (profils non sourcés dans d'autres fiches) ;
+    - F33 mis à jour (Federer) ; ajouts F35 (configurateur sans mention de dérivation), F36 (X-One Biphase en travers), F37 à F39 (Federer).
+  - **Q-8** : F4 tenu pour Federer (Tennis.com 2009 ; The New Yorker 2014, lu chez Longreads ; Tennis-X 2014 en appui). newyorker.com n'a pas pu être ouvert par l'outil : arrêt sans nouvel essai.
+  - **A-2** : aucune vidéo dans les sources ; l'article écrit de Tennisnerd n'établit aucun fait.
+  - Aucun fichier de `public/`, `src/` ni `scripts/` modifié. Scripts et sorties hors dépôt : `C:\Users\plene\AppData\Local\Temp\claude\9519414f725d5b3e\cbc91433-ac54-48b8-b83a-537568efd73b\scratchpad\pig-hybride\` (`fact-check-4a.mts`, `sortie-*.txt`, pages relues dans `web-q8\`).
+  - RELAIS → `tsa-redacteur` : passe finale (étape 5). Solder C1 à C13 du §5 en FR, en EN et dans la `FAQPage` ; appliquer Q-8 (§4) à `cordage-mono-vs-multifilament` §08 et `polyester-vs-multifilament-strings` ; relancer `--check`, `redaction:valeurs` et `audit:jsonld`.
