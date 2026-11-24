@@ -13,10 +13,10 @@ export type ProductImageSource =
   | 'upload:pierre'
   | `fabricant:${string}`;
 
-/** Libellé du crédit « Photo : … » affiché sous chaque photo, par source. */
+/** Libellé du crédit « Photo : … » affiché sous chaque photo, par source ; vide : aucun crédit affiché. */
 export const PRODUCT_IMAGE_CREDITS: Readonly<Record<string, string>> = {
-  "tennis-warehouse": "Tennis Warehouse",
-  "tennis-warehouse-europe": "Tennis Warehouse Europe",
+  "tennis-warehouse": "",
+  "tennis-warehouse-europe": "",
   "tennis-point": "Tennis-Point",
   "upload:pierre": "envoi de Pierre",
   "fabricant:wilson": "Wilson",

@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import { getProductImage, productImageCredit, type ProductKind } from '@/lib/product-images';
+import { getProductImage, productImageCaption, type ProductKind } from '@/lib/product-images';
 import { cn } from '@/lib/utils';
 
 /**
@@ -26,7 +26,7 @@ interface ProductImageProps {
   size?: 'card' | 'detail';
   /** Hors premier écran par défaut ; `eager` pour la fiche détail. */
   eager?: boolean;
-  /** Légende « Photo : <source> » (fiche détail). */
+  /** Légende de la fiche détail : crédit de la source s'il y en a un, jauge ou coloris présentés. */
   credit?: boolean;
   className?: string;
 }
@@ -89,6 +89,7 @@ export function ProductImage({ kind, id, alt, name, size = 'card', eager = false
     );
   }
 
+  const caption = credit ? productImageCaption(image) : '';
   return (
     <figure className={className} data-product-image="photo">
       {/* Fond blanc dans les deux thèmes : les photos sont détourées sur blanc. */}
@@ -103,13 +104,7 @@ export function ProductImage({ kind, id, alt, name, size = 'card', eager = false
           className="h-full w-full object-contain p-2"
         />
       </div>
-      {credit && (
-        <figcaption className="mt-1.5 text-xs text-slate-500 dark:text-slate-400">
-          Photo : {image.credit ?? productImageCredit(image.source)}
-          {image.shownGauge && <> · jauge présentée : {image.shownGauge.replace('.', ',')} mm</>}
-          {image.shownColour && <> · coloris présenté : {image.shownColour}</>}
-        </figcaption>
-      )}
+      {caption && <figcaption className="mt-1.5 text-xs text-slate-500 dark:text-slate-400">{caption}</figcaption>}
     </figure>
   );
 }
