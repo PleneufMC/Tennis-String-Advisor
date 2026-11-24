@@ -19,6 +19,11 @@ import {
  * fiche — FR, et EN statique via scripts/catalog/product-images.mjs — retombe
  * sur l'illustration, sans autre modification.
  *
+ * Légende de la fiche détail : le crédit de la source (« Photo : Wilson »), puis la
+ * jauge ou le coloris présentés quand la photo montre un produit voisin. Les photos
+ * de Tennis Warehouse et de Tennis Warehouse Europe s'affichent SANS crédit
+ * (décision de Pierre du 24/11/2026) ; leur provenance reste au manifeste.
+ *
  * Retrait complet : drapeau à `false`, puis
  *   python scripts/scraper/tw_product_images.py purge
  * (supprime public/images/products/ et vide src/data/product-images.ts).
@@ -30,11 +35,29 @@ export type ProductKind = 'racquet' | 'string';
 
 /**
  * Crédit « Photo : … » de la fiche détail, par source. La table est GÉNÉRÉE avec le manifeste
- * (src/data/product-images.ts) : une source sans libellé n'affiche aucune légende, et
- * `audit:ratings` (contrôle 12) échoue dans ce cas.
+ * (src/data/product-images.ts) : un libellé vide n'affiche aucun crédit. Seules Tennis Warehouse
+ * et Tennis Warehouse Europe sont dans ce cas ; pour toute autre source, `audit:ratings`
+ * (contrôle 12) échoue.
  */
 export function productImageCredit(source: ProductImageSource): string {
   return PRODUCT_IMAGE_CREDITS[source] ?? '';
+}
+
+/**
+ * Texte de la légende de la fiche détail : « Photo : <crédit> », « jauge présentée : … »,
+ * « coloris présenté : … », chacun seulement s'il existe, séparés par « · » ; première lettre
+ * en capitale. Chaîne vide : pas de légende.
+ */
+export function productImageCaption(image: ProductImageEntry): string {
+  const credit = image.credit ?? productImageCredit(image.source);
+  const text = [
+    credit && `Photo : ${credit}`,
+    image.shownGauge && `jauge présentée : ${image.shownGauge.replace('.', ',')} mm`,
+    image.shownColour && `coloris présenté : ${image.shownColour}`,
+  ]
+    .filter(Boolean)
+    .join(' · ');
+  return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
 const FOLDER: Record<ProductKind, string> = {

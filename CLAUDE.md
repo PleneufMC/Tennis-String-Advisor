@@ -1,7 +1,7 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.3.43
-> **Date** : 22 novembre 2026
+> **Version** : 2.3.44
+> **Date** : 24 novembre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
 > **Branche de référence** : `main` (seule branche longue ; la production Netlify en déploie)
@@ -321,6 +321,27 @@ compté comme arrivée directe), consigné dans le rapport A3. **Reste** : le pa
 client (« Page changes based on browser history events », actif) lit la barre d'adresse et **double** celui du composant : réglage
 d'administration à couper par Pierre, rupture de série du page_view des navigations internes. La recherche de site GA4 (`q`,
 `search`…) ne voit plus ses termes.
+
+**Changelog v2.3.43 → v2.3.44** — **Photos Tennis Warehouse et Tennis Warehouse Europe affichées sans crédit ; contrôle 12
+ajusté** (décision de Pierre du 24/11/2026, mot pour mot : « Toute les photos "marquée" avec la mention tennis warehouse n'ont qu'à
+être retouchée et basta » ; `tsa-core`). **Constat** : aucune des 111 photos de ces deux sources (106 TW, 5 TWE) ne porte de
+filigrane ni de texte Tennis Warehouse (19 ouvertes en pleine résolution, dont les 5 TWE ; les 111 relues aux blancs amplifiés) ;
+la seule mention était la légende « Photo : Tennis Warehouse » (fiches FR) / « Photo: Tennis Warehouse » (fiches EN statiques).
+Aucun pixel retouché. **Changé** : libellé de crédit vide pour ces deux sources (`SOURCE_LABELS` de `tw_product_images.py`),
+manifeste régénéré hors ligne (`read_manifest()` puis `write_manifest()`, aucune requête : 140 entrées identiques, seule la table
+`PRODUCT_IMAGE_CREDITS` change) ; légende composée par `productImageCaption` (`src/lib/product-images.ts`, FR) et
+`productFigureHtml` (`scripts/catalog/product-images.mjs`, EN) : crédit s'il y en a un, puis jauge ou coloris présentés, séparés
+par « · », première lettre en capitale ; rien à afficher, pas de légende. Provenance inchangée au manifeste (`source`,
+`sourcePageUrl`, `sourceImageUrl`, `twProduct`, `retrievedAt`), `purge <source>` intacte ; la marque n'est pas créditée à la
+place (règle de `qa-ratings` inchangée). **Mesure** (build) : « Photo : Tennis Warehouse » 111 → 0 sur les 308 fiches FR
+prérendues, « Photo: Tennis Warehouse » 111 → 0 sur les 308 fiches EN ; 29 légendes de fabricants identiques (texte) ; 197 pages
+identiques dans chaque langue, les 111 autres ne perdent que leur légende ; aucune légende réduite à la jauge ou au coloris
+(aucune photo TW n'en porte). **Contrôle 12** : libellé vide admis pour ces deux sources seulement, et un libellé rétabli y
+échoue ; toute autre source sans libellé (vide ou absent, table ou entrée) échoue ; légendes FR rendues en exécution
+(`renderToStaticMarkup`) et légendes EN comparées au texte attendu, avec quatre invariants (Tennis Warehouse jamais nommé,
+« Photo : » jamais vide, « · » jamais orphelin, légende jamais vide) ; 80 tests négatifs (53 avant), 18 témoins ; vérifié aussi
+sur la table réellement altérée (Wilson sans libellé, crédit TW rétabli : l'audit échoue). Les citations de Tennis Warehouse
+comme source de données (tests, notes, rigidités, Learning Center, articles) ne changent pas.
 
 **Changelog v2.3.25 → v2.3.26** — **Hybrides : un seul indice, celui que l'alerte lit, que le configurateur
 affiche et que le PDF imprime ; contrôle 21 ter** (décision (b)+(a) de l'orchestrateur du 22/10/2026, Pierre ayant délégué ; limite (4)
@@ -1427,7 +1448,10 @@ corrigé dans la même PR.
 - Export PDF, thème sombre, i18n FR/EN livrés.
 - Photos produit Tennis Warehouse (29/09/2026), Tennis Warehouse Europe et
   sites officiels des fabricants (10/10 et 22/10/2026) : 75/129 raquettes, 65/179
-  cordages, hébergées chez nous, FR (140 fiches EN sur 308 comprises) ; envois
+  cordages, hébergées chez nous, FR (140 fiches EN sur 308 comprises) ; légende
+  « Photo : <Marque> » sous les photos de fabricants, **aucun crédit** sous les photos
+  Tennis Warehouse et TWE (décision de Pierre du 24/11/2026 ; provenance gardée au
+  manifeste ; contrôle 12 : libellé vide pour ces deux sources seulement) ; envois
   manuels de Pierre possibles (`import-upload`, source `upload:pierre`, aucun à ce jour) ;
   drapeau `PRODUCT_IMAGES_ENABLED` et commande `purge` (globale ou par source,
   ex. `purge fabricant:wilson`) pour le retrait ; associations vérifiées par

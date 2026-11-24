@@ -1022,14 +1022,17 @@ def import_upload() -> None:
           f'planche : {OUT / "peek-upload.png"} ; lancer ensuite : build')
 
 
+# Libellé vide : la photo s'affiche sans crédit. C'est le cas de Tennis Warehouse et de Tennis Warehouse Europe
+# (décision de Pierre du 24/11/2026 : « Toute les photos "marquée" avec la mention tennis warehouse n'ont qu'à être
+# retouchée et basta ») ; leur provenance reste au manifeste (page, image, date, intitulé) pour la traçabilité et
+# `purge <source>`. Toute autre source doit avoir un libellé (contrôle 12 d'`audit:ratings`).
 # « upload:pierre » : libellé de repli seulement ; chaque envoi porte son propre crédit (la source réelle).
-SOURCE_LABELS = {SOURCE_TW: 'Tennis Warehouse', SOURCE_EU: 'Tennis Warehouse Europe', 'tennis-point': 'Tennis-Point',
-                 up.SOURCE: 'envoi de Pierre'}
+SOURCE_LABELS = {SOURCE_TW: '', SOURCE_EU: '', 'tennis-point': 'Tennis-Point', up.SOURCE: 'envoi de Pierre'}
 
 
 def source_labels(used: set[str] | None = None) -> dict[str, str]:
-    """Libellé du crédit « Photo : … » par source : les trois sources historiques, plus les
-    fabricants qui ont au moins une photo au manifeste."""
+    """Libellé du crédit « Photo : … » par source (vide : aucun crédit affiché) : les sources
+    historiques, plus les fabricants qui ont au moins une photo au manifeste."""
     labels = dict(SOURCE_LABELS)
     for brand, info in fab.BRANDS.items():
         if used is None or fab.FAB_PREFIX + brand in used:
@@ -1063,7 +1066,7 @@ def write_manifest(manifest: dict) -> None:
         "  | 'upload:pierre'",
         '  | `fabricant:${string}`;',
         '',
-        '/** Libellé du crédit « Photo : … » affiché sous chaque photo, par source. */',
+        '/** Libellé du crédit « Photo : … » affiché sous chaque photo, par source ; vide : aucun crédit affiché. */',
         'export const PRODUCT_IMAGE_CREDITS: Readonly<Record<string, string>> = {',
     ] + [f'  {json.dumps(k)}: {json.dumps(v, ensure_ascii=False)},' for k, v in source_labels({e['source'] for e in manifest.values()}).items()] + [
         '};',

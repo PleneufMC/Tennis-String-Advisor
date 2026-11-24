@@ -12,6 +12,9 @@
  * Règles :
  *   - fichiers hébergés chez nous (/images/products/…), jamais de hotlink ;
  *   - aucune photo dans le JSON-LD ni og:image (ce module ne rend qu'un <figure>) ;
+ *   - légende : crédit de la source s'il y en a un (aucun pour Tennis Warehouse et Tennis Warehouse
+ *     Europe, décision de Pierre du 24/11/2026), puis jauge ou coloris présentés ; sans aucun des
+ *     trois, pas de <figcaption> ;
  *   - sans photo validée, une ILLUSTRATION générique (trait SVG, nom du produit en
  *     texte, mention « Illustration — photo not available ») : jamais une image
  *     qui pourrait passer pour la photo du produit (règle 3).
@@ -78,11 +81,15 @@ export function productFigureHtml(images, kind, id, name) {
   const e = productImageFor(images, kind, id);
   const kindLabel = kind === 'racquet' ? 'Racquet' : 'String';
   if (e) {
-    // Produit voisin (22/10/2026) : la légende dit la jauge ou le coloris réellement photographiés.
-    const shown = (e.shownGauge ? ` · gauge shown: ${esc(e.shownGauge)} mm` : '') + (e.shownColour ? ` · colour shown: ${esc(e.shownColour)}` : '');
+    // Crédit s'il y en a un, puis, pour un produit voisin (22/10/2026), la jauge ou le coloris réellement photographiés.
+    const caption = [
+      e.credit && `Photo: ${esc(e.credit)}`,
+      e.shownGauge && `gauge shown: ${esc(e.shownGauge)} mm`,
+      e.shownColour && `colour shown: ${esc(e.shownColour)}`,
+    ].filter(Boolean).join(' · ');
     return `    <figure class="mt-6" data-product-image="photo">
       <div class="relative h-72 sm:h-80 overflow-hidden rounded-lg bg-white"><img src="${esc(e.file)}" alt="${esc(`${kindLabel} ${name}`)}" width="${e.width}" height="${e.height}" loading="eager" decoding="async" class="h-full w-full object-contain p-2"></div>
-${e.credit ? `      <figcaption class="mt-1.5 text-xs text-gray-600 dark:text-gray-400">Photo: ${esc(e.credit)}${shown}</figcaption>
+${caption ? `      <figcaption class="mt-1.5 text-xs text-gray-600 dark:text-gray-400">${caption.charAt(0).toUpperCase()}${caption.slice(1)}</figcaption>
 ` : ''}    </figure>
 `;
   }

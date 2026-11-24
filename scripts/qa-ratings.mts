@@ -1129,9 +1129,20 @@ const EN_STATIC_CONFIGURATOR_RETIRED: boolean = (() => {
 // provenance (page et image servies par l'hôte de SA source) et un crédit
 // affichable. Aucune URL de source ne doit servir une image (hotlink), et aucune
 // page ne doit propager ces photos (JSON-LD, og:image).
+//
+// Crédit : chaque source a un libellé non vide, SAUF Tennis Warehouse et Tennis Warehouse
+// Europe, dont les photos s'affichent sans crédit. Décision de Pierre du 24/11/2026, mot pour
+// mot : « Toute les photos "marquée" avec la mention tennis warehouse n'ont qu'à être retouchée
+// et basta ». Aucune de ces images ne porte de filigrane ni de texte Tennis Warehouse : la seule
+// mention était la légende « Photo : Tennis Warehouse » (FR) / « Photo: Tennis Warehouse » (EN),
+// retirée ; la provenance (page, image, date, intitulé) reste au manifeste. Pour ces deux sources,
+// un libellé NON vide fait échouer le contrôle ; pour toute autre, un libellé vide ou absent aussi.
+// Les légendes rendues (FR et EN) sont relues en exécution : jamais Tennis Warehouse, ni
+// « Photo : » sans crédit, ni séparateur « · » orphelin, ni légende vide.
 {
   const before = failures.length;
   const { PRODUCT_IMAGES, PRODUCT_IMAGE_CREDITS } = await import('../src/data/product-images');
+  const UNCREDITED_SOURCES = new Set(['tennis-warehouse', 'tennis-warehouse-europe']);
   // Liste blanche : pour chaque source, les préfixes de page et d'image admis. Une source absente
   // (Head et Luxilon, fermés au robot, ou tout revendeur sans décision de Pierre) est refusée.
   // Babolat : site FR et, depuis le 22/10/2026, site US (produit absent du site FR).
@@ -1166,7 +1177,9 @@ const EN_STATIC_CONFIGURATOR_RETIRED: boolean = (() => {
     const issues: string[] = [];
     const hosts = SOURCE_HOSTS[e.source];
     if (!hosts) return [`photo ${id} : source inattendue ${e.source}`];
-    if (!credits[e.source]) issues.push(`photo ${id} : aucun libellé de crédit pour la source ${e.source}`);
+    if (UNCREDITED_SOURCES.has(e.source)) {
+      if (credits[e.source]) issues.push(`photo ${id} : crédit « ${credits[e.source]} » rétabli pour la source ${e.source} (sans crédit, décision du 24/11/2026)`);
+    } else if (!credits[e.source]?.trim()) issues.push(`photo ${id} : aucun libellé de crédit pour la source ${e.source}`);
     if (!hosts.pages.some((h) => e.sourcePageUrl.startsWith(h))) issues.push(`photo ${id} : page source invalide pour ${e.source}`);
     if (!hosts.images.some((h) => e.sourceImageUrl.startsWith(h))) issues.push(`photo ${id} : image source invalide pour ${e.source}`);
     if (!e.twProduct) issues.push(`photo ${id} : intitulé du produit source absent (association non auditable)`);
@@ -1199,6 +1212,38 @@ const EN_STATIC_CONFIGURATOR_RETIRED: boolean = (() => {
     }
     return issues;
   };
+  // Table des crédits générée avec le manifeste : libellé vide seulement pour les deux sources sans crédit.
+  const creditTableIssues = (credits: Readonly<Record<string, string>>): string[] =>
+    Object.entries(credits).flatMap(([source, label]) =>
+      UNCREDITED_SOURCES.has(source)
+        ? (label ? [`crédits : la source ${source} est créditée « ${label} » (sans crédit, décision du 24/11/2026)`] : [])
+        : (label.trim() ? [] : [`crédits : libellé vide pour la source ${source}`]));
+  creditTableIssues(PRODUCT_IMAGE_CREDITS).forEach(fail);
+  // Légende attendue d'une photo (même règle FR et EN) : crédit s'il y en a un, puis jauge ou coloris présentés,
+  // séparés par « · », première lettre en capitale ; '' = pas de légende.
+  const expectedCaption = (e: PhotoEntry, lang: 'fr' | 'en'): string => {
+    const credit = e.credit ?? (PRODUCT_IMAGE_CREDITS as Record<string, string>)[e.source] ?? '';
+    const parts = lang === 'fr'
+      ? [credit && `Photo : ${credit}`, e.shownGauge && `jauge présentée : ${e.shownGauge.replace('.', ',')} mm`, e.shownColour && `coloris présenté : ${e.shownColour}`]
+      : [credit && `Photo: ${credit}`, e.shownGauge && `gauge shown: ${e.shownGauge} mm`, e.shownColour && `colour shown: ${e.shownColour}`];
+    const text = parts.filter(Boolean).join(' · ');
+    return text.charAt(0).toUpperCase() + text.slice(1);
+  };
+  // Invariants d'une légende rendue (texte de la figcaption, null sans figcaption).
+  const captionDefects = (text: string | null): string[] => {
+    if (text === null) return [];
+    const d: string[] = [];
+    if (!text.trim()) d.push('légende vide');
+    if (/tennis\s*-?\s*warehouse/i.test(text)) d.push('Tennis Warehouse nommé');
+    if (/Photo\s*:\s*(·|$)/i.test(text)) d.push('« Photo : » sans crédit');
+    if (/^\s*·|·\s*$|·\s*·/.test(text)) d.push('séparateur « · » orphelin');
+    return d;
+  };
+  const decode = (h: string) => h.replace(/<[^>]+>/g, '').replace(/&quot;/g, '"').replace(/&#x27;|&#39;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&').trim();
+  const figcaptionText = (html: string): string | null => {
+    const m = html.match(/<figcaption[^>]*>([\s\S]*?)<\/figcaption>/);
+    return m ? decode(m[1]) : null;
+  };
   let bytes = 0;
   const listed = new Set<string>();
   for (const [id, e] of Object.entries(PRODUCT_IMAGES)) {
@@ -1230,11 +1275,27 @@ const EN_STATIC_CONFIGURATOR_RETIRED: boolean = (() => {
     for (const source of Object.keys(SOURCE_HOSTS)) {
       const real = Object.entries(PRODUCT_IMAGES).find(([, e]) => e.source === source);
       const [id, base] = real ?? [multiGauge.id, synthetic(source, multiGauge.id)];
-      const credits: Record<string, string> = { ...PRODUCT_IMAGE_CREDITS, [source]: PRODUCT_IMAGE_CREDITS[source] ?? 'Témoin' };
+      const uncredited = UNCREDITED_SOURCES.has(source);
+      const credits: Record<string, string> = { ...PRODUCT_IMAGE_CREDITS, [source]: uncredited ? '' : PRODUCT_IMAGE_CREDITS[source] ?? 'Témoin' };
       const witness = entryIssues(id, base, credits);
       if (witness.length) fail(`photos produit : témoin de la source ${source} refusé (${witness.join(' ; ')})`);
       else witnesses++;
       const noCredit = Object.fromEntries(Object.entries(credits).filter(([k]) => k !== source));
+      // Sans crédit (Tennis Warehouse, Tennis Warehouse Europe) : libellé absent ou vide admis, libellé rétabli refusé.
+      // Toute autre source : libellé absent ou vide refusé.
+      const creditNegatives: Array<[string, string[], string]> = uncredited
+        ? [
+            [`${source} : crédit Tennis Warehouse rétabli`, entryIssues(id, base, { ...credits, [source]: 'Tennis Warehouse' }), 'rétabli pour la source'],
+            [`${source} : crédit rétabli dans la table`, creditTableIssues({ ...credits, [source]: 'Tennis Warehouse' }), 'est créditée'],
+          ]
+        : [
+            [`${source} : libellé vide`, entryIssues(id, base, { ...credits, [source]: '' }), 'aucun libellé de crédit'],
+            [`${source} : libellé vide dans la table`, creditTableIssues({ ...credits, [source]: ' ' }), 'libellé vide pour la source'],
+          ];
+      if (uncredited) {
+        if (entryIssues(id, base, noCredit).length) fail(`photos produit : témoin de la source ${source} sans libellé refusé`);
+        else witnesses++;
+      }
       if (source === 'upload:pierre') {
         // Toute page https est admise : les négatifs portent sur le crédit, les moteurs et le filigrane.
         negatives.push(
@@ -1243,14 +1304,16 @@ const EN_STATIC_CONFIGURATOR_RETIRED: boolean = (() => {
           [`${source} : page de moteur de recherche`, entryIssues(id, { ...base, sourcePageUrl: 'https://www.google.com/imgres?x' }, credits), 'moteur de recherche'],
           [`${source} : image filigranée annoncée`, entryIssues(id, { ...base, sourceImageUrl: 'https://img.exemple.test/watermark/x.jpg' }, credits), 'filigrane'],
           [`${source} : marque créditée pour une image de tiers`, entryIssues(id, { ...base, credit: 'Head', sourcePageUrl: 'https://www.exemple-revendeur.test/head-speed' }, credits), 'pour une image prise sur'],
+          ...creditNegatives,
         );
         continue;
       }
       negatives.push(
         [`${source} : page hors liste blanche`, entryIssues(id, { ...base, sourcePageUrl: 'https://www.exemple-revendeur.test/produit' }, credits), 'page source invalide'],
         [`${source} : image hors liste blanche`, entryIssues(id, { ...base, sourceImageUrl: 'https://cdn.exemple-revendeur.test/image.jpg' }, credits), 'image source invalide'],
-        [`${source} : crédit manquant`, entryIssues(id, base, noCredit), 'aucun libellé de crédit'],
+        ...(uncredited ? [] : [[`${source} : crédit manquant`, entryIssues(id, base, noCredit), 'aucun libellé de crédit'] as [string, string[], string]]),
         [`${source} : crédit propre hors envoi manuel`, entryIssues(id, { ...base, credit: 'Quelqu’un' }, credits), 'hors envoi manuel'],
+        ...creditNegatives,
       );
     }
     const bId = multiGauge.id;
@@ -1278,21 +1341,65 @@ const EN_STATIC_CONFIGURATOR_RETIRED: boolean = (() => {
     stringById.delete(blank);
     if (accepted.length) fail(`photos produit : témoin « coloris présenté sur une fiche sans coloris » refusé (${accepted.join(' ; ')})`);
     else witnesses++;
+    // Invariants des légendes, rejoués sur des textes altérés, et témoins admis.
+    negatives.push(
+      ['légende FR « Photo : Tennis Warehouse »', captionDefects('Photo : Tennis Warehouse'), 'Tennis Warehouse nommé'],
+      ['légende EN « Photo: Tennis Warehouse Europe » et jauge', captionDefects('Photo: Tennis Warehouse Europe · gauge shown: 1.25 mm'), 'Tennis Warehouse nommé'],
+      ['légende « Photo : » vide suivie de la jauge', captionDefects('Photo : · jauge présentée : 1,25 mm'), 'sans crédit'],
+      ['légende « Photo: » seule', captionDefects('Photo:'), 'sans crédit'],
+      ['légende ouverte par « · »', captionDefects(' · coloris présenté : Black'), 'orphelin'],
+      ['légende close par « · »', captionDefects('Photo : Wilson ·'), 'orphelin'],
+      ['légende vide', captionDefects(' '), 'légende vide'],
+    );
+    for (const good of ['Jauge présentée : 1,25 mm', 'Photo : Wilson · jauge présentée : 1,25 mm', 'Colour shown: Espresso Brown']) {
+      if (captionDefects(good).length) fail(`photos produit : témoin de légende « ${good} » refusé`);
+      else witnesses++;
+    }
     for (const [name, found, needle] of negatives) {
       if (!found.some((i) => i.includes(needle))) fail(`photos produit : garde-fou muet sur « ${name} » (${needle})`);
     }
-    // Légende FR : le composant lit les deux champs et les annonce tels quels.
-    const captionIssues = (src: string): string[] => [
-      ...(/Photo : \{image\.credit \?\? productImageCredit\(image\.source\)\}/.test(src) ? [] : ['crédit propre à l\'image non lu par le composant FR']),
-      ...(/image\.shownGauge\s*&&[^\n]*jauge présentée : \{image\.shownGauge/.test(src) ? [] : ['légende « jauge présentée » absente du composant FR']),
-      ...(/image\.shownColour\s*&&[^\n]*coloris présenté : \{image\.shownColour\}/.test(src) ? [] : ['légende « coloris présenté » absente du composant FR']),
+    // Légende FR, source : le composant demande le texte à productImageCaption, qui lit le crédit (propre à
+    // l'image, sinon celui de la source), puis la jauge et le coloris présentés.
+    const captionIssues = (fig: string, lib: string): string[] => [
+      ...(/productImageCaption\(image\)/.test(fig) && /<figcaption[^>]*>\{caption\}<\/figcaption>/.test(fig) ? [] : ['légende non rendue par le composant FR']),
+      ...(/image\.credit \?\? productImageCredit\(image\.source\)/.test(lib) && /credit && `Photo : \$\{credit\}`/.test(lib) ? [] : ['crédit (propre à l\'image ou de la source) non lu pour la légende FR']),
+      ...(/image\.shownGauge && `jauge présentée : \$\{image\.shownGauge/.test(lib) ? [] : ['légende « jauge présentée » absente (FR)']),
+      ...(/image\.shownColour && `coloris présenté : \$\{image\.shownColour\}`/.test(lib) ? [] : ['légende « coloris présenté » absente (FR)']),
     ];
     const fig = readFileSync('src/components/product/product-image.tsx', 'utf8');
-    captionIssues(fig).forEach((i) => fail(`photos produit : ${i}`));
-    if (!captionIssues(fig.replace('jauge présentée', 'jauge')).length) fail('photos produit : garde-fou muet sur la légende FR retirée');
+    const lib = readFileSync('src/lib/product-images.ts', 'utf8');
+    captionIssues(fig, lib).forEach((i) => fail(`photos produit : ${i}`));
+    if (!captionIssues(fig, lib.replace(/`jauge présentée : \$\{image\.shownGauge/, '`jauge : ${image.shownGauge')).length) fail('photos produit : garde-fou muet sur la légende FR retirée');
+    if (!captionIssues(fig.replace('>{caption}</figcaption>', '></figcaption>'), lib).length) fail('photos produit : garde-fou muet sur la légende FR non rendue');
     if (failures.length === before) {
       ok(`photos produit : ${Object.keys(SOURCE_HOSTS).length} sources en liste blanche, ${witnesses} témoins acceptés, ${negatives.length + 1} tests négatifs détectés ` +
-        '(page ou image hors liste et crédit manquant pour chaque source, envois manuels : crédit propre, moteur, filigrane, marque créditée à tort ; Head et Luxilon, Babolat hors FR/US, jauge ou coloris présentés hors règle ou vides, légende et crédit FR)');
+        '(page ou image hors liste pour chaque source ; libellé de crédit vide ou absent pour chaque source créditée, crédit rétabli pour Tennis Warehouse et Tennis Warehouse Europe ; envois manuels : crédit propre, moteur, filigrane, marque créditée à tort ; Head et Luxilon, Babolat hors FR/US, jauge ou coloris présentés hors règle ou vides ; légendes nommant Tennis Warehouse, « Photo : » vide, « · » orphelin, légende vide ; légende FR)');
+    }
+  }
+  // Légendes FR rendues (exécution) : chaque photo du manifeste, rendue comme sur la fiche détail.
+  {
+    const { PRODUCT_IMAGES_ENABLED } = await import('../src/lib/product-images');
+    const { ProductImage } = await import('../src/components/product/product-image');
+    const { default: React } = await import('react');
+    (globalThis as { React?: unknown }).React ??= React; // JSX « classique » sous tsx (Next : runtime automatique)
+    const { renderToStaticMarkup } = await import('react-dom/server');
+    if (!PRODUCT_IMAGES_ENABLED) ok('légendes FR : drapeau coupé, aucune photo rendue');
+    else {
+      const bad: string[] = [];
+      const tally = { credited: 0, none: 0, reduced: 0 };
+      for (const [id, e] of Object.entries(PRODUCT_IMAGES)) {
+        const kind = racquetIds.has(id) ? 'racquet' : 'string';
+        const got = figcaptionText(renderToStaticMarkup(React.createElement(ProductImage, { kind, id, alt: id, size: 'detail', credit: true })));
+        const want = expectedCaption(e, 'fr') || null;
+        if (got !== want) bad.push(`${id} : « ${got ?? '(aucune)'} » au lieu de « ${want ?? '(aucune)'} »`);
+        captionDefects(got).forEach((d) => bad.push(`${id} : ${d}`));
+        if (got === null) tally.none++;
+        else if (got.startsWith('Photo : ')) tally.credited++;
+        else tally.reduced++;
+      }
+      if (bad.length) fail(`légendes FR : ${bad.length} défaut(s), par exemple : ${bad.slice(0, 3).join(' | ')}`);
+      else ok(`légendes FR (rendu serveur, ${Object.keys(PRODUCT_IMAGES).length} photos) : ${tally.credited} avec crédit, ${tally.none} sans légende, ` +
+        `${tally.reduced} réduite(s) à la jauge ou au coloris présentés ; aucune ne nomme Tennis Warehouse`);
     }
   }
   for (const folder of ['racquets', 'strings']) {
@@ -1313,7 +1420,7 @@ const EN_STATIC_CONFIGURATOR_RETIRED: boolean = (() => {
     readdirSync(d).flatMap((n) => (statSync(`${d}/${n}`).isDirectory() ? walk(`${d}/${n}`) : [`${d}/${n}`]));
   for (const file of walk('src').filter((f) => /\.(tsx?|mts)$/.test(f) && !allowed.has(f))) {
     const src = readFileSync(file, 'utf8');
-    if (IMAGE_HOSTS_RE.test(src) || /\/images\/products\/|PRODUCT_IMAGES|getProductImage|productImageCredit/.test(src)) {
+    if (IMAGE_HOSTS_RE.test(src) || /\/images\/products\/|PRODUCT_IMAGES|getProductImage|productImageCredit|productImageCaption/.test(src)) {
       fail(`${file} : référence directe aux photos (hotlink ou propagation hors du composant)`);
     }
   }
@@ -1327,29 +1434,38 @@ const EN_STATIC_CONFIGURATOR_RETIRED: boolean = (() => {
     const { racquets: enR, strings: enS } = buildCatalog(racquetsDatabase, stringsDatabase);
     let shown = 0;
     let captioned = 0;
+    let uncaptioned = 0;
+    let reduced = 0;
     let illustrated = 0;
     for (const [kind, list, render] of [['racquets', enR, racquetPage], ['strings', enS, stringPage]] as const) {
       for (const item of list as Array<{ id: string }>) {
         const html: string = (render as (x: unknown, i: unknown) => string)(item, images);
-        const expected = (images as Record<string, { file: string; shownGauge?: string; shownColour?: string }>)[item.id];
+        const expected = (images as Record<string, PhotoEntry>)[item.id];
         const ld = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].map((m) => m[1]).join('\n');
         if (/"image"|\/images\/products\//.test(ld)) fail(`fiche EN ${kind}/${item.id} : photo propagée dans le JSON-LD`);
         if (/og:image/.test(html)) fail(`fiche EN ${kind}/${item.id} : og:image présent`);
         if (IMAGE_HOSTS_RE.test(html)) fail(`fiche EN ${kind}/${item.id} : hotlink vers la source`);
+        if (/Photo\s*:\s*Tennis\s*-?\s*Warehouse/i.test(html)) fail(`fiche EN ${kind}/${item.id} : crédit Tennis Warehouse affiché`);
         if (expected) {
-          const credit = (expected as unknown as { credit?: string }).credit
-            ?? (PRODUCT_IMAGE_CREDITS as Record<string, string>)[(expected as unknown as { source: string }).source];
+          // Crédit déjà résolu par loadProductImages (propre à l'image, sinon libellé de la source, '' sans crédit).
+          const got = figcaptionText(html.match(/<figure[^>]*data-product-image="photo">[\s\S]*?<\/figure>/)?.[0] ?? '');
+          const want = expectedCaption(expected, 'en') || null;
+          const defects = captionDefects(got);
           if (!html.includes(`<img src="${expected.file}"`)) fail(`fiche EN ${kind}/${item.id} : photo validée non affichée`);
-          else if (!credit || !html.includes(`Photo: ${credit}`)) fail(`fiche EN ${kind}/${item.id} : crédit « Photo: ${credit} » absent`);
-          else if (expected.shownGauge && !html.includes(`gauge shown: ${expected.shownGauge} mm`)) fail(`fiche EN ${kind}/${item.id} : légende « gauge shown » absente`);
-          else if (expected.shownColour && !html.includes(`colour shown: ${expected.shownColour}`)) fail(`fiche EN ${kind}/${item.id} : légende « colour shown » absente`);
-          else { shown++; if (expected.shownGauge || expected.shownColour) captioned++; }
+          else if (got !== want) fail(`fiche EN ${kind}/${item.id} : légende « ${got ?? '(aucune)'} » au lieu de « ${want ?? '(aucune)'} »`);
+          else if (defects.length) fail(`fiche EN ${kind}/${item.id} : ${defects.join(', ')}`);
+          else {
+            shown++;
+            if (got === null) uncaptioned++;
+            if (expected.shownGauge || expected.shownColour) { captioned++; if (got && !got.startsWith('Photo: ')) reduced++; }
+          }
         } else if (!html.includes('data-product-image="illustration"')) {
           fail(`fiche EN ${kind}/${item.id} : ni photo ni illustration`);
         } else illustrated++;
       }
     }
-    ok(`fiches EN : ${shown} photo(s) affichée(s) dont ${captioned} avec la légende du produit voisin, ${illustrated} illustration(s), aucune photo en JSON-LD/og:image`);
+    ok(`fiches EN : ${shown} photo(s) affichée(s), dont ${uncaptioned} sans légende et ${captioned} avec la légende du produit voisin (${reduced} réduite(s) à elle seule), ` +
+      `${illustrated} illustration(s), aucune photo en JSON-LD/og:image, aucun crédit Tennis Warehouse`);
   }
   if (failures.length === before) {
     const n = Object.keys(PRODUCT_IMAGES).length;
