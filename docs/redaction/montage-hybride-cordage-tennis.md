@@ -7,7 +7,7 @@
 | Branche | `agent/redaction/montage-hybride-cordage-tennis` (worktree `C:\Users\plene\Documents\_wt\redac-hybride`) |
 | Ouvert le | 2026-11-23, par l'orchestrateur |
 | Demande d'origine | Pierre, 23/11/2026 : « allez chercher là dedans des idées d'articles pour le blog complémentaire à ce qui est déjà en ligne » (classeur « TSA · Idées d'articles », idée 2026-W46-2) ; puis « GO sur le montage hybride en anglais et en français » ; puis « je te laisse faire tous les arbitrages nécéssaires à la rédaction de cet article » (délégation à l'orchestrateur ; la mise en ligne reste soumise au GO de Pierre sur la PR, charte §6) |
-| Statut | PR #173 ; en attente du GO de Pierre |
+| Statut | PR #173 ouverte le 23/11/2026 · GO de Pierre le 23/11/2026 (« Allez on merge la PR ») · fusionnée le 23/11/2026 à 13:08 UTC (`12a6552`) · en ligne le 23/11/2026, vérifiée en production (§6) · relevé S+4 le 21/12/2026 avec `tsa-measure` |
 | Mise à jour planifiée | sans objet (aucune année dans le titre ni le slug de travail) |
 
 > Règles : `docs/redaction/CHARTE.md`. Déroulé : `docs/redaction/README.md`.
@@ -1352,7 +1352,38 @@ $ node scripts/qa-claims.mjs --all   → aucun AVERT sur les deux nouveaux artic
 
 ### Vérification en production (après fusion)
 
-- …
+*Relevé du 2026-11-23, de 13:10 à 13:18 UTC, après la fusion de la PR #173 (commit `12a6552`, 13:08:35 UTC). Lecture seule. Aucune soumission externe (Bing Webmaster Tools, Search Console, IndexNow, ping) : elle demande un consentement séparé de Pierre (charte §6). Pages téléchargées et script de comparaison hors dépôt (`scratchpad\acq-prod-hybride\`, `scratchpad\acq-prod-hybride-scripts\prodcheck.py`).*
+
+- [x] **Mise en ligne.** Page FR en 404 à 13:10:42 (bascule du déploiement), en 200 à 13:10:54 ; page EN en 200 dès 13:10:43. `Content-Type: text/html; charset=UTF-8` sur les deux ; les deux corps se décodent en UTF-8 strict.
+- [x] **Contenu servi = commit `12a6552`.** Dix pages comparées aux fichiers du commit : les deux articles, les deux index, les six articles retouchés. Elles sont identiques à l'analyse HTML (balises, attributs, texte), une fois neutralisée la réécriture des liens internes par la production (voir « Écart hors PR » ci-dessous). Témoin négatif : un mot changé est détecté. Les deux couvertures sont identiques à l'octet.
+  - title : FR « Cordage hybride tennis : montants, travers et fermeté », EN « Hybrid Tennis String Setup: Mains, Crosses and Firmness », ceux du dépôt.
+  - h1, sur trois lignes dans le source, lu par un analyseur HTML : FR « Cordage hybride : que mettre en montants, que mettre en travers, et quelle fermeté attendre », EN « Hybrid Tennis Strings: What Goes in the Mains, What Goes in the Crosses, and How Firm the Setup Will Be », ceux du dépôt.
+- [x] **Images.** `node scripts/qa-blog-images.mjs --url https://tennisstringadvisor.org` : exit 0, « 28/28 images répondent 200 sur https://tennisstringadvisor.org », 11 AVERT (exceptions d'autres articles, inchangées). `couverture-montage-hybride-fr.webp` et `couverture-montage-hybride-en.webp` : 200, `image/webp`. Visuels de corps : deux SVG en ligne par page (schéma et graphique), dans le HTML conforme au commit.
+- [x] **Canonical, hreflang, partage, indexabilité.** Sur chaque page :
+  - canonical = son URL en `.html` ; `og:url` = canonical ;
+  - hreflang `fr` vers la page FR, `en` vers la page EN, `x-default` vers la page FR, réciproques ;
+  - `og:image` = `twitter:image` = la couverture de la langue, 1200 × 630, avec `og:image:alt` ;
+  - `<meta name="robots" content="index, follow">`, aucun en-tête `X-Robots-Tag` ; `robots.txt` ne bloque ni `/blog/` ni `/en/blog/`.
+- [x] **JSON-LD servi**, analysé sans erreur, identique au dépôt.
+  - FR : `Organization`, `Person`, `WebSite`, `BreadcrumbList`, `Article`, `FAQPage` ; EN : les mêmes, avec `BlogPosting`.
+  - `datePublished` et `dateModified` 2026-11-23, `image` = `og:image`, `mainEntityOfPage` = canonical, auteur `#pierre-fermanian`, 10 `citation`.
+  - `FAQPage` : 4 questions sur 4, mêmes questions et mêmes réponses que la FAQ visible, dans le même ordre. EN : identiques au caractère. FR : identiques aux espaces près ; le JSON-LD porte des espaces ordinaires là où le texte visible a des espaces insécables, ce que `audit:jsonld` admet.
+- [x] **Sitemap** (`/sitemap.xml`, 200, 671 URL contre 669 avant la PR) : les deux URL, chacune une fois, avec `<lastmod>2026-11-23</lastmod>`. `cordage-mono-vs-multifilament.html` et `polyester-vs-multifilament-strings.html` portent aussi 2026-11-23. Les quatre autres articles retouchés gardent leur date (2026-10-26 et 2026-11-12), égale à leur `dateModified` : P1 et le renvoi du guide des tensions ne changeaient aucun de leurs faits.
+- [x] **Index.** `/blog/` et `/en/blog/` répondent 200 et servent leur `index.html` à l'octet.
+  - EN : la carte est la première de la page, sous « Featured Article ».
+  - FR : la carte ouvre « Tous nos articles », placement retenu à l'étape 4b (précédent du 13/11). Sur la page, onze blocs thématiques la précèdent (« Diagnostic », « Article à la Une »…) : c'est le 12e lien d'article sur 28.
+- [x] **Six articles retouchés**, servis avec leur modification :
+  - `cordage-mono-vs-multifilament.html`, l. 618 : « À l'inverse, Roger Federer jouait boyau aux montants, mono aux travers, selon Tennis.com en 2009 (qui nomme le Luxilon ALU Power Rough) et The New Yorker en 2014. » ; sources datées l. 664 ; « Mis à jour le 23 novembre 2026 » ;
+  - `/en/blog/polyester-vs-multifilament-strings.html` : « …is what Roger Federer played, according to Tennis.com in 2009 (which names Luxilon ALU Power Rough) and The New Yorker in 2014. » ; « updated November 23, 2026 » ;
+  - `cordage-polyester-tennis-elbow.html` et `/en/blog/polyester-strings-tennis-elbow.html` : la phrase P1, avec son lien vers le nouvel article ;
+  - `guide-tension-cordage-tennis.html` : « Pour choisir que mettre en montants et en travers, voir notre guide du cordage hybride. » ; `/en/blog/tennis-string-tension-guide.html` : « For what goes in the mains and the crosses, see our hybrid setup guide. »
+- [x] **Liens.** Configurateur : FR 5 liens `/configurator`, EN 6 liens `/en/configurator`, en 200 sans redirection, sans `rel` ni `referrerpolicy` (A3 intact). Tous les liens internes des deux articles, sous leur forme servie : 20 sur 20 (FR) et 23 sur 23 (EN) en 200.
+
+**Écart hors PR, antérieur, signalé pour A1.** La production réécrit les liens internes des pages statiques : `href="/blog/x.html"` et `href="x.html"` deviennent `href='/blog/x'`. C'est visible aussi sur `comparer-deux-montages-cordage-tension.html`, publié le 13/11 et non touché par la PR. `/blog/x` et `/blog/x.html` répondent tous deux 200, sans redirection, alors que canonical, hreflang et sitemap désignent `/blog/x.html`. Chaque article a donc deux URL, et ses liens internes visent celle que la canonical écarte. La cause n'est pas dans `netlify.toml` : c'est vraisemblablement l'option « Pretty URLs » du post-traitement Netlify, réglage d'interface que je n'ai pas lu. Proposition : consigner l'écart au diagnostic A1. Le choix (couper l'option, ou aligner canonical, hreflang et sitemap sur l'URL courte) touche la configuration de production et revient à Pierre, par `deploy-captain`.
+
+**Non vérifié.** L'indexation par Bing et par Google : ni Bing Webmaster Tools ni Search Console ne sont branchés, et aucune URL n'a été soumise (consentement séparé). Le rendu visuel des deux cartes d'index dans un navigateur.
+
+**Relevé S+4 : le 21/12/2026**, avec `tsa-measure` : utilisateurs humains des deux articles, passages vers le configurateur (A3), requêtes Bing si l'accès existe. À ce volume, on constate, on ne conclut pas (règle 9).
 
 ---
 
@@ -1543,3 +1574,13 @@ $ grep -rn "À SOURCER" public/blog public/en/blog | wc -l
 ```
   - Fact-check soldé (R1 à R3 appliquées). RELAIS → étape 7 : push de la branche et PR vers `main`, sans fusion.
 - 2026-11-23 · `tsa-redacteur` — étape 7 : branche poussée (`git push -u origin agent/redaction/montage-hybride-cordage-tennis`, dernier commit de contenu `20c1081`) ; PR #173 ouverte vers `main` (https://github.com/PleneufMC/Tennis-String-Advisor/pull/173), titre « feat(blog): montage hybride, montants, travers et fermeté (FR + EN) ». Corps : les deux URL, l'apport, les fichiers par groupe, les arbitrages A-1 à A-4, Q-1, Q-2, Q-6 et Q-8, les contrôles, ce qui n'est pas vérifié (SERP Google et Bing, production à l'étape 8), « À fusionner sur GO explicite de Pierre ». En-tête du dossier : statut mis à jour. Aucune fusion. RELAIS → Pierre : relecture et GO sur la PR ; puis `tsa-acquisition` : étape 8.
+- 2026-11-23 · `tsa-acquisition` — étape 8 : vérification en production après la fusion de la PR #173 (`12a6552`, 13:08:35 UTC), de 13:10 à 13:18 UTC, en lecture seule (§6, « Vérification en production »). Consentement de Pierre cité par l'orchestrateur : « Allez on merge la PR » (23/11/2026), pour la seule fusion.
+  - Les deux URL répondent 200 en UTF-8 (FR dès 13:10:54, après une 404 pendant la bascule). Les dix pages touchées sont servies conformes au commit `12a6552` ; title et h1 conformes.
+  - Images : `qa-blog-images --url` 28/28 en 200 ; couvertures identiques à l'octet.
+  - Canonical, hreflang `fr` / `en` / `x-default` et `og:image` corrects. JSON-LD analysé sans erreur ; `FAQPage` = FAQ visible, 4 sur 4.
+  - Sitemap : les deux URL et les deux articles redatés au 2026-11-23. Index EN : carte en tête de page ; index FR : en tête de « Tous nos articles », après onze blocs thématiques. Les six retouches sont servies. Liens vers le configurateur et liens internes en 200.
+  - Aucune soumission externe.
+  - Hors PR, pour A1 : la production réécrit les liens internes sans `.html`, et chaque article répond 200 à deux URL, dont celle que la canonical écarte.
+  - Relevé S+4 le 21/12/2026, avec `tsa-measure`.
+  - RELAIS → orchestrateur : ligne Statut de l'en-tête, puis PR de ce relevé ; planifier le S+4 du 21/12/2026 avec `tsa-measure`.
+- 2026-11-23 · orchestrateur — consentement de Pierre, cité mot pour mot : « Allez on merge la PR ». Fusion de la PR #173 dans `main` (commit de fusion `12a6552`, 13:08:35 UTC) ; site à jour à 13:10 UTC. Ce consentement vaut pour cette PR et rien d'autre (charte §6) : aucune soumission à Bing ni à Search Console. Étape 8 confiée à `tsa-acquisition` (entrée ci-dessus, §6) ; en-tête mis à jour. L'écart des liens réécrits sans `.html` est hors de cette PR : signalé à Pierre pour A1, rien n'est corrigé. RELAIS → `tsa-measure` et `tsa-acquisition` : relevé S+4 le 21/12/2026.
