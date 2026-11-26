@@ -3573,6 +3573,23 @@ export const stringsDatabase: TennisString[] = [
     description: 'Section octogonale, jauge 1,23 mm. Le fabricant met en avant un snapback accru par une surface plus glissante.',
     color: 'Lavender'
   },
+  // Toroline A5 (26/11/2026, demande de Pierre). Rigidité : TWU « Toroline A5 16L (1.25) » = 204,6 lb/in,
+  // https://twu.tennis-warehouse.com/learning_center/reporter2.php (POST zmaterial=all, 51 lbs, Fast), relevé du 26/11/2026 ;
+  // extrait versionné data/reference/twu-releve-2026-11-26-toroline-a5.json (contrôle 13 quinquies). Le 29/09/2026, TWU publiait
+  // la même mesure à 40 lbs seulement (écartée du lot 3) ; elle est reclassée à 51 lbs depuis. Type (Polyester) et jauge (1.25,
+  // jauge nominale TWU) : même ligne. Pas de table par jauge : elle est générée depuis le relevé complet du 29/09, qui n'a pas
+  // cette ligne. Description : fiche officielle du Cash (toroline.com, lue le 28/09/2026, lot 3). toroline.com est consigné depuis
+  // le 22/10/2026 (agents.md : Web Bot Auth) : ni prix, ni coloris, ni section, ni photo. Aucune note /10 ni tension publiées :
+  // champs absents (non comblés). A5 Tour (17/1.20) : aucune mesure TWU, non créé.
+  {
+    id: 'toroline-a5',
+    brand: 'Toroline',
+    model: 'A5',
+    type: 'Polyester',
+    gauges: ['1.25'],
+    stiffness: 204.6,
+    description: "Polyester de jauge 1,25 mm (16L). Le fabricant présente le Toroline Cash comme un dérivé de l'A5."
+  },
   {
     id: 'restring-zero',
     brand: 'ReString',

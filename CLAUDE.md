@@ -1,7 +1,7 @@
 # CLAUDE.md — Tennis String Advisor
 
-> **Version** : 2.3.44
-> **Date** : 24 novembre 2026
+> **Version** : 2.3.45
+> **Date** : 26 novembre 2026
 > **Remplace** : Custom Instructions v1.0 (janvier 2025)
 > **Destination** : racine du dépôt (`/CLAUDE.md`)
 > **Branche de référence** : `main` (seule branche longue ; la production Netlify en déploie)
@@ -342,6 +342,30 @@ identiques dans chaque langue, les 111 autres ne perdent que leur légende ; auc
 « Photo : » jamais vide, « · » jamais orphelin, légende jamais vide) ; 80 tests négatifs (53 avant), 18 témoins ; vérifié aussi
 sur la table réellement altérée (Wilson sans libellé, crédit TW rétabli : l'audit échoue). Les citations de Tennis Warehouse
 comme source de données (tests, notes, rigidités, Learning Center, articles) ne changent pas.
+
+**Changelog v2.3.44 → v2.3.45** — **Toroline A5 ajouté : 179 → 180 cordages ; mesure TWU postérieure au relevé de référence,
+extrait daté versionné, contrôle 13 quinquies** (demande de Pierre du 26/11/2026, mot pour mot : « Il manque le Toroline A5 dans les
+cordages intéressant... Je laisse l'équipe l'incorporer » ; `tsa-core`). **Constat** : le lot 3 Toroline (29/09/2026) avait écarté
+l'A5, que TWU ne publiait qu'à 40 lbs (204,6 lb/in) : seul des 503 cordages mesurés à 40 lbs sans ligne à 51 lbs. **Relevé TWU du
+26/11/2026** (formulaire de `twu-fetch-strings.mjs`, robot nommé, robots.txt, agents.md et llms.txt de l'hôte lus avant : 404 ; une
+requête à 51 lbs / Fast, une à 40 lbs pour vérifier l'ancienne ligne) : « Toroline A5 16L (1.25) » est publié à 51 lbs, Fast (204,6
+lb/in, Polyester, jauge nominale 1,25) et a disparu de la liste à 40 lbs, dont c'est la seule différence avec le 29/09 : TWU a
+reclassé la mesure. **Fiche** `toroline-a5` : Polyester, jauge 1.25, rigidité 204,6 (mesure à jauge unique) ; description réduite à
+la jauge et au lien avec le Cash (fiche officielle du Cash, lue le 28/09) ; ni prix, ni coloris, ni section, ni note /10, ni tension :
+toroline.com est consigné depuis le 22/10/2026 (agents.md : Web Bot Auth), aucune requête ; photo : illustration par défaut,
+quarantaine motivée dans `product-images-mapping.json`. **A5 Tour** (17/1.20, vendu à part chez Tennis Warehouse) : aucune ligne TWU à
+aucune tension, non créé. **Référence inchangée** : le relevé complet du 29/09 (788 enregistrements, sha256 ancré) n'est pas refait
+pour une ligne ; la mesure vit dans `data/reference/twu-releve-2026-11-26-toroline-a5.json` (en-tête, sha256 du brut de 795
+enregistrements, ligne au schéma du relevé, historique 40 → 51 lbs) ; pas de `stiffnessByGauge`, table générée depuis la référence.
+**Contrôle 13 quinquies** de `audit:ratings` : un extrait `twu-releve-AAAA-MM-JJ-<objet>.json` porte l'URL, 51 lbs / Fast, une date
+postérieure à la référence et un sha256 ; chaque ligne est au schéma, absente de la référence (sinon l'extrait est inutile et la table
+de D1 doit la reprendre) et citée par sa fiche (modèle exact, matière, jauge nominale), dont la rigidité est la mesure ; 11 tests
+négatifs. **Effet** (grille du contrôle 5, 774 montages de plus) : l'A5 donne 0 alerte standard, 66 bras sensible, 100
+`calculateCompatibility` (RA 64 à 24 kg : indice 29) ; taux 6,51 → 6,47 % et 22,93 → 22,85 % par le dénominateur ; aucune alerte
+existante ne bouge ; médiane des polyesters 216,9 → 216,6. **À reprendre par `tsa-redacteur`** : `build-rigidite-figures.mts --check`
+relève 18 écarts dans 4 articles (« polyester et tennis elbow » FR et EN, « cordage et tennis elbow », « best strings for tennis elbow »
+EN : 103 polyesters, 47 à rigidité mesurée, médiane 216,6, 180 fiches) ; `audit:comptages` : 7 avertissements « 179 » dans le blog
+(phrases datées).
 
 **Changelog v2.3.25 → v2.3.26** — **Hybrides : un seul indice, celui que l'alerte lit, que le configurateur
 affiche et que le PDF imprime ; contrôle 21 ter** (décision (b)+(a) de l'orchestrateur du 22/10/2026, Pierre ayant délégué ; limite (4)
@@ -1399,9 +1423,10 @@ configurateur EN (`/en/configurator`, 20/11/2026) et la page Premium EN (`/en/pr
 22/11/2026), routes Next qui rendent les composants FR. Le
 `route-map.ts` fait le pont entre les deux univers.
 
-**Base** : 129 raquettes, 179 cordages (`src/data/*.ts` ; 190 avant le
+**Base** : 129 raquettes, 180 cordages (`src/data/*.ts` ; 190 avant le
 nettoyage du 28/09/2026, 174 après, 181 depuis le lot 3 Toroline du 29/09/2026,
-179 depuis la fusion de deux doublons le 10/10/2026).
+179 depuis la fusion de deux doublons le 10/10/2026, 180 depuis l'ajout du
+Toroline A5 le 26/11/2026).
 
 **Écosystème** : tennismatchfinder.net (même propriétaire) référence TSA.
 ⚠️ **Corrigé le 31/08/2026** — ce site était présenté ici comme « un canal de
@@ -1447,8 +1472,8 @@ corrigé dans la même PR.
   GA4 (lit la barre d'adresse et double le page_view de chaque navigation interne ; réglage d'administration).
 - Export PDF, thème sombre, i18n FR/EN livrés.
 - Photos produit Tennis Warehouse (29/09/2026), Tennis Warehouse Europe et
-  sites officiels des fabricants (10/10 et 22/10/2026) : 75/129 raquettes, 65/179
-  cordages, hébergées chez nous, FR (140 fiches EN sur 308 comprises) ; légende
+  sites officiels des fabricants (10/10 et 22/10/2026) : 75/129 raquettes, 65/180
+  cordages, hébergées chez nous, FR (140 fiches EN sur 309 comprises) ; légende
   « Photo : <Marque> » sous les photos de fabricants, **aucun crédit** sous les photos
   Tennis Warehouse et TWE (décision de Pierre du 24/11/2026 ; provenance gardée au
   manifeste ; contrôle 12 : libellé vide pour ces deux sources seulement) ; envois
@@ -1738,7 +1763,7 @@ Le compte utilisateur héberge des agents transverses (`~/.claude/agents/`)
 antérieurs à cette équipe et qui mentionnent TSA. **Dans ce dépôt, l'équipe
 `tsa-*` fait foi** — les connaissances TSA des agents globaux datent d'un état
 antérieur du code (ils citent 104 raquettes / 165 cordages ; le réel vérifié
-est 129 / 179 (190 avant le nettoyage du 28/09/2026, 181 avant la fusion du 10/10/2026), formule TypeScript dans `advanced-rcs.ts` et
+est 129 / 180 (190 avant le nettoyage du 28/09/2026, 181 avant la fusion du 10/10/2026, 179 avant le Toroline A5 du 26/11/2026), formule TypeScript dans `advanced-rcs.ts` et
 `strings-database.ts`). Correction 13/08 : les pondérations RCS
 W_RA=0.28 / W_Cordage=0.42 / W_Tension=0.22 / W_Interaction=0.08 citées par
 `algorithm-validator` ne sont PAS introuvables — elles vivent dans
@@ -1934,4 +1959,4 @@ modèle par agent, éditer la frontmatter du fichier concerné.
 
 ---
 
-*CLAUDE.md v2.3.43 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
+*CLAUDE.md v2.3.45 — Tennis String Advisor — « Mesurer avant d'affirmer. »*
