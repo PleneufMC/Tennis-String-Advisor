@@ -1,0 +1,45 @@
+{
+ "source": "Tennis Warehouse University — String Performance Database",
+ "url": "https://twu.tennis-warehouse.com/learning_center/reporter2.php",
+ "request": "POST zbrand=all, zmaterial=all, zref_tension=23 (51 lbs), zhammer=1 (Fast), colonne « Gauge Nominal (mm) » demandée : formulaire de scripts/scraper/twu-fetch-strings.mjs, User-Agent d'agent automatisé ; robots.txt, agents.md et llms.txt de l'hôte lus avant (404 tous les trois)",
+ "retrieved": "2026-11-26",
+ "conditions": {
+  "refTensionLbs": 51,
+  "swingSpeed": "Fast",
+  "unit": "lb/in"
+ },
+ "rawSha256": "ecbdaa0739e462ff1e030a7e73cc213e486cf2e02e1aac2a760439c909480256",
+ "rawRecords": 795,
+ "rawFile": "scripts/scraper/out/twu-strings-2026-11-26-51lbs-fast.json (non versionné ; même format que twu-strings.json)",
+ "scope": "EXTRAIT : seules les lignes citées par une fiche du catalogue et absentes du relevé complet de référence (data/reference/twu-releve-complet.json, 29/09/2026). La référence n'est pas modifiée ; un futur relevé complet qui contiendra ces lignes rendra cet extrait inutile (contrôle 13 quinquies de audit:ratings).",
+ "cited": [
+  {
+   "id": "toroline-a5",
+   "twu": "Toroline A5 16L (1.25)",
+   "gauge": "1.25"
+  }
+ ],
+ "records": [
+  {
+   "name": "Toroline A5 16L (1.25)",
+   "refTensionLbs": 51,
+   "swingSpeed": "Fast",
+   "material": "Polyester",
+   "gaugeNominalMm": 1.25,
+   "stiffnessLbIn": 204.6,
+   "tensionLossPct": 28.6,
+   "spinPotential": 7.3,
+   "model": "Toroline A5",
+   "suffix": "16L (1.25)",
+   "calibre": "16L",
+   "gaugeNameMm": 1.25
+  }
+ ],
+ "history": [
+  "29/09/2026 (relevé de toutes les conditions, scripts/scraper/out/twu-protocol-all-conditions.json, non versionné) : « Toroline A5 16L (1.25) » publié à 40 lbs, Fast, SEULEMENT (204,6 lb/in, perte de tension 8,8 %, potentiel d'effet 7,3) ; seul des 503 cordages mesurés à 40 lbs sans ligne à 51 lbs ; écarté du lot 3 Toroline pour cette raison.",
+  "26/11/2026 : la ligne est publiée à 51 lbs, Fast (204,6 lb/in, perte de tension 28,6 %, potentiel d'effet 7,3) et ne figure plus à 40 lbs : requête zref_tension=18 du même jour (502 enregistrements, sha256 ab22e19d0697c0a04413a4fe66815cc3b3c859c5e525266259245a07d4799810, scripts/scraper/out/twu-strings-2026-11-26-40lbs-fast.json), dont la seule différence avec le 29/09 est le retrait de cette ligne. Lecture : TWU a reclassé la mesure à 51 lbs. Le profil dynamique publié le 29/09 (temps de contact 34 ms, déflexion 31,4 mm, force de crête 33,9 lbs, retour d'énergie 86,7 %) se situe du côté des polyesters de même rigidité mesurés à 51 lbs."
+ ],
+ "notMeasured": [
+  "Toroline A5 Tour 17 (1.20) : aucune ligne TWU le 26/11/2026, ni à 51 lbs ni à 40 lbs, ni dans la liste des cordages du formulaire."
+ ]
+}

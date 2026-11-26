@@ -2120,6 +2120,102 @@ const EN_STATIC_CONFIGURATOR_RETIRED: boolean = (() => {
 }
 
 // ---------------------------------------------------------------------------
+// 13 quinquies. MESURES TWU POSTÉRIEURES AU RELEVÉ DE RÉFÉRENCE (Toroline A5, 26/11/2026)
+// ---------------------------------------------------------------------------
+// Une fiche dont la mesure TWU n'existait pas au protocole de la base lors du relevé complet de référence (D0, 29/09/2026) peut
+// s'appuyer sur un EXTRAIT daté, versionné à part (`data/reference/twu-releve-AAAA-MM-JJ-<objet>.json`) : la référence n'est pas
+// refaite pour une ligne. Échoue si : (a) l'en-tête n'a pas l'URL, les conditions (51 lbs / Fast), une date postérieure à la
+// référence, un sha256 et un nombre d'enregistrements bruts ; (b) une ligne n'est pas au schéma du relevé (8 champs bruts puis 4
+// dérivés de l'intitulé), ou hors 51 lbs / Fast ; (c) une ligne figure déjà dans la référence (extrait devenu inutile : la table
+// par jauge de D1 doit la reprendre) ; (d) une ligne n'est citée par aucune fiche, ou une citation vise une ligne absente ; (e) la
+// fiche citante est absente, d'un autre modèle, d'une autre matière, ou la jauge citée n'est ni sa jauge ni la jauge nominale TWU ;
+// (f) sa rigidité n'est pas la mesure (règle C : la plus rigide des jauges citées). Chaque garde est rejouée sur une copie altérée.
+{
+  const before = failures.length;
+  const SP = await import('../src/data/string-stiffness-provenance');
+  const RV = await import('./scraper/twu-releve.mts');
+  type Row = Record<string, unknown> & { name: string; refTensionLbs: number; swingSpeed: string; material: string | null; gaugeNominalMm: number | null; stiffnessLbIn: number; model: string };
+  type Extract = { file: string; url?: unknown; retrieved?: unknown; conditions?: { refTensionLbs?: unknown; swingSpeed?: unknown }; rawSha256?: unknown; rawRecords?: unknown; cited?: { id: string; twu: string; gauge: string }[]; records?: Row[] };
+  const DIR = 'data/reference';
+  const EXTRACT_FILE = /^twu-releve-\d{4}-\d{2}-\d{2}-[a-z0-9-]+\.json$/;
+  const extracts: Extract[] = readdirSync(DIR).filter((n) => EXTRACT_FILE.test(n))
+    .map((n) => ({ ...(JSON.parse(readFileSync(`${DIR}/${n}`, 'utf8')) as Omit<Extract, 'file'>), file: `${DIR}/${n}` }));
+  const SV = SP.STIFFNESS_SOURCE.fullSurvey;
+  const referenceNames = new Set((JSON.parse(readFileSync(SV.file, 'utf8')).records as { name: string }[]).map((r) => r.name));
+  const FAMILY: Record<string, RegExp> = { Polyester: /^Polyester$/, 'Natural Gut': /^Gut$/, Multifilament: /^(Nylon|Polyolefin)/, Synthetic: /^(Nylon|Polyolefin)/ };
+  const fold = (x: string) => x.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/['’`]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
+  const SHAPE = [...RV.RAW_KEYS, ...RV.DERIVED_KEYS].join();
+  type Str = (typeof stringsDatabase)[number];
+  const checkExtracts = (strings: readonly Str[], list: readonly Extract[], reference: ReadonlySet<string>): string[] => {
+    const out: string[] = [];
+    const measuresByFiche = new Map<string, number[]>();
+    for (const e of list) {
+      const where = e.file;
+      if (e.url !== SP.STIFFNESS_SOURCE.url) out.push(`${where} : URL ≠ ${SP.STIFFNESS_SOURCE.url}`);
+      if (e.conditions?.refTensionLbs !== SP.STIFFNESS_SOURCE.referenceTensionLbs || e.conditions?.swingSpeed !== SP.STIFFNESS_SOURCE.swingSpeed) out.push(`${where} : conditions de l'en-tête ≠ 51 lbs / Fast`);
+      if (typeof e.retrieved !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(e.retrieved) || e.retrieved <= SV.retrieved) out.push(`${where} : date de relevé absente ou non postérieure à la référence (${SV.retrieved})`);
+      if (typeof e.rawSha256 !== 'string' || !/^[0-9a-f]{64}$/.test(e.rawSha256) || !Number.isInteger(e.rawRecords) || (e.rawRecords as number) <= 0) out.push(`${where} : sha256 ou nombre d'enregistrements bruts absent`);
+      const rows = Array.isArray(e.records) ? e.records : [];
+      const cited = Array.isArray(e.cited) ? e.cited : [];
+      if (rows.length === 0 || cited.length === 0) out.push(`${where} : extrait sans ligne ou sans citation`);
+      for (const r of rows) {
+        if (Object.keys(r).join() !== SHAPE) out.push(`${where} « ${r.name} » : champs ≠ schéma du relevé (8 bruts puis 4 dérivés)`);
+        else if (JSON.stringify(RV.DERIVED_KEYS.map((k) => r[k])) !== JSON.stringify(RV.DERIVED_KEYS.map((k) => RV.splitName(r.name)[k]))) out.push(`${where} « ${r.name} » : champs dérivés ≠ intitulé`);
+        if (r.refTensionLbs !== SP.STIFFNESS_SOURCE.referenceTensionLbs || r.swingSpeed !== SP.STIFFNESS_SOURCE.swingSpeed) out.push(`${where} « ${r.name} » : hors 51 lbs / Fast (${r.refTensionLbs} lbs, ${r.swingSpeed})`);
+        if (!(typeof r.stiffnessLbIn === 'number' && r.stiffnessLbIn > 0)) out.push(`${where} « ${r.name} » : rigidité invalide`);
+        if (reference.has(r.name)) out.push(`${where} « ${r.name} » : extrait inutile, la ligne est dans le relevé de référence (${SV.file}) : à reprendre par la table par jauge (D1)`);
+        if (!cited.some((c) => c.twu === r.name)) out.push(`${where} « ${r.name} » : ligne citée par aucune fiche`);
+      }
+      for (const c of cited) {
+        const r = rows.find((x) => x.name === c.twu);
+        if (!r) { out.push(`${where} : ${c.id} cite « ${c.twu} », absente de l'extrait`); continue; }
+        const s = strings.find((x) => x.id === c.id);
+        if (!s) { out.push(`${where} : ${c.id} absente du catalogue`); continue; }
+        if (fold(r.model) !== fold(`${s.brand} ${s.model}`)) out.push(`${c.id} : « ${c.twu} » d'un autre modèle que ${s.brand} ${s.model}`);
+        if (!FAMILY[s.type]?.test(r.material ?? '')) out.push(`${c.id} : matière TWU « ${r.material} » incompatible avec le type ${s.type}`);
+        if (!s.gauges.includes(c.gauge)) out.push(`${c.id} : jauge citée ${c.gauge} absente de la fiche (${s.gauges.join(', ')})`);
+        if (r.gaugeNominalMm == null || Math.abs(r.gaugeNominalMm - Number(c.gauge)) > 0.005) out.push(`${c.id} : jauge citée ${c.gauge} ≠ jauge nominale TWU ${r.gaugeNominalMm}`);
+        measuresByFiche.set(c.id, [...(measuresByFiche.get(c.id) ?? []), r.stiffnessLbIn]);
+      }
+    }
+    for (const [id, lbs] of measuresByFiche) {
+      const s = strings.find((x) => x.id === id);
+      if (s && s.stiffness !== Math.max(...lbs)) out.push(`${id} : rigidité ${s.stiffness} ≠ mesure TWU de l'extrait (${Math.max(...lbs)}, règle C)`);
+    }
+    return out;
+  };
+  checkExtracts(stringsDatabase, extracts, referenceNames).forEach((i) => fail(`mesures TWU postérieures : ${i}`));
+  // Tests négatifs : chaque altération doit être détectée.
+  const E0 = extracts.find((e) => e.cited?.some((c) => c.id === 'toroline-a5'));
+  if (!E0) fail('mesures TWU postérieures : extrait de toroline-a5 introuvable (data/reference/twu-releve-2026-11-26-toroline-a5.json)');
+  else {
+    const alt = (f: (e: Extract) => void): Extract[] => { const c = structuredClone(E0); f(c); return [c]; };
+    const r0 = () => E0.records![0];
+    const negatives: Array<[string, string[], string]> = [
+      ['rigidité de la fiche retouchée (+0,1)', checkExtracts(stringsDatabase.map((s) => (s.id === 'toroline-a5' ? { ...s, stiffness: s.stiffness + 0.1 } : s)), [E0], referenceNames), 'toroline-a5 : rigidité'],
+      ['ligne à 40 lbs', checkExtracts(stringsDatabase, alt((e) => { e.records![0].refTensionLbs = 40; }), referenceNames), 'hors 51 lbs / Fast'],
+      ["conditions d'en-tête à 40 lbs", checkExtracts(stringsDatabase, alt((e) => { e.conditions = { ...e.conditions, refTensionLbs: 40 }; }), referenceNames), "conditions de l'en-tête"],
+      ['date antérieure à la référence', checkExtracts(stringsDatabase, alt((e) => { e.retrieved = '2026-09-28'; }), referenceNames), 'non postérieure'],
+      ['ligne déjà dans la référence', checkExtracts(stringsDatabase, [E0], new Set([...referenceNames, r0().name])), 'extrait inutile'],
+      ['fiche citante absente', checkExtracts(stringsDatabase.filter((s) => s.id !== 'toroline-a5'), [E0], referenceNames), 'absente du catalogue'],
+      ["fiche d'un autre modèle", checkExtracts(stringsDatabase.map((s) => (s.id === 'toroline-a5' ? { ...s, model: 'A5 Tour' } : s)), [E0], referenceNames), "d'un autre modèle"],
+      ['jauge citée hors fiche', checkExtracts(stringsDatabase, alt((e) => { e.cited![0].gauge = '1.20'; }), referenceNames), 'absente de la fiche'],
+      ['ligne non citée', checkExtracts(stringsDatabase, alt((e) => { e.cited = [...e.cited!, { id: 'toroline-a5', twu: 'x', gauge: '1.25' }]; e.records = [...e.records!, { ...r0(), name: 'Toroline A5 17 (1.20)', suffix: '17 (1.20)', calibre: '17', gaugeNameMm: 1.2 }]; }), referenceNames), 'citée par aucune fiche'],
+      ['champ dérivé faux', checkExtracts(stringsDatabase, alt((e) => { e.records![0].model = 'Toroline A5X'; }), referenceNames), 'champs dérivés'],
+      ['matière incompatible', checkExtracts(stringsDatabase.map((s) => (s.id === 'toroline-a5' ? { ...s, type: 'Natural Gut' as const } : s)), [E0], referenceNames), 'matière TWU'],
+    ];
+    for (const [name, found, needle] of negatives) {
+      if (!found.some((i) => i.includes(needle))) fail(`mesures TWU postérieures : garde-fou muet sur « ${name} » (${needle})`);
+    }
+    if (failures.length === before) {
+      const lines = extracts.flatMap((e) => (e.records ?? []).map((r) => `« ${r.name} » ${r.stiffnessLbIn} lb/in (${e.retrieved})`));
+      ok(`mesures TWU postérieures : ${extracts.length} extrait(s) daté(s) hors référence, ${lines.length} ligne(s) (${lines.join(', ')}), 51 lbs / Fast, ` +
+        `absentes de ${SV.file}, chacune citée par sa fiche (modèle exact, matière, jauge nominale), rigidité = mesure ; ${negatives.length} tests négatifs détectés`);
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
 // 14. RAQUETTES — AVIS DE TESTEURS (09/10/2026 ; affiché seul depuis le 10/10/2026)
 // ---------------------------------------------------------------------------
 // Garde trois choses : (a) aucun avis n'est appliqué à une fiche dont les specs
