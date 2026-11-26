@@ -60,15 +60,15 @@ const BLOG_ARTICLES: Array<{ slug: string; modified: string }> = [
   { slug: 'guide-tension-cordage-tennis.html', modified: '2026-11-12' },
   // Satellite du guide : même consigne, tamis différent (13/11/2026)
   { slug: 'comparer-deux-montages-cordage-tension.html', modified: '2026-11-13' },
-  { slug: 'cordage-tennis-elbow.html', modified: '2026-10-26' },
-  { slug: 'guide-materiel-tennis.html', modified: '2026-10-26' },
+  { slug: 'cordage-tennis-elbow.html', modified: '2026-11-26' },
+  { slug: 'guide-materiel-tennis.html', modified: '2026-11-26' },
   { slug: 'analyse-setups-atp-top-20.html', modified: '2026-10-22' },
   { slug: 'nouveautes-equipement-tennis-2025-2026.html', modified: '2026-10-23' },
   { slug: 'cordage-terre-battue.html', modified: '2026-10-23' },
   { slug: 'challengers-sinner-alcaraz-2026.html', modified: '2026-10-22' },
   { slug: 'actualite-materiel-tennis-2026-guerre-du-spin.html', modified: '2026-10-26' },
   // Phrase Federer sourcée dans la PR du montage hybride (23/11/2026).
-  { slug: 'cordage-mono-vs-multifilament.html', modified: '2026-11-23' },
+  { slug: 'cordage-mono-vs-multifilament.html', modified: '2026-11-26' },
   { slug: 'cordage-tennis-chaleur.html', modified: '2026-10-26' },
   { slug: 'tension-cordage-hiver.html', modified: '2026-10-26' },
   { slug: 'raquette-point-fort-ou-point-faible.html', modified: '2026-10-23' },
@@ -76,13 +76,13 @@ const BLOG_ARTICLES: Array<{ slug: string; modified: string }> = [
   { slug: 'materiel-next-gen-fonseca-mensik-cobolli-jodar.html', modified: '2026-10-23' },
   { slug: 'combien-de-temps-dure-un-cordage.html', modified: '2026-11-21' },
   // Classement polyester 2026 (09/10/2026), appairé en hreflang.
-  { slug: 'meilleur-cordage-polyester-2026.html', modified: '2026-10-26' },
+  { slug: 'meilleur-cordage-polyester-2026.html', modified: '2026-11-26' },
   // Meilleures raquettes 2026 par profil (09/10/2026), appairé en hreflang.
   { slug: 'meilleures-raquettes-tennis-2026.html', modified: '2026-10-23' },
   // Polyester et tennis elbow, tri par rigidité (09/10/2026), appairé en hreflang.
-  { slug: 'cordage-polyester-tennis-elbow.html', modified: '2026-10-26' },
+  { slug: 'cordage-polyester-tennis-elbow.html', modified: '2026-11-26' },
   // Montage hybride, montants et travers (23/11/2026), appairé en hreflang.
-  { slug: 'montage-hybride-cordage-tennis.html', modified: '2026-11-23' },
+  { slug: 'montage-hybride-cordage-tennis.html', modified: '2026-11-26' },
 ];
 
 // Pages anglaises statiques publiques (`public/en/*.html`).
@@ -113,7 +113,7 @@ const EN_BLOG_ARTICLES: Array<{ slug: string; modified: string }> = [
   { slug: 'tennis-string-gauge.html', modified: '2026-10-23' },
   { slug: 'tennis-string-pattern.html', modified: '2026-10-23' },
   // Phrase Federer sourcée dans la PR du montage hybride (23/11/2026).
-  { slug: 'polyester-vs-multifilament-strings.html', modified: '2026-11-23' },
+  { slug: 'polyester-vs-multifilament-strings.html', modified: '2026-11-26' },
   { slug: 'tennis-string-tension-guide.html', modified: '2026-11-12' },
   // Adapté du FR comparer-deux-montages-cordage-tension (13/11/2026), appairé en hreflang.
   { slug: 'compare-two-string-setups-same-tension.html', modified: '2026-11-13' },
@@ -126,19 +126,19 @@ const EN_BLOG_ARTICLES: Array<{ slug: string; modified: string }> = [
   // /blog/combien-de-temps-dure-un-cordage.html.
   { slug: 'how-long-do-tennis-strings-last.html', modified: '2026-11-21' },
   // Adapté du FR meilleur-cordage-polyester-2026 (09/10/2026), appairé en hreflang.
-  { slug: 'best-polyester-tennis-strings-2026.html', modified: '2026-10-26' },
+  { slug: 'best-polyester-tennis-strings-2026.html', modified: '2026-11-26' },
   // Adapté du FR tension-cordage-hiver (09/10/2026), appairé en hreflang.
   { slug: 'tennis-string-tension-cold-weather.html', modified: '2026-10-26' },
   // Adapté du FR cordage-tennis-elbow (09/10/2026), réécrit sur le catalogue, appairé en hreflang.
-  { slug: 'best-tennis-strings-for-tennis-elbow.html', modified: '2026-10-26' },
+  { slug: 'best-tennis-strings-for-tennis-elbow.html', modified: '2026-11-26' },
   // Adapté du FR meilleures-raquettes-tennis-2026 (09/10/2026), appairé en hreflang.
   { slug: 'best-tennis-racquets-2026.html', modified: '2026-10-23' },
   // Adapté du FR cordage-polyester-tennis-elbow (09/10/2026), appairé en hreflang.
-  { slug: 'polyester-strings-tennis-elbow.html', modified: '2026-10-26' },
+  { slug: 'polyester-strings-tennis-elbow.html', modified: '2026-11-26' },
   // Adapté du FR cordage-terre-battue (12/11/2026), appairé en hreflang.
   { slug: 'tennis-strings-for-clay-courts.html', modified: '2026-11-12' },
   // Adapté du FR montage-hybride-cordage-tennis (23/11/2026), appairé en hreflang.
-  { slug: 'hybrid-tennis-string-setup.html', modified: '2026-11-23' },
+  { slug: 'hybrid-tennis-string-setup.html', modified: '2026-11-26' },
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {

@@ -66,7 +66,7 @@ type Lang = 'fr' | 'en';
 const EXAMPLE = { ra: 64, kg: 24 };
 const SOFT_N = 15; // « les plus souples » (section 2) : les 15 plus souples des polyesters dont la rigidité de la fiche est une mesure TWU (P4)
 const ZONE_FIRM_MIN = 240; // « les plus fermes » : 240 lb/in ou plus (section 3)
-const AS_OF = { fr: '26 octobre 2026', en: 'October 26, 2026' }; // date de relevé affichée (F11) : à mettre à jour avec la base
+const AS_OF = { fr: '26 novembre 2026', en: 'November 26, 2026' }; // date de relevé affichée (F11) : à mettre à jour avec la base
 
 const NB = '&nbsp;';
 const TARGETS = [
