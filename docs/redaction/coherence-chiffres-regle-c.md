@@ -39,8 +39,8 @@ Faits recalculés par le rédacteur à partir de la base de la branche (fonction
 
 | # | Énoncé | Valeur | Niveau | Source | Consulté le | Extrait verbatim (25 mots au plus) | Recoupement | Base TSA | Statut |
 |---|---|---|---|---|---|---|---|---|---|
-| F1 | Effectif du catalogue des cordages | 179 fiches : 102 polyesters, 45 multifilaments, 16 synthétiques, 9 hybrides, 7 boyaux | BASE | `src/data/strings-database.ts` (branche de la PR #110) | 2026-10-10 | — | CLAUDE.md §1 (179) | oui | confirmé (recalculé) |
-| F2 | Rigidité des polyesters | de 164,6 (Toroline O-Toro Snap) à 286,9 (Luxilon 4G) lb/in ; médiane 220 (valeurs centrales 220 et 220) | BASE | idem (tête `0001f9f` : pile rigidités #110, #113, #115, #118) | 2026-10-10 | — | PR #118 § 6 (220 ; 286,9) | oui | confirmé (recalculé) |
+| F1 | Effectif du catalogue des cordages | ~~179 fiches : 102 polyesters~~, 45 multifilaments, 16 synthétiques, 9 hybrides, 7 boyaux. *Mis à jour le 26/11/2026 par `tsa-pigiste` (Toroline A5 ajouté par la PR #177 ; fact-check de la PR #178, sorties P1 et P2 au §5)* : **180 fiches : 103 polyesters**, 45 multifilaments, 16 synthétiques, 9 hybrides, 7 boyaux | BASE | `src/data/strings-database.ts` (branche de la PR #110) ; au 26/11 : branche de la PR #178, tête `4a365d5` | 2026-10-10 ; 2026-11-26 | — | CLAUDE.md §1 (179) ; au 26/11 : CLAUDE.md §5 bis (180) | oui | confirmé (recalculé ; mis à jour le 26/11) |
+| F2 | Rigidité des polyesters | de ~~164,6 (Toroline O-Toro Snap)~~ à 286,9 (Luxilon 4G) lb/in ; ~~médiane 220 (valeurs centrales 220 et 220)~~. *Mis à jour le 26/11/2026 par `tsa-pigiste` (sorties P1, P2 et P3 au §5)* : de **154,9** (Yonex Poly Tour Air) à 286,9 (Luxilon 4G) ; médiane **216,6** (52e des 103 valeurs, Toroline O-Toro Tour). Entre-temps : 216,9 du 26/10/2026 (lot P6, `b88bacd`) au 26/11/2026 (moyenne des 51e et 52e des 102 valeurs) | BASE | idem (tête `0001f9f` : pile rigidités #110, #113, #115, #118) ; au 26/11 : tête `4a365d5` | 2026-10-10 ; 2026-11-26 | — | PR #118 § 6 (220 ; 286,9) | oui | confirmé (recalculé ; mis à jour le 26/11) |
 | F3 | Polyesters à 200 lb/in ou moins ; à 240 lb/in ou plus ; entre les deux | 15 ; 21 ; 66 | BASE | idem | 2026-10-10 | — | PR #118 § 6 (15 ; 21) | oui | confirmé (recalculé) |
 | F4 | Rigidité des multifilaments | de 143 (Ashaway Dynamite Natural) à 180 (Head RIP Control) lb/in ; médiane 162,3 | BASE | idem | 2026-10-10 | — | PR #118 § 6 (162,3) | oui | confirmé (recalculé) |
 | F5 | Autres familles | hybrides 158–192 (médiane 175) et boyaux 88–100 (95) inchangés ; synthétiques 165–185,2 (180) : le maximum passe de 185 à 185,2 (Wilson Synthetic Gut Extreme, alignée sur TWU) | BASE | idem | 2026-10-10 | — | PR #118 § 6 (185,2) | oui | confirmé (recalculé) |
@@ -53,11 +53,11 @@ Faits recalculés par le rédacteur à partir de la base de la branche (fonction
 | F12 | Les 18 polyesters à avis de testeurs : 7 sont désormais alignés sur TWU (Lynx Tour 228,6 · Mach-10 222,3 · Hyper-G 218,3 · X-Perience 224,6 · RPM Team 280,6 · 4G 286,9 · O-Toro 165,7). Rangs de souplesse sur 18 (égalité de rigidité départagée par l'ordre alphabétique) : O-Toro 1er, Poly Tour Rev 2e, ReString Zero 3e, Head Hawk Touch 4e, Völkl Cyclone 5e, Hyper-G 6e, Poly Tour Pro 7e, Mach-10 8e, X-Perience 9e, Lynx Tour 10e, ALU Power 11e, RPM Rough 12e, RPM Blast 13e, Confidential 14e, Weiss Cannon Ultra Cable 15e, Tour Bite 16e, RPM Team 17e, 4G 18e ; rigidité moyenne 230,4 (230,39). Rangs de confort inchangés : Mach-10 1er, Poly Tour Pro 2e, O-Toro 3e, Poly Tour Rev 4e, quatre ex aequo au 5e (Hawk Touch, ReString Zero, Cyclone, Lynx Tour), Hyper-G 9e | — | BASE | `string-stiffness-provenance.ts` (7 des 18 en « appliquee ») ; `tester-ratings.ts` | 2026-10-10 | — | PR #118 § 6 (mêmes rangs et moyenne) | oui | confirmé (recalculé) |
 | F13 | La rigidité d'un hybride prémonté est propre au set, sans source, et n'est pas recalculée quand un composant est aligné sur une mesure | — | BASE | PR #110 § 7 (« Hybrides pré-montés ») | 2026-10-10 | — | — | oui | confirmé ; voir Q-1 |
 | F24 | Head Lynx Tour, cordage de l'exemple des articles « meilleures raquettes » et « next gen » | 228,6 lb/in : mesure TWU de la jauge 1.30 (1.25 = 217,7 ; 2 jauges sur 3 mesurées) ; 210 avant le lot 3 | L1 + BASE | `string-stiffness-provenance.ts` (« appliquee », règle plus-rigide) | 2026-10-10 | — | PR #118 § 6 | oui | confirmé (recalculé) |
-| F25 | Fiches dont la rigidité est alignée sur une mesure TWU (définition du † et des points cerclés) | 48 sur 179 : 36 polyesters sur 102 (28 « appliquee » + 8 Toroline signalées par un commentaire « Rigidité : TWU » de la base), 11 multifilaments sur 45, 1 synthétique sur 16 ; aucun boyau ni hybride | BASE | `string-stiffness-provenance.ts` ; commentaires de `strings-database.ts` | 2026-10-10 | — | PR #118 § 6 (19 polyesters avant le lot 3) | oui | confirmé (recalculé) |
+| F25 | Fiches dont la rigidité est alignée sur une mesure TWU (définition du † et des points cerclés) | ~~48 sur 179 : 36 polyesters sur 102 (28 « appliquee » + 8 Toroline signalées par un commentaire « Rigidité : TWU » de la base), 11 multifilaments sur 45~~, 1 synthétique sur 16 ; aucun boyau ni hybride. *Mis à jour le 26/11/2026 par `tsa-pigiste` (sorties P1 et P2 au §5)* : **63 sur 180** : **47 polyesters sur 103** (38 « appliquee » + 9 Toroline par commentaire, dont `toroline-a5`), **15 multifilaments sur 45**, 1 synthétique sur 16 ; aucun boyau ni hybride. Réserve R-A5-1 (§5) : `tsa-core` ne compte pas Toroline Absolute comme mesurée (Q-3 du dossier `montage-hybride-cordage-tennis`, 23/11/2026) ; à sa définition, 46 polyesters et 62 fiches | BASE | `string-stiffness-provenance.ts` ; commentaires de `strings-database.ts` | 2026-10-10 ; 2026-11-26 | — | PR #118 § 6 (19 polyesters avant le lot 3) | oui | confirmé (recalculé) |
 | F26 | Écart entre le polyester le plus rigide (4G, 286,9) et le plus souple (O-Toro Snap, 164,6) | 13,3 points avant arrondi ; 13 à RA 60, 14 à RA 65, 13 à RA 70 (donc « 13 à 14 points » quelle que soit la raquette) | BASE | `calculateRCS` | 2026-10-10 | — | PR #118 § 6 (14 points à RA 65) | oui | confirmé (recalculé) |
 | F27 | Leviers autour du Luxilon 4G (RA 65, 22 kg) | 4G = 38 ; O-Toro 24 (−14) ; cadre RA 60 : 36 ; cadre RA 70 : 39 ; 18 kg : 36 (−2) | BASE | `calculateRCS` | 2026-10-10 | — | PR #118 § 6 | oui | confirmé (recalculé) |
 | F28 | Plages des listes (RA 65 / RA 70, 22 kg) | 21 polyesters à 240 ou plus : 32 à 38 à RA 65 (groupes : 32 × 2, 33 × 7, 34 × 6, 35 × 3, 36, 37, 38), 34 à 39 à RA 70 (17 sur 21 à 35 ou plus) ; 15 polyesters à 200 ou moins : 23 à 26 (RA 60), 24 à 28 (RA 65), 26 à 30 (RA 70) | BASE | `calculateRCS` | 2026-10-10 | — | — | oui | confirmé (recalculé) |
-| F29 | Yonex Poly Tour Pro | 220 lb/in, exactement la médiane des 102 polyesters (51e et 52e valeurs à 220) ; 7e plus souple des 18 | BASE | idem | 2026-10-10 | — | — | oui | confirmé (recalculé) |
+| F29 | Yonex Poly Tour Pro | 220 lb/in, ~~exactement la médiane des 102 polyesters (51e et 52e valeurs à 220)~~ ; 7e plus souple des 18. *Mis à jour le 26/11/2026 par `tsa-pigiste` (sortie P1 au §5), pour la phrase « près de la médiane des 103 polyesters du catalogue, 216,6 »* : 220 lb/in, rigidité de fiche non alignée sur TWU, 3,4 lb/in au-dessus de la médiane des 103 polyesters (216,6), 55e à 58e des 103 valeurs ; le rang parmi les 18 n'est pas revérifié (hors PR #178) | BASE | idem | 2026-10-10 | — | — | oui | confirmé (recalculé) |
 | F30 | Raquettes : indice avec le Head Lynx Tour (228,6) à 22 kg | RA 59 : 29 · RA 61–62 : 30 · RA 63–65 : 31 · RA 66–68 : 32 · RA 69 : 33 ; chaque indice monte de 2 par rapport à l'exemple à 210 ; 9 raquettes sur 18 (RA 66 ou plus) atteignent 32 (seuil « bras sensible »), aucune n'atteint 35 | BASE | `calculateRCS` ; `src/lib/advanced-rcs.ts` (seuils 32 et 35) | 2026-10-10 | — | PR #118 § 6 (colonne RCS « environ +2 ») | oui | confirmé (recalculé) |
 | F31 | Article next gen, tableau 3 (22 / 24 / 26 kg ; seuil 35 en kg) | VCORE 98 + Poly Tour Strike (RA 64, 215) : 29 / 30 / 31, seuil 33 kg · Blade 98 18×20 V9 + ALU Power (RA 62, 230) : 30 / 31 / 32, seuil 31 kg · Speed MP + Lynx Tour (RA 61, 228,6) : 30 (29,85) / 31 (30,85) / 32 (31,85), seuil 32 kg (36 kg avec 210) ; plage des neuf cases : 29 à 32 | BASE | `calculateRCS` (valeurs avant arrondi : formule du site) | 2026-10-10 | — | — | oui | confirmé (recalculé) |
 
@@ -1101,6 +1101,150 @@ Deux pages ouvertes, une requête (GET) chacune, aucune seconde tentative ; ni r
 
 **Conforme.** Les valeurs et phrases touchées par la reprise du rédacteur sont confirmées à la décimale, en FR et en EN : 288 valeurs au vérificateur et 288 lignes relues sans tolérance, 1 457 + 685 contrôles stricts, 0 écart de chiffre, le contrôle du rédacteur (`--check`) et les trois audits au vert. Les corrections C-1 à C-4 et les observations O-1 à O-4 sont soldées par des faits ; les formulations nouvelles sont défendues. Une retouche de mot hors diff est demandée (K-1). Les 53 baisses du lot 3 relèvent de Pierre, pas du texte : le sens est celui de la prudence, et le tableau D-1 résiduel donne les huit blocs à refaire s'il les applique. Rien ne se publie sans le GO de Pierre.
 
+### Fact-check circuit court du 2026-11-26 (PR #178, Toroline A5) — `tsa-pigiste`
+
+*Worktree `redac-chiffres-a5`, branche `agent/redaction/chiffres-toroline-a5`, tête `4a365d5` (copie de travail propre au départ). Demande de Pierre du 26/11/2026, mot pour mot : « Il manque le Toroline A5 dans les cordages intéressant... Je laisse l'équipe l'incorporer ». PR #177 (`a572303`) : fiche `toroline-a5`, polyester, jauge 1,25, 204,6 lb/in (TWU, `reporter2.php`, 51 lbs, Fast, relevé du 26/11/2026 ; extrait versionné `data/reference/twu-releve-2026-11-26-toroline-a5.json`, ligne « Toroline A5 16L (1.25) | 204.6 »). Périmètre : les valeurs que la PR #178 touche dans les articles de ce dossier (polyester et tennis elbow, cordage et tennis elbow, meilleur polyester 2026, guide du matériel), dans mono contre multifilament et dans les deux index du blog, et leur voisinage immédiat. L'article « montage hybride » est vérifié dans son dossier. Je ne modifie pas les articles.*
+
+**Méthode.** Mes scripts, hors dépôt, n'importent ni n'exécutent `build-rigidite-figures.mts` (lu seulement pour les définitions : polyesters = `type: 'Polyester'` ; « alignée TWU » = provenance `appliquee` ou commentaire « Rigidité : TWU « marque modèle chiffre » » ; familles = fiches classables ; médiane arrondie au dixième ; montage de référence RA 64, 24 kg) :
+- **P1** `recalc.py` : base lue comme du texte, commentaires rattachés à leur entrée, `calculateRCS` et `setupFirmnessIndex` réimplantés ;
+- **P2** `recalc-moteur.mts` : base et moteur du site importés, pour falsifier P1 ;
+- **P3** `medianes-historiques.py` : effectifs et médianes à des commits datés (`git show`), pour les passages datés ;
+- **pages.py** : occurrences des valeurs touchées, FR contre EN, et FAQ visible contre `FAQPage`.
+
+P1 et P2 concordent sur chaque chiffre. Scripts et sorties : `C:\Users\plene\AppData\Local\Temp\claude\9519414f725d5b3e\cbc91433-ac54-48b8-b83a-537568efd73b\scratchpad\pig-a5\`.
+
+| Article(s) | Valeur | Attendu (P1 = P2) | Affiché | Verdict |
+|---|---|---|---|---|
+| polyester et tennis elbow, FR et EN (title, meta, og, twitter, JSON-LD, H1, chapô, liste, sommaire FR, H2, texte, figure, FAQ, encadré) | 46 → **47** polyesters à rigidité mesurée par TWU | 47 (définition de l'article) ; 46 sans Toroline Absolute | 47 partout (FR 21 occurrences, EN 21, plus le sommaire FR) | CONFORME, réserve **R-A5-1** |
+| idem, et cordage et tennis elbow (tableau des familles, figure) | 102 → **103** polyesters | 103 | 103 | CONFORME |
+| polyester et tennis elbow, cordage et tennis elbow, guide, mono contre multi, meilleur polyester (phrase Poly Tour Pro), FR et EN | médiane 216,9 → **216,6** lb/in | 216,6 (52e des 103 valeurs) | 216,6 dans toutes les phrases non datées ; marqueurs des deux figures aux abscisses 316,1 et 427,6, calcul refait | CONFORME |
+| idem | indice du polyester médian : 31 à 24 kg, 30 à 22 kg, 29 à 20 kg (RA 64) ; 28 en RA 57, 29 en RA 58, 32 en RA 69 (guide) ; −6 points avec l'O-Toro, −1 pour 2 kg | 31 / 30 / 29 ; 28 / 29 / 32 ; 6 ; 1 (avant arrondi 30,57 à 24 kg) | idem | CONFORME (inchangés à raison) |
+| cordage et tennis elbow, FR et EN | 179 → **180** fiches (tableau, sources, figure) ; « 62 des 179 » → **« 63 des 180 »** (47 polyesters, 15 multifilaments, 1 synthétique) | 180 ; 63 = 47 + 15 + 1 | idem | CONFORME, réserve R-A5-1 |
+| polyester et tennis elbow, figure | légende « indice < 32 » 66 → **67** ; « 56 autres » | 67 = 103 − 36 ; 56 = 103 − 47 | 67 ; 56 | CONFORME |
+| idem | point de l'A5 : 204,6, cerclé (mesure TWU), abscisse 267,1 | 204,6 ; aligné ; 267,08 | idem | CONFORME |
+| guide du matériel | « Explorez 180 cordages (état au 26 novembre 2026) » | 180 | 180 | CONFORME |
+| index du blog, FR et EN | titre 46 → 47 ; résumé 36 → 47 | 47 | 47 | CONFORME, réserve R-A5-1 |
+| toutes | dates d'état au 26/11/2026, date visible, `dateModified`, `article:modified_time` (FR « cordage et tennis elbow »), sitemap (11 entrées) | base inchangée de `b88bacd` (26/10) à `a572303` (26/11), A5 excepté | 26/11/2026 partout | CONFORME |
+
+**Voisinage, phrases non touchées.** Toutes vraies au 26/11 :
+- les 15 plus souples, de 154,9 à 201,2 lb/in : l'A5 est 18e des 47, derrière Luxilon Adrenaline Rough (202,9) et Head Hawk Power (203,5) ;
+- 18 polyesters à 240 lb/in ou plus ;
+- seuil 32 dès 225,1 lb/in (36 polyesters), seuil 35 dès 252,6 (7) ;
+- écart de 14 à 15 points entre le plus souple et le plus rigide en RA 59, 64 et 69 ;
+- l'A5 donne 29 (Standard) au montage de référence, sous 32 et 35 ;
+- Poly Tour Pro « près de la médiane » (+3,4 lb/in) ;
+- « 45 multifilaments », médiane 162.
+
+FR et EN concordent, occurrence pour occurrence. FAQ visible et `FAQPage` identiques mot pour mot sur les huit réponses touchées.
+
+**Passages datés, vérifiés à leur date (P3)** :
+- « état au 26 octobre 2026 » (polyester et tennis elbow : tableau des 15, 18 à 240 ou plus ; cordage et tennis elbow : tableau des cordages comparés ; meilleur polyester : FAQ et encadré, 216,9) : exacts (`b88bacd` : 102 polyesters, médiane 216,9) ;
+- « état au 23 octobre 2026 » (cordage et tennis elbow, FAQ « À quelle tension », 220 et 162,9) : exacts (`e89978b` et `d54be72` : 220 et 162,9) ;
+- « état au 22 octobre 2026 » (18 polyesters notés, point de départ des leviers) : non touchés par l'A5 ;
+- **sauf N-1 ci-dessous**.
+
+**Non-conformités, pour `tsa-redacteur`.** Toutes antérieures à la PR #178, mais dans des articles qu'elle touche, sur les valeurs qu'elle change ou sur leur date.
+- **N-1** · mono contre multifilament, FR l. 551 et EN l. 292 : « la rigidité médiane des 45 multifilaments du catalogue est de 162,9 lb/in, contre 220 pour les 102 polyesters (état de la base au 21 octobre 2026) ».
+  - Fait : faux à sa date. Le 21/10, la médiane des multifilaments était 162,3 (P3 à `7a27b1b` ; c'est la valeur que `0cb71f9` écrivait ce jour-là). 162,9 date du 23/10 (Kirschbaum, `e89978b`) et a été reportée dans cette phrase par `941cdce` sans changer la date.
+  - La même page donne ailleurs 162 et 216,6, non datés.
+  - Correction recommandée : FR « la rigidité médiane des 45 multifilaments du catalogue est de 162&nbsp;lb/in, contre 216,6 pour les 103 polyesters (état de la base au 26&nbsp;novembre&nbsp;2026) » ; EN « the 45 multifilaments in the catalogue have a median stiffness of 162 lb/in, against 216.6 for the 103 polyesters (database as of November 26, 2026) ».
+  - Autre possibilité : garder le 21 octobre et écrire 162,3.
+- **N-2** · mono contre multifilament, sources, FR l. 663 et EN l. 465 : « rigidités et indices RCS cités, état au 23 octobre 2026 » · « as of October 23, 2026 ».
+  - Fait : les valeurs citées (216,6 ; 162 ; indices 31, 29, 25, 17) sont celles du 26/11. Le 23/10, la base donnait 220 et 162,9 (P3). La date est fausse depuis le lot P6 du 26/10.
+  - Correction : « état au 26 novembre 2026 » · « as of November 26, 2026 ».
+- **N-3** · meilleur polyester 2026, sources, FR l. 456 et EN l. 379 : « rigidités et notes /10 des fiches cordages, état du 10 octobre 2026 » · « as of October 10, 2026 ».
+  - Fait : la phrase du Poly Tour Pro, non datée, cite maintenant 103 polyesters et 216,6 (26/11). Le 10/10, la médiane était 220 (F2). Les autres valeurs de la page n'ont pas changé depuis le 26/10 : la base est restée la même, A5 excepté.
+  - Correction : « état du 26 novembre 2026 » · « as of November 26, 2026 » ; les passages datés du 26/10 gardent leur propre date.
+  - Autre possibilité : dater la seule phrase du Poly Tour Pro.
+
+**Réserve R-A5-1, pour `tsa-core` (arbitrage), puis `tsa-redacteur`.** Elle est antérieure à la PR #178.
+- Les articles « polyester et tennis elbow », « cordage et tennis elbow » et les index comptent **47** polyesters « à rigidité mesurée par TWU ». L'article « montage hybride » en compte **46** pour la même notion.
+- L'écart d'une unité est Toroline Absolute (180,6 lb/in, 6e des « 15 plus souples »). Sa ligne TWU n'a pas de jauge nominale. Pour `tsa-core` (Q-3 du dossier hybride, 23/11/2026), elle n'est donc pas mesurée. `alignedOnTwu` de `build-rigidite-figures.mts` la compte pourtant, sans l'exclusion de Q-3.
+- Le +1 de l'A5 est juste dans les deux définitions : sa ligne porte la jauge nominale 1,25, celle de la fiche.
+- Si `tsa-core` étend Q-3 à tout le site, les articles doivent changer ainsi (P1, § F) :
+  - 47 → **46** ;
+  - Toroline Absolute sort des 15 plus souples et Luxilon Adrenaline Rough (202,9) entre en 15e ; « 154,9 à 201,2 » devient « 154,9 à 202,9 » ;
+  - « 56 autres » → **57** ;
+  - « 63 des 180 » → **62** (46 polyesters) ;
+  - 46 points cerclés sur la figure ;
+  - la ligne « Mise à jour du 26 novembre 2026 » du changelog d'article.
+- L'écart était déjà relevé le 23/11 par `tsa-acquisition` (46 contre 45, « hors périmètre »).
+
+**Observations non bloquantes.**
+- **O-A5-1** · cordage et tennis elbow, FR et EN, FAQ « À quelle tension » (visible et `FAQPage`), datée du 23/10 (220 ; 162,9). Elle est exacte, mais voisine dans la même page de 216,6 et 162 datés du 26/11.
+  - Alignement possible : « polyester médian (216,6 lb/in) » et « multifilament médian (162 lb/in) », date au 26/11/2026.
+  - Les indices ne bougent pas : 31 → 29 à 20 kg ; boyau 17 → 15 ; 4G 38 → 36 ; 162 → 25.
+- **O-A5-2** · meilleur polyester 2026, FR et EN : la FAQ et l'encadré datés du 26/10 (216,9) côtoient la phrase du Poly Tour Pro (216,6). Alignement possible : 216,6, date au 26/11, indice 31 inchangé.
+- **O-A5-3** · hors PR, non touchés, exacts à leur date du 26/10 (216,9 ; 162) :
+  - `cordage-tennis-chaleur`, `tension-cordage-hiver` ;
+  - leurs versions EN, `tennis-strings-heat-tension` et `tennis-string-tension-cold-weather`.
+
+  `cordage-terre-battue` : « 40 des 102 polyesters (état au 21 octobre 2026) », et 9 au seuil 35, exacts au 21/10 (P3).
+- **O-A5-4** · le bloc `valeurs-produit` de ce dossier n'est pas repris depuis le 10/10 : 47 écarts, tous antérieurs à l'A5 ; aucun ne porte sur l'A5 ni sur la médiane. Je ne les touche pas. Liste :
+  - 36 indices au Head Extreme Standard à 22 kg, chacun 1 point sous la base : le RA de la fiche est passé de 65 à 66 le 23/10/2026 (`d54be72`). 8 de ces lignes portent aussi sur un cordage dont la rigidité a changé ;
+  - 2 indices du Yonex Poly Tour Air, avec la Head Gravity Team (26 contre 21) et l'Instinct PWR 115 (29 contre 25) ;
+  - 8 rigidités. Lot P6 du 26/10 : Poly Tour Air 195 → 154,9 (deux lignes), Poly Tour Tough 245 → 193,7, Tour Bite Diamond Rough 260 → 192,6, 4G Rough 262 → 216. Sets prémontés dérivés (#149) : RPM Blast + Touch VS 168 → 180,8, Razor Code + X-One 180 → 212,5, RPM Blast + Xcel 192 → 206 ;
+  - 1 note de confort : Solinco Mach-10, 8,8 → 8,3 (D2, 23/10).
+
+**`redaction:valeurs`, avant et après mes éditions du dossier :**
+
+```
+$ npm run redaction:valeurs -- docs/redaction/coherence-chiffres-regle-c.md    # avant
+288 valeur(s) contrôlée(s), 47 écart(s)
+exit=1
+$ npm run redaction:valeurs -- docs/redaction/coherence-chiffres-regle-c.md    # après
+288 valeur(s) contrôlée(s), 47 écart(s)
+exit=1
+# mêmes 288 lignes qu'avant, mêmes 47 ECHEC (diff vide)
+```
+
+**Sorties (extraits, 2026-11-26) :**
+
+```
+$ python -I recalc.py <worktree>      # P1 (lignes extraites telles quelles)
+A. Polyesters
+  n=103 min=154.9 max=286.9 médiane=216.6 (r1 216.6) ; rang central 52
+  sans A5 : n=102 médiane=216.89999999999998 (r1 216.9)
+  alignés (commentaire de l'entrée) : 47 ; définition des scripts (fichier entier) : 47 ; sans Toroline Absolute (Q-3) : 46
+  non alignés : 56
+  15 plus souples des alignés : 154.9 à 201.2 ; 16e : Luxilon Adrenaline Rough 202.9
+  A5 : 204.6 lb/in, type Polyester, aligné True, rang parmi les alignés 18/47, indice RA64/24 = 29 (Standard)
+  >=240 : 18
+  seuils RA64/24 : 32 dès 225.11 lb/in (36 polyesters), 35 dès 252.61 (7) ; sous 32 : 67
+  écart plus rigide − plus souple, RA 59/64/69 à 24 kg : [15, 14, 14]
+  abscisses figure polyesters : médiane 316.11 (ancienne 216,9 : 317.33) ; A5 267.08
+B. Familles (fiches classables)
+  Polyester: n=103 154.9–286.9 médiane 216.6 ; alignés 47 ; tous types confondus (non classables compris) n=103
+  alignés, toutes fiches : 63 sur 180 (classables : 63) ; non classables : 4
+C. Indices cités (RA 64 sauf mention)
+  polyester médian (216.6) : 24 kg 31 (Ferme) · 22 kg 30 · 20 kg 29 · RA59/24 29 · RA69/24 32
+  médiane − O-Toro à 24 kg : 6 ; médiane 24 → 22 kg : 1
+F. Compléments
+  si Absolute exclue (Q-3) : 46 alignés ; 15 plus souples 154.9 à 202.9 (Luxilon Adrenaline Rough) ; non alignés 57 ; fiches alignées 62
+$ npx --yes tsx recalc-moteur.mts <worktree>      # P2
+total 180 · polyesters 103 · médiane 216.6 · min 154.9 max 286.9 · alignés 47 (non alignés 56) · 15e aligné 201.2 · >=240 18
+>=32 36 · >=35 7 · <32 67 · A5 29 Standard
+familles alignées : Polyester 47, Multifilament 15, Synthetic 1, Natural Gut 0, Hybrid 0 · total 63/180
+médiane 216.6 : 31 / 30 / 29 · O-Toro 25 / 24 · 4G 38 / 37 · multi méd 25 · boyau méd 17
+$ python -I medianes-historiques.py 7a27b1b e89978b b88bacd a572303      # P3
+7a27b1b 2026-10-21 : fiches 179 · polyesters 102 médiane 220.0 · multifilaments 45 médiane 162.3 · RA64/24 >=32 : 40 >=35 : 9
+e89978b 2026-10-23 : fiches 179 · polyesters 102 médiane 220.0 · multifilaments 45 médiane 162.9 · RA64/24 >=32 : 40 >=35 : 9
+b88bacd 2026-10-26 : fiches 179 · polyesters 102 médiane 216.9 · multifilaments 45 médiane 162.0 · RA64/24 >=32 : 36 >=35 : 7
+a572303 2026-11-26 : fiches 180 · polyesters 103 médiane 216.6 · multifilaments 45 médiane 162.0 · RA64/24 >=32 : 36 >=35 : 7
+```
+
+Contrôles relancés pour information, pas comme preuve :
+- `build-rigidite-figures.mts --check` : exit 0 ;
+- `audit:comptages` : 0 échec, 0 avertissement ;
+- `audit:jsonld` : 0 échec, 1 avertissement (sitemap construit plus ancien que `sitemap.ts` ; aucun build lancé) ;
+- `audit:blog-images` : exit 0, 11 exceptions en cours ;
+- `audit:blog-funnel` : exit 0.
+
+**Verdict sur les valeurs touchées par la PR #178 : conformes.**
+- 3 corrections demandées (N-1 à N-3), antérieures à la PR, dans son voisinage ;
+- 1 réserve à arbitrer (R-A5-1) ;
+- 4 observations non bloquantes.
+
 ---
 
 ## 6. Revue SEO — `tsa-acquisition`
@@ -1189,3 +1333,4 @@ Conforme, sans retouche nécessaire.
 - 2026-10-11 · `tsa-pigiste` — Fact-check de la passe n° 2 du rédacteur (circuit court), tête `8b52189`, branche `agent/redaction/coherence-chiffres-regle-c-factcheck2`. Valeurs et phrases touchées relues par des scripts à moi : 1 457 + 685 contrôles stricts, bloc de 288 lignes relu sans la tolérance du vérificateur, 0 écart de chiffre ; `redaction:valeurs` exit 0 (288 valeurs) ; `--check` exit 0 ; `audit:blog-images`, `audit:blog-funnel`, `audit:comptages` exit 0. C-1 à C-4, O-1 à O-4, S-1, S-3, S-4 soldés, chacun par un fait ; test de glissance : 26 affirmations, 0 sans défense dans le diff, 9 défendues sous réserve D-1 résiduel, 1 hors diff (K-1 : « mesure 220 lb/in », FR et EN, deux phrases). URL TWU reconfirmée le 11/10 : deux pages, une requête chacune, aucun refus. Verdict : **conforme**. Correction de deux chemins de fichier dans mon texte de la passe n° 1 (réponse à Q-2 et F17 : l'extrait `twu-lignes-citees.json` de #110, depuis remplacé). RELAIS → `tsa-redacteur` : K-1 (puis `redaction:valeurs` et `--check` si le texte change). RELAIS → orchestrateur : D-1 résiduel à porter à Pierre, indépendamment de la fusion (53 baisses, huit blocs de phrases à refaire s'il les applique, § 5) ; rien ne se publie sans son GO. RELAIS → `tsa-acquisition` : O-7, O-8, H-1. RELAIS → `tsa-core` : Q-1, H-5, H-6. RELAIS → `tsa-measure` : suites Q-6 (a), (b), (c) du vérificateur, O-9 ; `audit:comptages` (O-7). QUESTIONS À `tsa-redacteur` : aucune.
 
 - 2026-11-26 · `tsa-redacteur` — mise à jour des articles publiés (circuit court) après l'ajout du Toroline A5 au catalogue, PR #177 (demande de Pierre du 26/11/2026, mot pour mot : « Il manque le Toroline A5 dans les cordages intéressant... Je laisse l'équipe l'incorporer ») : 180 cordages, 103 polyesters, 47 à rigidité mesurée par TWU, médiane des polyesters 216,9 → 216,6 lb/in. Figures régénérées par `build-rigidite-figures.mts` (`AS_OF` au 26/11/2026) ; texte, tableaux et FAQ des quatre articles santé FR et EN (46 → 47, 102 → 103, 216,9 → 216,6, 179 → 180 fiches ; figure des familles 62 des 179 → 63 des 180) ; guide du matériel (179 → 180 cordages, médiane 216,6) ; « meilleur cordage polyester » FR et EN : seule la phrase non datée sur le Poly Tour Pro (102 → 103, 216,9 → 216,6), les passages datés du 26/10/2026 restent tels quels. L'A5 (204,6 lb/in, indice 29 au montage de référence) n'entre ni dans les 15 plus souples ni dans la zone ≥ 240, et reste sous les seuils 32 et 35 ; l'indice du polyester médian reste 31. Contrôles : `build-rigidite-figures.mts --check` exit 0 (18 écarts avant) ; `audit:comptages` et `audit:jsonld` 0 échec. `redaction:valeurs` sur ce dossier : 47 écarts, tous antérieurs à l'A5 (dossier du 10/10 non repris : P6, D2, sets hybrides, indices de la Head Extreme Standard) ; aucun ne porte sur l'A5 ni sur la médiane. PR #178, dépend de #177, non fusionnée. RELAIS → `tsa-pigiste` : fact-check des seules valeurs touchées. QUESTIONS À `tsa-pigiste` : aucune.
+- 2026-11-26 · `tsa-pigiste` — Fact-check circuit court de la PR #178 (tête `4a365d5`, branche `agent/redaction/chiffres-toroline-a5`), détail au § 5 (« Fact-check circuit court du 2026-11-26 »). Recalcul indépendant P1 (Python, base lue comme du texte, formules réimplantées) et P2 (moteur du site importé), sans `build-rigidite-figures.mts` ; P3 (`git show`) pour les passages datés. 47 polyesters à rigidité mesurée, 103 polyesters, médiane 216,6, 180 fiches, « 63 des 180 », « 67 » sous 32, indices du polyester médian, dates au 26/11 : **conformes**, FR, EN, FAQ et `FAQPage`. § 2 mis à jour par éditions ciblées, anciennes valeurs barrées : F1, F2, F25, F29. `redaction:valeurs` : 288 valeurs, 47 écarts avant et après, tous antérieurs à l'A5 (listés au § 5, O-A5-4, non touchés). Corrections N-1 à N-3 (antérieures à la PR, dans son voisinage : passage daté du 21/10 faux à sa date et ligne de sources dans mono contre multi ; ligne de sources de « meilleur polyester »). Réserve R-A5-1 : Toroline Absolute comptée mesurée ici (47), non mesurée dans l'article hybride (46). RELAIS → `tsa-redacteur` : N-1 à N-3, FR et EN (puis `audit:jsonld` si une date change). RELAIS → `tsa-core` : R-A5-1. QUESTIONS À `tsa-redacteur` : aucune.
