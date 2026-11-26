@@ -51,7 +51,7 @@ type Lang = 'fr' | 'en';
 // Décisions éditoriales (pas des données de la base)
 // ---------------------------------------------------------------------------------------------
 /** Date d'état de la base affichée (F11) : à mettre à jour quand on relance le script après un changement de la base. */
-const AS_OF = { fr: '23 novembre 2026', en: 'November 23, 2026' };
+const AS_OF = { fr: '26 novembre 2026', en: 'November 26, 2026' };
 /**
  * Les fiches Toroline sont « alignées sur TWU » par un commentaire de la base, sans entrée de provenance. Réponse de
  * `tsa-core` à Q-3 du dossier (23/11/2026) : 7 sur 8 comptent comme mesurées (appariement strict des contrôles 13 ter
